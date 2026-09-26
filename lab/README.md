@@ -34,13 +34,13 @@ python lab/verify_baseline.py
 
 The product generator uses unequal category shares, rotating product types and brands, seeded colour/material/availability, bounded category-specific prices and synthetic popularity. The 50 queries span type, colour, brand and material intents. Judgements come from rules applied to available products; they are useful as a repeatable seed, but they are not human relevance labels or exhaustive negatives. No production product or traffic data is used.
 
-Gatling phases, 72-hour leases, automatic teardown, Apple silicon verification and the 1,000,000-product/1,000-query gate remain later batches. The current 10,000-product result counts demonstrate functional behaviour, not production performance.
+Gatling phases, Apple silicon verification and the 1,000,000-product/1,000-query gate remain later batches. The local control service now implements 72-hour leases and automatic teardown. The current 10,000-product result counts demonstrate functional behaviour, not production performance.
 
 The later million-product release will use a [versioned ESCI-informed aggregate profile](profiles/esci-informed-uk-v1.json). Its [modelling note](../docs/research/esci-synthetic-calibration.md) separates reference observations from synthetic UK assumptions. It does not change this frozen 10,000-product release.
 
 ## Compare a pinned API candidate
 
-The next slice demonstrates an API query-understanding change without reindexing. It applies the tracked [candidate patch](candidate/trainers.patch) to a branch in local Gitea's `search-spike` repository, opens a source PR and waits for its exact-SHA image build. Argo CD then deploys `retail-candidate` with a distinct read-only credential and the **same frozen index and product hash** as `retail-baseline`.
+This slice demonstrates an API query-understanding change without reindexing. It applies the tracked [candidate patch](candidate/trainers.patch) to a branch in local Gitea's `search-spike` repository, opens a source PR and waits for its exact-SHA image build. Argo CD then deploys `retail-candidate` with a distinct read-only credential and the **same frozen index and product hash** as `retail-baseline`.
 
 ```powershell
 python lab/deploy_candidate.py
@@ -94,19 +94,19 @@ The diagnostic-only variant preserved all 51 ordered top-ten lists. The rewrite 
 
 ## Create and remove a leased environment
 
-Start the loopback control service from the repository root, then open the [local environment UI](http://127.0.0.1:18082/):
+Start the loopback control service and independent lease worker from the repository root, then open the [local environment UI](http://localhost:18082/):
 
 ```powershell
-python lab/control_api.py
+python lab/start_control.py
 ```
 
 The UI accepts a `lab-` prefixed environment name and the run number of a successful local Gitea `search-spike` build. The service resolves that run to an exact source SHA and image digest, creates a separate read credential over `retail-gb-10k-v1`, commits the definition to the environment-state repository and waits for a real search. It stores the runtime instance and lease in ignored `.lab/lifecycle.sqlite3`. Status refresh leaves expiry unchanged; a successful search or explicit **Extend lease** action moves expiry to 72 hours after that use. **Delete** removes the namespace and credential through an idempotent path.
 
-The service binds only to `127.0.0.1` and assumes a trusted local operator. Mutations and searches require the UI's `X-Lab-Intent` header. One live HTTP walkthrough created a pinned environment, searched it, recorded activity and deleted it twice. Its [sanitised evidence](../docs/research/evidence/lifecycle-foundation/summary.json) records the observed timings, not a p95 estimate.
+The service binds only to `127.0.0.1`. Sign in with your local Gitea account; the owner is the verified Gitea login. Mutations and searches require the UI's `X-Lab-Intent` header. [Local identity and its GitHub Enterprise migration boundary](../docs/identity-boundary.md) are documented separately. One live HTTP walkthrough created a pinned environment, searched it, recorded activity and deleted it twice. Its [sanitised evidence](../docs/research/evidence/lifecycle-foundation/summary.json) records the observed timings, not a p95 estimate.
 
 ## Compare controlled environments and expire leases
 
-Run the lease reconciler in a separate terminal or background process from the UI. It checks expired and interrupted instances every minute:
+`start_control.py` launches the UI and reconciler as separate background processes and is safe to run again. For foreground diagnosis, run the reconciler separately; it checks expired and interrupted instances every minute:
 
 ```powershell
 python lab/reconcile_leases.py
@@ -120,4 +120,4 @@ python lab/reconcile_leases.py --once
 
 The UI now selects two ready environments for **Result preservation** or **Synthetic relevance**. Both modes query the pinned public APIs and save complete reports in Floci by content hash. Result preservation checks exact ordered top tens plus Jaccard/RBO over all 51 requests; relevance scores the 50 judged requests with nDCG@10, Judged@10 and RR@10. An error or missing response produces an incomplete record, never a passing verdict. The UI can reopen saved reports after environments are deleted.
 
-A live baseline-versus-price run changed 50 ordered top tens. The relevance scores matched the earlier frozen evaluation, and repeating that run produced the same report SHA-256. A separate disposable lease was marked expired while the UI was stopped; the independent reconciler removed its namespace in 69 seconds. That exercises the expiry path without claiming that 72 hours elapsed. The [comparison evidence](../docs/research/evidence/lifecycle-comparison/summary.json) and [expiry evidence](../docs/research/evidence/lifecycle-comparison/expiry.json) retain the results. Named operator identity, reliable service startup and the 20-run removal p95 remain in the [next batch](../docs/plans/lifecycle-identity-and-measurement.md).
+A live baseline-versus-price run changed 50 ordered top tens. The relevance scores matched the earlier frozen evaluation, and repeating that run produced the same report SHA-256. A separate disposable lease was marked expired while the UI was stopped; the independent reconciler removed its namespace in 69 seconds. That exercises the expiry path without claiming that 72 hours elapsed. The [comparison evidence](../docs/research/evidence/lifecycle-comparison/summary.json) and [expiry evidence](../docs/research/evidence/lifecycle-comparison/expiry.json) retain the results. The later [identity and removal measurement](../docs/research/evidence/lifecycle-measurement/README.md) verified named access and measured 20/20 successful warm deletions, with p95 53.844 seconds. The [next batch](../docs/plans/index-change.md) adds dedicated index changes.

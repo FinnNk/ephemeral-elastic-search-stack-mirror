@@ -11,6 +11,7 @@ from common import STATE
 from data_contract import BlobServiceClient, DEMO_KEY
 from measure import search
 from lifecycle import DATASET, local_lifecycle, parse_stamp, utcnow
+from control_identity import GiteaIdentity, Sessions, expired_cookie, session_cookie
 
 PORT = 18082
 UI = Path(__file__).with_name('control-ui.html')
@@ -22,40 +23,81 @@ def route(path):
 
 class Handler(BaseHTTPRequestHandler):
     controller = None
+    sessions = None
+    identity_provider = None
+    canonical_host = None
 
-    def send_bytes(self, status, payload, content_type):
+    def send_bytes(self, status, payload, content_type, extra_headers=None):
         self.send_response(status)
         self.send_header('Content-Type', content_type)
         self.send_header('Content-Length', str(len(payload)))
         self.send_header('Cache-Control', 'no-store')
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('Referrer-Policy', 'no-referrer')
+        self.send_header('Content-Security-Policy',
+            "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+            "connect-src 'self'; base-uri 'none'; form-action 'self'")
+        for key, value in (extra_headers or {}).items():
+            self.send_header(key, value)
         self.end_headers()
         self.wfile.write(payload)
 
-    def send_json(self, status, value):
-        self.send_bytes(status, json.dumps(value).encode(), 'application/json; charset=utf-8')
+    def send_json(self, status, value, extra_headers=None):
+        self.send_bytes(status, json.dumps(value).encode(), 'application/json; charset=utf-8', extra_headers)
 
     def path_parts(self):
         return route(self.path).strip('/').split('/')
 
+    def host_allowed(self):
+        if self.canonical_host is None or self.headers.get('Host') == self.canonical_host:
+            return True
+        if self.command == 'GET':
+            self.send_response(307)
+            self.send_header('Location', 'http://' + self.canonical_host + self.path)
+            self.send_header('Cache-Control', 'no-store')
+            self.end_headers()
+        else:
+            self.send_json(421, {'error': 'Open the control UI on localhost.'})
+        return False
+
+    def identity(self):
+        return self.sessions.get(self.headers.get('Cookie'))
+
+    @staticmethod
+    def visible(row, identity):
+        return bool(row) and (identity['is_admin'] or row['owner'] == identity['username'])
+
+    def comparison_visible(self, row, identity):
+        return bool(row) and self.visible(self.controller.store.get(row['baseline_id']), identity) and \
+            self.visible(self.controller.store.get(row['candidate_id']), identity)
+
     def do_GET(self):
+        if not self.host_allowed():
+            return
         parts = self.path_parts()
         if parts == ['']:
             return self.send_bytes(200, UI.read_bytes(), 'text/html; charset=utf-8')
         if parts == ['api', 'health']:
             return self.send_json(200, {'ready': True})
+        identity = self.identity()
+        if identity is None:
+            return self.send_json(401, {'error': 'Sign in with Gitea.'})
+        if parts == ['api', 'me']:
+            return self.send_json(200, {'username': identity['username'], 'is_admin': identity['is_admin']})
         if parts == ['api', 'datasets']:
             manifest = json.loads((STATE / 'releases' / DATASET / 'manifest.json').read_text())
             return self.send_json(200, [{'release': DATASET, 'manifest': manifest}])
         if parts == ['api', 'environments']:
-            return self.send_json(200, self.controller.store.all())
+            return self.send_json(200, [row for row in self.controller.store.all() if self.visible(row, identity)])
         if parts == ['api', 'comparisons']:
-            return self.send_json(200, self.controller.store.all_comparisons())
+            return self.send_json(200, [row for row in self.controller.store.all_comparisons()
+                                        if self.comparison_visible(row, identity)])
         if len(parts) >= 3 and parts[:2] == ['api', 'comparisons']:
             row = self.controller.store.get_comparison(parts[2])
             if row is None:
                 return self.send_json(404, {'error': 'Comparison not found.'})
+            if not self.comparison_visible(row, identity):
+                return self.send_json(403, {'error': 'Comparison belongs to another owner.'})
             if len(parts) == 3:
                 return self.send_json(200, row)
             if len(parts) == 4 and parts[3] == 'report':
@@ -72,6 +114,8 @@ class Handler(BaseHTTPRequestHandler):
             row = self.controller.store.get(parts[2])
             if row is None:
                 return self.send_json(404, {'error': 'Environment not found.'})
+            if not self.visible(row, identity):
+                return self.send_json(403, {'error': 'Environment belongs to another owner.'})
             if len(parts) == 3:
                 return self.send_json(200, row)
             if len(parts) == 4 and parts[3] == 'search':
@@ -82,7 +126,7 @@ class Handler(BaseHTTPRequestHandler):
                 if utcnow() >= parse_stamp(row['expires_at']):
                     return self.send_json(409, {'error': 'Environment lease has expired.'})
                 query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('q', [''])[0]
-                if not query or len(query) > 150:
+                if not query.strip() or len(query) > 150:
                     return self.send_json(400, {'error': 'Enter a search term of 1–150 characters.'})
                 try:
                     answer = search(row['name'], query)
@@ -103,25 +147,46 @@ class Handler(BaseHTTPRequestHandler):
         size = int(self.headers.get('Content-Length', '0'))
         if size < 0 or size > 4096:
             raise ValueError('Request body is too large.')
-        return json.loads(self.rfile.read(size))
+        value = json.loads(self.rfile.read(size))
+        if not isinstance(value, dict):
+            raise ValueError('Send a JSON object.')
+        return value
 
     def do_POST(self):
+        if not self.host_allowed():
+            return
         parts = self.path_parts()
         try:
             payload = self.body()
+            if parts == ['api', 'login']:
+                identity = self.identity_provider.verify(payload['username'], payload['password'])
+                token = self.sessions.create(identity)
+                return self.send_json(200, identity, {'Set-Cookie': session_cookie(token)})
+            identity = self.identity()
+            if identity is None:
+                return self.send_json(401, {'error': 'Sign in with Gitea.'})
+            if parts == ['api', 'logout']:
+                self.sessions.discard(self.headers.get('Cookie'))
+                return self.send_json(200, {'signed_out': True}, {'Set-Cookie': expired_cookie()})
             if parts == ['api', 'environments']:
-                row = self.controller.create(payload['name'], payload['build_run'])
+                row = self.controller.create(payload['name'], payload['build_run'], owner=identity['username'])
                 return self.send_json(201 if row['state'] == 'ready' else 202, row)
             if parts == ['api', 'comparisons']:
+                first = self.controller.store.get(payload['baseline_id'])
+                second = self.controller.store.get(payload['candidate_id'])
+                if not self.visible(first, identity) or not self.visible(second, identity):
+                    return self.send_json(403, {'error': 'Comparison environment belongs to another owner.'})
                 row = self.controller.compare(payload['baseline_id'], payload['candidate_id'], payload['mode'])
                 return self.send_json(201 if row['state'] == 'complete' else 202, row)
             if len(parts) == 4 and parts[:2] == ['api', 'environments']:
+                if not self.visible(self.controller.store.get(parts[2]), identity):
+                    return self.send_json(403, {'error': 'Environment belongs to another owner.'})
                 if parts[3] == 'activity':
                     return self.send_json(200, self.controller.activity(parts[2]))
                 if parts[3] == 'reconcile':
                     return self.send_json(200, self.controller.reconcile(parts[2]))
         except KeyError:
-            return self.send_json(404, {'error': 'Environment or required field not found.'})
+            return self.send_json(400, {'error': 'A required field is missing.'})
         except (ValueError, json.JSONDecodeError) as error:
             return self.send_json(400, {'error': str(error)})
         except RuntimeError:
@@ -129,10 +194,17 @@ class Handler(BaseHTTPRequestHandler):
         return self.send_json(404, {'error': 'Not found.'})
 
     def do_DELETE(self):
+        if not self.host_allowed():
+            return
         parts = self.path_parts()
         try:
             self.body()
+            identity = self.identity()
+            if identity is None:
+                return self.send_json(401, {'error': 'Sign in with Gitea.'})
             if len(parts) == 3 and parts[:2] == ['api', 'environments']:
+                if not self.visible(self.controller.store.get(parts[2]), identity):
+                    return self.send_json(403, {'error': 'Environment belongs to another owner.'})
                 return self.send_json(200, self.controller.delete(parts[2]))
         except KeyError:
             return self.send_json(404, {'error': 'Environment not found.'})
@@ -144,8 +216,11 @@ class Handler(BaseHTTPRequestHandler):
 def serve():
     controller = local_lifecycle()
     Handler.controller = controller
+    Handler.sessions = Sessions()
+    Handler.identity_provider = GiteaIdentity()
+    Handler.canonical_host = f'localhost:{PORT}'
     with ThreadingHTTPServer(('127.0.0.1', PORT), Handler) as server:
-        print(f'Local lifecycle UI: http://127.0.0.1:{PORT}/', flush=True)
+        print(f'Local lifecycle UI: http://localhost:{PORT}/', flush=True)
         server.serve_forever()
 
 

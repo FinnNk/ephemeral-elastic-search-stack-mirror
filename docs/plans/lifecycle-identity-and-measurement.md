@@ -1,5 +1,7 @@
 # Lifecycle identity and measurement batch
 
+Completed on `slice/lifecycle-identity-measurement`; see the [measured evidence](../research/evidence/lifecycle-measurement/README.md). The 20-sample direct deletion p95 was 53.844 seconds. Per-phase timing and hosted identity remain outside this local batch.
+
 ## Intent
 
 Finish the local control-plane acceptance gates after the API/UI comparison slice: associate operations with a verified named user, measure removal over enough real samples, and prove expiry cleanup when the UI is unavailable.

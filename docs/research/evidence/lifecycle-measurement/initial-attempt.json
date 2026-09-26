@@ -1,0 +1,51 @@
+{
+  "finding": "Intermittent search readiness after Argo health; the initial run was stopped and retained.",
+  "sample_count": 7,
+  "samples": [
+    {
+      "create_seconds": 4.812,
+      "delete_seconds": 53.891,
+      "name": "lab-removal-01",
+      "passed": true
+    },
+    {
+      "create_seconds": 6.641,
+      "delete_seconds": 53.765,
+      "name": "lab-removal-02",
+      "passed": true
+    },
+    {
+      "create_seconds": 4.594,
+      "error_kind": "AssertionError",
+      "final_state": "failed",
+      "name": "lab-removal-03",
+      "passed": false
+    },
+    {
+      "create_seconds": 4.813,
+      "error_kind": "AssertionError",
+      "final_state": "failed",
+      "name": "lab-removal-04",
+      "passed": false
+    },
+    {
+      "create_seconds": 6.75,
+      "delete_seconds": 51.593,
+      "name": "lab-removal-05",
+      "passed": true
+    },
+    {
+      "create_seconds": 4.719,
+      "error_kind": "AssertionError",
+      "final_state": "failed",
+      "name": "lab-removal-06",
+      "passed": false
+    },
+    {
+      "create_seconds": 6.688,
+      "delete_seconds": 51.609,
+      "name": "lab-removal-07",
+      "passed": true
+    }
+  ]
+}
