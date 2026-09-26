@@ -91,3 +91,15 @@ python lab/compare_diagnostics.py
 The deployment script opens two local `search-spike` source PRs and pins their successful image builds. Both variants read the same frozen index as `retail-baseline`, using separate credentials. The comparison sends all 51 frozen requests through the baseline and both variants. It saves a deterministic functional report in Floci by hash, with ordered API results, correlation IDs, diagnostics, zero-result counts and an explicit completeness/verdict field. Observed stage timings are stored as a separate run artifact; they do not affect the functional report hash. A selected direct Elasticsearch `_profile` probe is stored separately as component evidence, not used for the end-to-end verdict.
 
 The diagnostic-only variant preserved all 51 ordered top-ten lists. The rewrite variant changed only `q051` (`trainers`), from zero baseline results to matching `running shoes` results; the diagnostic record names the rewrite and has a different Elasticsearch request hash. Four live checks confirmed that enabling diagnostics left ordered IDs and totals unchanged for selected requests. The [sanitised evidence](../docs/research/evidence/runnable-diagnostics/summary.json) links the full reports. The [diagnostic source PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/4) and its [rewrite PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/5) remain open for review.
+
+## Create and remove a leased environment
+
+Start the loopback control service from the repository root, then open the [local environment UI](http://127.0.0.1:18082/):
+
+```powershell
+python lab/control_api.py
+```
+
+The UI accepts a `lab-` prefixed environment name and the run number of a successful local Gitea `search-spike` build. The service resolves that run to an exact source SHA and image digest, creates a separate read credential over `retail-gb-10k-v1`, commits the definition to the environment-state repository and waits for a real search. It stores the runtime instance and lease in ignored `.lab/lifecycle.sqlite3`. Status refresh leaves expiry unchanged; a successful search or explicit **Extend lease** action moves expiry to 72 hours after that use. **Delete** removes the namespace and credential through an idempotent path. A background scan runs each minute while the service is running; restarting the service resumes from the persisted state.
+
+The service binds only to `127.0.0.1` and assumes a trusted local operator. Mutations and searches require the UI's `X-Lab-Intent` header. Named control-surface identity, independent expiry while the UI is stopped, comparison/report controls and a 20-run p95 measurement are the [next batch](../docs/plans/lifecycle-completion.md); this first slice does not claim those gates. One live HTTP walkthrough created a pinned environment, searched it, recorded activity and deleted it twice. Its [sanitised evidence](../docs/research/evidence/lifecycle-foundation/summary.json) records the observed timings, not a p95 estimate.
