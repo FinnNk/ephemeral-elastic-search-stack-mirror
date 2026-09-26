@@ -1,0 +1,27 @@
+{
+  "baseline_fingerprint": "b32669b1945bbb8abd325270ded51a783e632954874fcb23f7e6dd3e0e170c34",
+  "candidate_fingerprint": "7e667d0ad8455a0db9886114d5026466941796d20d9db645320ce538f4db5c91",
+  "candidate_image": "gitea.localhost:31800/elastic-agent/search-spike@sha256:b84fd07a810ca3606c672f27e3271a484a092842247f435d850b8d147fcb1af4",
+  "candidate_source_pr": "http://127.0.0.1:31800/elastic-agent/search-spike/pulls/2",
+  "candidate_source_sha": "06ef2543f39cd85bd036d4018d3c12e043faa97e",
+  "changed_details": [
+    {
+      "baseline_total": 0,
+      "candidate_total": 494,
+      "jaccard_at_10": 0.0,
+      "query": "trainers",
+      "query_id": "q051",
+      "rbo_at_10_p_0_9": 0.0
+    }
+  ],
+  "changed_query_ids": [
+    "q051"
+  ],
+  "query_count": 51,
+  "repeat_report_sha256_matched": true,
+  "report_blob": "runs/de8812c84c144405372621fc939ed1395cfc3ec196ea17954a7e3e16e462ad58/retail-blackbox-comparison.json",
+  "report_sha256": "de8812c84c144405372621fc939ed1395cfc3ec196ea17954a7e3e16e462ad58",
+  "suite_blob": "datasets/acf835a1bfe7995344b2a4b067a3037f1de28b60c498468ae19356b161b900f1/query-suite.jsonl",
+  "suite_sha256": "acf835a1bfe7995344b2a4b067a3037f1de28b60c498468ae19356b161b900f1",
+  "unchanged_count": 50
+}

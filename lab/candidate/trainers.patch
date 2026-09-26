@@ -1,0 +1,16 @@
+--- a/app.py
++++ b/app.py
+@@ -27,0 +28 @@
++    understood_query = 'running shoes' if query.casefold() == 'trainers' else query
+@@ -32 +33 @@
+-            'must': [{'multi_match': {'query': query, 'fields': ['title^4', 'product_type^3', 'brand^2', 'description']}}],
++            'must': [{'multi_match': {'query': understood_query, 'fields': ['title^4', 'product_type^3', 'brand^2', 'description']}}],
+--- a/test_app.py
++++ b/test_app.py
+@@ -18,0 +19,6 @@
++    def test_trainers_query_understanding(self):
++        clause = app.query_body('trainers', 'GB', 'GBP')['query']['bool']['must'][0]['multi_match']
++        self.assertEqual(clause['query'], 'running shoes')
++        unchanged = app.query_body('wireless headphones', 'GB', 'GBP')['query']['bool']['must'][0]['multi_match']
++        self.assertEqual(unchanged['query'], 'wireless headphones')
++

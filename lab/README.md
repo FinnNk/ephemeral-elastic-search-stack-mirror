@@ -37,3 +37,24 @@ The product generator uses unequal category shares, rotating product types and b
 This is a baseline search slice. Comparison environments, evaluation reports, Gatling phases, 72-hour leases, automatic teardown, Apple silicon verification and the 1,000,000-product/1,000-query gate remain later batches. The current 10,000-product result counts demonstrate functional behaviour, not relevance quality or production performance.
 
 The later million-product release will use a [versioned ESCI-informed aggregate profile](profiles/esci-informed-uk-v1.json). Its [modelling note](../docs/research/esci-synthetic-calibration.md) separates reference observations from synthetic UK assumptions. It does not change this frozen 10,000-product release.
+
+## Compare a pinned API candidate
+
+The next slice demonstrates an API query-understanding change without reindexing. It applies the tracked [candidate patch](candidate/trainers.patch) to a branch in local Gitea's `search-spike` repository, opens a source PR and waits for its exact-SHA image build. Argo CD then deploys `retail-candidate` with a distinct read-only credential and the **same frozen index and product hash** as `retail-baseline`.
+
+```powershell
+python lab/deploy_candidate.py
+python lab/compare_search.py
+```
+
+The comparison combines the original 50 frozen requests with the [extra `trainers` request](comparison-extra.jsonl), stores the 51-request suite in Floci by hash, and sends every request through both public search APIs. It verifies the two environment fingerprints, deployed image digests, shared index and Argo CD health first. The immutable report contains ordered top-ten IDs, totals, equality, Jaccard@10 and finite extrapolated RBO@10 (`p=0.9`) for every query. It does **not** infer relevance from unjudged results or count latency as a result-preservation metric.
+
+In the measured run, the 50 original requests returned identical ordered top-ten IDs. `trainers` changed from zero baseline results to 494 candidate results; Jaccard@10 and RBO@10 were both zero. Repeating the full run produced the same report SHA-256. The [sanitised evidence](../docs/research/evidence/runnable-comparison/summary.json) points to the full Floci report.
+
+To inspect both browser pages, forward the candidate service to a second loopback port while keeping the baseline forward on `18080`:
+
+```powershell
+kubectl --kubeconfig .lab/kubeconfig.yaml -n retail-candidate port-forward svc/search 18081:8080 --address 127.0.0.1
+```
+
+Open the [baseline page](http://127.0.0.1:18080/) and [candidate page](http://127.0.0.1:18081/) and search for `trainers`. The local [source candidate PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/2) remains open as review evidence; it is not required to merge into the source repository's main branch. Relevance scoring against judgements, diagnostic/Elasticsearch metrics, index-change comparisons and automated environment expiry remain later slices.
