@@ -1,0 +1,186 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Prepare baseline and candidate, then compare",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "User action"
+        },
+        "backend": {
+          "label": "Automation"
+        },
+        "database": {
+          "label": "Retained artifact"
+        },
+        "security": {
+          "label": "Readiness gate"
+        },
+        "cloud": {
+          "label": "Runtime"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "baseline",
+      "label": "Baseline B"
+    },
+    {
+      "id": "candidate",
+      "label": "Candidate C"
+    },
+    {
+      "id": "comparison",
+      "label": "Comparison and disposal"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "select",
+      "lane": "baseline",
+      "col": 0,
+      "type": "database",
+      "label": "Select baseline",
+      "sublabel": "Frozen definition B",
+      "width": 130
+    },
+    {
+      "id": "restoreb",
+      "lane": "baseline",
+      "col": 1,
+      "type": "cloud",
+      "label": "Resolve B",
+      "sublabel": "Reuse or recreate",
+      "width": 130
+    },
+    {
+      "id": "pin",
+      "lane": "candidate",
+      "col": 0,
+      "type": "database",
+      "label": "Pin candidate",
+      "sublabel": "Frozen definition C",
+      "width": 130
+    },
+    {
+      "id": "restorec",
+      "lane": "candidate",
+      "col": 1,
+      "type": "cloud",
+      "label": "Resolve C",
+      "sublabel": "Reuse or recreate",
+      "width": 130
+    },
+    {
+      "id": "gate",
+      "lane": "comparison",
+      "col": 2,
+      "type": "security",
+      "label": "Both ready",
+      "sublabel": "Verify B + C pins",
+      "width": 130
+    },
+    {
+      "id": "compare",
+      "lane": "comparison",
+      "col": 3,
+      "type": "backend",
+      "label": "Run chosen check",
+      "sublabel": "Same inputs + profile",
+      "width": 130
+    },
+    {
+      "id": "report",
+      "lane": "comparison",
+      "col": 4,
+      "type": "database",
+      "label": "Save report",
+      "sublabel": "Both fingerprints",
+      "width": 130
+    },
+    {
+      "id": "remove",
+      "lane": "comparison",
+      "col": 5,
+      "type": "backend",
+      "label": "Remove runtime",
+      "sublabel": "Manual / lease expiry",
+      "width": 130
+    }
+  ],
+  "edges": [
+    {
+      "from": "select",
+      "to": "restoreb",
+      "label": "Pinned B",
+      "role": "branch"
+    },
+    {
+      "from": "restoreb",
+      "to": "gate",
+      "label": "B ready",
+      "role": "branch"
+    },
+    {
+      "from": "pin",
+      "to": "restorec",
+      "label": "Pinned C",
+      "role": "main"
+    },
+    {
+      "from": "restorec",
+      "to": "gate",
+      "label": "C ready",
+      "role": "main"
+    },
+    {
+      "from": "gate",
+      "to": "compare",
+      "label": "Both verified",
+      "role": "main"
+    },
+    {
+      "from": "compare",
+      "to": "report",
+      "label": "Verdict + evidence",
+      "role": "main"
+    },
+    {
+      "from": "report",
+      "to": "remove",
+      "label": "Retain definitions",
+      "role": "main"
+    }
+  ],
+  "mainPath": [
+    "pin",
+    "restorec",
+    "gate",
+    "compare",
+    "report",
+    "remove"
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "The candidate comes from a tested build",
+      "items": [
+        "Gitea records the source SHA and image digest",
+        "Each side pins API, assets, index, data and engine"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Both runtimes must match their definitions",
+      "items": [
+        "Reuse or recreate B and C; verify readiness",
+        "Choose relevance, unchanged results or performance"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\performance-check.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\performance-check.html",
+  "specification": {
+    "sha256": "f51b7b256856c451bac1b8c779de5e998adf4384e4f46f2379ba656fce6112f5",
+    "bytes": 3540
+  },
+  "artifact": {
+    "sha256": "8985fd205d1fb463cc263eeaa925cb24c1106b438d160909c9f81a76a8f56ea6",
+    "bytes": 805685
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

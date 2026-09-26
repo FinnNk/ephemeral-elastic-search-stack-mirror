@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Compare relevance across frozen environments",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1080,
+      620
+    ]
+  },
+  "stages": [
+    {
+      "label": "Frozen definitions"
+    },
+    {
+      "label": "Search APIs"
+    },
+    {
+      "label": "Final results"
+    },
+    {
+      "label": "Evaluation"
+    },
+    {
+      "label": "Retained report"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "baseline",
+      "label": "Baseline",
+      "sublabel": "Frozen definition B",
+      "stage": 0,
+      "row": 0,
+      "type": "database"
+    },
+    {
+      "id": "candidate",
+      "label": "Candidate",
+      "sublabel": "Frozen definition C",
+      "stage": 0,
+      "row": 2,
+      "type": "database"
+    },
+    {
+      "id": "queries",
+      "label": "Query set",
+      "sublabel": "Same requests + context",
+      "stage": 0,
+      "row": 1,
+      "type": "database"
+    },
+    {
+      "id": "baselineapi",
+      "label": "Baseline API",
+      "sublabel": "Runs definition B",
+      "stage": 1,
+      "row": 0,
+      "type": "backend",
+      "width": 136
+    },
+    {
+      "id": "candidateapi",
+      "label": "Candidate API",
+      "sublabel": "Runs definition C",
+      "stage": 1,
+      "row": 2,
+      "type": "backend",
+      "width": 136
+    },
+    {
+      "id": "baselineresults",
+      "label": "B results",
+      "sublabel": "Ordered product IDs",
+      "stage": 2,
+      "row": 0,
+      "type": "frontend"
+    },
+    {
+      "id": "candidateresults",
+      "label": "C results",
+      "sublabel": "Ordered product IDs",
+      "stage": 2,
+      "row": 2,
+      "type": "frontend"
+    },
+    {
+      "id": "judgements",
+      "label": "Judgements",
+      "sublabel": "Same frozen ratings",
+      "stage": 3,
+      "row": 0,
+      "type": "database"
+    },
+    {
+      "id": "evaluator",
+      "label": "Evaluator",
+      "sublabel": "Judged relevance",
+      "stage": 3,
+      "row": 1,
+      "type": "backend"
+    },
+    {
+      "id": "report",
+      "label": "Comparison",
+      "sublabel": "B + C fingerprints",
+      "stage": 4,
+      "row": 1,
+      "type": "database"
+    }
+  ],
+  "flows": [
+    {
+      "from": "baseline",
+      "to": "baselineapi",
+      "label": "Pinned inputs",
+      "route": "straight"
+    },
+    {
+      "from": "candidate",
+      "to": "candidateapi",
+      "label": "Pinned inputs",
+      "route": "straight"
+    },
+    {
+      "from": "queries",
+      "to": "baselineapi",
+      "label": "Original requests",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          100,
+          214
+        ],
+        [
+          315,
+          214
+        ]
+      ]
+    },
+    {
+      "from": "queries",
+      "to": "candidateapi",
+      "label": "Original requests",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          100,
+          328
+        ],
+        [
+          315,
+          328
+        ]
+      ]
+    },
+    {
+      "from": "baselineapi",
+      "to": "baselineresults",
+      "label": "Final rankings",
+      "variant": "emphasis"
+    },
+    {
+      "from": "candidateapi",
+      "to": "candidateresults",
+      "label": "Final rankings",
+      "variant": "emphasis"
+    },
+    {
+      "from": "baselineresults",
+      "to": "evaluator",
+      "label": "Baseline IDs",
+      "variant": "emphasis"
+    },
+    {
+      "from": "candidateresults",
+      "to": "evaluator",
+      "label": "Candidate IDs",
+      "variant": "emphasis"
+    },
+    {
+      "from": "judgements",
+      "to": "evaluator",
+      "label": "Ratings",
+      "labelDy": 35
+    },
+    {
+      "from": "evaluator",
+      "to": "report",
+      "label": "Scores + deltas",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Each definition pins its inputs",
+      "items": [
+        "API image, query assets/config, index, dataset and engine version"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Resources may be shared",
+      "items": [
+        "Compatible definitions can reference one read-only index",
+        "Both result sets retain their own fingerprint and diagnostics"
+      ]
+    }
+  ]
+}

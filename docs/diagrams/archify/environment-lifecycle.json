@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Runtime lifecycle: baseline or candidate",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1080,
+      640
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "Temporary runtime"
+    },
+    {
+      "id": "cleanup",
+      "label": "Failure and recovery"
+    },
+    {
+      "id": "terminal",
+      "label": "Frozen definition survives runtime removal"
+    }
+  ],
+  "states": [
+    {
+      "id": "requested",
+      "type": "start",
+      "label": "Requested",
+      "sublabel": "From frozen B or C",
+      "lane": "main",
+      "col": 0
+    },
+    {
+      "id": "provisioning",
+      "type": "active",
+      "label": "Provisioning",
+      "sublabel": "Argo CD applies",
+      "lane": "main",
+      "col": 1
+    },
+    {
+      "id": "indexing",
+      "type": "active",
+      "label": "Indexing",
+      "sublabel": "Only if required",
+      "lane": "main",
+      "col": 2
+    },
+    {
+      "id": "ready",
+      "type": "active",
+      "label": "Ready",
+      "sublabel": "72 h activity lease",
+      "lane": "main",
+      "col": 3
+    },
+    {
+      "id": "deleting",
+      "type": "active",
+      "label": "Deleting",
+      "sublabel": "Manual / lease expiry",
+      "lane": "main",
+      "col": 4
+    },
+    {
+      "id": "deleted",
+      "type": "success",
+      "label": "Runtime gone",
+      "sublabel": "Definition recreates it",
+      "lane": "terminal",
+      "col": 2
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "Failed",
+      "sublabel": "Retry or remove",
+      "lane": "cleanup",
+      "col": 0
+    }
+  ],
+  "transitions": [
+    {
+      "from": "deleting",
+      "to": "deleted",
+      "label": "Resources removed",
+      "labelDy": 35
+    },
+    {
+      "from": "indexing",
+      "to": "failed",
+      "label": "Build failure",
+      "variant": "security",
+      "labelDy": 35
+    },
+    {
+      "from": "failed",
+      "to": "indexing",
+      "label": "Retry",
+      "variant": "dashed",
+      "route": "left-channel",
+      "channelX": 325,
+      "labelAt": [
+        345,
+        250
+      ]
+    },
+    {
+      "from": "provisioning",
+      "to": "ready",
+      "label": "Reuse frozen index",
+      "route": "top-channel",
+      "channelY": 94,
+      "labelAt": [
+        390,
+        85
+      ]
+    }
+  ],
+  "cards": []
+}

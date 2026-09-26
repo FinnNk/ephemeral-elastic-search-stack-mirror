@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "architecture",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\shared-index-reuse.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\shared-index-reuse.html",
+  "specification": {
+    "sha256": "dd05e1d1748947779cc2aeb8b6dee60366b10eb262330d909f7c99643ae4ee9b",
+    "bytes": 3290
+  },
+  "artifact": {
+    "sha256": "78fbb76566c021c35fea2cea46fda4139da3ee8539d07df2c5e405cbef478926",
+    "bytes": 804424
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

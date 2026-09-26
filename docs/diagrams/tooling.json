@@ -1,0 +1,5 @@
+{
+  "structurizrImage": "structurizr/structurizr:2026.09.19-playwright@sha256:c89b54231c42da90484e6bf4e398f36a40123cb4b12c9d5f09c27eef3dc9644c",
+  "archifyRepository": "https://github.com/tt-a1i/archify.git",
+  "archifyCommit": "9e35d2b0b39b155553ba9fcfe0b4f2a5198dd993"
+}

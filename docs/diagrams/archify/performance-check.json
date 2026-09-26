@@ -1,0 +1,169 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Check API performance with Gatling",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "backend": {
+          "label": "Gatling or evaluator"
+        },
+        "database": {
+          "label": "Pinned inputs / report"
+        },
+        "security": {
+          "label": "Readiness / validity gate"
+        },
+        "cloud": {
+          "label": "Reserved resources"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "prepare",
+      "label": "Frozen baseline B and candidate C"
+    },
+    {
+      "id": "load",
+      "label": "Sequential API load tests"
+    },
+    {
+      "id": "assess",
+      "label": "Performance verdict"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "pin",
+      "lane": "prepare",
+      "col": 0,
+      "type": "database",
+      "label": "Pin B + C",
+      "sublabel": "Definitions + compiled load",
+      "width": 145
+    },
+    {
+      "id": "reserve",
+      "lane": "prepare",
+      "col": 1,
+      "type": "cloud",
+      "label": "Reserve slot",
+      "sublabel": "Same resource budget",
+      "width": 145
+    },
+    {
+      "id": "ready",
+      "lane": "prepare",
+      "col": 2,
+      "type": "security",
+      "label": "Both ready",
+      "sublabel": "Verify pins + capacity",
+      "width": 145
+    },
+    {
+      "id": "b",
+      "lane": "load",
+      "col": 2,
+      "type": "backend",
+      "label": "Gatling to B",
+      "sublabel": "Replay pinned phases",
+      "width": 145
+    },
+    {
+      "id": "c",
+      "lane": "load",
+      "col": 3,
+      "type": "backend",
+      "label": "Gatling to C",
+      "sublabel": "Replay pinned phases",
+      "width": 145
+    },
+    {
+      "id": "gate",
+      "lane": "assess",
+      "col": 4,
+      "type": "security",
+      "label": "Assess phases",
+      "sublabel": "Budgets / stress capacity",
+      "width": 145
+    },
+    {
+      "id": "report",
+      "lane": "assess",
+      "col": 5,
+      "type": "database",
+      "label": "Save evidence",
+      "sublabel": "Verdicts + capacity",
+      "width": 145
+    }
+  ],
+  "edges": [
+    {
+      "from": "pin",
+      "to": "reserve",
+      "label": "Pinned profile",
+      "role": "main"
+    },
+    {
+      "from": "reserve",
+      "to": "ready",
+      "label": "Slot held",
+      "role": "main"
+    },
+    {
+      "from": "ready",
+      "to": "b",
+      "label": "Same requests",
+      "role": "main"
+    },
+    {
+      "from": "b",
+      "to": "c",
+      "label": "B completes",
+      "role": "main"
+    },
+    {
+      "from": "c",
+      "to": "gate",
+      "label": "Paired evidence",
+      "role": "main"
+    },
+    {
+      "from": "gate",
+      "to": "report",
+      "label": "Checks + reports",
+      "role": "main"
+    }
+  ],
+  "mainPath": [
+    "pin",
+    "reserve",
+    "ready",
+    "b",
+    "c",
+    "gate",
+    "report"
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Repeat with alternating order",
+      "items": [
+        "Run three B/C pairs using one compiled workload",
+        "Warm-up precedes normal, peak or stress/recovery"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Retain reports and test conditions",
+      "items": [
+        "Retain phase metrics and arrival timing error",
+        "Stress reports sustainable load and recovery"
+      ]
+    }
+  ]
+}

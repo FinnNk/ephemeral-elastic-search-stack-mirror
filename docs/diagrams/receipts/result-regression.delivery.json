@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\result-regression.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\result-regression.html",
+  "specification": {
+    "sha256": "7ea18f2556ac06f64135b72be6fa7a4455aff3068c004893addbaa4ac425990d",
+    "bytes": 4185
+  },
+  "artifact": {
+    "sha256": "956304b194dbe6d05c9571d02cf8a2f0e11667f7f55951fff44554d1e28ff31f",
+    "bytes": 808894
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

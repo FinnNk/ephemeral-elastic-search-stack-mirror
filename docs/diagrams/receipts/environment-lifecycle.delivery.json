@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "lifecycle",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\environment-lifecycle.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\environment-lifecycle.html",
+  "specification": {
+    "sha256": "b2819962097d4615c6cb0c0909eaec26d78fe6812ecc4148df4a2ace3cec747c",
+    "bytes": 2516
+  },
+  "artifact": {
+    "sha256": "d09ae2eb8b06c83eda7bc4b73b460e8b69532539c607622822d077691b8f07c3",
+    "bytes": 803066
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

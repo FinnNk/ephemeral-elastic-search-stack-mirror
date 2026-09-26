@@ -1,0 +1,4 @@
+.diagram-tools/
+docs/diagrams/.structurizr/
+docs/diagrams/qa/
+docs/diagrams/interactive/*.visual-check.*

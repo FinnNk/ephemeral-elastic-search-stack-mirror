@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\traffic-workload.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\traffic-workload.html",
+  "specification": {
+    "sha256": "19373c34fc0f86247e6bca2c71d2619df6e2b93aeaa2f7f0508524fdfbe392bf",
+    "bytes": 3937
+  },
+  "artifact": {
+    "sha256": "dca68dd1a2a96a9d014495872dbf064048e6d2f6ea5a859402e37d9a0e71827a",
+    "bytes": 807533
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

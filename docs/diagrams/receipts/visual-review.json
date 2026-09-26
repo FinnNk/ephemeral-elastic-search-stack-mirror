@@ -1,0 +1,135 @@
+{
+  "reviewed_on": "2026-09-26",
+  "reviewer": "Codex image review",
+  "claim_scope": "Diagram validation and visual inspection only; no lab implementation or performance evidence.",
+  "archify": [
+    {
+      "diagram_type": "workflow",
+      "output": "interactive/change-to-comparison.html",
+      "specification_sha256": "beca6c9f414055db74273b55d455bdf5ad4319e4c6f6a78e69d199147fc97336",
+      "artifact_sha256": "8b874b55d0da6b3c974c485c933ce132d4d5a9bead2933479747ca6d8bafcfdf",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed",
+      "visual_review": "passed",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "observations": "Reviewed mode-neutral preparation and the three check choices. Labels and routes are legible in both themes. Viewer export interactions were not manually exercised."
+    },
+    {
+      "diagram_type": "lifecycle",
+      "output": "interactive/environment-lifecycle.html",
+      "specification_sha256": "b2819962097d4615c6cb0c0909eaec26d78fe6812ecc4148df4a2ace3cec747c",
+      "artifact_sha256": "d09ae2eb8b06c83eda7bc4b73b460e8b69532539c607622822d077691b8f07c3",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed",
+      "visual_review": "passed",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "observations": "Separate frozen definitions, API/result paths, readiness gate, retained definitions and shared-index boundaries reviewed. Viewer export interactions were not manually exercised."
+    },
+    {
+      "diagram_type": "dataflow",
+      "output": "interactive/evaluation-dataflow.html",
+      "specification_sha256": "4a9e5a3ada159da494ae6a332192b8784ffb3f6b8695f4421094045b3bc9d284",
+      "artifact_sha256": "5590f69c13c360b7690db6a7049fc6d2216c00f6acbc7f1ab00b1421dfa66dc1",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed",
+      "visual_review": "passed",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "observations": "Reviewed frozen baseline/candidate paths and the explicit judged-relevance scope. Labels and routes are legible in both themes. Viewer export interactions were not manually exercised."
+    },
+    {
+      "diagram_type": "architecture",
+      "output": "interactive/shared-index-reuse.html",
+      "specification_sha256": "dd05e1d1748947779cc2aeb8b6dee60366b10eb262330d909f7c99643ae4ee9b",
+      "artifact_sha256": "78fbb76566c021c35fea2cea46fda4139da3ee8539d07df2c5e405cbef478926",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed",
+      "visual_review": "passed",
+      "correction_rounds": 1,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "observations": "Separate frozen definitions, API/result paths, readiness gate, retained definitions and shared-index boundaries reviewed. Viewer export interactions were not manually exercised."
+    },
+    {
+      "diagram_type": "workflow",
+      "output": "interactive/result-regression.html",
+      "specification_sha256": "7ea18f2556ac06f64135b72be6fa7a4455aff3068c004893addbaa4ac425990d",
+      "artifact_sha256": "956304b194dbe6d05c9571d02cf8a2f0e11667f7f55951fff44554d1e28ff31f",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed",
+      "visual_review": "passed",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "observations": "Reviewed separate frozen baseline/candidate API paths, ordered-ID evidence, exact equality gate, diagnostic metrics and incomplete-run rule. Labels, routes and both themes are legible without clipping. Viewer export interactions were not manually exercised."
+    },
+    {
+      "diagram_type": "workflow",
+      "output": "interactive/performance-check.html",
+      "specification_sha256": "f51b7b256856c451bac1b8c779de5e998adf4384e4f46f2379ba656fce6112f5",
+      "artifact_sha256": "8985fd205d1fb463cc263eeaa925cb24c1106b438d160909c9f81a76a8f56ea6",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed",
+      "visual_review": "passed",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "observations": "Reviewed pinned compiled workload, replay phases and phase verdict/capacity evidence. Labels and routes are legible in both themes. Viewer export interactions were not manually exercised."
+    },
+    {
+      "diagram_type": "workflow",
+      "output": "interactive/traffic-workload.html",
+      "specification_sha256": "19373c34fc0f86247e6bca2c71d2619df6e2b93aeaa2f7f0508524fdfbe392bf",
+      "artifact_sha256": "dca68dd1a2a96a9d014495872dbf064048e6d2f6ea5a859402e37d9a0e71827a",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed",
+      "visual_review": "passed",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "observations": "Reviewed synthetic trace generation, profile transformations, frozen compiled artifact, shared B/C inputs and phase assessment. Two deterministic readability repairs preceded delivery; no visual repair was needed. Labels and routes are legible in both themes. Viewer export interactions were not manually exercised."
+    }
+  ],
+  "c4": {
+    "validation": "Structurizr validate and SVG/PNG export passed",
+    "visual_review": "passed",
+    "review_scope": "Regenerated all six C4 views. Reviewed the affected evaluation and local/Azure deployment PNGs for the dataset/workload generator, compiled-workload read path and retained artifacts. Context, control and candidate-creation presentation is unchanged from its prior review. SVGs exported from the same model.",
+    "sources": {
+      "workspace.dsl": "f639517e11c7ffbe2b8b401f863064fa83c191105bc063f93eda3bb118d571c6",
+      "layout.mjs": "dc345ad062b81bcd958db1281a04b64608ce16aa1d1402d24b757cb70eca04dd"
+    },
+    "svg_sha256": {
+      "01-context-key.svg": "be9439d77f1889d034468c1a41ef9d943133136dc9713d4dac82171e5de24539",
+      "01-context.svg": "ee4181d5e8d60a87cee086f963f9480127c2c58ff00dbc7586f211b0dba518cd",
+      "02-control-key.svg": "6ab9c155867a388520441206bfa7230e9ad81e2c47d869691725fc116aca2506",
+      "02-control.svg": "49ef55b4998cf2eff155280ca97e26df30a3313038f22e56d27af5036bf4f02b",
+      "03-evaluation-key.svg": "b567dc0262179f88c5f4175d5a14356ee630ab21d18ebe036b1c1709067909d4",
+      "03-evaluation.svg": "50c2e74d0ff630de6a9713309e88cbea237867a708fd9237d85ea331f531b8c4",
+      "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
+      "04-create.svg": "db7c8f1841568fa67c810fd17c150b150fedaa18f23aaef24af4bfc5a7e12c1d",
+      "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
+      "05-local.svg": "01a55a0ba40943b248b46e08b69a1252540c86f8a1dc5b6ec41619bfdc588d8f",
+      "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
+      "06-azure.svg": "d56336b3caf567cd0993637c6bbafcde266fab93d0b05419b4775cf8f88af085"
+    }
+  }
+}

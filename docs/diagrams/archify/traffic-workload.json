@@ -1,0 +1,185 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Freeze synthetic traffic for replay",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "backend": {
+          "label": "Generator / compiler / Gatling"
+        },
+        "database": {
+          "label": "Frozen artifact"
+        },
+        "frontend": {
+          "label": "Profile selection"
+        },
+        "security": {
+          "label": "Phase assessment"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "trace",
+      "label": "Synthetic query and timestamp pairs"
+    },
+    {
+      "id": "profile",
+      "label": "Workload preparation"
+    },
+    {
+      "id": "run",
+      "label": "Baseline and candidate comparison"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "generate",
+      "lane": "trace",
+      "col": 0,
+      "type": "backend",
+      "label": "Generate trace",
+      "sublabel": "Queries + timestamps",
+      "width": 130
+    },
+    {
+      "id": "trace",
+      "lane": "trace",
+      "col": 1,
+      "type": "database",
+      "label": "Freeze trace",
+      "sublabel": "Events + manifest",
+      "width": 130
+    },
+    {
+      "id": "select",
+      "lane": "profile",
+      "col": 1,
+      "type": "frontend",
+      "label": "Select profile",
+      "sublabel": "Windows + phases",
+      "width": 130
+    },
+    {
+      "id": "transform",
+      "lane": "profile",
+      "col": 2,
+      "type": "backend",
+      "label": "Transform load",
+      "sublabel": "Scale / extend / seed",
+      "width": 130
+    },
+    {
+      "id": "compile",
+      "lane": "profile",
+      "col": 3,
+      "type": "backend",
+      "label": "Compile replay",
+      "sublabel": "Arrival / query pairs",
+      "width": 130
+    },
+    {
+      "id": "workload",
+      "lane": "profile",
+      "col": 4,
+      "type": "database",
+      "label": "Freeze workload",
+      "sublabel": "One hashed artifact",
+      "width": 130
+    },
+    {
+      "id": "replay",
+      "lane": "run",
+      "col": 4,
+      "type": "backend",
+      "label": "Replay B then C",
+      "sublabel": "Alternate pair order",
+      "width": 130
+    },
+    {
+      "id": "assess",
+      "lane": "run",
+      "col": 5,
+      "type": "security",
+      "label": "Assess phases",
+      "sublabel": "Budgets + capacity",
+      "width": 130
+    }
+  ],
+  "edges": [
+    {
+      "from": "generate",
+      "to": "trace",
+      "label": "Seeded events",
+      "role": "main"
+    },
+    {
+      "from": "trace",
+      "to": "select",
+      "label": "Pinned release",
+      "role": "main"
+    },
+    {
+      "from": "select",
+      "to": "transform",
+      "label": "Recipe",
+      "role": "main"
+    },
+    {
+      "from": "transform",
+      "to": "compile",
+      "label": "Derived events",
+      "role": "main"
+    },
+    {
+      "from": "compile",
+      "to": "workload",
+      "label": "Frozen bytes",
+      "role": "main"
+    },
+    {
+      "from": "workload",
+      "to": "replay",
+      "label": "Same artifact",
+      "role": "main"
+    },
+    {
+      "from": "replay",
+      "to": "assess",
+      "label": "Measurements",
+      "role": "main"
+    }
+  ],
+  "mainPath": [
+    "generate",
+    "trace",
+    "select",
+    "transform",
+    "compile",
+    "workload",
+    "replay",
+    "assess"
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Normal, sustained peak or stress",
+      "items": [
+        "Each profile starts with a pinned warm-up",
+        "Stress ends with recovery at normal load"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Both APIs use the same compiled bytes",
+      "items": [
+        "Freeze windows, phases, scaling and seed",
+        "Record planned and actual request arrivals"
+      ]
+    }
+  ]
+}

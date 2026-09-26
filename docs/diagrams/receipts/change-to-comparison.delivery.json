@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\change-to-comparison.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\change-to-comparison.html",
+  "specification": {
+    "sha256": "beca6c9f414055db74273b55d455bdf5ad4319e4c6f6a78e69d199147fc97336",
+    "bytes": 3937
+  },
+  "artifact": {
+    "sha256": "8b874b55d0da6b3c974c485c933ce132d4d5a9bead2933479747ca6d8bafcfdf",
+    "bytes": 807332
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

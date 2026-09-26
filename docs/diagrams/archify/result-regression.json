@@ -1,0 +1,198 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Verify that results are unchanged",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "backend": {
+          "label": "API or evaluator"
+        },
+        "database": {
+          "label": "Retained evidence"
+        },
+        "security": {
+          "label": "Exact result check"
+        },
+        "cloud": {
+          "label": "Frozen environment"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "baseline",
+      "label": "Baseline B"
+    },
+    {
+      "id": "candidate",
+      "label": "Candidate C"
+    },
+    {
+      "id": "verdict",
+      "label": "Result comparison"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "b",
+      "lane": "baseline",
+      "col": 0,
+      "type": "cloud",
+      "label": "Frozen B ready",
+      "sublabel": "Own verified definition",
+      "width": 130
+    },
+    {
+      "id": "callb",
+      "lane": "baseline",
+      "col": 1,
+      "type": "backend",
+      "label": "Call Search API",
+      "sublabel": "Full search pipeline",
+      "width": 130
+    },
+    {
+      "id": "resultb",
+      "lane": "baseline",
+      "col": 2,
+      "type": "database",
+      "label": "Capture results",
+      "sublabel": "Ordered product IDs",
+      "width": 130
+    },
+    {
+      "id": "c",
+      "lane": "candidate",
+      "col": 0,
+      "type": "cloud",
+      "label": "Frozen C ready",
+      "sublabel": "Own verified definition",
+      "width": 130
+    },
+    {
+      "id": "callc",
+      "lane": "candidate",
+      "col": 1,
+      "type": "backend",
+      "label": "Call Search API",
+      "sublabel": "Full search pipeline",
+      "width": 130
+    },
+    {
+      "id": "resultc",
+      "lane": "candidate",
+      "col": 2,
+      "type": "database",
+      "label": "Capture results",
+      "sublabel": "Ordered product IDs",
+      "width": 130
+    },
+    {
+      "id": "compare",
+      "lane": "verdict",
+      "col": 3,
+      "type": "backend",
+      "label": "Compare lists",
+      "sublabel": "RBO / Jaccard / moves",
+      "width": 130
+    },
+    {
+      "id": "gate",
+      "lane": "verdict",
+      "col": 4,
+      "type": "security",
+      "label": "Exact match?",
+      "sublabel": "Every query at K",
+      "width": 130
+    },
+    {
+      "id": "report",
+      "lane": "verdict",
+      "col": 5,
+      "type": "database",
+      "label": "Save verdict",
+      "sublabel": "Unchanged / changed",
+      "width": 130
+    }
+  ],
+  "edges": [
+    {
+      "to": "callb",
+      "label": "Same inputs",
+      "role": "branch",
+      "from": "b"
+    },
+    {
+      "to": "resultb",
+      "label": "Final top K",
+      "role": "branch",
+      "from": "callb"
+    },
+    {
+      "to": "compare",
+      "label": "B results",
+      "role": "branch",
+      "from": "resultb"
+    },
+    {
+      "to": "callc",
+      "label": "Same inputs",
+      "role": "main",
+      "from": "c"
+    },
+    {
+      "to": "resultc",
+      "label": "Final top K",
+      "role": "main",
+      "from": "callc"
+    },
+    {
+      "to": "compare",
+      "label": "C results",
+      "role": "main",
+      "from": "resultc"
+    },
+    {
+      "to": "gate",
+      "label": "Ordered IDs",
+      "role": "main",
+      "from": "compare"
+    },
+    {
+      "to": "report",
+      "label": "Verdict + diffs",
+      "role": "main",
+      "from": "gate"
+    }
+  ],
+  "mainPath": [
+    "c",
+    "callc",
+    "resultc",
+    "compare",
+    "gate",
+    "report"
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Same frozen queries and request context",
+      "items": [
+        "Verify both definitions before calling either API",
+        "Reuse compatible resources; keep B and C pinned"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Unchanged means every ordered list matches",
+      "items": [
+        "RBO and Jaccard explain differences at depth K",
+        "Missing or invalid responses block a passing verdict"
+      ]
+    }
+  ]
+}

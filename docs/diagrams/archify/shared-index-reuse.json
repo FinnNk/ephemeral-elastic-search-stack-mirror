@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Two frozen environments share one index",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1120,
+      680
+    ]
+  },
+  "components": [
+    {
+      "id": "bmanifest",
+      "type": "database",
+      "label": "Definition B",
+      "sublabel": "API b1 | index i1",
+      "tag": "assets q1 | data d1 | ES e1",
+      "pos": [
+        100,
+        110
+      ],
+      "size": [
+        210,
+        90
+      ]
+    },
+    {
+      "id": "bapi",
+      "type": "backend",
+      "label": "Baseline API",
+      "sublabel": "Image b1",
+      "tag": "Namespace B",
+      "pos": [
+        430,
+        110
+      ],
+      "size": [
+        210,
+        90
+      ]
+    },
+    {
+      "id": "cmanifest",
+      "type": "database",
+      "label": "Definition C",
+      "sublabel": "API c1 | index i1",
+      "tag": "assets q1 | data d1 | ES e1",
+      "pos": [
+        100,
+        365
+      ],
+      "size": [
+        210,
+        90
+      ]
+    },
+    {
+      "id": "capi",
+      "type": "backend",
+      "label": "Candidate API",
+      "sublabel": "Image c1",
+      "tag": "Namespace C",
+      "pos": [
+        430,
+        365
+      ],
+      "size": [
+        210,
+        90
+      ]
+    },
+    {
+      "id": "index",
+      "type": "database",
+      "label": "Shared index",
+      "sublabel": "Read-only i1",
+      "tag": "Elasticsearch e1",
+      "pos": [
+        790,
+        240
+      ],
+      "size": [
+        210,
+        90
+      ]
+    },
+    {
+      "id": "dataset",
+      "type": "database",
+      "label": "Frozen dataset",
+      "sublabel": "Release d1",
+      "tag": "Retained blob objects",
+      "pos": [
+        790,
+        495
+      ],
+      "size": [
+        210,
+        90
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "Frozen baseline B",
+      "wraps": [
+        "bmanifest",
+        "bapi"
+      ],
+      "pad": 25
+    },
+    {
+      "kind": "security-group",
+      "label": "Frozen candidate C",
+      "wraps": [
+        "cmanifest",
+        "capi"
+      ],
+      "pad": 25
+    }
+  ],
+  "connections": [
+    {
+      "from": "bmanifest",
+      "to": "bapi",
+      "label": "Pinned config"
+    },
+    {
+      "from": "cmanifest",
+      "to": "capi",
+      "label": "Pinned config"
+    },
+    {
+      "from": "bapi",
+      "to": "index",
+      "label": "Read only"
+    },
+    {
+      "from": "capi",
+      "to": "index",
+      "label": "Read only"
+    },
+    {
+      "from": "dataset",
+      "to": "index",
+      "label": "Build once"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "B and C remain separate",
+      "items": [
+        "Each definition pins API, query assets/config, index, dataset and engine",
+        "Only the API image differs in this example"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Shared data stays read-only",
+      "items": [
+        "Each API has scoped credentials for the same frozen index",
+        "A mapping change builds a different index from the frozen dataset"
+      ]
+    }
+  ]
+}
