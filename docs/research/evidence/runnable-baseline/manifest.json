@@ -1,0 +1,23 @@
+{
+  "assumptions": [
+    "All products, brands, queries, prices, popularity and judgements are synthetic.",
+    "Ten categories have fixed, unequal shares; type and brand rotation makes recurring variants.",
+    "Prices follow bounded category-specific log-normal distributions rounded to 25p.",
+    "Availability is a seeded 7% out-of-stock sample; each product has one GB/GBP market.",
+    "Query judgements are rules-based positive examples on available products, not human assessment or exhaustive negatives.",
+    "Popularity is a synthetic decreasing score with seeded noise, not observed traffic."
+  ],
+  "count": 10000,
+  "country": "GB",
+  "currency": "GBP",
+  "fixed_time": "2026-01-01T00:00:00Z",
+  "judgement_count": 1433,
+  "query_count": 50,
+  "release": "retail-gb-10k-v1",
+  "seed": 20260926,
+  "sha256": {
+    "judgements.jsonl": "4f828c0c574aabb71d26e9417e3b48cc47a32587d6a2303a1776d21f08951e23",
+    "products.jsonl": "164ca27a8a12ba5231f8896ca9ac2bd44492d9d341aa0d7c3ddd0c4f61aa434e",
+    "queries.jsonl": "406a1bfb60bb5a3e7b2747151e77b156f85839cdd671a6f09472acd3ad10f298"
+  }
+}

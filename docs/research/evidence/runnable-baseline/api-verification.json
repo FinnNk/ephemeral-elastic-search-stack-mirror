@@ -1,0 +1,8 @@
+{
+  "query_count": 50,
+  "zero_result_queries": 0,
+  "min_total": 16,
+  "max_total": 5033,
+  "market_rejection": 400,
+  "ui_status": 200
+}

@@ -25,7 +25,9 @@ def build_record(run_id):
     return {'run':run_id,'source_sha':runinfo['head_sha'],'image':image,'started_at':job['started_at'],'completed_at':job['completed_at']}
 def provision_access(name,index):
     apply({'apiVersion':'v1','kind':'Namespace','metadata':{'name':name,'labels':{'lab':'search-spike'}}})
-    password=secrets.token_urlsafe(24)
+    existing=k('get','secret/search-access','-n',name,'-o','json',check=False)
+    password=(base64.b64decode(json.loads(existing.stdout)['data']['ES_PASSWORD']).decode()
+              if existing.returncode==0 else secrets.token_urlsafe(24))
     elastic('/_security/role/'+name,'PUT',{'indices':[{'names':[index],'privileges':['read','view_index_metadata']}]})
     elastic('/_security/user/'+name,'PUT',{'password':password,'roles':[name]})
     apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'search-access','namespace':name},'stringData':{'ES_USER':name,'ES_PASSWORD':password}})
@@ -37,9 +39,11 @@ def provision_access(name,index):
         (STATE/'credentials.json').write_text(json.dumps(c),encoding='utf-8')
     docker={'auths':{'gitea.localhost:31800':{'auth':base64.b64encode(('elastic-agent:'+c['read_token']).encode()).decode()}}}
     apply({'apiVersion':'v1','kind':'Secret','type':'kubernetes.io/dockerconfigjson','metadata':{'name':'registry-read','namespace':name},'stringData':{'.dockerconfigjson':json.dumps(docker)}})
-def define(name,image,index='spike-frozen-v1'):
-    dataset=json.loads((EVIDENCE/'dataset.json').read_text())
-    definition={'image':image,'index':index,'dataset_sha256':dataset['sha256'],'engine':'9.5.4'}
+def define(name,image,index='spike-frozen-v1',dataset_sha256=None):
+    if dataset_sha256 is None:
+        dataset=json.loads((EVIDENCE/'dataset.json').read_text())
+        dataset_sha256=dataset['sha256']
+    definition={'image':image,'index':index,'dataset_sha256':dataset_sha256,'engine':'9.5.4'}
     fingerprint=hashlib.sha256(json.dumps(definition,sort_keys=True).encode()).hexdigest()
     entry={**definition,'fingerprint':fingerprint,'environment':name}
     (REPO/'definitions').mkdir(exist_ok=True);(REPO/'environments').mkdir(exist_ok=True)

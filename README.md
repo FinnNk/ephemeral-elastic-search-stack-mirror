@@ -8,12 +8,12 @@ Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram 
 
 ## Current state
 
-The design is merged. An [experimental research harness](research/platform-spike/README.md) now runs local Gitea, Argo CD, Elasticsearch and Floci, with baseline/candidate search APIs and a synthetic diagnostic catalogue.
+The design is merged. An [experimental research harness](research/platform-spike/README.md) runs local Gitea, Argo CD, Elasticsearch and Floci. A [runnable search baseline](lab/README.md) adds a browser page and search API over a frozen, more realistic synthetic UK retail release.
 
 - [Research results](docs/research/platform-spike.md): 20 warm lifecycle trials, API and analyser comparisons, isolation and failure recovery.
 - [Proposed decision](docs/adr/ADR-0001-reconcile-environments-from-git.md): reconcile environments from Git-file ApplicationSets; use k3d provisionally.
 - [Local access](research/platform-spike/README.md#personal-access): named Gitea and Argo CD administrator logins and browser URLs.
-- Next: realistic data, lab API/UI, leases and the complete evaluation workflows. Apple silicon and the million-product scale gate remain untested.
+- Next: comparison environments, evaluation workflows and leases. Apple silicon and the million-product scale gate remain untested.
 
 ## Repository workflow
 
