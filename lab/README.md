@@ -35,3 +35,5 @@ python lab/verify_baseline.py
 The product generator uses unequal category shares, rotating product types and brands, seeded colour/material/availability, bounded category-specific prices and synthetic popularity. The 50 queries span type, colour, brand and material intents. Judgements come from rules applied to available products; they are useful as a repeatable seed, but they are not human relevance labels or exhaustive negatives. No production product or traffic data is used.
 
 This is a baseline search slice. Comparison environments, evaluation reports, Gatling phases, 72-hour leases, automatic teardown, Apple silicon verification and the 1,000,000-product/1,000-query gate remain later batches. The current 10,000-product result counts demonstrate functional behaviour, not relevance quality or production performance.
+
+The later million-product release will use a [versioned ESCI-informed aggregate profile](profiles/esci-informed-uk-v1.json). Its [modelling note](../docs/research/esci-synthetic-calibration.md) separates reference observations from synthetic UK assumptions. It does not change this frozen 10,000-product release.

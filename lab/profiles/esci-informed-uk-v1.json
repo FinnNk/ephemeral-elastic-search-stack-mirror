@@ -1,0 +1,132 @@
+{
+  "generator_decisions": {
+    "categories": "Use published template shares as a starting distribution, with an explicitly modelled UK retail remainder.",
+    "content": "Generate all product text, IDs, brands and queries; copy no source records.",
+    "fields": "Model text lengths, optional metadata and category depth from the English reference aggregates; generate GBP prices and availability independently.",
+    "judgements": "Generate synthetic graded E/S/C/I-style labels with about 20 assessed products per query; never treat unjudged results as irrelevant.",
+    "market": {
+      "country": "GB",
+      "currency": "GBP",
+      "locale": "en-GB"
+    },
+    "versioning": "Apply only to a new release profile; retain retail-gb-10k-v1 byte for byte."
+  },
+  "profile_id": "esci-informed-uk-v1",
+  "published_esci": {
+    "average_judgements_per_query": 20.06,
+    "labels": [
+      "E",
+      "S",
+      "C",
+      "I"
+    ],
+    "large_judgement_count": 2621288,
+    "large_query_count": 130652
+  },
+  "published_full_dataset": {
+    "products": 1661908,
+    "top_template_share_percent": {
+      "apparel": 15.06,
+      "beauty": 4.68,
+      "book": 5.12,
+      "health_and_beauty": 4.39,
+      "home": 5.86,
+      "home_improvement": 5.28,
+      "kitchen": 8.33,
+      "shoes": 4.41,
+      "sports": 5.24,
+      "toy": 4.39
+    },
+    "unlisted_template_share_percent": 37.24
+  },
+  "reference_only": true,
+  "sample": {
+    "all_rows": 4487,
+    "collection_entries": {
+      "attrs": {
+        "p50": 5,
+        "p90": 7
+      },
+      "bullets": {
+        "p50": 6,
+        "p90": 14
+      },
+      "category": {
+        "p50": 4,
+        "p90": 6
+      }
+    },
+    "english_product_or_book_rows": 2919,
+    "field_presence_percent": {
+      "attrs": 57.7,
+      "bullets": 84.8,
+      "category": 94.7,
+      "description": 83.4,
+      "info": 53.8,
+      "price": 29.2,
+      "ratings": 97.6,
+      "reviews": 95.3,
+      "stars": 97.2,
+      "title": 100.0
+    },
+    "filter": "locale=us and type in {product, book}",
+    "text_characters": {
+      "description": {
+        "p50": 1554,
+        "p90": 3763
+      },
+      "title": {
+        "p50": 96,
+        "p90": 187
+      }
+    },
+    "top_templates": [
+      {
+        "count": 518,
+        "name": "apparel"
+      },
+      {
+        "count": 228,
+        "name": "kitchen"
+      },
+      {
+        "count": 176,
+        "name": "home"
+      },
+      {
+        "count": 163,
+        "name": "sports"
+      },
+      {
+        "count": 156,
+        "name": "home_improvement"
+      },
+      {
+        "count": 151,
+        "name": "beauty"
+      },
+      {
+        "count": 145,
+        "name": "health_and_beauty"
+      },
+      {
+        "count": 137,
+        "name": "toy"
+      },
+      {
+        "count": 119,
+        "name": "shoes"
+      },
+      {
+        "count": 110,
+        "name": "book"
+      }
+    ]
+  },
+  "sources": {
+    "esci": "https://github.com/amazon-science/esci-data",
+    "esci_s": "https://github.com/shuttie/esci-s",
+    "sample": "https://media.githubusercontent.com/media/shuttie/esci-s/master/sample.json.gz",
+    "sample_sha256": "c88659e2ed4a9c3ed16487ef27a37ae8dc95226723d6b0ed5dcbd422d587eb55"
+  }
+}

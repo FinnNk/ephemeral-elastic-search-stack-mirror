@@ -214,6 +214,8 @@ A release is an immutable set of content-addressed objects plus a manifest. Exam
 - Query intents and frequencies, original request text and context, graded relevance judgements, judgement-generation method and known biases. Keep original input separate from any API-produced normalisation or rewrite.
 - Optional synthetic click, add-to-basket and purchase events with an explicit behavioural model.
 
+The million-product generator will use the versioned [ESCI-informed synthetic profile](research/esci-synthetic-calibration.md) as a modelling reference. It uses aggregate catalogue shape and judgement depth while generating all product and query records anew. The 10,000-product `retail-gb-10k-v1` release remains unchanged.
+
 Product and release rules:
 
 - **Product fields:** Product records have stable IDs and realistic fields: title, description, brand, category hierarchy, attributes, price with currency, availability, popularity and country.
