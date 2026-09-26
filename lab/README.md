@@ -120,4 +120,17 @@ python lab/reconcile_leases.py --once
 
 The UI now selects two ready environments for **Result preservation** or **Synthetic relevance**. Both modes query the pinned public APIs and save complete reports in Floci by content hash. Result preservation checks exact ordered top tens plus Jaccard/RBO over all 51 requests; relevance scores the 50 judged requests with nDCG@10, Judged@10 and RR@10. An error or missing response produces an incomplete record, never a passing verdict. The UI can reopen saved reports after environments are deleted.
 
-A live baseline-versus-price run changed 50 ordered top tens. The relevance scores matched the earlier frozen evaluation, and repeating that run produced the same report SHA-256. A separate disposable lease was marked expired while the UI was stopped; the independent reconciler removed its namespace in 69 seconds. That exercises the expiry path without claiming that 72 hours elapsed. The [comparison evidence](../docs/research/evidence/lifecycle-comparison/summary.json) and [expiry evidence](../docs/research/evidence/lifecycle-comparison/expiry.json) retain the results. The later [identity and removal measurement](../docs/research/evidence/lifecycle-measurement/README.md) verified named access and measured 20/20 successful warm deletions, with p95 53.844 seconds. The [next batch](../docs/plans/index-change.md) adds dedicated index changes.
+A live baseline-versus-price run changed 50 ordered top tens. The relevance scores matched the earlier frozen evaluation, and repeating that run produced the same report SHA-256. A separate disposable lease was marked expired while the UI was stopped; the independent reconciler removed its namespace in 69 seconds. That exercises the expiry path without claiming that 72 hours elapsed. The [comparison evidence](../docs/research/evidence/lifecycle-comparison/summary.json) and [expiry evidence](../docs/research/evidence/lifecycle-comparison/expiry.json) retain the results. The later [identity and removal measurement](../docs/research/evidence/lifecycle-measurement/README.md) verified named access and measured 20/20 successful warm deletions, with p95 53.844 seconds. The index-change workflow is described below.
+
+## Compare a frozen index change
+
+Choose **Dedicated title-keyword-v1 index** in the control UI when creating a candidate. The mapping is versioned in [`mappings/title-keyword-v1.json`](mappings/title-keyword-v1.json); it maps `title` as `keyword` instead of `text`. The lifecycle builds a separate index from the canonical Floci release with a finite indexing Job, verifies its mapping, count and write block, and then deploys the pinned API with an index-scoped read credential. The candidate fingerprint includes the mapping hash. The shared-index option remains the default.
+
+Two reproducible walkthroughs exercise the lifecycle directly and through the authenticated control API:
+
+```powershell
+python lab/verify_index_change.py
+python lab/verify_index_http.py
+```
+
+The direct run compared both public API modes: 20 of 51 ordered top tens changed, and synthetic nDCG@10 moved from 0.911474 to 0.899054. It removed the candidate index and both namespaces; the shared baseline retained 10,000 products and its write block. See the [evidence and limits](../docs/research/evidence/index-change.md). The UI uses the same control API create, compare and delete routes.

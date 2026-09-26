@@ -3,7 +3,8 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from lifecycle import LEASE, Lifecycle, Store, parse_stamp, wait_correct_search
+from lifecycle import INDEX_KIND, LEASE, Lifecycle, Store, parse_stamp, wait_correct_search
+from index_candidate import index_name, mapping_contract
 
 
 class FakeBackend:
@@ -103,6 +104,17 @@ class LifecycleContract(unittest.TestCase):
     def test_search_readiness_retries_after_argo_health(self):
         answers = iter([None, {'ids': []}, {'ids': list(range(10))}])
         self.assertEqual(len(wait_correct_search('lab-test', lambda _name, _query: next(answers), 5)['ids']), 10)
+
+    def test_dedicated_index_request_is_pinned_and_cannot_change_in_place(self):
+        row = self.service.create('lab-mapped', 3, index_kind=INDEX_KIND)
+        persisted = Store(self.store.path).get(row['id'])
+        self.assertEqual(persisted['index_name'], index_name('lab-mapped'))
+        self.assertEqual(persisted['mapping_sha256'], mapping_contract()[1])
+        self.assertEqual(self.service.create('lab-mapped', 3, index_kind=INDEX_KIND)['id'], row['id'])
+        with self.assertRaises(ValueError):
+            self.service.create('lab-mapped', 3, index_kind='shared')
+        with self.assertRaises(ValueError):
+            self.service.create('lab-other', 3, index_kind='unknown')
 
     def test_comparison_is_persisted_and_incomplete_cannot_pass(self):
         baseline = self.service.create('lab-baseline', 3)

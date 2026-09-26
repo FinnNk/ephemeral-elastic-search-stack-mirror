@@ -39,11 +39,12 @@ def provision_access(name,index):
         (STATE/'credentials.json').write_text(json.dumps(c),encoding='utf-8')
     docker={'auths':{'gitea.localhost:31800':{'auth':base64.b64encode(('elastic-agent:'+c['read_token']).encode()).decode()}}}
     apply({'apiVersion':'v1','kind':'Secret','type':'kubernetes.io/dockerconfigjson','metadata':{'name':'registry-read','namespace':name},'stringData':{'.dockerconfigjson':json.dumps(docker)}})
-def define(name,image,index='spike-frozen-v1',dataset_sha256=None):
+def define(name,image,index='spike-frozen-v1',dataset_sha256=None,mapping_sha256=None):
     if dataset_sha256 is None:
         dataset=json.loads((EVIDENCE/'dataset.json').read_text())
         dataset_sha256=dataset['sha256']
     definition={'image':image,'index':index,'dataset_sha256':dataset_sha256,'engine':'9.5.4'}
+    if mapping_sha256 is not None:definition['mapping_sha256']=mapping_sha256
     fingerprint=hashlib.sha256(json.dumps(definition,sort_keys=True).encode()).hexdigest()
     entry={**definition,'fingerprint':fingerprint,'environment':name}
     (REPO/'definitions').mkdir(exist_ok=True);(REPO/'environments').mkdir(exist_ok=True)

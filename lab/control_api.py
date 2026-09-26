@@ -169,7 +169,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.sessions.discard(self.headers.get('Cookie'))
                 return self.send_json(200, {'signed_out': True}, {'Set-Cookie': expired_cookie()})
             if parts == ['api', 'environments']:
-                row = self.controller.create(payload['name'], payload['build_run'], owner=identity['username'])
+                row = self.controller.create(payload['name'], payload['build_run'], owner=identity['username'],
+                                             index_kind=payload.get('index_kind', 'shared'))
                 return self.send_json(201 if row['state'] == 'ready' else 202, row)
             if parts == ['api', 'comparisons']:
                 first = self.controller.store.get(payload['baseline_id'])

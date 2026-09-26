@@ -1,0 +1,124 @@
+{
+  "build_run": 6,
+  "baseline": "lab-index-baseline",
+  "candidate": "lab-index-candidate",
+  "dataset": "retail-gb-10k-v1",
+  "index_kind": "title-keyword-v1",
+  "lab-index-baseline_create_seconds": 4.562,
+  "lab-index-baseline_state": "ready",
+  "lab-index-candidate_create_seconds": 15.094,
+  "lab-index-candidate_state": "ready",
+  "candidate_index": "lab-index-candidate-idx",
+  "mapping_sha256": "ea454d0e1ff65d2abc5668514cc07583528fa51106ba00b8cbc1e01c8842cdfb",
+  "mapping_matches": true,
+  "count": 10000,
+  "write_blocked": true,
+  "access": {
+    "baseline_read_denied": true,
+    "candidate_write_denied": true
+  },
+  "result_comparison": {
+    "state": "complete",
+    "verdict": "changed",
+    "report_sha256": "b468686f67aa092ccb50c4eef8218358af2cafda264e9f69f6d1bb8db6faaeb7",
+    "report_blob": "runs/b468686f67aa092ccb50c4eef8218358af2cafda264e9f69f6d1bb8db6faaeb7/controlled-comparison.json",
+    "summary": {
+      "changed_query_ids": [
+        "q002",
+        "q003",
+        "q007",
+        "q008",
+        "q012",
+        "q013",
+        "q017",
+        "q018",
+        "q022",
+        "q023",
+        "q027",
+        "q028",
+        "q032",
+        "q033",
+        "q037",
+        "q038",
+        "q042",
+        "q043",
+        "q047",
+        "q048"
+      ],
+      "complete": true,
+      "completed_query_count": 51,
+      "errors": [],
+      "metrics": null,
+      "mode": "result-regression",
+      "query_count": 51,
+      "report_blob": "runs/b468686f67aa092ccb50c4eef8218358af2cafda264e9f69f6d1bb8db6faaeb7/controlled-comparison.json",
+      "report_sha256": "b468686f67aa092ccb50c4eef8218358af2cafda264e9f69f6d1bb8db6faaeb7",
+      "verdict": "changed",
+      "zero_result_counts": {
+        "baseline": 1,
+        "candidate": 1
+      }
+    }
+  },
+  "relevance_comparison": {
+    "state": "complete",
+    "verdict": "measured",
+    "report_sha256": "eb6879b6491ca845ab9ea4891135ef9fa8c85a1e3faa944ccb68bbee50648dea",
+    "report_blob": "runs/eb6879b6491ca845ab9ea4891135ef9fa8c85a1e3faa944ccb68bbee50648dea/controlled-comparison.json",
+    "summary": {
+      "changed_query_ids": [
+        "q002",
+        "q003",
+        "q007",
+        "q008",
+        "q012",
+        "q013",
+        "q017",
+        "q018",
+        "q022",
+        "q023",
+        "q027",
+        "q028",
+        "q032",
+        "q033",
+        "q037",
+        "q038",
+        "q042",
+        "q043",
+        "q047",
+        "q048"
+      ],
+      "complete": true,
+      "completed_query_count": 50,
+      "errors": [],
+      "metrics": {
+        "baseline": {
+          "Judged@10": 0.888,
+          "RR(rel=2)@10": 1.0,
+          "nDCG@10": 0.911474
+        },
+        "candidate": {
+          "Judged@10": 1.0,
+          "RR(rel=2)@10": 1.0,
+          "nDCG@10": 0.899054
+        }
+      },
+      "mode": "relevance",
+      "query_count": 50,
+      "report_blob": "runs/eb6879b6491ca845ab9ea4891135ef9fa8c85a1e3faa944ccb68bbee50648dea/controlled-comparison.json",
+      "report_sha256": "eb6879b6491ca845ab9ea4891135ef9fa8c85a1e3faa944ccb68bbee50648dea",
+      "verdict": "measured",
+      "zero_result_counts": {
+        "baseline": 0,
+        "candidate": 0
+      }
+    }
+  },
+  "lab-index-candidate_delete_seconds": 49.828,
+  "lab-index-candidate_final_state": "deleted",
+  "lab-index-baseline_delete_seconds": 49.469,
+  "lab-index-baseline_final_state": "deleted",
+  "candidate_index_removed": true,
+  "baseline_count_unchanged": true,
+  "baseline_write_blocked": true
+}
