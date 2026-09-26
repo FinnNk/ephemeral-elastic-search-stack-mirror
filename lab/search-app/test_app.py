@@ -28,6 +28,21 @@ class SearchContract(unittest.TestCase):
         self.assertNotIn('description', response['results'][0])
         self.assertEqual(response['elapsed_ms'], 12.346)
 
+    def test_diagnostics_do_not_change_query_or_result(self):
+        self.assertEqual(app.understand('cotton shirt'), ('cotton shirt', 'none'))
+        self.assertEqual(app.query_body('cotton shirt', 'GB', 'GBP')['query']['bool']['must'][0]['multi_match']['query'], 'cotton shirt')
+        self.assertEqual(app.diagnostic_options('/search?q=shirt&diagnostics=1&request_id=q001-base'), 'q001-base')
+        self.assertIsNone(app.diagnostic_options('/search?q=shirt'))
+        with self.assertRaises(ValueError):
+            app.diagnostic_options('/search?q=shirt&diagnostics=1&request_id=bad%20id')
+        hit = {'_source': {'product_id': 'gb-000001'}}
+        record = app.diagnostic_record(' shirt ', 'shirt', app.query_body('shirt', 'GB', 'GBP'),
+                                       {'hits': {'hits': [hit]}}, 'q001-base', 12.5, 8.1)
+        self.assertEqual(record['retrieved_ids'], ['gb-000001'])
+        self.assertEqual(record['rewrite'], 'none')
+        self.assertEqual(record['unavailable_stages'], ['reranker'])
+        self.assertEqual(len(record['elasticsearch_request_sha256']), 64)
+
 
 if __name__ == '__main__':
     unittest.main()
