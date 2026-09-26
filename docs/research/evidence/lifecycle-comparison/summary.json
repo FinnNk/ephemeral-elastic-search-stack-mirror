@@ -1,0 +1,33 @@
+{
+  "baseline_fingerprint": "b32669b1945bbb8abd325270ded51a783e632954874fcb23f7e6dd3e0e170c34",
+  "baseline_source_sha": "e333d1b01744372110fa576a8bcaa80db78def13",
+  "candidate_fingerprint": "c6ceec19d5a246b7f0354445184229dd41a5178e7e9e84a6bf7b1b3d91b023d0",
+  "candidate_source_sha": "86d476d1793476d4e2a6242e368dd88b7f53f250",
+  "final_states": [
+    "deleted",
+    "deleted"
+  ],
+  "relevance": {
+    "metrics": {
+      "baseline": {
+        "Judged@10": 0.888,
+        "RR(rel=2)@10": 1.0,
+        "nDCG@10": 0.911474
+      },
+      "candidate": {
+        "Judged@10": 0.178,
+        "RR(rel=2)@10": 0.25869,
+        "nDCG@10": 0.170948
+      }
+    },
+    "query_count": 50,
+    "repeat_report_sha256": "d52702ee452eadf0c4ff256a8abdcf715f009e16356f81f93ea51e56bdaf6407",
+    "report_sha256": "d52702ee452eadf0c4ff256a8abdcf715f009e16356f81f93ea51e56bdaf6407",
+    "verdict": "measured"
+  },
+  "result_regression": {
+    "changed_query_count": 50,
+    "report_sha256": "b34ec93758cafe9de44e3df3491c38e1dd7067e2630d9a46bb0885c8af6e9dce",
+    "verdict": "changed"
+  }
+}

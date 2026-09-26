@@ -1,6 +1,6 @@
 # Environment lifecycle and UI plan
 
-This plan was split into a [reviewable foundation](../research/evidence/lifecycle-foundation/summary.json) and the [lifecycle completion batch](lifecycle-completion.md). The acceptance criteria below describe the complete workflow; the foundation alone does not meet all of them.
+This plan was split into a [reviewable foundation](../research/evidence/lifecycle-foundation/summary.json), [controlled comparisons and independent expiry](../research/evidence/lifecycle-comparison/summary.json), and the [identity and measurement batch](lifecycle-identity-and-measurement.md). The acceptance criteria below describe the complete workflow; the first slices alone do not meet all of them.
 
 ## Intent
 

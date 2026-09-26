@@ -47,6 +47,11 @@ class Store:
                 state TEXT NOT NULL, created_at TEXT NOT NULL, last_activity_at TEXT NOT NULL,
                 expires_at TEXT NOT NULL, updated_at TEXT NOT NULL,
                 error TEXT, deleted_at TEXT)''')
+            db.execute('''CREATE TABLE IF NOT EXISTS comparisons (
+                id TEXT PRIMARY KEY, baseline_id TEXT NOT NULL, candidate_id TEXT NOT NULL,
+                mode TEXT NOT NULL, state TEXT NOT NULL, created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL, report_sha256 TEXT, report_blob TEXT,
+                verdict TEXT, summary TEXT, error TEXT)''')
 
     @contextmanager
     def connection(self):
@@ -88,6 +93,41 @@ class Store:
                        [*fields.values(), instance_id])
         return self.get(instance_id)
 
+    def claim_delete(self, instance_id, now):
+        stale = stamp(now - timedelta(minutes=2))
+        with self.connection() as db:
+            result = db.execute('''UPDATE environments SET state='deleting', updated_at=?, error=NULL
+                WHERE id=? AND (state NOT IN ('deleting','deleted')
+                OR (state='deleting' AND (error IS NOT NULL OR updated_at<=?)))''',
+                (stamp(now), instance_id, stale))
+        return result.rowcount == 1
+
+    def put_comparison(self, row):
+        columns = list(row)
+        with self.connection() as db:
+            db.execute('INSERT OR REPLACE INTO comparisons (' + ','.join(columns) + ') VALUES (' +
+                       ','.join('?' for _ in columns) + ')', [row[key] for key in columns])
+        return row
+
+    def get_comparison(self, comparison_id):
+        with self.connection() as db:
+            row = db.execute('SELECT * FROM comparisons WHERE id=?', (comparison_id,)).fetchone()
+        value = dict(row) if row else None
+        if value and value['summary']:
+            value['summary'] = json.loads(value['summary'])
+        return value
+
+    def all_comparisons(self):
+        with self.connection() as db:
+            rows = db.execute('SELECT id FROM comparisons ORDER BY created_at DESC').fetchall()
+        return [self.get_comparison(row['id']) for row in rows]
+
+    def update_comparison(self, comparison_id, **fields):
+        with self.connection() as db:
+            db.execute('UPDATE comparisons SET ' + ','.join(key + '=?' for key in fields) + ' WHERE id=?',
+                       [*fields.values(), comparison_id])
+        return self.get_comparison(comparison_id)
+
 
 class LabBackend:
     def build(self, run_id):
@@ -127,9 +167,10 @@ class LabBackend:
 
 
 class Lifecycle:
-    def __init__(self, store, backend, clock=utcnow):
+    def __init__(self, store, backend, clock=utcnow, comparator=None):
         self.store, self.backend, self.clock = store, backend, clock
         self.lock = threading.RLock()
+        self.comparator = comparator
 
     def create(self, name, build_run, owner='local-operator'):
         if not NAME_PATTERN.fullmatch(name):
@@ -197,7 +238,8 @@ class Lifecycle:
                 raise KeyError(instance_id)
             if row['state'] == 'deleted':
                 return row
-            self.store.update(instance_id, state='deleting', updated_at=stamp(self.clock()))
+            if not self.store.claim_delete(instance_id, self.clock()):
+                return self.store.get(instance_id)
             try:
                 self.backend.delete(row)
             except Exception as error:
@@ -216,6 +258,43 @@ class Lifecycle:
             elif row['state'] in ('requested', 'provisioning'):
                 expired.append(self.reconcile(row['id']))
         return expired
+
+    def compare(self, baseline_id, candidate_id, mode):
+        if baseline_id == candidate_id:
+            raise ValueError('Select two distinct environments.')
+        with self.lock:
+            baseline = self.store.get(baseline_id)
+            candidate = self.store.get(candidate_id)
+            if baseline is None or candidate is None:
+                raise KeyError('Environment not found.')
+            if baseline['state'] != 'ready' or candidate['state'] != 'ready':
+                raise ValueError('Both environments must be ready.')
+            if self.clock() >= parse_stamp(baseline['expires_at']) or self.clock() >= parse_stamp(candidate['expires_at']):
+                raise ValueError('An environment lease has expired.')
+            if mode not in ('result-regression', 'relevance'):
+                raise ValueError('Unknown comparison mode.')
+            self.activity(baseline_id)
+            self.activity(candidate_id)
+            now = stamp(self.clock())
+            comparison_id = str(uuid.uuid4())
+            self.store.put_comparison({'id': comparison_id, 'baseline_id': baseline_id,
+                'candidate_id': candidate_id, 'mode': mode, 'state': 'running',
+                'created_at': now, 'updated_at': now, 'report_sha256': None,
+                'report_blob': None, 'verdict': None, 'summary': None, 'error': None})
+            try:
+                if self.comparator is None:
+                    from control_comparison import evaluate_pair
+                    summary = evaluate_pair(baseline, candidate, mode)
+                else:
+                    summary = self.comparator(baseline, candidate, mode)
+            except Exception as error:
+                return self.store.update_comparison(comparison_id, state='failed',
+                    updated_at=stamp(self.clock()), error=type(error).__name__ + ': ' + str(error))
+            return self.store.update_comparison(comparison_id,
+                state='complete' if summary['complete'] else 'incomplete',
+                updated_at=stamp(self.clock()), report_sha256=summary['report_sha256'],
+                report_blob=summary['report_blob'], verdict=summary['verdict'],
+                summary=json.dumps(summary, sort_keys=True))
 
 
 def local_lifecycle():

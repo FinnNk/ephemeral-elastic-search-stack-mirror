@@ -1,0 +1,9 @@
+{
+  "cleanup_observed_seconds": 69.203,
+  "expiry_simulated": true,
+  "instance_id": "faf9264f-f2e6-4b54-b544-c88897567796",
+  "name": "lab-expiry-demo",
+  "namespace_absent": true,
+  "standalone_reconciler_deleted": true,
+  "ui_stopped": true
+}
