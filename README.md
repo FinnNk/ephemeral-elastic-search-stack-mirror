@@ -6,16 +6,16 @@ The [prototype design](docs/prototype-design.md) defines the architecture, quant
 
 Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram guide](docs/diagrams/README.md) for six Structurizr C4 views and seven interactive Archify views, with editable sources and rendering instructions.
 
-The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches and links the [next detailed plan](docs/plans/environment-lifecycle.md).
+The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches and links the [next detailed plan](docs/plans/lifecycle-completion.md).
 
 ## Current state
 
-The design is merged. An [experimental research harness](research/platform-spike/README.md) runs local Gitea, Argo CD, Elasticsearch and Floci. The [runnable lab slice](lab/README.md) adds browser pages and search APIs over a frozen synthetic UK retail release. It compares query-understanding and ranking changes through the public APIs, with correlated diagnostic evidence for a result-preserving refactor and a deliberate rewrite.
+The design is merged. An [experimental research harness](research/platform-spike/README.md) runs local Gitea, Argo CD, Elasticsearch and Floci. The [runnable lab slice](lab/README.md) adds browser pages and search APIs over a frozen synthetic UK retail release. It compares query-understanding and ranking changes through the public APIs, with correlated diagnostic evidence. A loopback control UI now creates, searches and removes pinned API environments with durable leases.
 
 - [Research results](docs/research/platform-spike.md): 20 warm lifecycle trials, API and analyser comparisons, isolation and failure recovery.
 - [Proposed decision](docs/adr/ADR-0001-reconcile-environments-from-git.md): reconcile environments from Git-file ApplicationSets; use k3d provisionally.
 - [Local access](research/platform-spike/README.md#personal-access): named Gitea and Argo CD administrator logins and browser URLs.
-- Next: environment lifecycle and UI, index-change comparison, Gatling profiles and scale validation. Apple silicon remains untested.
+- Next: complete lifecycle comparisons and expiry evidence, then index-change comparison, Gatling profiles and scale validation. Apple silicon remains untested.
 
 ## Repository workflow
 

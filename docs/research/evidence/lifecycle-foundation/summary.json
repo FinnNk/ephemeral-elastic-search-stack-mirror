@@ -1,0 +1,12 @@
+{
+  "create_seconds": 6.703,
+  "fingerprint": "b32669b1945bbb8abd325270ded51a783e632954874fcb23f7e6dd3e0e170c34",
+  "image": "gitea.localhost:31800/elastic-agent/search-spike@sha256:0938c56583f28d0c87d49ad8ded0734a6c0611228fdefa6649a30d4b8e1c18fc",
+  "name": "lab-ui-demo",
+  "polling_preserved_expiry": true,
+  "remove_seconds": 51.562,
+  "repeat_delete_state": "deleted",
+  "search_recorded_activity": true,
+  "search_result_count": 494,
+  "source_sha": "e333d1b01744372110fa576a8bcaa80db78def13"
+}
