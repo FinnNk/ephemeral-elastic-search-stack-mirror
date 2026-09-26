@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: floci-data
+  namespace: platform
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: floci
+  namespace: platform
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: floci
+  template:
+    metadata:
+      labels:
+        app: floci
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: floci
+          image: floci/floci-az:0.13.0
+          env:
+            - name: FLOCI_AZ_STORAGE_MODE
+              value: wal
+          ports:
+            - containerPort: 4577
+          readinessProbe:
+            tcpSocket:
+              port: 4577
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: '1'
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: floci-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: floci
+  namespace: platform
+spec:
+  selector:
+    app: floci
+  ports:
+    - port: 4577

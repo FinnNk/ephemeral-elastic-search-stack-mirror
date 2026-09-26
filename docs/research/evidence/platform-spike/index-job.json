@@ -1,0 +1,14 @@
+{
+  "index": "spike-analyser-v2",
+  "dataset_sha256": "c438655f41953fbd55e4595155e275c7e9a7a713edff479df9bdc21f0779c364",
+  "count": 10000,
+  "seconds": 7.172,
+  "query_model_hits": {
+    "spike-frozen-v1": 10000,
+    "spike-analyser-v2": 0
+  },
+  "blob_access": "15-minute read SAS for one object",
+  "es_privileges": "write on dedicated index only",
+  "write_block_after_indexing": true,
+  "sample_size": 1
+}

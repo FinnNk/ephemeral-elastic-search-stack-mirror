@@ -2,3 +2,8 @@
 docs/diagrams/.structurizr/
 docs/diagrams/qa/
 docs/diagrams/interactive/*.visual-check.*
+
+# Local research tools, cluster credentials and runtime data
+.lab/
+__pycache__/
+*.pyc

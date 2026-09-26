@@ -30,7 +30,7 @@ Provisional first-slice targets on a warm local cluster:
 - Preserve identical ordered top-10 product IDs for every frozen query after a behaviour-preserving change.
 - Sustain **10 search requests/second** for five measured minutes per side with **p95 ≤ 250 ms**, **p99 ≤ 500 ms** and **< 1% failed requests**, under the constant-rate Gatling smoke profile below. Trace-derived normal, peak and stress profiles have separate durations and budgets.
 
-These are hypotheses to test, not measured results. The detailed target table defines measurement conditions, including the distinction between environment start and the full Gitea build-to-preview path.
+These remain provisional acceptance targets. The [platform research](research/platform-spike.md) measured warm creation at p50 7.54 seconds / p95 8.16 seconds over 20 diagnostic trials. The realistic dataset, lab API and complete build-to-preview path still need acceptance measurements. The detailed target table defines their conditions.
 
 This is a relevance lab, not a production commerce platform. All products, queries, judgements and behavioural events are synthetic. Their modelling assumptions must travel with each dataset release.
 
@@ -48,13 +48,13 @@ The initial architecture is maintained as a [Structurizr C4 model](diagrams/work
 | [Local deployment](diagrams/rendered/05-local.svg) | Persistent and ephemeral workloads |
 | [Azure migration](diagrams/rendered/06-azure.svg) | Proposed deployment on Azure |
 
-These are proposed structures; the research batch still determines the open implementation choices.
+These are proposed structures for the complete lab. The [platform research](research/platform-spike.md) recommends Git-file ApplicationSets and a provisional k3d bootstrap; the lab API, UI and lease controller remain to be implemented.
 
 | Need | Existing component | Lab-specific code |
 | --- | --- | --- |
-| Local Kubernetes | k3d or kind, selected by a Windows and Apple silicon smoke test | Bootstrap script and configuration |
+| Local Kubernetes | k3d provisionally; kind also passed Windows isolation checks; native Apple silicon verification pending | Bootstrap script and configuration |
 | Elasticsearch management | Elastic Cloud on Kubernetes (ECK), installed once | Shared cluster specification and exception path for version experiments |
-| Packaging and environment resources | Argo CD, Helm and ordinary Kubernetes Deployments, Jobs, Services, Secrets, namespaces and quotas | A small lab API to record experiments and leases; determine how it supplies desired state to Argo CD |
+| Packaging and environment resources | Argo CD Git-file ApplicationSets, Helm and ordinary Kubernetes resources | A small lab API to record experiments and leases and publish desired state with conflict retries |
 | Azure-compatible object storage | Floci AZ Blob Storage locally; Azure Blob Storage in AKS | Storage endpoint adapter and immutable artifact conventions |
 | Relevance metrics | An established information-retrieval metrics library applied to search API responses; Elasticsearch `_rank_eval` only for retrieval-stage diagnosis | Comparison orchestration, stage evidence, report format and UI |
 | Result preservation | Established ranking-similarity library plus ordered-ID equality | Exact verdict, per-query differences and pinned RBO/Jaccard settings |
@@ -65,7 +65,7 @@ These are proposed structures; the research batch still determines the open impl
 Argo CD is already used in the target production system and is a design constraint for the prototype.
 
 - **Deployment:** Use Argo CD to reconcile environment workloads.
-- **Desired state:** The research spike must choose between ApplicationSet's Git file and plugin generators for on-demand environments; if Git files win, keep desired environment state in a dedicated Gitea repository and measure commit-to-sync latency.
+- **Desired state:** The [proposed decision](adr/ADR-0001-reconcile-environments-from-git.md) uses Git-file ApplicationSets and a dedicated Gitea repository. The lab API publishes active entries, triggers refresh and retains immutable definitions after deletion. Serialize Git writes with bounded conflict retries; polling recovers missed refreshes.
 - **Lab metadata:** The lab API remains responsible for dataset fingerprints, leases and comparison state.
 - **Finite work:** Kubernetes Jobs cover finite indexing, evaluation and Gatling load tests. Evaluation jobs score relevance, check result preservation and compare retained load reports; separate Gatling jobs generate HTTP traffic. Comparison jobs run in a lab-owned namespace with scoped access to both endpoints and the relevant artifacts.
 - **Workflow complexity:** Do not introduce another operator, workflow engine, queue or service mesh without evidence. Reconsider Argo Workflows only if the observed workflow needs retries, fan-out or auditability beyond Jobs.
@@ -91,6 +91,7 @@ The first end-to-end walkthrough is:
 
    - A local runner tests the change, builds a multi-architecture capable image and pushes it to Gitea's OCI registry.
    - Capture the source commit SHA and pushed image digest. A digest, rather than a mutable branch name or tag, is the version an environment executes.
+   - Retain each build under a unique source-SHA/run/attempt tag and verify digest availability. The spike demonstrated that replacing a SHA tag could leave the older digest unavailable.
    - Document where the runner obtains base images and build dependencies; mirror or cache them if the lab must also work offline after bootstrap.
 
 3. **Register the candidate.**
@@ -128,7 +129,7 @@ The [Gitea lifecycle and migration note](research/gitea-lifecycle.md) records in
 
 ## Research before implementation
 
-Run a short, decision-oriented research batch before building the lab API. Its output is a decision record, an open source tool comparison, measured spike results and a revised target table. Plan for roughly two to three working days of investigation and small executable spikes; extend only when evidence shows a critical uncertainty cannot yet be resolved.
+The [platform research report](research/platform-spike.md) records the executed probes, tool comparison and proposed decision. It recommends the Argo CD-native path and retains the provisional targets. Native Apple silicon execution, full controller recovery and scale tests remain explicit gates. The original research scope below explains what was assessed.
 
 | Pattern to assess | What it provides | Why it might or might not fit |
 | --- | --- | --- |
@@ -535,7 +536,7 @@ The first slice should be usable without a terminal after bootstrap.
 
 - **Warm platform:** Keep Kubernetes, ECK, the shared Elasticsearch cluster and Floci running between environment creations. Pre-pull or cache images.
 - **Fast and indexing paths:** API, query-understanding and ranking changes should create a search API deployment that points to an already indexed frozen release; mapping changes run an indexing Job.
-- **Snapshot option:** Try compatible snapshot restore against Floci only after an end-to-end repository verification; otherwise bulk index from the canonical release. Do not assume a snapshot is always faster at the target size.
+- **Snapshot option:** Bulk index from the canonical release by default. Floci 0.13.0 failed Elasticsearch 9.5.3 repository verification on batch deletion; restore was not reached. Reconsider snapshot acceleration only after compatibility passes, then measure it at the target size.
 
 Measure startup and removal separately:
 
@@ -594,8 +595,8 @@ Scale gate for the completed prototype:
 
 Each batch is committed to a branch for review. After acceptance, merge it to `main`; do not leave uncommitted changes on `main`.
 
-1. **Design (this batch):** architecture, research shortlist, provisional targets, data contract, lifecycle, scale gates and evidence sources.
-2. **Research spike:** install local Gitea and a runner; demonstrate a branch-to-digest build and compare Argo CD-native namespace/Helm with only environment platforms that can support Gitea; decide the local cluster and record target revisions.
+1. **Design — merged:** architecture, research shortlist, provisional targets, data contract, lifecycle, scale gates and evidence sources.
+2. **Research spike — for review:** local Gitea/runner, real builds and searches, Git/plugin comparison, namespace and index isolation, failure cleanup, analyser/version probes and measured timings. See the [results and remaining gates](research/platform-spike.md).
 3. **Runnable search slice:** local bootstrap, Gitea, Floci Blob Storage, synthetic 10,000-product release, shared Elasticsearch, baseline search API and UI. Verify a real search end to end.
 4. **Experiments:** isolated environment records and credentials, candidate search API and query-understanding revisions, ranking configurations, side-by-side search, all three comparison modes (including Gatling), frozen synthetic traces and compiled normal/peak/stress profiles, their acceptance examples and three-day lifecycle.
 5. **Index changes and scale:** reproducible index builds, one-million-product release, 1,000 queries, measured startup optimisation and 40-environment control-plane exercise.
@@ -603,8 +604,8 @@ Each batch is committed to a branch for review. After acceptance, merge it to `m
 
 ## Decisions to verify during implementation
 
-- Compare k3d and kind on this Windows machine and Apple silicon before selecting the default bootstrap path. The current machine reports Windows x64, 96 GiB RAM and 32 logical CPUs. Docker was available during diagram rendering, but no lab runtime capacity or startup claim has been tested.
-- Verify Floci's Azure Blob SDK operations used by the lab, and separately test whether Elasticsearch can use it as an Azure snapshot repository. Use immutable canonical objects regardless of snapshot outcome.
+- Verify the provisional k3d bootstrap natively on Apple silicon. k3d and kind passed the Windows cross-node NetworkPolicy/RBAC probes on the 96 GiB / 32-logical-CPU host; the research report records actual timings and resource use.
+- Extend the successful Floci Blob/hash/conditional-create checks with negative SAS and expiry tests. Keep canonical objects immutable; snapshot acceleration is unavailable on the tested version combination.
 - Validate which index-level security privileges and ECK configuration are available under the organisation's intended self-managed licence. A shared cluster reduces cluster count; it does not itself settle contractual licensing terms.
 - Validate Gatling image portability, report parsing, event-to-arrival binding and generator headroom; calibrate bucket width, scheduling lateness, phase budgets and noise thresholds on the documented hardware.
 - Choose the metadata store for the 40+ environment path after measuring SQLite contention and deployment topology. The API must keep its metadata behind a repository interface so a PostgreSQL migration is straightforward if needed.

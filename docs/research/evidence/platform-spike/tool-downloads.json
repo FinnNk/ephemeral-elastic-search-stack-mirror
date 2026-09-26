@@ -1,0 +1,17 @@
+[
+  {
+    "tool": "k3d.exe",
+    "url": "https://github.com/k3d-io/k3d/releases/download/v5.9.0/k3d-windows-amd64.exe",
+    "download_sha256": "49d0b9c796f5b8ba6f58a1dd5469e8b7b34bf9b6ce9078633eedb2789680a034"
+  },
+  {
+    "tool": "kind.exe",
+    "url": "https://github.com/kubernetes-sigs/kind/releases/download/v0.33.0/kind-windows-amd64",
+    "download_sha256": "4b22adaa135368c5a465d56bbd8e520cbea87272a06ca00b6078e7b81515c9fc"
+  },
+  {
+    "tool": "helm.exe",
+    "url": "https://get.helm.sh/helm-v4.3.0-windows-amd64.zip",
+    "download_sha256": "304ea163cce4d9ad14e189c01846c6a34de9cfdfe48536ae54b2e8ba7884e67c"
+  }
+]

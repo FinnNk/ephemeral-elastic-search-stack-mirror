@@ -1,0 +1,6 @@
+{
+  "reason": "ImagePullBackOff: overwritten tag left the original digest unavailable",
+  "namespace_removed": true,
+  "credential_revoked": true,
+  "seconds": 13.391
+}

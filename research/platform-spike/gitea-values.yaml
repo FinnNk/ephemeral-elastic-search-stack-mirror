@@ -1,0 +1,48 @@
+valkey-cluster:
+  enabled: false
+valkey:
+  enabled: false
+postgresql-ha:
+  enabled: false
+postgresql:
+  enabled: false
+persistence:
+  enabled: true
+  size: 5Gi
+service:
+  http:
+    type: NodePort
+    port: 31800
+    nodePort: 30080
+  ssh:
+    type: ClusterIP
+gitea:
+  admin:
+    existingSecret: gitea-admin
+  config:
+    database:
+      DB_TYPE: sqlite3
+    server:
+      DOMAIN: gitea.localhost
+      ROOT_URL: http://gitea.localhost:31800/
+      HTTP_PORT: 3000
+      DISABLE_SSH: true
+    service:
+      DISABLE_REGISTRATION: true
+    actions:
+      ENABLED: true
+    cache:
+      ADAPTER: memory
+    session:
+      PROVIDER: memory
+    queue:
+      TYPE: level
+    webhook:
+      ALLOWED_HOST_LIST: webhook.platform.svc.cluster.local
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: '2'
+    memory: 1Gi

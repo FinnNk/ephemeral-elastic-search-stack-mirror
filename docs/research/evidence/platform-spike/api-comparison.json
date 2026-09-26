@@ -1,0 +1,335 @@
+{
+  "baseline_build": {
+    "run": 2,
+    "source_sha": "4d2125842a2ffb1ccc4dfaa3ad36f38348c0bf7e",
+    "image": "gitea.localhost:31800/elastic-agent/search-spike@sha256:313e033ec8b864530554dc2edf2cd51da9bec17f87b14cf70eb63344a0356756",
+    "started_at": "2026-09-26T19:47:22Z",
+    "completed_at": "2026-09-26T19:47:27Z"
+  },
+  "candidate_build": {
+    "run": 5,
+    "source_sha": "29fd9c49f5d5652b3e173782b100d2140f0202ee",
+    "image": "gitea.localhost:31800/elastic-agent/search-spike@sha256:2a86bc011ba3207165fb2258a9f60a916ff00833e7e25df8a5b68e61fcfe93bc",
+    "started_at": "2026-09-26T19:59:34Z",
+    "completed_at": "2026-09-26T19:59:35Z"
+  },
+  "candidate_definition": {
+    "image": "gitea.localhost:31800/elastic-agent/search-spike@sha256:2a86bc011ba3207165fb2258a9f60a916ff00833e7e25df8a5b68e61fcfe93bc",
+    "index": "spike-frozen-v1",
+    "dataset_sha256": "c438655f41953fbd55e4595155e275c7e9a7a713edff479df9bdc21f0779c364",
+    "engine": "9.5.4",
+    "fingerprint": "8eb35107c54f20afc23dede86cfa4dd9df130a40a411a410a670bbb7526001f1",
+    "environment": "spike-candidate-retained"
+  },
+  "queries": [
+    {
+      "query": "running shoes",
+      "baseline": [
+        "p000000",
+        "p000010",
+        "p000020",
+        "p000030",
+        "p000040",
+        "p000050",
+        "p000060",
+        "p000070",
+        "p000080",
+        "p000090"
+      ],
+      "candidate": [
+        "p000000",
+        "p000010",
+        "p000020",
+        "p000030",
+        "p000040",
+        "p000050",
+        "p000060",
+        "p000070",
+        "p000080",
+        "p000090"
+      ],
+      "equal": true
+    },
+    {
+      "query": "cotton shirt",
+      "baseline": [
+        "p000001",
+        "p000011",
+        "p000021",
+        "p000031",
+        "p000041",
+        "p000051",
+        "p000061",
+        "p000071",
+        "p000081",
+        "p000091"
+      ],
+      "candidate": [
+        "p000001",
+        "p000011",
+        "p000021",
+        "p000031",
+        "p000041",
+        "p000051",
+        "p000061",
+        "p000071",
+        "p000081",
+        "p000091"
+      ],
+      "equal": true
+    },
+    {
+      "query": "ceramic mug",
+      "baseline": [
+        "p000002",
+        "p000012",
+        "p000022",
+        "p000032",
+        "p000042",
+        "p000052",
+        "p000062",
+        "p000072",
+        "p000082",
+        "p000092"
+      ],
+      "candidate": [
+        "p000002",
+        "p000012",
+        "p000022",
+        "p000032",
+        "p000042",
+        "p000052",
+        "p000062",
+        "p000072",
+        "p000082",
+        "p000092"
+      ],
+      "equal": true
+    },
+    {
+      "query": "desk lamp",
+      "baseline": [
+        "p000003",
+        "p000013",
+        "p000023",
+        "p000033",
+        "p000043",
+        "p000053",
+        "p000063",
+        "p000073",
+        "p000083",
+        "p000093"
+      ],
+      "candidate": [
+        "p000003",
+        "p000013",
+        "p000023",
+        "p000033",
+        "p000043",
+        "p000053",
+        "p000063",
+        "p000073",
+        "p000083",
+        "p000093"
+      ],
+      "equal": true
+    },
+    {
+      "query": "garden gloves",
+      "baseline": [
+        "p000004",
+        "p000014",
+        "p000024",
+        "p000034",
+        "p000044",
+        "p000054",
+        "p000064",
+        "p000074",
+        "p000084",
+        "p000094"
+      ],
+      "candidate": [
+        "p000004",
+        "p000014",
+        "p000024",
+        "p000034",
+        "p000044",
+        "p000054",
+        "p000064",
+        "p000074",
+        "p000084",
+        "p000094"
+      ],
+      "equal": true
+    },
+    {
+      "query": "wireless headphones",
+      "baseline": [
+        "p000005",
+        "p000015",
+        "p000025",
+        "p000035",
+        "p000045",
+        "p000055",
+        "p000065",
+        "p000075",
+        "p000085",
+        "p000095"
+      ],
+      "candidate": [
+        "p000005",
+        "p000015",
+        "p000025",
+        "p000035",
+        "p000045",
+        "p000055",
+        "p000065",
+        "p000075",
+        "p000085",
+        "p000095"
+      ],
+      "equal": true
+    },
+    {
+      "query": "linen towel",
+      "baseline": [
+        "p000006",
+        "p000016",
+        "p000026",
+        "p000036",
+        "p000046",
+        "p000056",
+        "p000066",
+        "p000076",
+        "p000086",
+        "p000096"
+      ],
+      "candidate": [
+        "p000006",
+        "p000016",
+        "p000026",
+        "p000036",
+        "p000046",
+        "p000056",
+        "p000066",
+        "p000076",
+        "p000086",
+        "p000096"
+      ],
+      "equal": true
+    },
+    {
+      "query": "wooden toy",
+      "baseline": [
+        "p000007",
+        "p000017",
+        "p000027",
+        "p000037",
+        "p000047",
+        "p000057",
+        "p000067",
+        "p000077",
+        "p000087",
+        "p000097"
+      ],
+      "candidate": [
+        "p000007",
+        "p000017",
+        "p000027",
+        "p000037",
+        "p000047",
+        "p000057",
+        "p000067",
+        "p000077",
+        "p000087",
+        "p000097"
+      ],
+      "equal": true
+    },
+    {
+      "query": "steel pan",
+      "baseline": [
+        "p000008",
+        "p000018",
+        "p000028",
+        "p000038",
+        "p000048",
+        "p000058",
+        "p000068",
+        "p000078",
+        "p000088",
+        "p000098"
+      ],
+      "candidate": [
+        "p000008",
+        "p000018",
+        "p000028",
+        "p000038",
+        "p000048",
+        "p000058",
+        "p000068",
+        "p000078",
+        "p000088",
+        "p000098"
+      ],
+      "equal": true
+    },
+    {
+      "query": "leather bag",
+      "baseline": [
+        "p000009",
+        "p000019",
+        "p000029",
+        "p000039",
+        "p000049",
+        "p000059",
+        "p000069",
+        "p000079",
+        "p000089",
+        "p000099"
+      ],
+      "candidate": [
+        "p000009",
+        "p000019",
+        "p000029",
+        "p000039",
+        "p000049",
+        "p000059",
+        "p000069",
+        "p000079",
+        "p000089",
+        "p000099"
+      ],
+      "equal": true
+    },
+    {
+      "query": "trainers",
+      "baseline": [],
+      "candidate": [
+        "p000000",
+        "p000010",
+        "p000020",
+        "p000030",
+        "p000040",
+        "p000050",
+        "p000060",
+        "p000070",
+        "p000080",
+        "p000090"
+      ],
+      "equal": false
+    },
+    {
+      "query": "unfindableitem",
+      "baseline": [],
+      "candidate": [],
+      "equal": true
+    }
+  ],
+  "same_fingerprint_and_results_after_recreation": true,
+  "create_seconds": 7.422,
+  "delete_seconds": 50.969,
+  "recreate_seconds": 8.109,
+  "sample_size": 1,
+  "report_blob": "runs/f372076891774f82de40442ef984af612644f821fec85ee7526dc5cb9781f47a/api-comparison.json"
+}

@@ -1,0 +1,382 @@
+[
+  {
+    "name": "spike-measure-00",
+    "create_seconds": 7.359,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 52.875,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-01",
+    "create_seconds": 7.812,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 50.453,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-02",
+    "create_seconds": 7.547,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 52.454,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-03",
+    "create_seconds": 8.015,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 52.375,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-04",
+    "create_seconds": 8.14,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 51.093,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-05",
+    "create_seconds": 7.75,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 48.969,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-06",
+    "create_seconds": 7.75,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 51.063,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-07",
+    "create_seconds": 8.375,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 49.797,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-08",
+    "create_seconds": 8.109,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 48.89,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-09",
+    "create_seconds": 7.297,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 50.204,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-10",
+    "create_seconds": 7.453,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 54.297,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-11",
+    "create_seconds": 7.312,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 51.844,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-12",
+    "create_seconds": 7.453,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 54.297,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-13",
+    "create_seconds": 8.156,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 50.938,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-14",
+    "create_seconds": 7.843,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 51.813,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-15",
+    "create_seconds": 7.39,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 48.5,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-16",
+    "create_seconds": 7.532,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 49.14,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-17",
+    "create_seconds": 7.516,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 49.438,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-18",
+    "create_seconds": 7.437,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 48.922,
+    "passed": true
+  },
+  {
+    "name": "spike-measure-19",
+    "create_seconds": 7.344,
+    "fingerprint": "1eb84ee4201fae7c200010b7b34d7106b53fb5aa8653f3c430e6d8706f1b7c21",
+    "ids": [
+      "p000000",
+      "p000010",
+      "p000020",
+      "p000030",
+      "p000040",
+      "p000050",
+      "p000060",
+      "p000070",
+      "p000080",
+      "p000090"
+    ],
+    "delete_seconds": 48.578,
+    "passed": true
+  }
+]

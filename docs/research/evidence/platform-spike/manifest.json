@@ -1,0 +1,92 @@
+{
+  "captured_on": "2026-09-26",
+  "exported_at": "2026-09-26T20:25:59.071694+00:00",
+  "environment": "Windows x64 / Docker Desktop WSL2 / k3d relevance-lab",
+  "scope": "Individual live research probes; not full prototype acceptance. Image platform hashes describe CLI inspection output, not registry manifest digests.",
+  "files": [
+    {
+      "file": "baseline-build.json",
+      "sha256": "5ba300f3756501b8a674a1ad243c0a72dfab19221f6d498424ce54ef4eaae1a1"
+    },
+    {
+      "file": "candidate-build.json",
+      "sha256": "03c72cd153ff45c047f448ba1c45f9795575634a9fbc632626f98a338c54a10d"
+    },
+    {
+      "file": "candidate-build-before-retention-fix.json",
+      "sha256": "9a96c1a1e65cbd7ca128acb31e01c0a3111c384aca8091b1aacb0252ed2b4054"
+    },
+    {
+      "file": "data-contract.json",
+      "sha256": "bbc9c6b7f1a0363d56ea9bc087574ff3653157ca0f55f671fe8ecc1fc6c703ce"
+    },
+    {
+      "file": "dataset.json",
+      "sha256": "a4c116b713ad0ae79ce52b4b47978c947188858e9908e7423dab302147e0d3d7"
+    },
+    {
+      "file": "git-lifecycle-measurements.json",
+      "sha256": "699e0b73bccd1bfdb103594eb4df76dbf46ffd7d20c314616531ac306282930a"
+    },
+    {
+      "file": "gitea-install.json",
+      "sha256": "7be5986842304b2e31eae64f145b7a82418ecff51f4666f767c6e8049d72d29e"
+    },
+    {
+      "file": "image-platforms.json",
+      "sha256": "a24a5ad964503488c4e055c5ae5d743b01aa8e427014ce6c210be30c6e75b21a"
+    },
+    {
+      "file": "k3d-create.json",
+      "sha256": "b91a0fd91d3aa5b4551e7c8abb6f0151e4e4645e592cb80e335cc5dc44caa792"
+    },
+    {
+      "file": "k3d-isolation.json",
+      "sha256": "1aea7988c5ce17eb59f1807c3fb6d0232955553c9065f907c9c33d44fc1b96cd"
+    },
+    {
+      "file": "kind-isolation.json",
+      "sha256": "7408d3edeb17ad417ca887bb9d6b70c611499b941a4346296c008808ceb987d9"
+    },
+    {
+      "file": "plugin-generator.json",
+      "sha256": "bfa142c93d5e9bb354177cd0ee8f38e04036ceea17ac66f1509c7429008cb80d"
+    },
+    {
+      "file": "separate-engine.json",
+      "sha256": "8469a98078b0da94cfc01d975d6529b3fe8df9fc324b31f8ab1f0a3022c02d96"
+    },
+    {
+      "file": "snapshot-compatibility.json",
+      "sha256": "d6d7071cfe1fbcb9bf8828a117bd2fea2515a7190ca964f26b2811ac65798af0"
+    },
+    {
+      "file": "tool-downloads.json",
+      "sha256": "ef1ac60de9bc3688740df138148226a5eb40b3d66042e39e46a43de3f779a944"
+    },
+    {
+      "file": "webhook.json",
+      "sha256": "d353b75e25fe47422c5a8923686b1a5c3c3d192f84fab775ed92e629b0c38ea3"
+    },
+    {
+      "file": "api-comparison.json",
+      "sha256": "833a4c402d1fc40b3a4225e315cf148604c05c1b9fe20bdb0fb5ef95fa9b0d7e"
+    },
+    {
+      "file": "failed-environment-cleanup.json",
+      "sha256": "b272cf6d2b79935a5a0c5de995adacd5cd4782f0135074c648a0c62df8d5c36a"
+    },
+    {
+      "file": "index-job.json",
+      "sha256": "0c9f44bf25d092681765dda247192ce2375b3ace623392b21285210538722a01"
+    },
+    {
+      "file": "index-api-comparison.json",
+      "sha256": "c53ed8aedd32f192e9f631506dcdeab46eb1dc5abd2365fbf6e5c1c7cd525b5a"
+    },
+    {
+      "file": "resources.json",
+      "sha256": "b638946c612698e559f9a372bf7b3442f01828ab9ecb70a12da36f6a03605bf2"
+    }
+  ]
+}

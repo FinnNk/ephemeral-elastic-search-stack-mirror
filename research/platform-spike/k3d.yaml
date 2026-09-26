@@ -1,0 +1,29 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: relevance-lab
+servers: 1
+agents: 1
+image: rancher/k3s:v1.35.8-k3s1
+ports:
+  - port: 127.0.0.1:31800:30080
+    nodeFilters:
+      - server:0
+options:
+  k3d:
+    wait: true
+    timeout: 180s
+  kubeconfig:
+    updateDefaultKubeconfig: false
+    switchCurrentContext: false
+  k3s:
+    extraArgs:
+      - arg: --disable=traefik,servicelb
+        nodeFilters:
+          - server:*
+registries:
+  config: |
+    mirrors:
+      "gitea.localhost:31800":
+        endpoint:
+          - "http://k3d-relevance-lab-server-0:30080"

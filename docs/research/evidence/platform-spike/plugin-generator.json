@@ -1,0 +1,11 @@
+{
+  "create_seconds": 7.234,
+  "delete_seconds": 52.687,
+  "outage_observed": true,
+  "outage_preserved_workloads": true,
+  "explicit_empty_removed_namespace": true,
+  "sample_size": 1,
+  "generator_recovery_seconds": 179.89,
+  "earlier_probe": "Explicit removal after an outage exceeded 150 seconds; namespace was subsequently removed. Recovery now waits for generator success.",
+  "state_backend": "spike file; not production metadata storage"
+}

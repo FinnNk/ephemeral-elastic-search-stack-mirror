@@ -1,0 +1,172 @@
+{
+  "captured_at": "2026-09-26T20:25:18.970913+00:00",
+  "scope": "Retained k3d lab after lifecycle trials; existing unrelated Docker workloads excluded. One observation, not an idle comparison.",
+  "docker_stats": [
+    {
+      "BlockIO": "238MB / 5.29GB",
+      "CPUPerc": "7.18%",
+      "Container": "k3d-relevance-lab-server-0",
+      "ID": "6aa4cc0bb57c",
+      "MemPerc": "56.91%",
+      "MemUsage": "3.414GiB / 6GiB",
+      "Name": "k3d-relevance-lab-server-0",
+      "NetIO": "1.52GB / 137MB",
+      "PIDs": "425"
+    },
+    {
+      "BlockIO": "168MB / 5.39GB",
+      "CPUPerc": "2.71%",
+      "Container": "k3d-relevance-lab-agent-0",
+      "ID": "1bdc1340d0ee",
+      "MemPerc": "33.90%",
+      "MemUsage": "1.356GiB / 4GiB",
+      "Name": "k3d-relevance-lab-agent-0",
+      "NetIO": "1.73GB / 87.7MB",
+      "PIDs": "361"
+    },
+    {
+      "BlockIO": "0B / 12.3kB",
+      "CPUPerc": "0.02%",
+      "Container": "k3d-relevance-lab-serverlb",
+      "ID": "24781acd3039",
+      "MemPerc": "0.06%",
+      "MemUsage": "26.89MiB / 46.86GiB",
+      "Name": "k3d-relevance-lab-serverlb",
+      "NetIO": "75.6MB / 75.2MB",
+      "PIDs": "43"
+    }
+  ],
+  "node_disk_kib": {
+    "k3d-relevance-lab-server-0": "24884\t/var/lib/rancher/k3s/storage\n3976028\t/var/lib/rancher/k3s/agent/containerd\n",
+    "k3d-relevance-lab-agent-0": "85800\t/var/lib/rancher/k3s/storage\n4667460\t/var/lib/rancher/k3s/agent/containerd\n"
+  },
+  "pods": [
+    {
+      "namespace": "argocd",
+      "name": "argocd-application-controller-0",
+      "phase": "Running"
+    },
+    {
+      "namespace": "argocd",
+      "name": "argocd-applicationset-controller-7f95b9cd7c-xhpd7",
+      "phase": "Running"
+    },
+    {
+      "namespace": "argocd",
+      "name": "argocd-dex-server-8666767789-5z25m",
+      "phase": "Running"
+    },
+    {
+      "namespace": "argocd",
+      "name": "argocd-notifications-controller-797f48b4-85w27",
+      "phase": "Running"
+    },
+    {
+      "namespace": "argocd",
+      "name": "argocd-redis-6fd5864464-lg594",
+      "phase": "Running"
+    },
+    {
+      "namespace": "argocd",
+      "name": "argocd-repo-server-c4977564f-l9qjc",
+      "phase": "Running"
+    },
+    {
+      "namespace": "argocd",
+      "name": "argocd-server-59bd8b5c4-jwt7b",
+      "phase": "Running"
+    },
+    {
+      "namespace": "elastic-system",
+      "name": "elastic-operator-0",
+      "phase": "Running"
+    },
+    {
+      "namespace": "kube-system",
+      "name": "coredns-cb79b89c8-gwq74",
+      "phase": "Running"
+    },
+    {
+      "namespace": "kube-system",
+      "name": "local-path-provisioner-d9d8769b6-4pq2j",
+      "phase": "Running"
+    },
+    {
+      "namespace": "kube-system",
+      "name": "metrics-server-7f4b6d9bd7-clx4w",
+      "phase": "Running"
+    },
+    {
+      "namespace": "platform",
+      "name": "build-runner-7bc78b7978-ncvgv",
+      "phase": "Running"
+    },
+    {
+      "namespace": "platform",
+      "name": "floci-5b565d8b5c-x7sms",
+      "phase": "Running"
+    },
+    {
+      "namespace": "platform",
+      "name": "gitea-6d65788df7-dpv8q",
+      "phase": "Running"
+    },
+    {
+      "namespace": "platform",
+      "name": "search-probe",
+      "phase": "Running"
+    },
+    {
+      "namespace": "platform",
+      "name": "shared-es-lab-0",
+      "phase": "Running"
+    },
+    {
+      "namespace": "platform",
+      "name": "spike-index-jprvs",
+      "phase": "Succeeded"
+    },
+    {
+      "namespace": "platform",
+      "name": "spike-plugin-5f68fd54f9-9fh8n",
+      "phase": "Running"
+    },
+    {
+      "namespace": "platform",
+      "name": "webhook-ff85db7b9-bpnzr",
+      "phase": "Running"
+    },
+    {
+      "namespace": "spike-baseline",
+      "name": "search-64954647bf-lrhp9",
+      "phase": "Running"
+    },
+    {
+      "namespace": "spike-candidate-retained",
+      "name": "search-59c9bcb89b-6sp2b",
+      "phase": "Running"
+    }
+  ],
+  "pvc_requests": [
+    {
+      "name": "elasticsearch-data-shared-es-lab-0",
+      "storage": "5Gi"
+    },
+    {
+      "name": "floci-data",
+      "storage": "2Gi"
+    },
+    {
+      "name": "gitea-shared-storage",
+      "storage": "5Gi"
+    },
+    {
+      "name": "runner-data",
+      "storage": "1Gi"
+    },
+    {
+      "name": "runner-docker",
+      "storage": "10Gi"
+    }
+  ]
+}

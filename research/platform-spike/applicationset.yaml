@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: search-environments
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: [missingkey=error]
+  generators:
+    - git:
+        repoURL: http://gitea-http.platform.svc.cluster.local:31800/elastic-agent/environment-state.git
+        revision: main
+        requeueAfterSeconds: 5
+        files:
+          - path: environments/*.json
+  template:
+    metadata:
+      name: '{{.environment}}'
+    spec:
+      project: default
+      source:
+        repoURL: http://gitea-http.platform.svc.cluster.local:31800/elastic-agent/environment-state.git
+        targetRevision: main
+        path: chart
+        helm:
+          parameters:
+            - name: environment
+              value: '{{.environment}}'
+            - name: image
+              value: '{{.image}}'
+            - name: index
+              value: '{{.index}}'
+            - name: fingerprint
+              value: '{{.fingerprint}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.environment}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

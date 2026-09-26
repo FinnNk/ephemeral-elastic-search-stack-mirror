@@ -1,0 +1,7 @@
+{
+  "run": 5,
+  "source_sha": "29fd9c49f5d5652b3e173782b100d2140f0202ee",
+  "image": "gitea.localhost:31800/elastic-agent/search-spike@sha256:2a86bc011ba3207165fb2258a9f60a916ff00833e7e25df8a5b68e61fcfe93bc",
+  "started_at": "2026-09-26T19:59:34Z",
+  "completed_at": "2026-09-26T19:59:35Z"
+}

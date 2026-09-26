@@ -1,0 +1,11 @@
+{
+  "blob_roundtrip_sha256": "c438655f41953fbd55e4595155e275c7e9a7a713edff479df9bdc21f0779c364",
+  "conditional_overwrite_denied": true,
+  "count": 10000,
+  "search_hits": 1000,
+  "es_forbidden_operations": {
+    "other_index": true,
+    "write": true
+  },
+  "seconds": 3.984
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "real_events": [
+      {
+        "delivery": "dcf2b700-c868-44fb-97d1-768e8d9c6cb3",
+        "event": "push",
+        "duplicate": false,
+        "body_sha256": "787961961191f0ebcba8939715d67304592bf67b709b2ca8767443d597eeb4e3",
+        "source_revision": "a98e42bb4fc6ba3f28c22a34c4830f7c23fbc7dc",
+        "repository": "elastic-agent/environment-state"
+      },
+      {
+        "delivery": "6a440511-2373-402b-a49a-3034356d1763",
+        "event": "push",
+        "duplicate": false,
+        "body_sha256": "8e83f1bfeb117314ec2bd5be10e3c85128f54e7c4c8b5ecd63f383b8773250bd",
+        "source_revision": "832ffc9e82cf695de803d6c0aaeee13e77cdb9ed",
+        "repository": "elastic-agent/environment-state"
+      },
+      {
+        "delivery": "ea6e21a6-f567-4502-9438-0b7494816981",
+        "event": "push",
+        "duplicate": false,
+        "body_sha256": "c26d8476d4daa838f90773a495b0554f302d8dbdff0b35a92fd72a4e60481e72",
+        "source_revision": "6cf57c20513232426053710347359045eb16ed2c",
+        "repository": "elastic-agent/environment-state"
+      }
+    ]
+  },
+  {
+    "invalid_signature_rejected": true,
+    "duplicate_identified": true
+  }
+]

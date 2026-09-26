@@ -1,0 +1,28 @@
+{
+  "definition": {
+    "image": "gitea.localhost:31800/elastic-agent/search-spike@sha256:313e033ec8b864530554dc2edf2cd51da9bec17f87b14cf70eb63344a0356756",
+    "index": "spike-analyser-v2",
+    "dataset_sha256": "c438655f41953fbd55e4595155e275c7e9a7a713edff479df9bdc21f0779c364",
+    "engine": "9.5.4",
+    "fingerprint": "31af5fddb31db2194f7bc2db95fbfb7bc05206b4f4e7d314c26c298aa2b0944c",
+    "environment": "spike-analyser"
+  },
+  "baseline_ids": [
+    "p000000",
+    "p000001",
+    "p000002",
+    "p000003",
+    "p000004",
+    "p000005",
+    "p000006",
+    "p000007",
+    "p000008",
+    "p000009"
+  ],
+  "candidate_ids": [],
+  "query": "model",
+  "create_seconds": 8.203,
+  "delete_including_index_seconds": 48.859,
+  "namespace_and_dedicated_index_removed": true,
+  "sample_size": 1
+}

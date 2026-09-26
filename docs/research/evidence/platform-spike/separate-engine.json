@@ -1,0 +1,7 @@
+{
+  "version": "9.5.3",
+  "main_cluster_version": "9.5.4",
+  "seconds": 41.438,
+  "health": "green",
+  "indexed_product_count": 10000
+}

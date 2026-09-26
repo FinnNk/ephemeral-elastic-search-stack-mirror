@@ -1,0 +1,45 @@
+{
+  "cluster": "k3d",
+  "nodes": {
+    "client": "k3d-relevance-lab-server-0",
+    "server": "k3d-relevance-lab-agent-0"
+  },
+  "before": {
+    "spike-net-a": {
+      "allowed": true,
+      "exit_code": 0,
+      "detail": ""
+    },
+    "spike-net-b": {
+      "allowed": true,
+      "exit_code": 0,
+      "detail": ""
+    }
+  },
+  "deny_all": {
+    "spike-net-a": {
+      "allowed": false,
+      "exit_code": 1,
+      "detail": "wget: can't connect to remote host (10.43.192.218): Connection refused\ncommand terminated with exit code 1"
+    },
+    "spike-net-b": {
+      "allowed": false,
+      "exit_code": 1,
+      "detail": "wget: can't connect to remote host (10.43.192.218): Connection refused\ncommand terminated with exit code 1"
+    }
+  },
+  "same_namespace": {
+    "spike-net-a": {
+      "allowed": true,
+      "exit_code": 0,
+      "detail": ""
+    },
+    "spike-net-b": {
+      "allowed": false,
+      "exit_code": 1,
+      "detail": "wget: can't connect to remote host (10.43.192.218): Connection refused\ncommand terminated with exit code 1"
+    }
+  },
+  "rbac_cross_namespace": "no",
+  "network_policy_enforced": true
+}

@@ -14,6 +14,12 @@ Desk research on 26 September 2026. The prototype uses local Gitea so that a bra
 
 Run Gitea as a persistent platform service outside ephemeral namespaces. A disposable namespace must never contain the Git server, registry or runner it needs for recreation. Keep the frozen product and query release in Floci AZ; store only manifest references and hashes in Git. Retain built image digests for at least as long as any environment or saved comparison may need recreation. The lab should record registry storage consumption and a deliberate retention policy.
 
+## Research status
+
+The [platform spike](platform-spike.md) exercised Gitea PR builds, retained image digests, Argo deployment, API comparison, deletion/recreation and an analyser Job. Signed webhook handling was tested separately. Automated build-completion orchestration, leases, the UI and all three full evaluation modes remain implementation work.
+
+The tested runner is rootless Docker-in-Docker but still uses a privileged pod. The spike also required service DNS for Git because curl treats `.localhost` specially; the runnable slice should replace that workaround with consistent TLS-enabled naming. Every retained build needs a unique tag as well as a recorded digest.
+
 ## Proposed demonstration
 
 1. Start the local Kubernetes cluster and its persistent services: Gitea, runner, Argo CD, ECK, shared Elasticsearch and Floci AZ. Verify the runner and Kubernetes nodes can resolve the same Gitea registry address.

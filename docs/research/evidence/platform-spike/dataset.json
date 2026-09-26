@@ -1,0 +1,12 @@
+{
+  "release": "spike-uk-v1",
+  "sha256": "c438655f41953fbd55e4595155e275c7e9a7a713edff479df9bdc21f0779c364",
+  "count": 10000,
+  "generator": "research/platform-spike/data_contract.py",
+  "fixed_time": "2026-01-01T00:00:00Z",
+  "assumptions": [
+    "Ten equal-size synthetic categories",
+    "Deterministic modular price, availability and brand distributions",
+    "Deliberately simple diagnostic fixture; not the realistic retail release"
+  ]
+}

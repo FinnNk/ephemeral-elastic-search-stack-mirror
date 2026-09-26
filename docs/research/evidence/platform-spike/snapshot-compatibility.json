@@ -1,0 +1,7 @@
+{
+  "engine": "9.5.3",
+  "dataset_sha256": "c438655f41953fbd55e4595155e275c7e9a7a713edff479df9bdc21f0779c364",
+  "bulk_seconds": 1.078,
+  "error": "HTTP Error 500: Internal Server Error",
+  "error_body": "{\"error\":{\"root_cause\":[{\"type\":\"repository_verification_exception\",\"reason\":\"[floci-spike] cannot delete test data at [version-spike]\"}],\"type\":\"repository_verification_exception\",\"reason\":\"[floci-spike] cannot delete test data at [version-spike]\",\"caused_by\":{\"type\":\"i_o_exception\",\"reason\":\"Some errors occurred deleting batches, all errors included as suppressed\",\"suppressed\":[{\"type\":\"blob_storage_exception\",\"reason\":\"Status code 501, \\\"<?xml version='1.0' encoding='UTF-8'?><Error><Code>NotImplemented</Code><Message>The requested operation is not implemented.</Message></Error>\\\"\"}]}},\"status\":500}"
+}
