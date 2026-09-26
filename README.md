@@ -6,7 +6,7 @@ The [prototype design](docs/prototype-design.md) defines the architecture, quant
 
 Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram guide](docs/diagrams/README.md) for six Structurizr C4 views and seven interactive Archify views, with editable sources and rendering instructions.
 
-The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches and links the [next detailed plan](docs/plans/lifecycle-identity-and-measurement.md).
+The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches and links the [next detailed plan](docs/plans/index-change.md).
 
 ## Current state
 
@@ -15,7 +15,8 @@ The design is merged. An [experimental research harness](research/platform-spike
 - [Research results](docs/research/platform-spike.md): 20 warm lifecycle trials, API and analyser comparisons, isolation and failure recovery.
 - [Proposed decision](docs/adr/ADR-0001-reconcile-environments-from-git.md): reconcile environments from Git-file ApplicationSets; use k3d provisionally.
 - [Local access](research/platform-spike/README.md#personal-access): named Gitea and Argo CD administrator logins and browser URLs.
-- Next: named control-surface identity and lifecycle measurement, then index-change comparison, Gatling profiles and scale validation. Apple silicon remains untested.
+- [Lifecycle evidence](docs/research/evidence/lifecycle-measurement/README.md): named owner checks and 20/20 warm removals; nearest-rank deletion p95 53.844 seconds against the five-minute target.
+- Next: index-change comparison, Gatling profiles and scale validation. Apple silicon remains untested.
 
 ## Repository workflow
 

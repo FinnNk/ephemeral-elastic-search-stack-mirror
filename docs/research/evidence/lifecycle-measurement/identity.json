@@ -1,0 +1,21 @@
+{
+  "admin_admin": true,
+  "admin_cleanup_both": true,
+  "admin_username": "lab-admin",
+  "agent_admin": false,
+  "agent_username": "elastic-agent",
+  "cookie_httponly_samesite": true,
+  "cross_owner_delete_denied": true,
+  "cross_owner_read_denied": true,
+  "distinct_owners": true,
+  "final_states": [
+    "deleted",
+    "deleted"
+  ],
+  "password_absent_from_login_body": true,
+  "personal_admin_account_listed": {
+    "is_admin": true,
+    "sign_in_tested": false,
+    "username": "finnnk"
+  }
+}

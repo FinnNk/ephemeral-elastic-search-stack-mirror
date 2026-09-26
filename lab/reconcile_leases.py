@@ -1,6 +1,7 @@
 """Run the lease and partial-deletion reconciler independently of the UI."""
 import argparse
 import json
+import socket
 import time
 
 from lifecycle import local_lifecycle
@@ -23,12 +24,14 @@ def main():
         return
     if not 10 <= args.interval_seconds <= 600:
         raise ValueError('Reconciliation interval must be 10–600 seconds.')
-    while True:
-        try:
-            reconcile_once()
-        except Exception as error:
-            print(json.dumps({'error_kind': type(error).__name__}), flush=True)
-        time.sleep(args.interval_seconds)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as singleton:
+        singleton.bind(('127.0.0.1', 18083))
+        while True:
+            try:
+                reconcile_once()
+            except Exception as error:
+                print(json.dumps({'error_kind': type(error).__name__}), flush=True)
+            time.sleep(args.interval_seconds)
 
 
 if __name__ == '__main__':

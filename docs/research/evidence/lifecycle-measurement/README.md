@@ -1,0 +1,9 @@
+# Lifecycle and identity evidence
+
+Twenty consecutive warm API-only environment cycles completed on the local k3d lab. The [raw samples](removal-20.json) record creation and deletion separately. Deletion is measured from the direct lifecycle delete call until the namespace and scoped Elasticsearch credential are removed and the durable record is marked deleted. All 20 passed; median deletion was **51.539 seconds** and nearest-rank p95 was **53.844 seconds**, below the provisional five-minute target. This is not an HTTP request percentile or evidence for dedicated-index cleanup, 40 environments or AKS.
+
+The host was Windows 11 on an Intel Core i9-13980HX (24 cores, 32 logical processors) with 102,673,936,384 bytes of physical RAM. The run used the 10,000-product `retail-gb-10k-v1` shared frozen index. The harness records total create and delete times; it does not break deletion into Kubernetes and Elasticsearch phases or capture per-sample memory use.
+
+An [initial seven-sample attempt](initial-attempt.json) had three failed creates. Argo CD reported Healthy before one immediate API search returned correct results. The run was stopped, failed namespaces were removed, and provisioning was changed to retry a real search for up to 60 seconds. The complete 20-sample run above followed that repair. The failed attempt is retained rather than folded into a passing percentile.
+
+The [identity check](identity.json) used distinct local Gitea accounts (`elastic-agent` and `lab-admin`), denied cross-owner reads/deletion and allowed administrator cleanup. The user's personal administrator account was listed in Gitea but its sign-in was not exercised. Unit tests cover session expiry, owner checks and stale provisioning recovery. A separate prior [expiry test](../lifecycle-comparison/expiry.json) removed a namespace in 69 seconds while the UI process was stopped.

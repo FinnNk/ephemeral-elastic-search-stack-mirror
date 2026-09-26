@@ -23,6 +23,16 @@ DATASET = 'retail-gb-10k-v1'
 INDEX = 'retail-gb-10k-v1'
 
 
+def wait_correct_search(name, search_fn=search, timeout_seconds=60):
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        answer = search_fn(name, 'running shoes')
+        if answer is not None and len(answer.get('ids', [])) >= 10:
+            return answer
+        time.sleep(1)
+    raise TimeoutError('Environment did not return a correct search after becoming healthy.')
+
+
 def utcnow():
     return datetime.now(timezone.utc)
 
@@ -141,8 +151,7 @@ class LabBackend:
         if git('status', '--porcelain'):
             publish('Provision ' + row['name'])
         wait_healthy(row['name'])
-        answer = search(row['name'], 'running shoes')
-        assert answer is not None and len(answer['ids']) >= 10
+        wait_correct_search(row['name'])
         return definition['fingerprint']
 
     def delete(self, row):
@@ -173,10 +182,12 @@ class Lifecycle:
         self.comparator = comparator
 
     def create(self, name, build_run, owner='local-operator'):
-        if not NAME_PATTERN.fullmatch(name):
+        if not isinstance(name, str) or not NAME_PATTERN.fullmatch(name):
             raise ValueError('Environment name must start with lab- and contain lowercase letters, digits or hyphens.')
-        if not isinstance(build_run, int) or build_run <= 0:
+        if type(build_run) is not int or build_run <= 0:
             raise ValueError('A successful numeric Gitea build run is required.')
+        if not isinstance(owner, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,64}', owner):
+            raise ValueError('A valid owner identity is required.')
         with self.lock:
             existing = self.store.active_name(name)
             if existing and self.clock() >= parse_stamp(existing['expires_at']):
@@ -255,7 +266,8 @@ class Lifecycle:
                 expired.append(self.delete(row['id']))
             elif row['state'] == 'deleting':
                 expired.append(self.delete(row['id']))
-            elif row['state'] in ('requested', 'provisioning'):
+            elif row['state'] in ('requested', 'provisioning') and \
+                    self.clock() >= parse_stamp(row['updated_at']) + timedelta(minutes=2):
                 expired.append(self.reconcile(row['id']))
         return expired
 

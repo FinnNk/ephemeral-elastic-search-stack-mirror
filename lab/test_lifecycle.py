@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from lifecycle import LEASE, Lifecycle, Store, parse_stamp
+from lifecycle import LEASE, Lifecycle, Store, parse_stamp, wait_correct_search
 
 
 class FakeBackend:
@@ -99,6 +99,10 @@ class LifecycleContract(unittest.TestCase):
         self.now[0] += timedelta(minutes=2)
         self.assertEqual(self.service.delete(row['id'])['state'], 'deleted')
         self.assertEqual(self.backend.deletions, ['lab-race'])
+
+    def test_search_readiness_retries_after_argo_health(self):
+        answers = iter([None, {'ids': []}, {'ids': list(range(10))}])
+        self.assertEqual(len(wait_correct_search('lab-test', lambda _name, _query: next(answers), 5)['ids']), 10)
 
     def test_comparison_is_persisted_and_incomplete_cannot_pass(self):
         baseline = self.service.create('lab-baseline', 3)
