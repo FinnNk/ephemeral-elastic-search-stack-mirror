@@ -1,0 +1,28 @@
+{
+  "owner": "elastic-agent",
+  "route": "authenticated control HTTP API",
+  "build_run": 6,
+  "lab-http-baseline": {
+    "state": "ready",
+    "index": "retail-gb-10k-v1",
+    "mapping_sha256": null,
+    "create_seconds": 7.906,
+    "final_state": "deleted",
+    "delete_seconds": 53.531
+  },
+  "lab-http-index": {
+    "state": "ready",
+    "index": "lab-http-index-idx",
+    "mapping_sha256": "ea454d0e1ff65d2abc5668514cc07583528fa51106ba00b8cbc1e01c8842cdfb",
+    "create_seconds": 17.703,
+    "final_state": "deleted",
+    "delete_seconds": 54.031
+  },
+  "comparison": {
+    "state": "complete",
+    "verdict": "changed",
+    "report_sha256": "cfc0d9448af5456ab66e32bf27776c913cb40547e0c7b323e6fe0d4268ae2aa4",
+    "report_blob": "runs/cfc0d9448af5456ab66e32bf27776c913cb40547e0c7b323e6fe0d4268ae2aa4/controlled-comparison.json",
+    "changed_queries": 20
+  }
+}

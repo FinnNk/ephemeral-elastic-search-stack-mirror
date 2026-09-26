@@ -1,5 +1,7 @@
 # Frozen index-change batch
 
+Completed on `slice/frozen-index-change`; see the [live evidence](../research/evidence/index-change.md). Two local candidate startups reached a correct search in 15.094 seconds and 17.703 seconds. These are individual observations, not a p95 estimate. Resource sampling and failed-build recovery were covered only partly; the finite Job cleanup has a unit check, while live failure injection remains for a later operational pass.
+
 ## Intent
 
 Demonstrate the second full source-to-comparison path: a reviewed index-design change builds a separate Elasticsearch index from the same frozen synthetic release, deploys a candidate API against it, compares final API results with the shared-index baseline and removes its dedicated resources on demand.

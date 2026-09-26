@@ -62,16 +62,15 @@ def create_index():
         return False
 
 
-def index_job(blob_path, digest):
+def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer'):
     password = secrets.token_urlsafe(24)
-    role = 'retail-baseline-indexer'
     sas = generate_blob_sas('devstoreaccount1', 'datasets', blob_path, account_key=DEMO_KEY,
         permission=BlobSasPermissions(read=True), expiry=datetime.now(timezone.utc) + timedelta(minutes=15))
-    elastic('/_security/role/' + role, 'PUT', {'indices': [{'names': [INDEX], 'privileges': ['write']} ]})
+    elastic('/_security/role/' + role, 'PUT', {'indices': [{'names': [index], 'privileges': ['write']} ]})
     elastic('/_security/user/' + role, 'PUT', {'password': password, 'roles': [role]})
     try:
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role, 'namespace': 'platform'},
-            'stringData': {'ES_USER': role, 'ES_PASSWORD': password, 'ES_INDEX': INDEX,
+            'stringData': {'ES_USER': role, 'ES_PASSWORD': password, 'ES_INDEX': index,
                 'DATASET_URL': 'http://floci.platform.svc:4577/devstoreaccount1/datasets/' + blob_path + '?' + sas,
                 'DATASET_SHA256': digest}})
         cert = json.loads(k('get', 'secret/shared-es-http-certs-public', '-n', 'platform', '-o', 'json').stdout)['data']

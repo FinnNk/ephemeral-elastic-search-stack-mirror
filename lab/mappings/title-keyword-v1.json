@@ -1,0 +1,24 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "properties": {
+      "product_id": {"type": "keyword"},
+      "sku": {"type": "keyword"},
+      "title": {"type": "keyword"},
+      "description": {"type": "text"},
+      "brand": {"type": "text"},
+      "product_type": {"type": "text"},
+      "category": {"type": "keyword"},
+      "colour": {"type": "keyword"},
+      "material": {"type": "keyword"},
+      "country": {"type": "keyword"},
+      "currency": {"type": "keyword"},
+      "price_minor": {"type": "integer"},
+      "available": {"type": "boolean"},
+      "popularity": {"type": "float"}
+    }
+  }
+}
