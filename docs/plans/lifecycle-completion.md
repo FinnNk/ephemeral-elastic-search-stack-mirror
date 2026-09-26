@@ -1,5 +1,7 @@
 # Lifecycle completion batch
 
+This work was split into a [comparison and independent-expiry slice](../research/evidence/lifecycle-comparison/summary.json) and the [identity and measurement batch](lifecycle-identity-and-measurement.md). The criteria below describe the combined result; the first slice alone does not meet the ownership or 20-sample gates.
+
 ## Intent
 
 Finish the environment control workflow begun in the [lifecycle foundation](environment-lifecycle.md). An engineer should compare two pinned environments from the local UI, see a saved report and trust that expired or partially deleted environments are cleaned up even when the UI process restarts.

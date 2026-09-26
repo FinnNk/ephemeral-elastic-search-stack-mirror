@@ -1,13 +1,14 @@
-"""Loopback-only UI and API for the local environment lifecycle foundation."""
+"""Loopback-only UI and API for the local environment lifecycle."""
+import hashlib
 import json
 import sys
-import threading
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, 'research/platform-spike')
 from common import STATE
+from data_contract import BlobServiceClient, DEMO_KEY
 from measure import search
 from lifecycle import DATASET, local_lifecycle, parse_stamp, utcnow
 
@@ -49,6 +50,24 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(200, [{'release': DATASET, 'manifest': manifest}])
         if parts == ['api', 'environments']:
             return self.send_json(200, self.controller.store.all())
+        if parts == ['api', 'comparisons']:
+            return self.send_json(200, self.controller.store.all_comparisons())
+        if len(parts) >= 3 and parts[:2] == ['api', 'comparisons']:
+            row = self.controller.store.get_comparison(parts[2])
+            if row is None:
+                return self.send_json(404, {'error': 'Comparison not found.'})
+            if len(parts) == 3:
+                return self.send_json(200, row)
+            if len(parts) == 4 and parts[3] == 'report':
+                if not row['report_blob']:
+                    return self.send_json(409, {'error': 'Comparison has no saved report.'})
+                container, blob_name = row['report_blob'].split('/', 1)
+                account = BlobServiceClient(account_url='http://127.0.0.1:14577/devstoreaccount1',
+                                            credential=DEMO_KEY)
+                payload = account.get_blob_client(container, blob_name).download_blob().readall()
+                if hashlib.sha256(payload).hexdigest() != row['report_sha256']:
+                    return self.send_json(502, {'error': 'Saved report hash differs from its record.'})
+                return self.send_bytes(200, payload, 'application/json; charset=utf-8')
         if len(parts) >= 3 and parts[:2] == ['api', 'environments']:
             row = self.controller.store.get(parts[2])
             if row is None:
@@ -93,6 +112,9 @@ class Handler(BaseHTTPRequestHandler):
             if parts == ['api', 'environments']:
                 row = self.controller.create(payload['name'], payload['build_run'])
                 return self.send_json(201 if row['state'] == 'ready' else 202, row)
+            if parts == ['api', 'comparisons']:
+                row = self.controller.compare(payload['baseline_id'], payload['candidate_id'], payload['mode'])
+                return self.send_json(201 if row['state'] == 'complete' else 202, row)
             if len(parts) == 4 and parts[:2] == ['api', 'environments']:
                 if parts[3] == 'activity':
                     return self.send_json(200, self.controller.activity(parts[2]))
@@ -119,25 +141,12 @@ class Handler(BaseHTTPRequestHandler):
         return self.send_json(404, {'error': 'Not found.'})
 
 
-def reconcile_loop(controller, stop):
-    while not stop.wait(60):
-        try:
-            controller.expire()
-        except Exception as error:
-            print('Lifecycle reconciliation failed:', type(error).__name__, file=sys.stderr, flush=True)
-
-
 def serve():
     controller = local_lifecycle()
     Handler.controller = controller
-    stop = threading.Event()
-    threading.Thread(target=reconcile_loop, args=(controller, stop), daemon=True).start()
     with ThreadingHTTPServer(('127.0.0.1', PORT), Handler) as server:
         print(f'Local lifecycle UI: http://127.0.0.1:{PORT}/', flush=True)
-        try:
-            server.serve_forever()
-        finally:
-            stop.set()
+        server.serve_forever()
 
 
 if __name__ == '__main__':

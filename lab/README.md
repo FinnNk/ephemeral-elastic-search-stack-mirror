@@ -100,6 +100,24 @@ Start the loopback control service from the repository root, then open the [loca
 python lab/control_api.py
 ```
 
-The UI accepts a `lab-` prefixed environment name and the run number of a successful local Gitea `search-spike` build. The service resolves that run to an exact source SHA and image digest, creates a separate read credential over `retail-gb-10k-v1`, commits the definition to the environment-state repository and waits for a real search. It stores the runtime instance and lease in ignored `.lab/lifecycle.sqlite3`. Status refresh leaves expiry unchanged; a successful search or explicit **Extend lease** action moves expiry to 72 hours after that use. **Delete** removes the namespace and credential through an idempotent path. A background scan runs each minute while the service is running; restarting the service resumes from the persisted state.
+The UI accepts a `lab-` prefixed environment name and the run number of a successful local Gitea `search-spike` build. The service resolves that run to an exact source SHA and image digest, creates a separate read credential over `retail-gb-10k-v1`, commits the definition to the environment-state repository and waits for a real search. It stores the runtime instance and lease in ignored `.lab/lifecycle.sqlite3`. Status refresh leaves expiry unchanged; a successful search or explicit **Extend lease** action moves expiry to 72 hours after that use. **Delete** removes the namespace and credential through an idempotent path.
 
-The service binds only to `127.0.0.1` and assumes a trusted local operator. Mutations and searches require the UI's `X-Lab-Intent` header. Named control-surface identity, independent expiry while the UI is stopped, comparison/report controls and a 20-run p95 measurement are the [next batch](../docs/plans/lifecycle-completion.md); this first slice does not claim those gates. One live HTTP walkthrough created a pinned environment, searched it, recorded activity and deleted it twice. Its [sanitised evidence](../docs/research/evidence/lifecycle-foundation/summary.json) records the observed timings, not a p95 estimate.
+The service binds only to `127.0.0.1` and assumes a trusted local operator. Mutations and searches require the UI's `X-Lab-Intent` header. One live HTTP walkthrough created a pinned environment, searched it, recorded activity and deleted it twice. Its [sanitised evidence](../docs/research/evidence/lifecycle-foundation/summary.json) records the observed timings, not a p95 estimate.
+
+## Compare controlled environments and expire leases
+
+Run the lease reconciler in a separate terminal or background process from the UI. It checks expired and interrupted instances every minute:
+
+```powershell
+python lab/reconcile_leases.py
+```
+
+For a single recovery or inspection pass, run this instead:
+
+```powershell
+python lab/reconcile_leases.py --once
+```
+
+The UI now selects two ready environments for **Result preservation** or **Synthetic relevance**. Both modes query the pinned public APIs and save complete reports in Floci by content hash. Result preservation checks exact ordered top tens plus Jaccard/RBO over all 51 requests; relevance scores the 50 judged requests with nDCG@10, Judged@10 and RR@10. An error or missing response produces an incomplete record, never a passing verdict. The UI can reopen saved reports after environments are deleted.
+
+A live baseline-versus-price run changed 50 ordered top tens. The relevance scores matched the earlier frozen evaluation, and repeating that run produced the same report SHA-256. A separate disposable lease was marked expired while the UI was stopped; the independent reconciler removed its namespace in 69 seconds. That exercises the expiry path without claiming that 72 hours elapsed. The [comparison evidence](../docs/research/evidence/lifecycle-comparison/summary.json) and [expiry evidence](../docs/research/evidence/lifecycle-comparison/expiry.json) retain the results. Named operator identity, reliable service startup and the 20-run removal p95 remain in the [next batch](../docs/plans/lifecycle-identity-and-measurement.md).

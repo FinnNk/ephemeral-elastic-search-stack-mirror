@@ -90,6 +90,35 @@ class LifecycleContract(unittest.TestCase):
         self.assertEqual(self.service.expire()[0]['state'], 'deleted')
         self.assertEqual(self.backend.deletions, ['lab-partial'])
 
+    def test_concurrent_delete_claim_waits_for_active_cleanup(self):
+        row = self.service.create('lab-race', 3)
+        self.assertTrue(self.store.claim_delete(row['id'], self.now[0]))
+        waiting = self.service.delete(row['id'])
+        self.assertEqual(waiting['state'], 'deleting')
+        self.assertEqual(self.backend.deletions, [])
+        self.now[0] += timedelta(minutes=2)
+        self.assertEqual(self.service.delete(row['id'])['state'], 'deleted')
+        self.assertEqual(self.backend.deletions, ['lab-race'])
+
+    def test_comparison_is_persisted_and_incomplete_cannot_pass(self):
+        baseline = self.service.create('lab-baseline', 3)
+        candidate = self.service.create('lab-candidate', 4)
+        self.service.comparator = lambda _a, _b, mode: {
+            'complete': True, 'verdict': 'unchanged', 'report_sha256': 'd' * 64,
+            'report_blob': 'runs/' + 'd' * 64 + '/report.json', 'mode': mode}
+        row = self.service.compare(baseline['id'], candidate['id'], 'result-regression')
+        self.assertEqual(row['state'], 'complete')
+        self.assertEqual(row['verdict'], 'unchanged')
+        self.assertEqual(self.store.get_comparison(row['id'])['summary']['mode'], 'result-regression')
+        self.service.comparator = lambda _a, _b, mode: {
+            'complete': False, 'verdict': 'incomplete', 'report_sha256': 'e' * 64,
+            'report_blob': 'runs/' + 'e' * 64 + '/report.json', 'mode': mode}
+        partial = self.service.compare(baseline['id'], candidate['id'], 'result-regression')
+        self.assertEqual(partial['state'], 'incomplete')
+        self.assertEqual(partial['verdict'], 'incomplete')
+        with self.assertRaises(ValueError):
+            self.service.compare(baseline['id'], baseline['id'], 'relevance')
+
 
 if __name__ == '__main__':
     unittest.main()
