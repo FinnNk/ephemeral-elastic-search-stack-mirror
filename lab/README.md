@@ -77,4 +77,17 @@ The [price-ranking patch](rank-candidate/price-rank.patch) changes only the API'
 | Judged@10 | 0.888 | 0.178 |
 | RR(rel=2)@10 | 1.0 | 0.258690 |
 
-These are **proxy scores for this incomplete, positive-only synthetic judgement pool**. Unjudged results have unknown relevance, even though nDCG scores them as zero. The low candidate Judged@10 shows that pool coverage contributes substantially to the apparent difference. The [sanitised evidence](../docs/research/evidence/runnable-relevance/summary.json) identifies the full immutable report. The local [ranking source PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/3) remains open. This evaluation covers the search API's complete returned ranking; Elasticsearch diagnostics, human labels, index-change comparisons and performance testing remain separate work.
+These are **proxy scores for this incomplete, positive-only synthetic judgement pool**. Unjudged results have unknown relevance, even though nDCG scores them as zero. The low candidate Judged@10 shows that pool coverage contributes substantially to the apparent difference. The [sanitised evidence](../docs/research/evidence/runnable-relevance/summary.json) identifies the full immutable report. The local [ranking source PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/3) remains open. This evaluation covers the search API's complete returned ranking; human labels, index-change comparisons and performance testing remain separate work.
+
+## Inspect why API results changed
+
+The [diagnostic API source](search-app/app.py) adds a versioned record only when a search includes `diagnostics=1` and a valid `request_id`. It records query normalisation, rewrite decision, Elasticsearch request hash, retrieved IDs and stage times. It marks the absent reranker stage unavailable. The ordinary response does not include diagnostics. A second [source variant](diagnostic-candidate/trainers.patch) names the `trainers` rewrite.
+
+```powershell
+python lab/deploy_diagnostics.py
+python lab/compare_diagnostics.py
+```
+
+The deployment script opens two local `search-spike` source PRs and pins their successful image builds. Both variants read the same frozen index as `retail-baseline`, using separate credentials. The comparison sends all 51 frozen requests through the baseline and both variants. It saves a deterministic functional report in Floci by hash, with ordered API results, correlation IDs, diagnostics, zero-result counts and an explicit completeness/verdict field. Observed stage timings are stored as a separate run artifact; they do not affect the functional report hash. A selected direct Elasticsearch `_profile` probe is stored separately as component evidence, not used for the end-to-end verdict.
+
+The diagnostic-only variant preserved all 51 ordered top-ten lists. The rewrite variant changed only `q051` (`trainers`), from zero baseline results to matching `running shoes` results; the diagnostic record names the rewrite and has a different Elasticsearch request hash. Four live checks confirmed that enabling diagnostics left ordered IDs and totals unchanged for selected requests. The [sanitised evidence](../docs/research/evidence/runnable-diagnostics/summary.json) links the full reports. The [diagnostic source PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/4) and its [rewrite PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/5) remain open for review.

@@ -2,8 +2,11 @@
 import argparse,json,time,urllib.parse
 from common import *
 from environments import *
-def search(name,query='running shoes'):
-    code='import urllib.request; print(urllib.request.urlopen('+repr('http://search.'+name+'.svc.cluster.local:8080/search?country=GB&currency=GBP&q='+urllib.parse.quote(query))+',timeout=3).read().decode())'
+def search(name,query='running shoes',request_id=None):
+    url='http://search.'+name+'.svc.cluster.local:8080/search?country=GB&currency=GBP&q='+urllib.parse.quote(query)
+    if request_id is not None:
+        url+='&diagnostics=1&request_id='+urllib.parse.quote(request_id)
+    code='import urllib.request; print(urllib.request.urlopen('+repr(url)+',timeout=3).read().decode())'
     r=k('exec','search-probe','-n','platform','--','python','-c',code,check=False)
     if r.returncode:return None
     return json.loads(r.stdout)

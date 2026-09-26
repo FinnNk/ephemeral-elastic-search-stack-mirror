@@ -1,15 +1,19 @@
 """Small black-box search API and browser page for the frozen UK retail release."""
 import base64
+import hashlib
 import json
 import os
+import re
 import ssl
 import time
 import urllib.parse
 import urllib.request
+import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 MAX_QUERY_LENGTH = 150
+DIAGNOSTIC_SCHEMA = 1
 
 
 def validated_query(path):
@@ -24,15 +28,48 @@ def validated_query(path):
     return query, country, currency
 
 
+def understand(query):
+    """Return the Elasticsearch query and a named rewrite decision."""
+    return query, 'none'
+
+
 def query_body(query, country, currency):
+    understood_query, _decision = understand(query)
     return {
         'size': 20,
         'track_total_hits': True,
         'query': {'bool': {
-            'must': [{'multi_match': {'query': query, 'fields': ['title^4', 'product_type^3', 'brand^2', 'description']}}],
+            'must': [{'multi_match': {'query': understood_query, 'fields': ['title^4', 'product_type^3', 'brand^2', 'description']}}],
             'filter': [{'term': {'country': country}}, {'term': {'currency': currency}}, {'term': {'available': True}}],
         }},
         'sort': [{'_score': 'desc'}, {'product_id': 'asc'}],
+    }
+
+
+def diagnostic_options(path):
+    params = urllib.parse.parse_qs(urllib.parse.urlparse(path).query)
+    if params.get('diagnostics', ['0'])[0] != '1':
+        return None
+    correlation_id = params.get('request_id', [str(uuid.uuid4())])[0]
+    if not re.fullmatch(r'[A-Za-z0-9._-]{1,64}', correlation_id):
+        raise ValueError('Invalid request ID.')
+    return correlation_id
+
+
+def diagnostic_record(raw_query, query, body, result, correlation_id, api_ms, es_ms):
+    understood_query, decision = understand(query)
+    canonical_request = json.dumps(body, sort_keys=True, separators=(',', ':')).encode()
+    return {
+        'schema_version': DIAGNOSTIC_SCHEMA,
+        'correlation_id': correlation_id,
+        'original_query': raw_query,
+        'normalised_query': query,
+        'elasticsearch_query': understood_query,
+        'rewrite': decision,
+        'elasticsearch_request_sha256': hashlib.sha256(canonical_request).hexdigest(),
+        'retrieved_ids': [hit['_source']['product_id'] for hit in result['hits']['hits']],
+        'stage_ms': {'elasticsearch': round(es_ms, 3), 'api_total': round(api_ms, 3)},
+        'unavailable_stages': ['reranker'],
     }
 
 
@@ -65,23 +102,33 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(404, {'error': 'Not found'})
         try:
             query, country, currency = validated_query(self.path)
+            correlation_id = diagnostic_options(self.path)
         except ValueError as error:
             return self.send_json(400, {'error': str(error)})
+        params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+        raw_query = params.get('q', [''])[0]
+        body = query_body(query, country, currency)
         auth = base64.b64encode((os.environ['ES_USER'] + ':' + os.environ['ES_PASSWORD']).encode()).decode()
         request = urllib.request.Request(
             os.environ['ES_URL'] + '/' + os.environ['ES_INDEX'] + '/_search',
-            data=json.dumps(query_body(query, country, currency)).encode(),
+            data=json.dumps(body).encode(),
             headers={'Content-Type': 'application/json', 'Authorization': 'Basic ' + auth},
         )
         try:
             context = ssl.create_default_context(cafile='/es-ca/tls.crt')
+            es_start = time.monotonic()
             with urllib.request.urlopen(request, context=context, timeout=10) as response:
                 result = json.load(response)
+            es_ms = (time.monotonic() - es_start) * 1000
         except Exception as error:
             self.log_error('Elasticsearch request failed: %s', type(error).__name__)
             return self.send_json(502, {'error': 'Search is temporarily unavailable.'})
-        return self.send_json(200, api_response(query, country, currency, result,
-                                                (time.monotonic() - start) * 1000))
+        api_ms = (time.monotonic() - start) * 1000
+        payload = api_response(query, country, currency, result, api_ms)
+        if correlation_id is not None:
+            payload['diagnostics'] = diagnostic_record(raw_query, query, body, result,
+                                                       correlation_id, api_ms, es_ms)
+        return self.send_json(200, payload)
 
     def send_json(self, status, value):
         self.send_body(status, json.dumps(value).encode(), 'application/json; charset=utf-8')

@@ -1,0 +1,7 @@
+--- a/app.py
++++ b/app.py
+@@ -30 +30,3 @@
+-    return query, 'none'
++    if query.casefold() == 'trainers':
++        return 'running shoes', 'trainers-to-running-shoes'
++    return query, 'none'

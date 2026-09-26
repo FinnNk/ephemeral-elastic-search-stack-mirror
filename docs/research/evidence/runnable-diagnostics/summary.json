@@ -1,0 +1,33 @@
+{
+  "diagnostic_noninterference_checks": 4,
+  "errors": [],
+  "fingerprints": {
+    "retail-baseline": "b32669b1945bbb8abd325270ded51a783e632954874fcb23f7e6dd3e0e170c34",
+    "retail-diagnostics": "1623927192379dda656c05575158c1dc8c80f744b46da64058ab57831d37a99b",
+    "retail-diagnostics-trainers": "9129868e37fce3fc6b395ecbd0a322b72b565ac69331bfb61d1a7bfe772d7420"
+  },
+  "preservation_verdict": "unchanged",
+  "query_count": 51,
+  "query_understanding_changed_ids": [
+    "q051"
+  ],
+  "repeat_report_sha256": "8d106787d61792cfa2972eba22693a4b7f2ab0374da81e708cb8764af0c24ef5",
+  "report_blob": "runs/8d106787d61792cfa2972eba22693a4b7f2ab0374da81e708cb8764af0c24ef5/retail-diagnostic-comparison.json",
+  "report_sha256": "8d106787d61792cfa2972eba22693a4b7f2ab0374da81e708cb8764af0c24ef5",
+  "source_prs": [
+    "http://127.0.0.1:31800/elastic-agent/search-spike/pulls/4",
+    "http://127.0.0.1:31800/elastic-agent/search-spike/pulls/5"
+  ],
+  "source_shas": [
+    "f698596420c1f84691762bbcbc3b16017dd21351",
+    "f349746bc60948f0124c1e4c55cb8592989c067c"
+  ],
+  "suite_sha256": "acf835a1bfe7995344b2a4b067a3037f1de28b60c498468ae19356b161b900f1",
+  "timing_blob": "runs/5d62e688f5d7dfc9be32e18a35e68f7539a1abb0d59d60080cbb60d39b6731ad/retail-diagnostic-timings.json",
+  "whitebox_blob": "runs/98a6d87b5c6db082298fe7e00f944fd7779ccecb1725276f5f5de89172e6bbef/retail-whitebox-profile.json",
+  "zero_result_counts": {
+    "baseline": 1,
+    "diagnostic": 1,
+    "rewrite": 0
+  }
+}
