@@ -1,0 +1,12 @@
+--- a/app.py
++++ b/app.py
+@@ -35 +35 @@
+-        'sort': [{'_score': 'desc'}, {'product_id': 'asc'}],
++        'sort': [{'price_minor': 'asc'}, {'product_id': 'asc'}],
+--- a/test_app.py
++++ b/test_app.py
+@@ -18,0 +19,4 @@
++    def test_price_ranking_is_deliberately_distinct(self):
++        self.assertEqual(app.query_body('running shoes', 'GB', 'GBP')['sort'][0],
++                         {'price_minor': 'asc'})
++
