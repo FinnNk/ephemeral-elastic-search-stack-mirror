@@ -34,7 +34,7 @@ data:
     cache:
       enabled: false
   daemon.json: |
-    {"insecure-registries":["gitea.localhost:31800"],"dns":["10.43.0.10"]}
+    {"insecure-registries":["gitea.localhost:31800","nexus.localhost:18185"],"dns":["10.43.0.10"]}
 ---
 apiVersion: apps/v1
 kind: Deployment

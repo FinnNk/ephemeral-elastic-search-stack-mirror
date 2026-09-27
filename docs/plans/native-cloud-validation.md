@@ -2,7 +2,7 @@
 
 ## Intent
 
-Close the hardware and cloud gates left open by the Windows portability build. Reproduce the frozen-search lifecycle on Apple silicon, then validate the proposed GHES, ACR, AKS and Azure Blob boundaries in a test tenant before using local measurements for a production proposal.
+Close the hardware and cloud gates left open by the Windows portability build. Reproduce the frozen-search lifecycle on Apple silicon, then validate the proposed GHES, Nexus/optional ACR, AKS and Azure Blob boundaries in a test tenant before using local measurements for a production proposal.
 
 ## Constraints
 
@@ -40,3 +40,7 @@ Close the hardware and cloud gates left open by the Windows portability build. R
 - [Concurrency evidence](../research/evidence/concurrency-isolation.md)
 - [C4 Azure deployment](../diagrams/rendered/06-azure.svg)
 - [Local developer evaluation loop](developer-evaluation-loop.md) and [measured evidence](../research/evidence/developer-evaluation-loop.md)
+
+## Reference CI/CD validation
+
+Run the [shared delivery workflow](reference-ci-cd.md) on GHES with its self-hosted runner. Retain Nexus or verify an explicit image copy to ACR. Demonstrate protected promotion PRs, exact release/evidence matching, deployment verification and rollback. Check runner labels, workflow discovery, token permissions, status contexts and API adapters on the actual GHES version; local Gitea success does not establish GHES parity.

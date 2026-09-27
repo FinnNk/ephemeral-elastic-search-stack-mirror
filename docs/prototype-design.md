@@ -6,7 +6,7 @@ An engineer or data scientist can create a search environment from a frozen synt
 
 For the lab, **Lab user** covers search engineers, ML engineers and data scientists with the same workflow and capabilities. Search engineering includes relevancy and general software engineering; data science includes ML engineering and data science. These roles overlap and do not define ownership or access boundaries.
 
-The local demonstration covers the complete source-to-disposal lifecycle. It uses a self-hosted Gitea instance for repositories, pull requests, build automation and container images; no external Git provider is required for the core workflow. The eventual target uses GitHub Enterprise. Provider-specific authentication, event payloads and status reporting must therefore sit behind a small integration boundary.
+The local demonstration covers the complete source-to-disposal lifecycle. It uses a self-hosted Gitea instance for repositories, pull requests and build automation, with Nexus for new delivery artifacts; no external Git provider is required for the core workflow. The eventual target uses GitHub Enterprise. Provider-specific authentication, event payloads and status reporting must therefore sit behind a small integration boundary.
 
 | Scope | Required scale |
 | --- | --- |
@@ -60,7 +60,7 @@ The local lab now runs Gitea, Argo CD, ECK, the control UI/API and the lease con
 | Result preservation | Established ranking-similarity library plus ordered-ID equality | Exact verdict, per-query differences and pinned RBO/Jaccard settings |
 | API performance | Gatling open-source Java SDK, feeders, open injection, assertions and local HTML reports | Synthetic traffic/profile preparation, slot scheduling and baseline/candidate report comparison |
 | Metadata | SQLite for the local lab; a replaceable store interface | Environment records, leases and report references |
-| Self-contained source and build loop | Gitea, Gitea Actions runner and Gitea OCI registry | Repository bootstrap, provider adapter and immutable build-to-environment link |
+| Self-contained source and build loop | Gitea, Actions runner and Nexus | Portable workflow, immutable release descriptor and provider adapter |
 
 Argo CD is already used in the target production system and is a design constraint for the prototype.
 
@@ -70,6 +70,8 @@ Argo CD is already used in the target production system and is a design constrai
 - **Finite work:** Kubernetes Jobs cover finite indexing, evaluation and Gatling load tests. Evaluation jobs score relevance, check result preservation and compare retained load reports; separate Gatling jobs generate HTTP traffic. Comparison jobs run in a lab-owned namespace with scoped access to both endpoints and the relevant artifacts.
 - **Workflow complexity:** Do not introduce another operator, workflow engine, queue or service mesh without evidence. Reconsider Argo Workflows only if the observed workflow needs retries, fan-out or auditability beyond Jobs.
 - **Elasticsearch operations:** Use existing Elasticsearch APIs for aliases, bulk indexing, security roles and snapshots rather than implementing equivalents.
+
+The [reference CI/CD plan](plans/reference-ci-cd.md) adds immutable Nexus releases and reviewed promotion through integration, staging and simulated production. Argo CD remains the deployment owner. [Nexus](nexus.md) is persistent infrastructure; historical Gitea registry images remain available. Portable CI and promotion are delivered in batches 7g–7h.
 
 ### Self-contained Git and build lifecycle
 

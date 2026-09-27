@@ -99,6 +99,7 @@ function placeDeployment(view, groups) {
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Local control process':{x:160,y:160,cols:2},
   'Snapshot storage':{x:1480,y:160,cols:1},
+  'Release storage':{x:2080,y:160,cols:1},
   'Persistent platform namespace':{x:160,y:1100,cols:2},
   'Local control plane':{x:160,y:2050,cols:1},
   'Persistent lab services':{x:1480,y:1100,cols:2},
