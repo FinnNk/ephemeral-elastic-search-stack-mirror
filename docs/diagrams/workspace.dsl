@@ -50,7 +50,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             generator = container "Dataset and workload generator" "Generates synthetic data and traces; compiles load profiles." "Versioned batch job" {
                 tags "Job"
             }
-            artifacts = container "Artifact store" "Retains frozen data, workloads, query assets and reports." "Floci AZ locally / Azure Blob Storage later" {
+            artifacts = container "Artifact store" "Retains frozen data, index recipes, workloads, query assets and reports." "Floci AZ locally / Azure Blob Storage later" {
                 tags "Store"
             }
             elastic = container "Shared search engine" "Serves shared frozen indices and dedicated experiment indices." "Self-managed Elasticsearch" {
@@ -70,7 +70,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         engineer -> ui "Manages experiments" "HTTPS"
         ui -> api "Creates experiments, searches and compares" "JSON / HTTPS"
         api -> metadata "Records fingerprints, leases and state" "SQL"
-        api -> artifacts "Reads manifests and report references" "Azure Blob API"
+        api -> artifacts "Pins and reads frozen manifests, index recipes and reports" "Azure Blob API"
         api -> search "Proxies interactive search" "JSON / HTTP"
         api -> argo "Publishes environment and job desired state" "Git files or plugin; TBC"
         api -> kube "Observes readiness and job completion" "Kubernetes API"

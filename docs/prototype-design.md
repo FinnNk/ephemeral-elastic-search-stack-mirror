@@ -229,7 +229,9 @@ Query and judgement rules:
 - **Judgements:** Judgements are graded and keyed by query ID and product ID. Document how synthetic relevance was assigned; evaluations measure agreement with that model, not real customer benefit.
 - **Held-out evaluation:** Keep a held-out query subset so tuning against the visible set does not silently become the only reported outcome.
 
-The canonical release remains usable if index mappings or Elasticsearch versions change. An Elasticsearch snapshot is an acceleration artifact for a compatible version and mapping, not the sole source of truth. Snapshot restore requires compatible snapshot, index and destination versions. See [Elastic snapshot compatibility](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/restore-snapshot).
+The canonical release remains usable if index mappings or Elasticsearch versions change. Each new environment now pins a content-addressed index recipe in Blob storage: the full mapping and settings, release manifest and product hashes, document count, indexer source and image digest, and Elasticsearch version. A historical dedicated index can be rebuilt from that recipe after its local mapping file changes. The shared baseline keeps its release-named index; a conflicting mapping or version is rejected instead of replaced. New schema experiments use dedicated indices. Existing environment records created before recipes were introduced have no historical recipe and cannot claim this restoration guarantee.
+
+An Elasticsearch snapshot could accelerate restoration of a compatible recipe but is not the sole source of truth. Snapshot restore requires compatible snapshot, index and destination versions. See [Elastic snapshot compatibility](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/restore-snapshot).
 
 ### Frozen traffic and workload contract
 
@@ -290,7 +292,7 @@ Each baseline or candidate runtime follows the [environment lifecycle](diagrams/
 States: `requested` → `provisioning` → `indexing` → `ready`; any active state may become `failed` or `deleting`.
 
 - **Deletion:** `deleted` is terminal for that runtime instance. Its frozen definition, referenced images and query assets, canonical dataset and saved reports persist.
-- **Recreation:** A new request recreates the same definition in a new runtime instance; dedicated indices may be rebuilt from the pinned dataset and index design.
+- **Recreation:** A new request can name a retained recipe SHA-256 from a previous environment. The lab verifies that it was previously pinned, loads the complete recipe from Blob storage and rebuilds a missing index from the pinned dataset and indexer. A shared index with a conflicting schema fails closed; dedicated indices can coexist under separate names.
 - **State evidence:** The API exposes errors and timings for every state transition.
 
 Initial endpoints:
@@ -538,7 +540,7 @@ The first slice should be usable without a terminal after bootstrap.
 
 - **Warm platform:** Keep Kubernetes, ECK, the shared Elasticsearch cluster and Floci running between environment creations. Pre-pull or cache images.
 - **Fast and indexing paths:** API, query-understanding and ranking changes should create a search API deployment that points to an already indexed frozen release; mapping changes run an indexing Job.
-- **Snapshot option:** Bulk index from the canonical release by default. Floci 0.13.0 failed Elasticsearch 9.5.3 repository verification on batch deletion; restore was not reached. Reconsider snapshot acceleration only after compatibility passes, then measure it at the target size.
+- **Snapshot option:** Reuse an existing index first, then bulk index from its historical recipe and canonical release when absent. Floci 0.13.0 failed Elasticsearch 9.5.3 repository verification on batch deletion; restore was not reached. Test compatible snapshot repositories separately and measure their restore time against the recipe rebuild at the target size.
 
 Measure startup and removal separately:
 

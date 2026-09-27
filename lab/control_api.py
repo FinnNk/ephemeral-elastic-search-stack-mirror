@@ -11,6 +11,7 @@ from common import STATE
 from blob_config import service
 from measure import search
 from lifecycle import ActiveComparisonError, DATASET, RELEASES, local_lifecycle, parse_stamp, utcnow
+from index_candidate import available_kinds
 from control_identity import GiteaIdentity, Sessions, expired_cookie, session_cookie
 
 PORT = 18082
@@ -97,6 +98,8 @@ class Handler(BaseHTTPRequestHandler):
                     releases.append({'release': release_id,
                                      'manifest': json.loads(path.read_text(encoding='utf-8'))})
             return self.send_json(200, releases)
+        if parts == ['api', 'index-kinds']:
+            return self.send_json(200, {release_id: available_kinds(release_id) for release_id in RELEASES})
         if parts == ['api', 'environments']:
             return self.send_json(200, [row for row in self.controller.store.all() if self.visible(row, identity)])
         if parts == ['api', 'comparisons']:
@@ -184,7 +187,8 @@ class Handler(BaseHTTPRequestHandler):
             if parts == ['api', 'environments']:
                 row = self.controller.create(payload['name'], payload['build_run'], owner=identity['username'],
                                              index_kind=payload.get('index_kind', 'shared'),
-                                             release_id=payload.get('release_id', DATASET))
+                                             release_id=payload.get('release_id', DATASET),
+                                             index_recipe_sha256=payload.get('index_recipe_sha256') or None)
                 return self.send_json(201 if row['state'] == 'ready' else 202, row)
             if parts == ['api', 'comparisons']:
                 first = self.controller.store.get(payload['baseline_id'])
