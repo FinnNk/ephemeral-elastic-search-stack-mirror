@@ -196,7 +196,7 @@
         "rendered light preview",
         "automated light/dark browser containment"
       ],
-      "observations": "SLO signal, operation, trace, related log and retained report are readable. Live SigNoz navigation remains unverified pending organisation setup."
+      "observations": "SLO signal, operation, trace, related log and retained report are readable. Stored traces and logs now share a trace ID; live SigNoz navigation remains unverified."
     }
   ],
   "c4": {

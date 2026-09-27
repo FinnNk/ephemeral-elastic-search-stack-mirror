@@ -10,14 +10,14 @@ The control-runtime consolidation and delivery rehearsal are merged to `main`. E
 | Lifecycle and recovery | Kubernetes `lab-control`, durable leases, expiry, deletion, interrupted-operation recovery, index reuse/clone/snapshot/rebuild; updated Pod created shared, dedicated and historical environments | Complete disposable activation and recovery rehearsal; repeat timing samples where a target claim requires them |
 | Input and evaluation contracts | Independent manifests, producer/evaluator Jobs, retained observations and offline rescoring; deployed control selects hash-checked inputs and catalogue-only recipes by default. New 10k/1M indices, historical replay and deployed comparison have live checks. | Exercise an addendum-backed promotion through the same installed control path; validate external producer/evaluator boundaries on Azure |
 | Delivery | Gitea Actions, Nexus images and release bundles, protected promotion PRs; merged-source 1M schema release promoted and rolled back through all three local targets with fresh direction-specific evidence | Validate GHES portability and repeat timing samples where a target claim requires them |
-| Observability | Search API signal contract and SLO arithmetic; pinned SigNoz, ClickHouse, gateway and scoped log agents installed on a dedicated worker; control telemetry image deployed and smoke-checked; local New Relic export profile exercised against a mock endpoint | Initialise the SigNoz organisation, verify ingestion and dashboard-to-trace-to-log journeys, instrument remaining finite Jobs and measure overhead |
+| Observability | Search API signal contract and SLO arithmetic; pinned SigNoz, ClickHouse, gateway and scoped log agents installed on a dedicated worker; agent organisation bootstrapped; synthetic search traces and metrics plus correlated delivery traces and logs stored; local New Relic export profile exercised against a mock endpoint | Verify dashboard arithmetic and browser drill-through, instrument remaining finite Jobs and measure overhead |
 | Platform | Gitea, Argo CD, Floci, SeaweedFS and Elasticsearch on the local host | Apple silicon, AKS, Azure Blob/identity and New Relic validation |
 
 The [reference-clarity audit](reference-clarity.md) tracks historical-schema and documentation cleanup separately from these delivery gates. It retains frozen replay without making old schemas the default path.
 
 ## Next batches
 
-1. [SigNoz backend and signal transport](signoz-backend-and-investigation.md) is ready for review. The backend, gateway, log agent and control signals are deployed; backend ingestion awaits first organisation setup.
+1. [SigNoz backend and signal transport](signoz-backend-and-investigation.md) is ready for review. The backend, gateway and log agent are deployed; the agent organisation is bootstrapped and all three signal types have stored records.
 2. [Connected SigNoz investigation](signoz-connected-investigation.md) completes dashboard, finite-job coverage, three-target drill-through and overhead checks.
 3. [Native and cloud validation](native-cloud-validation.md): run the full lifecycle on Apple silicon and Azure/GHES, including New Relic ingestion.
 

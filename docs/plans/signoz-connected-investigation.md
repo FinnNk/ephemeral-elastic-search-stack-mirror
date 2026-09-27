@@ -6,7 +6,7 @@ Complete the local observability demonstration from a search or operation SLO br
 
 ## Constraints
 
-- The first SigNoz organisation needs a named administrator. Keep the human owner and agent identities distinct; store credentials outside Git. Do not treat Kubernetes readiness as ingestion proof.
+- Organisation `relevance-lab` and agent administrator `elastic-agent@lab.local` are bootstrapped, with the credential outside Git. Invite the human owner as a separate administrator. Verify each connected result from stored signals, not Kubernetes readiness alone.
 - Retain the current Search API and control OTLP contracts. Keep unsampled eligible/good counters separate by normal, warm-up, peak, stress and probe cohorts. Never use operation IDs, queries or product bodies as metric dimensions.
 - Keep Blob reports, release digests and human review authoritative. Telemetry may link to them but cannot replace frozen comparison evidence.
 - Preserve Blob-only egress for independent producer/evaluator Jobs; use safe structured Kubernetes logs for their operation and artifact correlation. Keep each source on one log ingestion route.

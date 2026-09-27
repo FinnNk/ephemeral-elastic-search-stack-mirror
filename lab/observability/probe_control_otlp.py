@@ -1,4 +1,4 @@
-"""Check control-operation OTLP output without a SigNoz organisation."""
+"""Check control-operation OTLP output against a local mock receiver."""
 
 from contextlib import redirect_stdout
 import http.server
