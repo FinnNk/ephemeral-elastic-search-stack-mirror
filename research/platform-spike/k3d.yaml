@@ -27,3 +27,6 @@ registries:
       "gitea.localhost:31800":
         endpoint:
           - "http://k3d-relevance-lab-server-0:30080"
+      "nexus.localhost:18185":
+        endpoint:
+          - "http://relevance-nexus:5000"

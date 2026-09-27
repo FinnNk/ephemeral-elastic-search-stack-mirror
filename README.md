@@ -15,6 +15,8 @@ The design is merged. An [experimental research harness](research/platform-spike
 - [Research results](docs/research/platform-spike.md): 20 warm lifecycle trials, API and analyser comparisons, isolation and failure recovery.
 - [Proposed decision](docs/adr/ADR-0001-reconcile-environments-from-git.md): reconcile environments from Git-file ApplicationSets; use k3d provisionally.
 - [Local access](research/platform-spike/README.md#personal-access): named Gitea and Argo CD administrator logins and browser URLs.
+- [Nexus artifact storage](docs/nexus.md): private images, release bundles and your separate administrator login.
+- [Reference CI/CD plan](docs/plans/reference-ci-cd.md): portable builds, promotion PRs, Argo CD deployment and rollback.
 - [Lifecycle evidence](docs/research/evidence/lifecycle-measurement/README.md): named owner checks and 20/20 warm removals; nearest-rank deletion p95 53.844 seconds against the five-minute target.
 - [Index-change evidence](docs/research/evidence/index-change.md): separate frozen index, authenticated API comparison, access isolation and cleanup.
 - [Synthetic traffic and Gatling](docs/research/synthetic-traffic.md): frozen query/timestamp pairs, finite Kubernetes Jobs and public-API performance comparisons, including long-duration million-release schedules.

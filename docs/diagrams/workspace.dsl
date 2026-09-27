@@ -5,11 +5,17 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         operator = person "Platform engineer" "Operates the lab and tests capacity."
 
         delivery = softwareSystem "Source and build platform" "Git, pull requests, builds and images. Gitea locally; GitHub Enterprise later." {
-            gitea = container "Gitea" "Stores source, desired state and OCI images." "Gitea; Git / OCI" {
+            gitea = container "Gitea" "Stores source, desired state and historical images." "Gitea; Git / OCI" {
                 tags "Platform"
             }
             runner = container "Build runner" "Tests source and publishes a pinned image." "Gitea Actions locally; target runner TBC" {
                 tags "Platform"
+            }
+            nexus = container "Nexus" "Retains private images and immutable release bundles." "Nexus Community Edition" {
+                tags "Store"
+            }
+            nexusdb = container "Nexus metadata" "Retains artifact metadata and repository configuration." "PostgreSQL 17" {
+                tags "Store"
             }
             enterprise = container "GitHub Enterprise Server" "Hosts source, pull requests and build events after migration." "GitHub Enterprise Server" {
                 tags "Future"
@@ -53,7 +59,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             artifacts = container "Artifact store" "Retains frozen data, index recipes, workloads, query assets and reports." "Floci AZ locally / Azure Blob Storage later" {
                 tags "Store"
             }
-            snapshots = container "Index snapshot repository" "Retains regular Elasticsearch snapshots independently of index and environment lifetimes." "SeaweedFS S3 locally / Azure Blob proposed" {
+            snapshots = container "Index snapshot repository" "Retains index snapshots after environment deletion." "SeaweedFS S3 locally / Azure Blob proposed" {
                 tags "Store"
             }
             elastic = container "Shared search engine" "Serves shared frozen indices and dedicated experiment indices." "Self-managed Elasticsearch" {
@@ -87,6 +93,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         expiry -> metadata "Finds expired leases and records cleanup" "SQL locally; API contract on AKS"
         gitea -> runner "Offers a build for a pinned commit" "Actions protocol"
         runner -> gitea "Pushes tested image and digest" "OCI / HTTPS"
+        nexus -> nexusdb "Stores repository metadata" "PostgreSQL"
         runner -> registry "Pushes tested image after migration" "OCI / HTTPS" {
             tags "Future"
         }
@@ -134,6 +141,10 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                 }
                 deploymentNode "Snapshot storage" "Docker volume survives Elasticsearch Pod and data-PVC replacement" "Host Docker service" {
                     containerInstance snapshots
+                }
+                deploymentNode "Release storage" "Separate persistent volumes; loopback administration" "Host Docker services" {
+                    containerInstance nexus
+                    containerInstance nexusdb
                 }
                 deploymentNode "Local Kubernetes" "Measured two-node k3d cluster" "Kubernetes" {
                     deploymentNode "Local control plane" "Cluster control services" "Kubernetes control plane" {

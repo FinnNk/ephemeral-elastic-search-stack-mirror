@@ -1,0 +1,12 @@
+{
+  "reader_write_status": 403,
+  "overwrite_status": 409,
+  "publisher_delete_status": 403,
+  "anonymous_read_status": 401,
+  "publisher_admin_status": 403,
+  "restart_to_read_seconds": 29.75,
+  "artifact_sha256": "78850da22e5e649f2622e3036f60e222c1af2a4a081e86f1ebaed12b2cd050b3",
+  "private_image": "nexus.localhost:18185/verification@sha256:4a91138c86afa14a405836ee4cc2cb391a5a8d68bc1a1548d53c235e02ecea2a",
+  "kubernetes_digest_pull": true,
+  "database_version": "17.11"
+}

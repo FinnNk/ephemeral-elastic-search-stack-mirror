@@ -19,7 +19,7 @@ On a fresh Apple silicon machine, install the native tools at the versions in th
 | Lab component | Azure target | Identity and operational check |
 | --- | --- | --- |
 | Gitea source and Actions | GitHub Enterprise Server (GHES) and a trusted self-hosted Actions runner | Replace repository/PR/run APIs, webhook signatures and runner registration behind the source-provider boundary. Keep source SHA and image digest in the environment record. |
-| Gitea OCI registry | Azure Container Registry (ACR) | Build and push the same two-platform image; grant AKS kubelet identity pull access. GHES's container registry is still documented as public preview in 3.21, so ACR is the proposed production registry. |
+| Nexus; historical Gitea registry | Retain Nexus, or use ACR for Azure image distribution | Nexus stores immutable images and release bundles independently of Git provider. ACR is optional; verify copied image digests and grant AKS scoped pull access. |
 | k3d and local Argo CD | AKS and Argo CD | Keep Argo CD as sole deployment reconciler. Configure Git credentials and authenticated webhook/refresh against GHES, then measure event-to-ready latency. |
 | Host API, UI, expiry reconciler and SQLite | AKS lab service, CronJob and durable metadata store | Move the current one-controller process behind ingress and service authentication. Choose a transactional shared store and writer coordination before multiple API replicas; SQLite and one Git checkout do not provide that. |
 | Floci AZ | Azure Blob Storage | Keep immutable object names and SHA-256 checks. Use a dedicated workload identity for the Blob-writing lab controller and a short user-delegation read SAS for the finite index Job. |

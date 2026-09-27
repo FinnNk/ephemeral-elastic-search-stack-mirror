@@ -1,0 +1,13 @@
+{
+  "nexus_image": "sonatype/nexus3:3.96.3@sha256:a406f4e9dc149e050723a93bf57964311f6d1c88e1dcbed2e42ea373319a1772",
+  "postgres_image": "postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+  "ui": "http://127.0.0.1:18183",
+  "registry": "nexus.localhost:18185",
+  "repositories": [
+    "lab-images",
+    "lab-releases"
+  ],
+  "database": "PostgreSQL",
+  "anonymous": false,
+  "write_policy": "ALLOW_ONCE"
+}
