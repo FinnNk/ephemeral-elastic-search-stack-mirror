@@ -1,0 +1,13 @@
+{
+  "aggregation": "macro",
+  "gain_mapping": "ir-measures default graded gain",
+  "kind": "evaluation-specification",
+  "metrics": [
+    "nDCG@5",
+    "nDCG@10",
+    "Judged@10",
+    "RR@10:rel=2"
+  ],
+  "schema_version": 1,
+  "unjudged_policy": "unknown; metric library treats missing qrels as zero"
+}

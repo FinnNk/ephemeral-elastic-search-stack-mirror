@@ -1,0 +1,10 @@
+{
+  "kind": "promotion-policy",
+  "schema_version": 1,
+  "max_capture_age_hours": 72,
+  "max_evaluation_age_hours": 72,
+  "minimum_judged_fraction": 0.0,
+  "required_metrics": ["nDCG@10", "Judged@10"],
+  "required_other_checks": ["result-regression", "performance"],
+  "review": "human approval required"
+}

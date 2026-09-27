@@ -2,6 +2,7 @@
 import hashlib
 import json
 import sys
+from datetime import datetime, timezone
 
 sys.path.insert(0, 'research/platform-spike')
 from compare_search import definition, frozen_suite, immutable_blob, jaccard, rbo, response
@@ -68,6 +69,19 @@ def evaluate_pair(baseline, candidate, mode, scope='full'):
             errors.append({'kind': type(error).__name__, 'detail': str(error)[:120], 'stage': 'evaluation job'})
     else:
         observations, execution = [], {'execution': 'preflight only'}
+    request_by_id = {row['query_id']: row for row in suite}
+    retained_observations = []
+    for item in observations:
+        request = request_by_id[item['query_id']]
+        entry = {'query_id': item['query_id'],
+                 'request': {'query': request['query'], 'country': request['country'],
+                             'currency': request['currency'], 'filters': request.get('filters', {})}}
+        if 'error' in item:
+            entry['error'] = item['error']
+        else:
+            entry['baseline'] = item.get('baseline')
+            entry['candidate'] = item.get('candidate')
+        retained_observations.append(entry)
     by_query = {row['query_id']: row for row in observations}
     for query in suite if not errors else ():
         try:
@@ -142,11 +156,24 @@ def evaluate_pair(baseline, candidate, mode, scope='full'):
                 except (RuntimeError, TimeoutError, ValueError):
                     pass
     stable_execution = {key: value for key, value in execution.items() if key not in ('seconds', 'job_name')}
+    observation_set = {'kind': 'search-observation-set', 'schema_version': 1,
+                       'baseline_fingerprint': first['fingerprint'],
+                       'candidate_fingerprint': second['fingerprint'],
+                       'catalogue_sha256': first['dataset_sha256'],
+                       'query_suite_sha256': suite_sha, 'captured_depth': 10,
+                       'captured_at': datetime.now(timezone.utc).isoformat(),
+                       'request_adapter': 'search-api-v1', 'execution': stable_execution,
+                       'errors': errors, 'observations': retained_observations}
+    observation_payload = (json.dumps(observation_set, sort_keys=True, separators=(',', ':')) + '\n').encode()
+    observation_sha = hashlib.sha256(observation_payload).hexdigest()
+    observation_blob = immutable_blob('runs',
+        'observation-set/' + observation_sha + '/observations.json', observation_payload)
     report = {'kind': 'controlled-api-comparison', 'mode': mode, 'scope': scope,
               'complete': complete, 'verdict': verdict, 'execution': stable_execution,
               'baseline': {'runtime_id': baseline['id'], 'source_sha': baseline['source_sha'], **first},
               'candidate': {'runtime_id': candidate['id'], 'source_sha': candidate['source_sha'], **second},
               'suite_sha256': suite_sha, 'suite_blob': suite_blob,
+              'observation_sha256': observation_sha, 'observation_blob': observation_blob,
               'judgement_sha256': pool_manifest['sha256']['judgements.jsonl'] if mode == 'relevance' else None,
               'judgement_pool': pool_manifest.get('judgement_pool') if mode == 'relevance' else None,
               'judgement_provenance': ({'source': 'candidate-derived-synthetic-pool' if pooled else 'frozen-synthetic-release',
@@ -166,6 +193,7 @@ def evaluate_pair(baseline, candidate, mode, scope='full'):
     digest = hashlib.sha256(payload).hexdigest()
     location = immutable_blob('runs', digest + '/controlled-comparison.json', payload)
     return {'report_sha256': digest, 'report_blob': location, 'mode': mode, 'complete': complete,
+            'observation_sha256': observation_sha, 'observation_blob': observation_blob,
             'verdict': verdict, 'scope': scope, 'execution': execution,
             'query_count': len(suite), 'completed_query_count': len(results),
             'changed_query_ids': changed, 'zero_result_counts': zero_counts,

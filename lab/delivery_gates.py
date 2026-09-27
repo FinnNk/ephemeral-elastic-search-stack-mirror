@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta, timezone
 import json
 import sys
+from pathlib import Path
 
 sys.path.insert(0, '.lab/python-libs')
 sys.path.insert(0, 'research/platform-spike')
@@ -11,6 +12,7 @@ from control_comparison import evaluate_pair
 from performance_pair import evaluate_performance_pair
 from delivery.ci.release import canonical, digest
 from delivery_runtime import preview
+from promotion_policy import validate as validate_offline_policy
 
 
 def retain(value, filename):
@@ -27,6 +29,37 @@ def read(reference):
     if digest(payload) != reference['sha256']:
         raise ValueError('Retained report bytes differ from their hash.')
     return json.loads(payload)
+
+
+def read_offline(reference, kind):
+    """Read a typed, content-addressed report or policy from the retained run store."""
+    if reference.get('kind') != kind or reference.get('bytes', 0) <= 0:
+        raise ValueError('Offline artifact kind or size differs.')
+    container, name = reference['blob'].split('/', 1)
+    parts = name.split('/')
+    if container != 'runs' or len(parts) != 3 or parts[:2] != [kind, reference['sha256']] or \
+            not parts[2] or parts[2] in ('.', '..'):
+        raise ValueError('Offline artifact reference is not content-addressed.')
+    payload = service().get_blob_client(container, name).download_blob().readall()
+    if digest(payload) != reference['sha256'] or len(payload) != reference['bytes']:
+        raise ValueError('Retained offline artifact differs from its reference.')
+    return payload
+
+
+def validate_offline_addendum(addendum, relevance_report, baseline, candidate):
+    expected = addendum['expected']
+    if expected['baseline_fingerprint'] != baseline or expected['candidate_fingerprint'] != candidate or \
+            expected['catalogue_sha256'] != relevance_report['baseline']['dataset_sha256'] or \
+            expected['catalogue_sha256'] != relevance_report['candidate']['dataset_sha256'] or \
+            expected['query_suite_sha256'] != relevance_report['suite_sha256'] or \
+            expected['observation_sha256'] != relevance_report.get('observation_sha256'):
+        raise ValueError('Offline evaluation belongs to another delivery execution.')
+    report_bytes = read_offline(addendum['report'], 'evaluation-report')
+    policy_bytes = read_offline(addendum['policy'], 'promotion-policy')
+    pinned = Path(__file__).parent / 'delivery/policies/observation-evidence-v1.json'
+    if digest(policy_bytes) != digest(pinned.read_bytes()):
+        raise ValueError('Offline evaluation policy is not the pinned delivery policy.')
+    return validate_offline_policy(report_bytes, policy_bytes, expected)
 
 
 def check_report(report, mode, baseline, candidate, intent):
@@ -61,9 +94,27 @@ def validate_evidence(reference, baseline, candidate, intent):
     expected = {'result-regression', 'relevance', 'performance'}
     if set(evidence.get('reports', {})) != expected:
         raise ValueError('All three evaluation reports are required.')
+    relevance = None
     for mode, report in evidence['reports'].items():
-        check_report(read(report), mode, baseline, candidate, intent)
+        value = read(report)
+        check_report(value, mode, baseline, candidate, intent)
+        if mode == 'relevance':
+            relevance = value
+    if evidence.get('offline_evaluation') is not None:
+        validate_offline_addendum(evidence['offline_evaluation'], relevance, baseline, candidate)
     return evidence
+
+
+def attach_offline(reference, report_reference, policy_reference, expected):
+    """Retain a new evidence version; the prior delivery evidence stays unchanged."""
+    evidence = read(reference)
+    if 'offline_evaluation' in evidence:
+        raise ValueError('Delivery evidence already selects an offline evaluation.')
+    updated = {**evidence, 'offline_evaluation': {
+        'report': report_reference, 'policy': policy_reference, 'expected': expected}}
+    retained = retain(updated, 'delivery-evidence.json')
+    validate_evidence(retained, evidence['baseline'], evidence['candidate'], evidence['intent'])
+    return retained
 
 
 def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):

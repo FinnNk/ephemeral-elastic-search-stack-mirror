@@ -19,9 +19,14 @@ def digest(value):
     return hashlib.sha256(canonical(value)).hexdigest()
 
 
+def catalogue_digest(value):
+    """Match the newline-terminated v1 data contract manifest bytes."""
+    return hashlib.sha256((json.dumps(value, sort_keys=True, separators=(',', ':')) + '\n').encode()).hexdigest()
+
+
 def current_recipe(release_id, index_kind, release_manifest, engine_version, mapping=None):
     if mapping is None:
-        mapping = MILLION_MAPPING if release_id == 'retail-gb-1m-v1' else BASELINE_MAPPING
+        mapping = MILLION_MAPPING if release_manifest.get('compression') == 'gzip' else BASELINE_MAPPING
     product_name = 'products.jsonl.gz' if release_manifest.get('compression') == 'gzip' else 'products.jsonl'
     worker = (Path(__file__).resolve().parent.parent / 'research/platform-spike/index_job.py').read_text(encoding='utf-8')
     return {
@@ -35,9 +40,34 @@ def current_recipe(release_id, index_kind, release_manifest, engine_version, map
     }
 
 
-def validate(recipe, release_id=None, release_manifest=None, engine_version=None):
+def catalogue_recipe(release_id, index_kind, catalogue_manifest, engine_version, mapping):
+    """Build a v2 recipe pinned to catalogue bytes, independent of qrels/queries."""
+    if catalogue_manifest.get('kind') != 'catalogue' or \
+            catalogue_manifest.get('schema_version') != 1:
+        raise ValueError('A v1 catalogue artifact manifest is required.')
+    content = catalogue_manifest['content']
+    if content['format'] != 'jsonl' or content['compression'] not in ('gzip', 'none'):
+        raise ValueError('Unsupported catalogue encoding for the indexer.')
+    worker = (Path(__file__).resolve().parent.parent / 'research/platform-spike/index_job.py').read_text(encoding='utf-8')
+    recipe = {'format': 2, 'release_id': release_id, 'index_kind': index_kind,
+              'catalogue_manifest_sha256': catalogue_digest(catalogue_manifest),
+              'product_object': Path(content['object']).name,
+              'product_sha256': content['sha256'],
+              'document_count': catalogue_manifest['record_count'],
+              'compression': content['compression'], 'index_definition': mapping,
+              'engine_version': engine_version,
+              'indexer': {'image': INDEXER_IMAGE,
+                          'source_sha256': hashlib.sha256(worker.encode('utf-8')).hexdigest(),
+                          'source': worker}}
+    return validate(recipe, release_id=release_id, catalogue_manifest=catalogue_manifest,
+                    engine_version=engine_version)
+
+
+def validate(recipe, release_id=None, release_manifest=None, engine_version=None,
+             catalogue_manifest=None):
     kind = recipe.get('index_kind', '')
-    if recipe.get('format') != 1 or (kind != 'shared' and not re.fullmatch(r'[a-z0-9-]+-v[0-9]+', kind)):
+    if recipe.get('format') not in (1, 2) or \
+            (kind != 'shared' and not re.fullmatch(r'[a-z0-9-]+-v[0-9]+', kind)):
         raise ValueError('Unsupported frozen index recipe.')
     if release_id is not None and recipe['release_id'] != release_id:
         raise ValueError('Frozen index recipe belongs to another release.')
@@ -50,12 +80,24 @@ def validate(recipe, release_id=None, release_manifest=None, engine_version=None
         raise ValueError('Frozen indexer image must use a digest.')
     if release_manifest is not None:
         product_name = 'products.jsonl.gz' if release_manifest.get('compression') == 'gzip' else 'products.jsonl'
-        if (recipe['release_manifest_sha256'] != digest(release_manifest) or
+        if ((recipe['format'] == 1 and recipe['release_manifest_sha256'] != digest(release_manifest)) or
                 recipe['product_object'] != product_name or
                 recipe['product_sha256'] != release_manifest['sha256'][product_name] or
                 recipe['document_count'] != release_manifest['count'] or
                 recipe['compression'] != release_manifest.get('compression', 'none')):
             raise ValueError('Frozen release differs from the index recipe.')
+    if recipe['format'] == 2:
+        identifier = recipe.get('catalogue_manifest_sha256', '')
+        if len(identifier) != 64 or any(c not in '0123456789abcdef' for c in identifier):
+            raise ValueError('Catalogue recipe has no pinned manifest.')
+        if catalogue_manifest is not None:
+            content = catalogue_manifest['content']
+            if (catalogue_digest(catalogue_manifest) != identifier or
+                    content['sha256'] != recipe['product_sha256'] or
+                    Path(content['object']).name != recipe['product_object'] or
+                    catalogue_manifest['record_count'] != recipe['document_count'] or
+                    content['compression'] != recipe['compression']):
+                raise ValueError('Catalogue artifact differs from the index recipe.')
     if set(recipe['index_definition']) != {'settings', 'mappings'}:
         raise ValueError('Frozen index recipe has no complete index definition.')
     return recipe
@@ -96,3 +138,19 @@ def load(recipe_sha256):
     if canonical(recipe) != payload:
         raise ValueError('Stored frozen index recipe encoding differs.')
     return validate(recipe)
+
+
+def verify_catalogue_manifest(recipe):
+    """Admit a new v2 recipe only when its independent catalogue is retained."""
+    if recipe.get('format') != 2:
+        raise ValueError('Only a v2 catalogue recipe can introduce a new index recipe.')
+    identifier = recipe['catalogue_manifest_sha256']
+    _, container, _, _ = settings()
+    payload = service().get_blob_client(
+        container, 'manifests/catalogue/' + identifier + '.json').download_blob().readall()
+    if hashlib.sha256(payload).hexdigest() != identifier:
+        raise ValueError('Retained catalogue manifest hash differs.')
+    manifest = json.loads(payload)
+    if (json.dumps(manifest, sort_keys=True, separators=(',', ':')) + '\n').encode() != payload:
+        raise ValueError('Retained catalogue manifest encoding differs.')
+    return validate(recipe, catalogue_manifest=manifest)

@@ -4,7 +4,15 @@
 
 Separate product, query, judgement and traffic producers from the search implementation and lab orchestration. Let the lab consume immutable artifacts and evaluator reports through explicit contracts. Preserve existing comparisons and make input versions independently selectable.
 
-**Status: planned, after [Kubernetes control services](kubernetes-control-services.md).** This batch validates ownership, interchange and reproducibility mechanics. It does not establish the statistical validity of metrics or realism of synthetic judgements.
+**Status: in progress on `slice/independent-data-evaluation-contracts`, stacked on [Kubernetes control services](kubernetes-control-services.md).** The [local evidence](../research/evidence/independent-data-evaluation-contracts.md) records demonstrated behaviour and open gates. This batch validates ownership, interchange and reproducibility mechanics. It does not establish the statistical validity of metrics or realism of synthetic judgements.
+
+| Acceptance area | Current evidence | Remaining gate |
+| --- | --- | --- |
+| Inputs and producers | Existing 10k/1M bytes validated; third synthetic pack published twice by `lab-data` Job | Keep emulator write-scope limitation explicit |
+| Execution and evaluation | Direct observations retained; revised queries captured on unchanged APIs; old observations rescored twice; a finite Kubernetes evaluator Job reproduced the standalone 1,000-query report | Expose independent selection in the control UI |
+| Index schema | Catalogue-only recipe admitted and served a 10k preview | Reviewed schema-changing delivery and rollback rehearsal |
+| Delivery and retention | Optional immutable policy addendum is checked again at promotion; read-only inventory found all 12 selected references and detected an intentionally missing one | Exercise a real proposal with the addendum |
+| Model and hand-off | Design, C4, Archify and contract guidance updated | Complete diagram rendering and visual review before closing this batch |
 
 ## Contracts
 

@@ -4,7 +4,7 @@ Open the [diagram gallery](index.html) in a browser, or start with the [system c
 
 ## Reading order
 
-The local deployment view places the control API and workers in `lab-control`. [Independent data/evaluation contracts](../plans/independent-data-evaluation-contracts.md) and [OTel/SigNoz observability](../plans/otel-observability.md) remain planned. The observability views will show SLO breach → operation → trace → logs and the New Relic target.
+The local deployment view places the control API and workers in `lab-control`. Independent synthetic input production and offline evaluation run as finite Jobs under separate images and artifact contracts; [their batch](../plans/independent-data-evaluation-contracts.md) still has delivery integration checks. [OTel/SigNoz observability](../plans/otel-observability.md) remains planned.
 
 The gallery groups diagrams by task. The identifiers below remain stable.
 
@@ -14,7 +14,7 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 | --- | --- | --- |
 | [01 · C4 system context](rendered/01-context.svg) | Lab users, platform engineers and supporting systems. | [Structurizr DSL](workspace.dsl) |
 | [02 · C4 containers: control](rendered/02-control.svg) | Environment state, leases and deployment. | [Structurizr DSL](workspace.dsl) |
-| [03 · C4 containers: evaluation](rendered/03-evaluation.svg) | Frozen data, snapshots, search APIs and diagnostics. | [Structurizr DSL](workspace.dsl) |
+| [03 · C4 containers: evaluation](rendered/03-evaluation.svg) | API capture, shared index, workloads and diagnostics. The context view shows independent input and scoring owners. | [Structurizr DSL](workspace.dsl) |
 | [05 · C4 local deployment](rendered/05-local.svg) | Kubernetes control Pod and state volume; host Nexus/PostgreSQL and S3 storage; experiment workloads. | [Structurizr DSL](workspace.dsl) |
 | [06 · C4 Azure deployment](rendered/06-azure.svg) | GHES, Nexus, optional ACR, Blob Storage and AKS. | [Structurizr DSL](workspace.dsl) |
 
@@ -47,7 +47,7 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 
 | View | Contents | Editable source |
 | --- | --- | --- |
-| [07 · Compare relevance](interactive/evaluation-dataflow.html) | Baseline and candidate rankings are scored against frozen judgements. | [Archify data flow](archify/evaluation-dataflow.json) |
+| [07 · Compare relevance](interactive/evaluation-dataflow.html) | Both APIs produce retained observations; an independent evaluator scores them against selected judgements. | [Archify data flow](archify/evaluation-dataflow.json) |
 | [11 · Verify unchanged results](interactive/result-regression.html) | Compare ordered API results, explain differences and record an exact-match verdict. | [Archify workflow](archify/result-regression.json) |
 | [12 · Check API performance](interactive/performance-check.html) | Gatling replays pinned phases against each API; reports retain phase verdicts and capacity. | [Archify workflow](archify/performance-check.json) |
 
@@ -67,7 +67,7 @@ The Archify HTML files are standalone interactive viewers with theme, presentati
 
 - **C4 structure:** a container means a runnable application or data store, not necessarily a Docker container. The three container views are focused subsets of one model. Relationships describe calls/dependencies; arrow direction is not necessarily the direction of returned data. The Archify data-flow arrows show data movement.
 - **Deployment:** these views deliberately show placement and persistence without interaction arrows. Instances refer back to the same C4 containers. Experiment boxes are templates repeated per namespace, not a fixed count or a capacity claim. Index-build, evaluation and Gatling jobs are finite. Comparison jobs span both environments and run in a separate lab-owned namespace. The Azure comparison workers reserve load-generator resources. The dataset and workload generator runs on demand to publish synthetic data, traces and compiled workloads; it is not a continuously deployed service.
-- **Evaluation:** the public search API is the black-box surface. Original queries pass through query understanding, retrieval and final reranking before scoring, result comparison or performance measurement. Grey-box traces explain pipeline changes; Elasticsearch `_rank_eval`, profile and explain are optional white-box diagnostics. Collect expensive diagnostic replays separately from latency measurements. The C4 view uses one Search API container type; the Archify comparison expands it into separate baseline and candidate instances.
+- **Evaluation:** the public search API is the black-box surface. Original queries pass through query understanding, retrieval and final reranking before their ordered results are retained. The offline evaluator uses selected synthetic judgements and a pinned specification; revised judgements can rescore existing observations. Grey-box traces explain pipeline changes; Elasticsearch `_rank_eval`, profile and explain are optional white-box diagnostics. Collect expensive diagnostic replays separately from latency measurements. The C4 view uses one Search API container type; the Archify comparison expands it into separate baseline and candidate instances.
 - **PR workflow:** the local watcher polls only open PRs carrying `lab-evaluate`; it pins the head SHA and successful build digest, then posts report links and check status. A signed webhook and build callback remain migration options, not part of the measured local path. Functional checks run in one bounded in-cluster evaluator Job per suite. The relevance report pins judgement provenance and shows unjudged IDs; it does not turn synthetic proxy scores into a quality approval.
 - **Release delivery:** a shared Actions workflow publishes Nexus releases. The host coordinator validates protected promotion PRs against exact inputs and current desired state; a reviewer authorises merge. Argo CD deploys, then the coordinator verifies the API. Stable integration/staging/production targets share the local cluster. Delivery previews expire independently and retain frozen indices. The short delivery Gatling probe is not capacity evidence.
 - **Frozen environments:** each comparison records two immutable definitions, B and C. Each pins its API image, query assets/configuration, index, dataset and engine version. The workflow resolves both runtimes and checks each against its own definition before evaluation. Both receive the same frozen queries and request context; relevance scoring uses the same judgements. Reports retain both fingerprints and separate results.

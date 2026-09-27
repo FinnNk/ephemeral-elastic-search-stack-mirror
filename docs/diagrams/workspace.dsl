@@ -35,6 +35,16 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                 tags "Platform"
             }
         }
+        inputProduction = softwareSystem "Synthetic input production" "Publishes versioned catalogue, query, judgement and traffic artifacts." {
+            producer = container "Input producer Job" "Validates and publishes independent synthetic inputs." "Finite Kubernetes Job / pinned OCI image" {
+                tags "Job"
+            }
+        }
+        assessment = softwareSystem "Offline evaluation" "Scores retained observations under a pinned specification and judgement set." {
+            offline = container "Offline evaluator" "Validates input dependencies and publishes a complete report." "Pinned OCI image / finite invocation" {
+                tags "Job"
+            }
+        }
         lab = softwareSystem "Search relevance lab" "Creates environments; checks relevance, results and performance." {
             ui = container "Lab web UI" "Creates environments and displays comparisons." "HTML / JavaScript in control Pod"
             api = container "Lab API" "Manages experiments, leases and comparisons." "Python HTTP API in control Pod"
@@ -45,7 +55,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             search = container "Search API" "Understands queries, retrieves products and reranks results." "HTTP API / pinned OCI image" {
                 tags "Ephemeral"
             }
-            evaluation = container "Evaluation job" "Scores relevance, checks result changes and compares performance reports." "Kubernetes Job / metrics and comparison libraries" {
+            evaluation = container "Observation capture job" "Queries both APIs and retains ordered results; legacy comparisons also calculate scores." "Kubernetes Job / public Search API adapter" {
                 tags "Job"
             }
             performance = container "Gatling load job" "Measures API latency, throughput and errors under pinned load." "Kubernetes Job / Gatling OSS Java SDK" {
@@ -54,7 +64,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             indexing = container "Index build job" "Rebuilds a dedicated index from its pinned recipe and frozen products." "Kubernetes Job / Elasticsearch bulk API" {
                 tags "Job"
             }
-            generator = container "Dataset and workload generator" "Generates synthetic data and traces; compiles load profiles." "Versioned batch job" {
+            generator = container "Workload compiler" "Compiles frozen traffic traces into load profiles." "Versioned batch job" {
                 tags "Job"
             }
             artifacts = container "Artifact store" "Retains frozen data, index recipes, workloads, query assets and reports." "Floci AZ locally / Azure Blob Storage later" {
@@ -71,6 +81,9 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             }
         }
         engineer -> lab "Creates and compares experiments"
+        engineer -> inputProduction "Revises synthetic inputs"
+        inputProduction -> lab "Publishes frozen synthetic inputs" "Manifest and Blob API"
+        lab -> assessment "Submits retained observations for scoring" "Artifact references"
         operator -> lab "Validates lifecycle and isolation"
         engineer -> delivery "Pushes code and opens pull requests" "Git / HTTPS"
         operator -> platform "Operates cluster and reconciliation" "HTTPS"
@@ -132,11 +145,10 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         search -> artifacts "Loads pinned query assets" "Azure Blob API"
         evaluation -> search "Queries baseline and candidate APIs" "Public search API"
         evaluation -> artifacts "Reads inputs and load reports; saves verdicts" "Azure Blob API"
+        producer -> artifacts "Publishes immutable synthetic inputs and manifests" "Blob API"
+        offline -> artifacts "Reads observations and judgements; retains reports" "Blob API"
         performance -> search "Loads one pinned API at a time" "Public search API / HTTP"
         performance -> artifacts "Reads compiled workload; saves reports" "Azure Blob API"
-        evaluation -> elastic "Optional white-box diagnostics only" "_rank_eval / profile / explain" {
-            tags "Diagnostic"
-        }
         indexing -> artifacts "Reads immutable catalogue" "Azure Blob API"
         indexing -> elastic "Creates a dedicated index" "Bulk REST API"
         elastic -> snapshots "Saves and restores recipe-matched index copies" "S3 locally / Azure Blob proposed"
@@ -185,6 +197,10 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                         containerInstance evaluation
                         containerInstance performance
                     }
+                    deploymentNode "Independent input and scoring jobs" "Finite producer and evaluator" "lab-data and lab-offline-evaluation / Jobs" {
+                        containerInstance producer
+                        containerInstance offline
+                    }
                 }
             }
         }
@@ -227,6 +243,10 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                         containerInstance evaluation
                         containerInstance performance
                     }
+                    deploymentNode "Independent input and scoring jobs" "Separate artifact producers and evaluator" "Namespaces / jobs" {
+                        containerInstance producer
+                        containerInstance offline
+                    }
                 }
             }
         }
@@ -234,7 +254,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
     views {
         systemContext lab "01-context" {
             title "C4 System context — search relevance lab"
-            include engineer operator lab delivery platform
+            include engineer operator lab delivery platform inputProduction assessment
             autolayout lr
         }
         container lab "02-control" {
@@ -243,7 +263,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             autolayout lr
         }
         container lab "03-evaluation" {
-            title "C4 Containers — frozen data and end-to-end evaluation"
+            title "C4 Containers — API capture, index and load checks"
             include generator artifacts indexing elastic snapshots search evaluation performance
             autolayout lr
         }
