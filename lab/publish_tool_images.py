@@ -8,7 +8,7 @@ import subprocess
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = ROOT / '.lab'
+STATE = Path(os.environ.get('LAB_STATE_DIR', ROOT / '.lab'))
 IMAGES = {'lab-data-producer': 'data/Dockerfile',
           'lab-evaluator': 'evaluation/Dockerfile'}
 

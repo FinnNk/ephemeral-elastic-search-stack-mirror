@@ -12,7 +12,7 @@ import time
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = ROOT / '.lab'
+STATE = Path(os.environ.get('LAB_STATE_DIR', ROOT / '.lab'))
 NAMESPACE = 'lab-offline-evaluation'
 KUBE = ['kubectl', '--kubeconfig', str(STATE / 'kubeconfig.yaml')]
 
@@ -115,7 +115,9 @@ def main():
            'stringData': {'connection': connection}})
     environment = [{'name': 'DATA_BLOB_CONNECTION_STRING',
                     'valueFrom': {'secretKeyRef': {'name': secret_name, 'key': 'connection'}}},
-                   {'name': 'EVALUATION_INPUTS_JSON', 'value': json.dumps(inputs, sort_keys=True)}]
+                   {'name': 'EVALUATION_INPUTS_JSON', 'value': json.dumps(inputs, sort_keys=True)},
+                   {'name': 'LAB_JOB_NAME', 'valueFrom': {
+                       'fieldRef': {'fieldPath': 'metadata.name'}}}]
     if args.evaluated_at:
         environment.append({'name': 'EVALUATED_AT', 'value': args.evaluated_at})
     job = {'apiVersion': 'batch/v1', 'kind': 'Job',
@@ -124,6 +126,11 @@ def main():
            'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': 300,
                     'template': {'metadata': {'labels': {'app': 'lab-offline-evaluator'}},
                                  'spec': {'restartPolicy': 'Never',
+                                          'affinity': {'nodeAffinity': {
+                                              'requiredDuringSchedulingIgnoredDuringExecution': {
+                                                  'nodeSelectorTerms': [{'matchExpressions': [{
+                                                      'key': 'lab.relevance/role',
+                                                      'operator': 'DoesNotExist'}]}]}}},
                                           'automountServiceAccountToken': False,
                                           'securityContext': {'runAsUser': 10001,
                                                               'runAsGroup': 10001},
@@ -147,7 +154,7 @@ def main():
         logs = kubectl('logs', 'job/' + name, '-n', NAMESPACE, check=False)
         if logs.returncode:
             raise RuntimeError('Offline evaluator Job logs unavailable: ' + logs.stderr[-800:])
-        print(json.dumps({'job': name, **json.loads(logs.stdout)}, sort_keys=True))
+        print(json.dumps({'job': name, **json.loads(logs.stdout.splitlines()[-1])}, sort_keys=True))
     finally:
         kubectl('delete', 'job/' + name, '-n', NAMESPACE,
                 '--ignore-not-found', '--wait=true', check=False)

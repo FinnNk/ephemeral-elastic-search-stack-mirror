@@ -1,4 +1,6 @@
-# Batch 7k2c: connected SigNoz runtime investigation
+# Batch 7k2c: finite Job telemetry
+
+Status: implemented locally; awaiting review. See the [measured evidence](../research/evidence/signoz-finite-jobs-2026-09-28.md). The remaining connected investigation moves to [batch 7k2d](signoz-window-coverage.md).
 
 ## Intent
 
@@ -13,11 +15,10 @@ Complete the local observability demonstration from a search or operation SLO br
 
 ## Acceptance criteria
 
-1. **Finite Jobs and target coverage.** Add safe completion events for independent producer/evaluator Jobs, rebuild and publish digest-pinned images, and verify the events in SigNoz. Exercise the installed control Pod and all three delivery targets with telemetry-enabled releases. Preserve both comparison fingerprints and exact release/deployment references.
-2. **Window totals and collection coverage.** Extend the dashboard or companion checks to show seven-day eligible/good/bad totals, target, remaining budget, burn, sample count and collection gaps. Verify arithmetic with deterministic fast, slow-success, error, deadline and retry mixes. Mark no data and incomplete coverage as unknown, with no green verdict.
-3. **Connected investigation.** In the browser, follow a slow HTTP 200 from a budget panel to its request trace and related log; follow failed index restoration to its operation and dependency evidence; follow failed promotion verification to the exact release and deployment. Record preserved filters, links and any manual fallback.
-4. **Resilience and overhead.** Stop and restore the backend/collector and confirm serving work continues while the dashboard shows a gap. Check sampled-out trace behaviour. Compare the same frozen normal Gatling load with telemetry enabled and disabled against the provisional ≤5% relative p95 overhead hypothesis; record inputs, uncertainty and limitations.
-5. **Reviewable completion.** Update the backend guide, design, diagrams, evidence and roadmap with observed behaviour. Revise the native/cloud plan if findings change its scope. Commit this batch to a branch and open a Gitea PR for user acceptance.
+1. Build and publish digest-pinned amd64/arm64 producer and evaluator images containing the shared safe event contract.
+2. Run both finite Jobs under their existing Blob-only egress policies; retain the original final-line result protocol.
+3. Verify the producer manifest hash and evaluator report hash in SigNoz after the Jobs are removed.
+4. Update the runbook, roadmap and evidence. Commit the batch to a review branch; leave `main` untouched.
 
 ## Where to find more information
 

@@ -8,7 +8,7 @@ import subprocess
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = ROOT / '.lab'
+STATE = Path(os.environ.get('LAB_STATE_DIR', ROOT / '.lab'))
 NAMESPACE = 'lab-data'
 KUBE = ['kubectl', '--kubeconfig', str(STATE / 'kubeconfig.yaml')]
 
@@ -75,6 +75,11 @@ def main():
            'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': 180,
                     'template': {'metadata': {'labels': {'app': 'lab-data-producer'}},
                                  'spec': {'restartPolicy': 'Never',
+                                          'affinity': {'nodeAffinity': {
+                                              'requiredDuringSchedulingIgnoredDuringExecution': {
+                                                  'nodeSelectorTerms': [{'matchExpressions': [{
+                                                      'key': 'lab.relevance/role',
+                                                      'operator': 'DoesNotExist'}]}]}}},
                                           'automountServiceAccountToken': False,
                                           'securityContext': {'runAsUser': 10001,
                                                               'runAsGroup': 10001,
@@ -86,7 +91,9 @@ def main():
                                                    'http://floci.platform.svc.cluster.local:4577/devstoreaccount1'},
                                                   {'name': 'DATA_BLOB_CONNECTION_STRING',
                                                    'valueFrom': {'secretKeyRef': {
-                                                       'name': credential_name, 'key': 'connection'}}}],
+                                                       'name': credential_name, 'key': 'connection'}}},
+                                                  {'name': 'LAB_JOB_NAME', 'valueFrom': {
+                                                      'fieldRef': {'fieldPath': 'metadata.name'}}}],
                                               'volumeMounts': [{'name': 'output', 'mountPath': '/output'}],
                                               'resources': {'requests': {'cpu': '50m', 'memory': '64Mi'},
                                                             'limits': {'cpu': '500m', 'memory': '256Mi'}}}],
@@ -98,7 +105,7 @@ def main():
         logs = kubectl('logs', 'job/' + name, '-n', NAMESPACE, check=False)
         if waited.returncode or logs.returncode:
             raise RuntimeError('Producer Job failed: ' + (logs.stdout or waited.stderr)[-800:])
-        value = json.loads(logs.stdout)
+        value = json.loads(logs.stdout.splitlines()[-1])
         print(json.dumps({'job': name, **value}, indent=2))
     finally:
         kubectl('delete', 'job/' + name, '-n', NAMESPACE,

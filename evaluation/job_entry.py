@@ -5,10 +5,12 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import time
 
 from azure.storage.blob import BlobServiceClient
 
 from offline import canonical, evaluate
+from job_event import emit
 from retain import retain
 
 INPUTS = ('observations', 'judgements', 'specification', 'catalogue_manifest',
@@ -45,11 +47,21 @@ def run(inputs, client, workdir, evaluated_at=None):
 
 
 def main():
-    connection = os.environ['DATA_BLOB_CONNECTION_STRING']
-    inputs = json.loads(os.environ['EVALUATION_INPUTS_JSON'])
-    client = BlobServiceClient.from_connection_string(connection)
-    with tempfile.TemporaryDirectory(prefix='offline-evaluator-') as directory:
-        result = run(inputs, client, Path(directory), os.environ.get('EVALUATED_AT'))
+    started = time.monotonic()
+    try:
+        connection = os.environ['DATA_BLOB_CONNECTION_STRING']
+        inputs = json.loads(os.environ['EVALUATION_INPUTS_JSON'])
+        client = BlobServiceClient.from_connection_string(connection)
+        with tempfile.TemporaryDirectory(prefix='offline-evaluator-') as directory:
+            result = run(inputs, client, Path(directory), os.environ.get('EVALUATED_AT'))
+    except Exception:
+        emit('offline-evaluator', 'evaluation.score', 'failed', started)
+        raise
+    emit('offline-evaluator', 'evaluation.score', 'complete', started,
+         observation_sha256=inputs['observations']['sha256'],
+         judgement_manifest_sha256=inputs['judgement_manifest']['sha256'],
+         specification_sha256=inputs['specification']['sha256'],
+         report_sha256=result['report']['sha256'])
     print(json.dumps(result, sort_keys=True))
 
 
