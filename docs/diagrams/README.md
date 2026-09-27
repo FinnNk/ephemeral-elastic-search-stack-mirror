@@ -1,10 +1,10 @@
 # Architecture diagrams
 
-Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These nineteen views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
+Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These twenty views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
 
 ## Reading order
 
-The local deployment view places the deployed control API and workers in `lab-control`. The control Pod has created shared, dedicated and historical environments, compared revised independent inputs through their public APIs, and verified schema-changing promotion and rollback through the three local targets. Independent synthetic input production and offline evaluation run as finite Jobs under separate images and artifact contracts; an addendum-backed promotion remains to be exercised. The Search API has an [OTel signal contract](../observability-foundation.md); the Collector, SigNoz placement and investigation views remain [planned](../plans/signoz-backend-and-investigation.md).
+The local deployment view places the control API and workers in `lab-control` and the SigNoz backend on a dedicated worker. The control Pod has created shared, dedicated and historical environments, compared revised independent inputs through their public APIs, and verified schema-changing promotion and rollback through the three local targets. Independent synthetic input production and offline evaluation run as finite Jobs under separate images and artifact contracts; an addendum-backed promotion remains to be exercised. The Search API has an [OTel signal contract](../observability-foundation.md); the [backend guide](../observability-backend.md) records the current connected-integration status.
 
 The gallery groups diagrams by task. The identifiers below remain stable.
 
@@ -15,8 +15,14 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 | [01 · C4 system context](rendered/01-context.svg) | Lab users, platform engineers and supporting systems. | [Structurizr DSL](workspace.dsl) |
 | [02 · C4 containers: control](rendered/02-control.svg) | Environment state, leases and deployment. | [Structurizr DSL](workspace.dsl) |
 | [03 · C4 containers: evaluation](rendered/03-evaluation.svg) | API capture, shared index, workloads and diagnostics. The context view shows independent input and scoring owners. | [Structurizr DSL](workspace.dsl) |
-| [05 · C4 local deployment](rendered/05-local.svg) | Kubernetes control Pod and state volume; host Nexus/PostgreSQL and S3 storage; experiment workloads. | [Structurizr DSL](workspace.dsl) |
-| [06 · C4 Azure deployment](rendered/06-azure.svg) | GHES, Nexus, optional ACR, Blob Storage and AKS. | [Structurizr DSL](workspace.dsl) |
+| [05 · C4 local deployment](rendered/05-local.svg) | Kubernetes control Pod, dedicated SigNoz worker, host Nexus/PostgreSQL and S3 storage, and experiment workloads. | [Structurizr DSL](workspace.dsl) |
+| [06 · C4 Azure deployment](rendered/06-azure.svg) | GHES, Nexus, optional ACR, Blob Storage, AKS and OTel collection. | [Structurizr DSL](workspace.dsl) |
+
+### [Observe lab activity](index.html#observability)
+
+| View | Contents | Editable source |
+| --- | --- | --- |
+| [Investigate an SLO breach](interactive/observability-investigation.html) | Follow a search or operation through collection, SLO counts, trace/log correlation and frozen evidence. | [Archify workflow](archify/observability-investigation.json) |
 
 ### [Release delivery](index.html#release-delivery)
 

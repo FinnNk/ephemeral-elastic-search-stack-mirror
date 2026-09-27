@@ -1,10 +1,10 @@
-# Batch 7k2: SigNoz backend and connected investigation
+# Batch 7k2a: SigNoz backend and signal transport
 
 ## Intent
 
-Install a self-hosted SigNoz backend and a stable OTel Collector endpoint for the lab. Turn the [Search API foundation](../observability-foundation.md) into a single investigation path from an SLO breach through affected operations, traces and related logs. Add lifecycle, delivery and finite-job telemetry without changing frozen evidence contracts.
+Install a self-hosted SigNoz backend and a stable OTel Collector endpoint for the lab. Add Search API and control telemetry, a scoped log route and the initial investigation diagrams without changing frozen evidence contracts. The [connected investigation batch](signoz-connected-investigation.md) completes dashboard, SLO and browser checks after the first SigNoz organisation exists.
 
-**Status: next batch after runtime consolidation and delivery rehearsal.** The earlier host measurement found about 3.4 GiB spare inside k3d node limits, below SigNoz's published 8 GB minimum. Recheck live headroom before installation and record the allocation chosen. Do not remove Elasticsearch, Nexus, Gitea or the control services to fit the dashboard.
+**Status: implemented locally; awaiting review.** A dedicated 12 GiB k3d worker hosts the pinned SigNoz chart, ClickHouse, OTLP gateway and log agents. The instrumented control image is deployed and smoke-checked; the alternate New Relic export profile passed a local mock check. Elasticsearch, Nexus, Gitea and control services remain running. SigNoz has no organisation yet, so its ingestion pipelines remain disabled. The [backend guide](../observability-backend.md) and [evidence](../research/evidence/signoz-backend-2026-09-27.md) give the exact verification boundary.
 
 ## Constraints
 
@@ -18,12 +18,10 @@ Install a self-hosted SigNoz backend and a stable OTel Collector endpoint for th
 
 ## Acceptance criteria
 
-1. **Capacity and pinned deployment.** Measure host, Docker and k3d CPU/memory/disk use. Allocate enough headroom without interrupting unrelated projects, then install a pinned SigNoz Community chart with retained ClickHouse storage in `lab-observability`. Prove reinstall from a clean checkout and record exact version/digests and retention settings.
-2. **Collector and coverage.** Expose one stable OTLP endpoint. Instrument the control API, lease worker, comparison/capture Jobs, producer/evaluator Jobs and delivery coordinator. Verify service versions, operation IDs, both environment fingerprints and artifact hashes in traces/logs without using them as metric dimensions. Show asynchronous span links or an explicit operation correlation path.
-3. **Dashboard and budgets.** Provision the lab activity/SLO dashboard from source. Show normal-load search success and responsiveness, operation deadline SLIs, eligibility, good/bad counts, target, remaining budget, burn and coverage. Keep warm-up, peak, stress and probes as separate cohorts.
-4. **Connected drill-through.** In the browser, follow a slow HTTP 200 from its budget panel to the relevant search trace and log; follow a failed index restoration to its operation and dependency evidence; follow a failed promotion verification to the exact release and deployment. Record preserved filters and any fallback navigation.
-5. **Failure and overhead checks.** Compare deterministic synthetic good/slow/failure and deadline/retry mixes with dashboard counts. Show no-data, telemetry interruption and sampled-out-trace states honestly. Stop the Collector/backend and confirm serving work continues; compare the same frozen normal load with telemetry enabled/disabled against the provisional ≤5% relative p95 overhead hypothesis.
-6. **Portability and synchronisation.** Validate an alternate local OTLP export profile for the New Relic target, but defer tenant ingestion claims. Update the design, operations, access and recovery guidance, C4/Archify investigation views, evidence, roadmap and batch 8 external-validation plan. Commit and open a stacked PR; leave user acceptance and merging to the reviewer.
+1. **Capacity and pinned deployment.** Measure host, Docker and k3d CPU/memory/disk use. Allocate enough headroom without interrupting unrelated projects, then install a pinned SigNoz Community chart with retained ClickHouse storage in `lab-observability`. Prove reapplication from a separate checkout and record exact version/digests and current retention defaults.
+2. **Collector and control coverage.** Expose one stable OTLP endpoint. Instrument the control API, lease worker, comparison capture Job and delivery coordinator. Verify bounded operation kind metrics, safe immutable references in traces/logs and a correlation path to the finite comparison Job. Remaining independent producer/evaluator Job coverage is in [7k2b](signoz-connected-investigation.md).
+3. **Failure isolation.** Stop the gateway Pod and confirm the control smoke path still works. Restore the gateway. Record signal loss rather than implying a healthy dashboard while the SigNoz collector has no organisation.
+4. **Portability and synchronisation.** Validate an alternate local OTLP export profile for New Relic against a mock receiver, without tenant ingestion claims. Update the design, operations, access and recovery guidance, C4/Archify investigation views and evidence. Commit and open a review PR; leave acceptance and merging to the reviewer.
 
 ## Where to find more information
 

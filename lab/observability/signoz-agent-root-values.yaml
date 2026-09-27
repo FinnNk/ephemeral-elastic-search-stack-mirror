@@ -1,0 +1,12 @@
+# Optional first-organisation bootstrap. Requires a separately created Secret;
+# never commit its password. This account is distinct from the human reviewer.
+signoz:
+  env:
+    SIGNOZ_USER_ROOT_ENABLED: 'true'
+    SIGNOZ_USER_ROOT_EMAIL: elastic-agent@lab.local
+    SIGNOZ_USER_ROOT_ORG_NAME: relevance-lab
+    SIGNOZ_USER_ROOT_PASSWORD:
+      valueFrom:
+        secretKeyRef:
+          name: lab-signoz-root
+          key: password

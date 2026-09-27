@@ -45,6 +45,23 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 tags "Job"
             }
         }
+        observability = softwareSystem "Lab observability" "Collects lab signals and supports operational investigation." {
+            gateway = container "OTel gateway" "Receives OTLP, redacts attributes and forwards bounded batches." "OpenTelemetry Collector Contrib" {
+                tags "Platform"
+            }
+            logagent = container "Log agent" "Reads selected Kubernetes stdout events once per node." "OpenTelemetry Collector Contrib / DaemonSet" {
+                tags "Platform"
+            }
+            ingester = container "SigNoz collector" "Ingests traces, metrics and logs for SigNoz." "SigNoz OTel Collector" {
+                tags "Platform"
+            }
+            signoz = container "SigNoz" "Shows SLO activity, traces, metrics and logs." "SigNoz Community" {
+                tags "Platform"
+            }
+            telemetrydb = container "Telemetry store" "Retains bounded operational signals." "ClickHouse / persistent volume" {
+                tags "Store"
+            }
+        }
         lab = softwareSystem "Search relevance lab" "Creates environments; checks relevance, results and performance." {
             ui = container "Lab web UI" "Creates environments and displays comparisons." "HTML / JavaScript in control Pod"
             api = container "Lab API" "Manages experiments, leases and comparisons." "Python HTTP API in control Pod"
@@ -87,6 +104,8 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         operator -> lab "Validates lifecycle and isolation"
         engineer -> delivery "Pushes code and opens pull requests" "Git / HTTPS"
         operator -> platform "Operates cluster and reconciliation" "HTTPS"
+        engineer -> observability "Investigates lab operations" "Browser"
+        operator -> observability "Checks telemetry coverage and capacity" "Browser"
         lab -> delivery "Resolves revisions and digests; publishes status" "Git / HTTPS"
         lab -> platform "Supplies desired state and observes readiness" "Git / HTTPS"
         delivery -> lab "Provides source revisions and build records" "Git / REST"
@@ -142,6 +161,15 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         kube -> performance "Runs scheduled load test" "Job"
         kube -> indexing "Runs mapping build" "Job"
         search -> elastic "Retrieves products with scoped credentials" "Elasticsearch REST"
+        search -> gateway "Exports request traces and unsampled SLI counts" "OTLP/HTTP"
+        api -> gateway "Exports control operation signals" "OTLP/HTTP"
+        expiry -> gateway "Exports lease operation signals" "OTLP/HTTP"
+        coordinator -> gateway "Exports delivery verification signals" "OTLP/HTTP"
+        logagent -> gateway "Forwards selected structured stdout events" "OTLP/gRPC"
+        gateway -> ingester "Forwards bounded signals" "OTLP/gRPC"
+        ingester -> telemetrydb "Stores lab telemetry" "ClickHouse protocol"
+        signoz -> telemetrydb "Queries operational signals" "ClickHouse protocol"
+        engineer -> signoz "Follows operational evidence" "Browser"
         search -> artifacts "Loads pinned query assets" "Azure Blob API"
         evaluation -> search "Queries baseline and candidate APIs" "Public search API"
         evaluation -> artifacts "Reads inputs and load reports; saves verdicts" "Azure Blob API"
@@ -164,7 +192,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     containerInstance nexus
                     containerInstance nexusdb
                 }
-                deploymentNode "Local Kubernetes" "Measured two-node k3d cluster" "Kubernetes" {
+                deploymentNode "Local Kubernetes" "Three-node k3d cluster, including a dedicated observability worker" "Kubernetes" {
                     deploymentNode "Local control plane" "Cluster control services" "Kubernetes control plane" {
                         containerInstance kube
                     }
@@ -183,6 +211,15 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     }
                     deploymentNode "Persistent lab services" "Floci survives environment deletion" "Namespace / persistent volume" {
                         containerInstance artifacts
+                    }
+                    deploymentNode "Observability worker" "Pinned SigNoz backend and retained telemetry" "lab-observability / 12 GiB worker" {
+                        containerInstance gateway
+                        containerInstance ingester
+                        containerInstance signoz
+                        containerInstance telemetrydb
+                    }
+                    deploymentNode "Log collection" "One scoped agent on each node" "lab-observability / DaemonSet" {
+                        containerInstance logagent
                     }
                     deploymentNode "Shared search namespace" "One shared engine; scoped index credentials" "Namespace / persistent volume" {
                         containerInstance elastic
@@ -231,6 +268,8 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance metadata
                         containerInstance expiry
                         containerInstance coordinator
+                        containerInstance gateway
+                        containerInstance logagent
                     }
                     deploymentNode "Shared Elasticsearch nodes" "Self-managed under ECK; contention measured separately" "Stateful workloads / persistent disks" {
                         containerInstance elastic

@@ -50,4 +50,15 @@ def run(rows, baseline, candidate, worker_count=8):
 
 if __name__ == '__main__':
     rows = [json.loads(line) for line in Path('/input/queries.jsonl').read_text(encoding='utf-8').splitlines()]
-    print(json.dumps(run(rows, os.environ['BASELINE'], os.environ['CANDIDATE']), separators=(',', ':')), flush=True)
+    started = time.monotonic()
+    result = run(rows, os.environ['BASELINE'], os.environ['CANDIDATE'])
+    event = {'event': 'lab.job.completed', 'service': 'lab-comparison-worker',
+             'operation': 'comparison.capture', 'job_name': os.environ.get('LAB_JOB_NAME'),
+             'state': 'complete' if all('error' not in item for item in result) else 'incomplete',
+             'query_count': len(rows), 'error_count': sum('error' in item for item in result),
+             'duration_ms': round((time.monotonic() - started) * 1000, 3)}
+    for field in ('trace_id', 'span_id'):
+        if os.environ.get('LAB_' + field.upper()):
+            event[field] = os.environ['LAB_' + field.upper()]
+    print(json.dumps(event, sort_keys=True), flush=True)
+    print(json.dumps(result, separators=(',', ':')), flush=True)

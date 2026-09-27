@@ -11,6 +11,7 @@ from gitea import api
 from deploy_baseline import successful_run
 from lifecycle import local_lifecycle
 from input_selection import DEFAULTS
+from operation_telemetry import configure as configure_telemetry, operation
 
 REPO = '/repos/elastic-agent/search-spike'
 LABEL = 'lab-evaluate'
@@ -77,6 +78,7 @@ def publish_verdict(number, sha, body, passed, stale=False):
         'target_url': CONTROL})
 
 
+@operation('pr.evaluate')
 def process(number, baseline_run, release_id='retail-gb-10k-v1', profile='probe'):
     guard()
     triggered = time.monotonic()
@@ -159,6 +161,7 @@ def watch_loop(baseline_run, release_id, profile, once, interval):
 
 
 if __name__ == '__main__':
+    configure_telemetry('lab-pr-watcher')
     parser = argparse.ArgumentParser()
     parser.add_argument('--baseline-run', type=int, required=True)
     parser.add_argument('--release', default='retail-gb-10k-v1',

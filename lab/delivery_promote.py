@@ -12,6 +12,7 @@ from delivery_runtime import (LOCAL, TARGETS, REPO_URL, access, application, che
 from delivery_gates import deployment_inputs, retain, validate_evidence
 from delivery.ci.release import canonical
 from compare_search import definition
+from operation_telemetry import operation
 
 STATUS = 'delivery/validation'
 RECORDS = STATE / 'delivery'
@@ -28,6 +29,7 @@ def save_verification(target, deployment, value):
     return record
 
 
+@operation('delivery.verify', deadline_seconds=120)
 def verify_target(target, deployment=None, revision=None):
     deployment = deployment or read_target(target)
     value = verify('lab-delivery-' + target, deployment, revision)
@@ -202,6 +204,7 @@ def inspect_pr(number):
     return pr, proposal
 
 
+@operation('delivery.validate_pr')
 def validate_pr(number):
     pr = api(endpoint(DESIRED, '/pulls/' + str(number)))
     try:
@@ -261,6 +264,7 @@ def demonstrate_merge(number):
     return merge_reviewed(number, 'automated demonstration by separate lab administrator')
 
 
+@operation('delivery.watch_once')
 def watch_once():
     checkout()
     results = []

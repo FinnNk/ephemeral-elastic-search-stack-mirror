@@ -2,14 +2,14 @@
 
 The [C4 local](../diagrams/rendered/05-local.svg) and [Azure](../diagrams/rendered/06-azure.svg) deployment views show the placements. The lab has run on Windows x64. The Azure view is a migration design; neither AKS nor Apple silicon has been exercised.
 
-Before external validation, planned batches [7i](../plans/kubernetes-control-services.md) and [7j](../plans/independent-data-evaluation-contracts.md) move the local controls into Kubernetes and separate input producers/evaluation contracts. [Batch 7k](../plans/otel-observability.md) adds SigNoz locally with OTel signals and a New Relic migration mapping. The current implementation and diagrams still use host controls. Reuse the resulting packages and contracts for Azure; multiple control replicas, real provider identity and New Relic ingestion/UI checks remain external design/validation work.
+The local controls run in Kubernetes, with separate input producer and evaluator contracts. The [observability batch](../plans/otel-observability.md) has installed SigNoz and a vendor-neutral OTel gateway; connected dashboard investigation remains to be verified. Reuse these packages and contracts for Azure. Multiple control replicas, real provider identity and New Relic ingestion/UI checks remain external design and validation work.
 
 ## Host portability
 
 | Concern | Windows lab | Apple silicon route | Check still needed |
 | --- | --- | --- | --- |
 | Cluster tools | Pinned Windows downloads under `.lab/tools` | Install arm64 Docker Desktop, k3d, kubectl, Helm, Git and Python; `common.py` uses Helm from `PATH` when no bundled binary exists | Run fresh bootstrap natively |
-| Cluster | Two-node k3d with 6 GiB server and 4 GiB agent limits | Use the same `k3d.yaml`, adjusting Docker Desktop memory to leave room for the host | Verify NetworkPolicy, storage and node memory |
+| Cluster | k3d with 6 GiB server, 4 GiB agent and dedicated 12 GiB observability worker limits | Use the same base `k3d.yaml`, add a labelled observability worker and adjust Docker Desktop memory to leave room for the host | Verify NetworkPolicy, storage and node memory |
 | Images | Pinned manifests checked for amd64 and arm64 | Pull native arm64 variants | Run the full lifecycle natively |
 | Search API | Buildx produced and published an amd64/arm64 OCI index; tests ran during each build | Use the arm64 digest from the same manifest list | Search, compare and Gatling on native arm64 |
 | Performance | Windows k3d results in the batch evidence | Calibrate on the Mac independently | Never compare host latency numbers as if hardware matched |
@@ -23,7 +23,7 @@ On a fresh Apple silicon machine, install the native tools at the versions in th
 | Gitea source and Actions | GitHub Enterprise Server (GHES) and a trusted self-hosted Actions runner | Replace repository/PR/run APIs, webhook signatures and runner registration behind the source-provider boundary. Keep source SHA and image digest in the environment record. |
 | Nexus; historical Gitea registry | Retain Nexus, or use ACR for Azure image distribution | Nexus stores immutable images and release bundles independently of Git provider. ACR is optional; verify copied image digests and grant AKS scoped pull access. |
 | k3d and local Argo CD | AKS and Argo CD | Keep Argo CD as sole deployment reconciler. Configure Git credentials and authenticated webhook/refresh against GHES, then measure event-to-ready latency. |
-| Host API, UI, expiry reconciler and SQLite | AKS lab service, CronJob and durable metadata store | Move the current one-controller process behind ingress and service authentication. Choose a transactional shared store and writer coordination before multiple API replicas; SQLite and one Git checkout do not provide that. |
+| Kubernetes control API, UI, expiry reconciler and SQLite PVC | AKS lab service, CronJob and durable metadata store | Put the current one-controller process behind ingress and service authentication. Choose a transactional shared store and writer coordination before multiple API replicas; SQLite and one Git checkout do not provide that. |
 | Floci AZ | Azure Blob Storage | Keep immutable object names and SHA-256 checks. Use a dedicated workload identity for the Blob-writing lab controller and a short user-delegation read SAS for the finite index Job. |
 | Shared ECK Elasticsearch | Self-managed Elasticsearch under ECK on AKS | Separate node/storage sizing from 40 API replicas. Retain index-level read roles, write blocks, dedicated index builds and a separate cluster for engine-version work. |
 | Local Gatling Job | Reserved AKS worker pool | Isolate the generator from API/Elasticsearch capacity, pin workload bytes and record resource headroom with every run. |

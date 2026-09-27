@@ -1,6 +1,6 @@
 # OpenTelemetry search and SLO foundation
 
-The first observability slice instruments the public Search API and defines the normal-load search SLIs. It produces OpenTelemetry traces and metrics through OTLP/HTTP, plus structured completion logs with matching trace/span IDs. SigNoz dashboards, control/worker instrumentation and cross-signal navigation remain in [the next batch](plans/signoz-backend-and-investigation.md).
+The first observability slice instruments the public Search API and defines the normal-load search SLIs. It produces OpenTelemetry traces and metrics through OTLP/HTTP, plus structured completion logs with matching trace/span IDs. The [SigNoz backend guide](observability-backend.md) covers collection and the current investigation status.
 
 ## Search signal contract
 
@@ -8,7 +8,7 @@ The first observability slice instruments the public Search API and defines the 
 | --- | --- | --- |
 | Trace | `search.request` parent, `search.query_understanding` and `search.elasticsearch` child spans; W3C context extracted from the incoming request and injected into the Elasticsearch HTTP call | No query text, product body or credentials in span attributes |
 | Metrics | Unsampled `lab.search.eligible`, `lab.search.success_good`, `lab.search.responsive_good` counters and `lab.search.server_duration` histogram in milliseconds | Valid accepted `/search` requests at the server; connection failures before the server need a separate client-side SLI |
-| Log | One `search.completed` JSON event with UTC time, outcome, duration, bounded traffic class, optional request ID and trace/span IDs | Standard output is the sole log source for this event; collector ingestion is not yet configured |
+| Log | One `search.completed` JSON event with UTC time, outcome, duration, bounded traffic class, optional request ID and trace/span IDs | Standard output is the sole log source for this event; the scoped log agent collects it |
 | Resource | `service.name=search-api`, `service.namespace=relevance-lab`, version and deployment tier | Release/tier values are configured at deployment; per-query IDs and hashes stay out of metric dimensions |
 
 The server counts an HTTP 200 with a contract-valid response as **success good**. It counts that same response as **responsive good** only at or below 250 ms. A 502 spends both budgets. Empty results are valid. Invalid requests rejected before acceptance and health checks are outside these search SLIs. The traffic class is one of `normal`, `warmup`, `peak`, `stress`, `recovery` or `probe`; any other value becomes `unspecified`. The normal-load dashboard will filter to `normal` without hiding stress outcomes in their own cohort.
@@ -29,6 +29,6 @@ The OTel metric exporter defaults to cumulative temporality. The Collector/New R
 Get-Content lab/observability/probe_otlp.py -Raw | docker run --rm -i --network none --entrypoint python relevance-search-otel-foundation:local -
 ```
 
-The [local evidence](research/evidence/otel-observability-foundation.md) records the received trace/metric requests, log correlation and capacity figures. The current two k3d nodes are capped at 10 GiB together and use about 6.6 GiB, leaving about 3.4 GiB inside their limits. SigNoz documents a local Kubernetes minimum of **8 GB memory, four cores and 30 GB storage**, with arm64 support. [SigNoz local Kubernetes requirements](https://signoz.io/docs/install/kubernetes/local/). A separate existing SigNoz Docker deployment belongs to other local work and is not the lab backend. The next batch must arrange enough additional cluster and host headroom before installing the pinned SigNoz chart; it must keep the Elasticsearch, Nexus and Gitea lab services intact.
+The [foundation evidence](research/evidence/otel-observability-foundation.md) records the original trace/metric and log checks. The [backend guide](observability-backend.md) records the third k3d worker, pinned SigNoz installation and current ingestion state. A separate SigNoz Docker deployment belongs to other local work and is not the lab backend.
 
 `lab/observability/probe_collector_outage.py` exercises one public API search with OTLP pointed at an absent Collector. The response still completed; SDK retries occurred afterwards. This checks fail-open serving for one request, not overhead under a Gatling workload.

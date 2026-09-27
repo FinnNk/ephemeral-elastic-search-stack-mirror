@@ -8,6 +8,7 @@
 <main>
 <section class="intro"><p><strong>Both APIs receive the same queries.</strong> Score relevance, check unchanged results or measure performance with Gatling.</p></section><nav class="section-nav" aria-label="Diagram sections">
 <a href="#system-architecture">System architecture</a>
+<a href="#observability">Observe lab activity</a>
 <a href="#release-delivery">Release delivery</a>
 <a href="#environment-lifecycle">Environment lifecycle</a>
 <a href="#schema-and-index-recovery">Schema and index recovery</a>
@@ -34,6 +35,10 @@
 
 </div>
 </section>
+<section class="diagram-section" id="observability" aria-labelledby="observability-title">
+<h2 id="observability-title">Observe lab activity</h2><div class="grid">
+<article><div class="card-copy"><span class="diagram-type">ARCHIFY · INTERACTIVE</span><h3><a href="interactive/observability-investigation.html">Investigate an SLO breach</a></h3><p>Follow a lab event through collection, budget counts, traces, logs and frozen evidence.</p></div><a class="preview" href="interactive/observability-investigation.html"><img loading="lazy" src="rendered/observability-investigation.png" alt="Operational telemetry from lab event to SLO budget, trace, log and frozen report"></a><div class="card-links"><a href="interactive/observability-investigation.html">Open interactive view →</a><a href="archify/observability-investigation.json">JSON source</a></div></article>
+</div></section>
 <section class="diagram-section" id="release-delivery" aria-labelledby="release-delivery-title">
 <h2 id="release-delivery-title">Release delivery</h2><div class="grid">
 <article><div class="card-copy"><span class="diagram-type">STRUCTURIZR · C4</span><h3><a href="rendered/18-delivery.svg">Immutable release delivery</a></h3><p>Nexus retains releases; reviewed Git changes drive Argo CD deployment.</p></div><a class="preview" href="rendered/18-delivery.svg"><img loading="lazy" src="rendered/18-delivery.svg" alt="Nexus, promotion coordinator and Argo CD delivery architecture"></a><div class="card-links"><a href="rendered/18-delivery.svg">Open SVG →</a><a href="rendered/18-delivery-key.svg">Legend</a></div></article>

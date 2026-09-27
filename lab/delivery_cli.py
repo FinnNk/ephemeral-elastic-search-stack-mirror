@@ -152,6 +152,8 @@ def execute(args):
 
 
 def main():
+    from operation_telemetry import configure as configure_telemetry
+    configure_telemetry('lab-delivery-coordinator')
     args = parser().parse_args()
     if args.command == 'watch' and not args.once:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as singleton:

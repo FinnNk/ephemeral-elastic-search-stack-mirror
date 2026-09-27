@@ -22,6 +22,7 @@ from index_recipe import (catalogue_recipe, digest as recipe_digest, load as loa
                           verify_catalogue_manifest, shared_index_name)
 from shared_index import ensure_shared_index
 from input_selection import DEFAULTS, HASH, fetch_manifest
+from operation_telemetry import correlation, operation
 
 LEASE = timedelta(hours=72)
 NAME_PATTERN = re.compile(r'lab-[a-z0-9](?:[a-z0-9-]{0,42}[a-z0-9])?\Z')
@@ -362,6 +363,7 @@ class Lifecycle:
         self.performance_lock = threading.Lock()
         self.comparator = comparator
 
+    @operation('environment.create')
     def create(self, name, build_run, owner='local-operator', index_kind='shared', release_id=DATASET,
                index_recipe_sha256=None):
         if not isinstance(name, str) or not NAME_PATTERN.fullmatch(name):
@@ -414,6 +416,7 @@ class Lifecycle:
             self.store.put(row)
             return self.reconcile(row['id'])
 
+    @operation('environment.create_many')
     def create_many(self, names, build_run, owner='local-operator', release_id=DATASET):
         if not isinstance(names, list) or not 1 <= len(names) <= 40 or \
                 any(not isinstance(name, str) for name in names) or len(set(names)) != len(names):
@@ -466,6 +469,7 @@ class Lifecycle:
                     updated.append(self.store.update(row['id'], **fields))
             return updated
 
+    @operation('environment.reconcile')
     def reconcile(self, instance_id):
         with self.lock:
             row = self.store.get(instance_id)
@@ -504,6 +508,7 @@ class Lifecycle:
             return self.store.update(instance_id, last_activity_at=stamp(now), expires_at=stamp(now + LEASE),
                                      updated_at=stamp(now))
 
+    @operation('environment.delete', deadline_seconds=300)
     def delete(self, instance_id):
         with self.lock:
             row = self.store.get(instance_id)
@@ -524,6 +529,7 @@ class Lifecycle:
             now = stamp(self.clock())
             return self.store.update(instance_id, state='deleted', deleted_at=now, updated_at=now, error=None)
 
+    @operation('environment.delete_many', deadline_seconds=300)
     def delete_many(self, instance_ids):
         if not isinstance(instance_ids, list) or not 1 <= len(instance_ids) <= 40 or \
                 any(not isinstance(value, str) for value in instance_ids) or \
@@ -557,6 +563,7 @@ class Lifecycle:
                                               updated_at=now, error=None)
             return [self.store.get(instance_id) for instance_id in instance_ids]
 
+    @operation('environment.expire', deadline_seconds=300)
     def expire(self):
         expired = []
         for row in self.store.all():
@@ -569,6 +576,7 @@ class Lifecycle:
                 expired.append(self.reconcile(row['id']))
         return expired
 
+    @operation('comparison.evaluate')
     def compare(self, baseline_id, candidate_id, mode, profile='probe', scope='full',
                 query_manifest_sha=None, judgement_manifest_sha=None):
         if baseline_id == candidate_id:
@@ -580,6 +588,10 @@ class Lifecycle:
                 raise KeyError('Environment not found.')
             if baseline['state'] != 'ready' or candidate['state'] != 'ready':
                 raise ValueError('Both environments must be ready.')
+            correlation(baseline_id=baseline_id, candidate_id=candidate_id,
+                        dataset_sha256=baseline['dataset_sha256'],
+                        baseline_fingerprint=baseline['fingerprint'],
+                        candidate_fingerprint=candidate['fingerprint'])
             if baseline['dataset_sha256'] != candidate['dataset_sha256']:
                 raise ValueError('Comparisons require the same frozen catalogue.')
             if mode == 'performance' and baseline['release_id'] != candidate['release_id']:

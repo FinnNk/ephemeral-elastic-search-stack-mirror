@@ -1,0 +1,43 @@
+# Alternate gateway configuration for a New Relic target. Validate locally with
+# a mock OTLP/HTTP receiver; tenant ingestion is a separate acceptance check.
+# NEW_RELIC_OTLP_ENDPOINT and NEW_RELIC_LICENSE_KEY come from a Kubernetes Secret.
+receivers:
+  otlp:
+    protocols:
+      grpc: {endpoint: 0.0.0.0:4317}
+      http: {endpoint: 0.0.0.0:4318}
+processors:
+  memory_limiter: {check_interval: 1s, limit_mib: 384, spike_limit_mib: 96}
+  attributes/redact:
+    actions:
+      - {key: query, action: delete}
+      - {key: search.query, action: delete}
+      - {key: db.statement, action: delete}
+      - {key: product.body, action: delete}
+      - {key: authorization, action: delete}
+  cumulativetodelta: {}
+  batch: {timeout: 1s, send_batch_size: 512}
+exporters:
+  otlphttp/newrelic:
+    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
+    headers:
+      api-key: ${env:NEW_RELIC_LICENSE_KEY}
+    sending_queue: {enabled: true, queue_size: 512}
+    retry_on_failure: {enabled: true, max_elapsed_time: 30s}
+extensions:
+  health_check: {endpoint: 0.0.0.0:13133}
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/redact, batch]
+      exporters: [otlphttp/newrelic]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/redact, cumulativetodelta, batch]
+      exporters: [otlphttp/newrelic]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/redact, batch]
+      exporters: [otlphttp/newrelic]

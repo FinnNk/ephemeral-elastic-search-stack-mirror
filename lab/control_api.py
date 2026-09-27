@@ -13,6 +13,7 @@ from lifecycle import ActiveComparisonError, DATASET, RELEASES, local_lifecycle,
 from index_candidate import available_kinds
 from input_selection import DEFAULTS
 from control_identity import GiteaIdentity, Sessions, expired_cookie, session_cookie
+from operation_telemetry import configure as configure_telemetry, request_span, response_status
 
 PORT = 18082
 UI = Path(__file__).with_name('control-ui.html')
@@ -35,6 +36,7 @@ class Handler(BaseHTTPRequestHandler):
     canonical_host = None
 
     def send_bytes(self, status, payload, content_type, extra_headers=None):
+        response_status(status)
         self.send_response(status)
         self.send_header('Content-Type', content_type)
         self.send_header('Content-Length', str(len(payload)))
@@ -79,6 +81,10 @@ class Handler(BaseHTTPRequestHandler):
             self.visible(self.controller.store.get(row['candidate_id']), identity)
 
     def do_GET(self):
+        with request_span('GET', route(self.path), self.headers):
+            return self._do_GET()
+
+    def _do_GET(self):
         if not self.host_allowed():
             return
         parts = self.path_parts()
@@ -170,6 +176,10 @@ class Handler(BaseHTTPRequestHandler):
         return value
 
     def do_POST(self):
+        with request_span('POST', route(self.path), self.headers):
+            return self._do_POST()
+
+    def _do_POST(self):
         if not self.host_allowed():
             return
         if DRAIN.exists():
@@ -224,6 +234,10 @@ class Handler(BaseHTTPRequestHandler):
         return self.send_json(404, {'error': 'Not found.'})
 
     def do_DELETE(self):
+        with request_span('DELETE', route(self.path), self.headers):
+            return self._do_DELETE()
+
+    def _do_DELETE(self):
         if not self.host_allowed():
             return
         if DRAIN.exists():
@@ -255,6 +269,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def serve():
+    configure_telemetry('lab-control-api')
     controller = local_lifecycle(recover_comparisons=True)
     Handler.controller = controller
     Handler.sessions = Sessions()

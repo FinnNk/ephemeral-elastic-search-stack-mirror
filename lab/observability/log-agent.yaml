@@ -1,0 +1,89 @@
+# One stdout ingestion path for lab application events. Historical container logs
+# are intentionally skipped on first start.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lab-log-agent
+  namespace: lab-observability
+data:
+  config.yaml: |
+    receivers:
+      filelog/lab:
+        include:
+          - /var/log/pods/lab-control_*/*/*.log
+          - /var/log/pods/lab-data_*/*/*.log
+          - /var/log/pods/lab-delivery-*/*/*.log
+          - /var/log/pods/lab-eval-*/*/*.log
+          - /var/log/pods/lab-indexing_*/*/*.log
+          - /var/log/pods/lab-offline-evaluation_*/*/*.log
+          - /var/log/pods/lab-pr-*/*/*.log
+          - /var/log/pods/lab-reference-*/*/*.log
+          - /var/log/pods/retail-*/*/*.log
+        start_at: end
+        include_file_path: true
+        operators:
+          - type: container
+          - type: json_parser
+            if: 'body matches "^\\{"'
+            parse_from: body
+            trace:
+              trace_id: {parse_from: attributes.trace_id}
+              span_id: {parse_from: attributes.span_id}
+    processors:
+      memory_limiter: {check_interval: 1s, limit_mib: 192, spike_limit_mib: 48}
+      filter/structured:
+        error_mode: ignore
+        logs:
+          log_record:
+            - 'attributes["event"] == nil'
+      attributes/redact:
+        actions:
+          - {key: query, action: delete}
+          - {key: search.query, action: delete}
+          - {key: authorization, action: delete}
+      resource/lab:
+        attributes:
+          - {key: service.name, from_attribute: service, action: upsert}
+      batch: {timeout: 1s, send_batch_size: 256}
+    exporters:
+      otlp/gateway:
+        endpoint: lab-otel-gateway.lab-observability.svc.cluster.local:4317
+        tls: {insecure: true}
+        sending_queue: {enabled: true, queue_size: 256}
+        retry_on_failure: {enabled: true, max_elapsed_time: 30s}
+    service:
+      pipelines:
+        logs:
+          receivers: [filelog/lab]
+          processors: [memory_limiter, filter/structured, attributes/redact, resource/lab, batch]
+          exporters: [otlp/gateway]
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: lab-log-agent
+  namespace: lab-observability
+spec:
+  selector:
+    matchLabels: {app: lab-log-agent}
+  template:
+    metadata:
+      labels: {app: lab-log-agent}
+    spec:
+      tolerations:
+        - {key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}
+      containers:
+        - name: collector
+          image: docker.io/otel/opentelemetry-collector-contrib:0.161.0@sha256:fd328de2552466ad78385e1b1289c3f2402b1c45f265b252aab1955b42845ac1
+          args: [--config=/etc/otel/config.yaml]
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+          volumeMounts:
+            - {name: config, mountPath: /etc/otel, readOnly: true}
+            - {name: podlogs, mountPath: /var/log/pods, readOnly: true}
+      volumes:
+        - name: config
+          configMap: {name: lab-log-agent}
+        - name: podlogs
+          hostPath: {path: /var/log/pods, type: Directory}

@@ -6,6 +6,7 @@ import time
 
 from lifecycle import local_lifecycle
 from common import IN_CLUSTER, STATE
+from operation_telemetry import configure as configure_telemetry
 
 
 def reconcile_once():
@@ -19,6 +20,7 @@ def reconcile_once():
 
 
 def main():
+    configure_telemetry('lab-lease-worker')
     parser = argparse.ArgumentParser()
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--interval-seconds', type=int, default=60)

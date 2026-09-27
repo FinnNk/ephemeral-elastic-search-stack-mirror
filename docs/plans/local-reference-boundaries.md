@@ -2,7 +2,7 @@
 
 This assessment concerns component placement, ownership, interfaces and lifecycle. It does not assess whether synthetic relevance scores or laptop latency predict production outcomes.
 
-After batches [7i](kubernetes-control-services.md), [7j](independent-data-evaluation-contracts.md) and [7k](otel-observability.md), the intended local structure is representative of a small deployment: independent producers publish immutable inputs; versioned search releases consume catalogues; evaluators consume API observations; reviewed desired state drives Argo CD; persistent services retain artifacts beyond ephemeral runtimes. OTel signals connect operations across these boundaries in a shared SigNoz dashboard.
+The local structure is representative of a small deployment: independent producers publish immutable inputs; versioned search releases consume catalogues; evaluators consume API observations; reviewed desired state drives Argo CD; persistent services retain artifacts beyond ephemeral runtimes. OTel signals now reach a dedicated gateway; the shared SigNoz dashboard remains an integration gate.
 
 ## Remaining structural checks
 
@@ -28,9 +28,9 @@ The first three remain the main operational checks for removing workstation depe
 | Gitea and local application identities | Demonstrates Git/CI/review/service contracts. GHES API behaviour, enterprise SSO and Azure workload identity require their actual systems. |
 | Private local HTTP and simple browser access | Sufficient for the local workflow. End-to-end TLS, enterprise ingress and certificate rotation remain deployment concerns; internal service discovery should already be explicit. |
 | Frozen catalogue and query inputs | Deliberate for reproducible development/evaluation. Streaming catalogue updates, customer sessions, live experiments and commerce backends are outside this reference. |
-| One local observability backend | Planned SigNoz shares the cluster failure domain, has bounded retention and requires additional memory/storage. An export outage must not block lab operations; external New Relic validation remains separate. |
+| One local observability backend | SigNoz shares the cluster failure domain and uses a dedicated 12 GiB worker. A gateway outage did not block the control smoke check; external New Relic validation remains separate. |
 
-SigNoz is the additional platform component requested for the local reference. Its resource fit is the first check in batch 7k. Full external-service disaster recovery, automatic retention cleanup and enterprise identity remain recorded gaps rather than additional implementation batches. [Batch 8](native-cloud-validation.md) validates the real provider, hosting and New Relic boundaries.
+SigNoz is the additional platform component in the local reference. Its [measured resource fit](../research/evidence/signoz-backend-2026-09-27.md) is a point-in-time result, and its dashboard is still pending. Full external-service disaster recovery, automatic retention cleanup and enterprise identity remain recorded gaps. [Batch 8](native-cloud-validation.md) validates the real provider, hosting and New Relic boundaries.
 
 ## Evidence behind the assessment
 

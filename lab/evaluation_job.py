@@ -7,6 +7,7 @@ import uuid
 from pathlib import Path
 
 from common import ROOT, apply, guard, k
+from operation_telemetry import correlation
 
 NAMESPACE = 'lab-evaluation'
 IMAGE = ('python:3.13.7-alpine3.22@sha256:'
@@ -23,6 +24,7 @@ def run(suite_bytes, baseline, candidate):
         raise ValueError('Frozen suite exceeds the evaluator ConfigMap budget.')
     short = uuid.uuid4().hex[:8]
     job_name = 'evaluate-' + short
+    trace_ids = correlation()
     config = job_name + '-input'
     apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NAMESPACE}})
     source = SOURCE.read_text(encoding='utf-8')
@@ -35,7 +37,10 @@ def run(suite_bytes, baseline, candidate):
                                           'containers': [{'name': 'evaluator', 'image': IMAGE,
                                               'command': ['python', '/input/worker.py'],
                                               'env': [{'name': 'BASELINE', 'value': baseline},
-                                                      {'name': 'CANDIDATE', 'value': candidate}],
+                                                      {'name': 'CANDIDATE', 'value': candidate},
+                                                      {'name': 'LAB_JOB_NAME', 'value': job_name},
+                                                      *[{'name': 'LAB_' + key.upper(), 'value': value}
+                                                        for key, value in trace_ids.items()]],
                                               'resources': {'requests': {'cpu': '100m', 'memory': '64Mi'},
                                                             'limits': {'cpu': '1', 'memory': '256Mi'}},
                                               'volumeMounts': [{'name': 'input', 'mountPath': '/input', 'readOnly': True}]}],
@@ -45,7 +50,10 @@ def run(suite_bytes, baseline, candidate):
         k('create', '-f', '-', body=payload)
         apply(job)
         k('wait', '--for=condition=complete', 'job/' + job_name, '-n', NAMESPACE, '--timeout=300s')
-        rows = json.loads(k('logs', 'job/' + job_name, '-n', NAMESPACE).stdout)
+        # The first line is a bounded completion event for the log agent;
+        # the second remains the order-stable result protocol.
+        lines = k('logs', 'job/' + job_name, '-n', NAMESPACE).stdout.splitlines()
+        rows = json.loads(lines[-1])
         expected = [json.loads(line)['query_id'] for line in suite_bytes.splitlines()]
         if not isinstance(rows, list) or [row['query_id'] for row in rows] != expected:
             raise ValueError('Evaluator output does not match the frozen query order.')

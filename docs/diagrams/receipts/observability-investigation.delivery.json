@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "archify/observability-investigation.json",
+  "output": "interactive/observability-investigation.html",
+  "specification": {
+    "sha256": "ed79a619af0b3eb3a70681c6b3d2fa4534c2eafa8f8076b243116b619b35b735",
+    "bytes": 3470
+  },
+  "artifact": {
+    "sha256": "f735e9cee6728a7b2e03684c264271f0b89baae584d459e93352eb373e8aa612",
+    "bytes": 811123
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

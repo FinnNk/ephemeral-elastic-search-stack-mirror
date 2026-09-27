@@ -51,6 +51,9 @@ def prepare_config(image, baseline_run):
     data = {
         'LAB_CLUSTER_UID': cluster_uid,
         'LAB_PR_BASELINE_RUN': str(baseline_run),
+        'LAB_RELEASE_SHA': image.split('@sha256:', 1)[1],
+        'LAB_DEPLOYMENT_TIER': 'lab-control',
+        'OTEL_EXPORTER_OTLP_ENDPOINT': 'http://lab-otel-gateway.lab-observability.svc.cluster.local:4318',
         'LAB_CONTROL_BIND': '0.0.0.0',
         'LAB_CONTROL_PUBLIC_URL': 'http://localhost:18082',
         'LAB_GITEA_API_URL': GITEA_INTERNAL + '/api/v1',

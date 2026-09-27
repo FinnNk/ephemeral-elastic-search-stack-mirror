@@ -1,0 +1,61 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Investigate a lab SLO breach",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "frontend": {"label": "Investigate"},
+        "backend": {"label": "Collect"},
+        "database": {"label": "Evidence"},
+        "security": {"label": "Check"},
+        "cloud": {"label": "Platform"}
+      }
+    }
+  },
+  "lanes": [
+    {"id": "work", "label": "Lab activity"},
+    {"id": "signals", "label": "Operational telemetry"},
+    {"id": "investigate", "label": "Investigation"}
+  ],
+  "nodes": [
+    {"id": "event", "lane": "work", "col": 0, "type": "cloud", "label": "Search or operation", "sublabel": "Synthetic request", "width": 135},
+    {"id": "stdout", "lane": "work", "col": 1, "type": "backend", "label": "Structured stdout", "sublabel": "Trace + operation IDs", "width": 135},
+    {"id": "gateway", "lane": "signals", "col": 1, "type": "backend", "label": "OTel gateway", "sublabel": "Redact + batch", "width": 135},
+    {"id": "collector", "lane": "signals", "col": 2, "type": "backend", "label": "SigNoz collector", "sublabel": "Three signals", "width": 135},
+    {"id": "store", "lane": "signals", "col": 3, "type": "database", "label": "ClickHouse", "sublabel": "Bounded retention", "width": 135},
+    {"id": "budget", "lane": "investigate", "col": 3, "type": "frontend", "label": "SLO budget", "sublabel": "Good / bad / gaps", "width": 135},
+    {"id": "trace", "lane": "investigate", "col": 4, "type": "frontend", "label": "Trace and logs", "sublabel": "Same time + service", "width": 135},
+    {"id": "report", "lane": "work", "col": 5, "type": "database", "label": "Frozen evidence", "sublabel": "Report hash + release", "width": 135},
+    {"id": "gap", "lane": "signals", "col": 4, "type": "security", "label": "Coverage gap", "sublabel": "No data or lost trace", "width": 135}
+  ],
+  "edges": [
+    {"from": "event", "to": "gateway", "label": "Traces + SLI counts", "role": "main"},
+    {"from": "event", "to": "stdout", "label": "One event", "role": "branch"},
+    {"from": "stdout", "to": "gateway", "label": "One log agent", "role": "branch"},
+    {"from": "gateway", "to": "collector", "label": "OTLP", "role": "main"},
+    {"from": "collector", "to": "store", "label": "Ingest", "role": "main"},
+    {"from": "store", "to": "budget", "label": "Counts + coverage", "role": "main"},
+    {"from": "budget", "to": "trace", "label": "Time + cohort", "role": "main"},
+    {"from": "trace", "to": "report", "label": "Operation + hash", "role": "main"},
+    {"from": "gateway", "to": "gap", "label": "Export lost", "role": "branch"},
+    {"from": "gap", "to": "budget", "label": "Mark incomplete", "role": "return"}
+  ],
+  "mainPath": ["event", "gateway", "collector", "store", "budget", "trace", "report"],
+  "cards": [
+    {"dot": "cyan", "title": "Slow successful search", "items": [
+      "A slow HTTP 200 spends responsiveness budget",
+      "Trace ID joins request span and structured completion log"
+    ]},
+    {"dot": "amber", "title": "Failed restore or promotion", "items": [
+      "Operation ID and immutable hashes locate the affected definition",
+      "The retained report remains the release evidence"
+    ]},
+    {"dot": "emerald", "title": "Missing telemetry", "items": [
+      "Empty windows and dropped exports are coverage gaps",
+      "A sampled or expired trace is never treated as a good request"
+    ]}
+  ]
+}

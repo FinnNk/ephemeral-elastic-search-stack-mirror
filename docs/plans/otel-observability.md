@@ -4,7 +4,7 @@
 
 Give the lab one SigNoz dashboard for activity, service-level objectives (SLOs) and error budgets, with direct navigation between metrics, traces and logs. Preserve enough context to follow a slow search or failed environment operation across service boundaries. Use OpenTelemetry (OTel) instrumentation and collection so New Relic can replace SigNoz in the eventual deployment.
 
-**Status: implementation split into [7k1 Search API foundation](../observability-foundation.md) and [7k2 SigNoz investigation](signoz-backend-and-investigation.md), after [7i: Kubernetes controls](kubernetes-control-services.md) and [7j: independent data/evaluation contracts](independent-data-evaluation-contracts.md).** The first slice has measured Search API signal output and synthetic SLO arithmetic. No SigNoz deployment, connected dashboard or system-wide OTel coverage is claimed.
+**Status: [7k1 Search API foundation](../observability-foundation.md) is complete; [7k2a backend and signal transport](signoz-backend-and-investigation.md) is ready for review; [7k2b connected investigation](signoz-connected-investigation.md) is next.** The first slice measured Search API signal output and synthetic SLO arithmetic. The [local backend](../observability-backend.md) is installed; connected dashboard and full finite-job coverage remain to be proven.
 
 Here, **“observability v2 light” means a single pane of glass with connected investigation across signals**. The required journey is **SLO breach → affected operations → trace → related logs**, retaining the service, time window and applicable environment/release context. Use each platform's existing explorers and correlation features; build only the lab's instrumentation, configuration and dashboard definitions.
 
