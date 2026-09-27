@@ -172,24 +172,24 @@
   "c4": {
     "validation": "Structurizr validate and SVG/PNG export passed",
     "visual_review": "passed",
-    "review_scope": "Regenerated all C4 views; inspected the local deployment with Nexus/PostgreSQL and shortened snapshot text. Other view layouts retained.",
+    "review_scope": "Regenerated all six C4 exports; inspected the updated build runner and release storage in local deployment. Other layouts retained.",
     "sources": {
-      "workspace.dsl": "4e1303978b171bff29f0e990425d65466233b3f3eff9480abdde42d1e3f5ba48",
+      "workspace.dsl": "d47827d38bef391c3f65d5b40ce4849bc21fc6d417bae64e101518932689f01a",
       "layout.mjs": "3e7ec2ae37051bd865a96d398e4d950b77b69d35181690163145bb741f1882e9"
     },
     "svg_sha256": {
       "01-context-key.svg": "7d958dfb84c6dbbc55d60e7146a0e8947f363806e736c17ed3555c21a876f5aa",
-      "01-context.svg": "db8fe44777d47e994230a729461aa60a3ce166c554b66a2b5c256b21e216e1e4",
+      "01-context.svg": "503b11a649602bef770a8b7af57657bfd263e34dec26d556d8356cdc03e07979",
       "02-control-key.svg": "b37e211ed58aaed3ef6cd72427088d61d7ece40dbb436554785b5319f4eebc02",
-      "02-control.svg": "a90a93689cdd0816815a1cc7d80d167ceb2624d9a1d3aa7610a9bbd9d6de2d40",
+      "02-control.svg": "9dc5dc09a54f8d3a86135a2c84c5643c26fef2155376c626cdf73d4e34a5568e",
       "03-evaluation-key.svg": "b567dc0262179f88c5f4175d5a14356ee630ab21d18ebe036b1c1709067909d4",
-      "03-evaluation.svg": "6a4126721790299c93a3623ca75b8b76fe1fdbc84ce4e08511775ed461f9f26a",
+      "03-evaluation.svg": "07f4f9605ed2076cdeb348ea0374f8ffd77e3c700cc77b4c483e50cff7bf28e1",
       "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
-      "04-create.svg": "ba1e09f26a33b35342a643afbfb7791f4cfa52ce1f2f01cdb783e11a7106e0f3",
+      "04-create.svg": "d72c219f067e2418836ed9ffb2d7ef60482ee68b64b9bf3b2a0243105ef792c4",
       "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
-      "05-local.svg": "7802d005dec4003e170ea04acbdbc6240ac796be9abfa58ce12c8315e836cdd8",
+      "05-local.svg": "7f9b742f36d0c7f23d6181bc11fa121510c383493c9c1e638cc454162cfc631b",
       "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
-      "06-azure.svg": "c22b89687f3cac4b22ca73f0b66a72a8e72146d66a7ce8b477dc9ac3f0b1b918"
+      "06-azure.svg": "dd5d3419d29970f8664a44781df1cf31359761daa84bbd724065499d8d5d82a8"
     }
   }
 }

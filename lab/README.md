@@ -2,6 +2,8 @@
 
 This slice runs a browser page and black-box search API against a frozen UK retail release. It builds the API in local Gitea, deploys the pinned image through Argo CD and reads a dedicated index on the shared Elasticsearch cluster.
 
+The [reference CI/CD guide](../docs/delivery.md) adds a portable Actions workflow, Nexus releases and reviewed promotion in dedicated demonstration repositories. Existing build-run IDs and historical environments remain available here.
+
 | Item | Current baseline |
 | --- | --- |
 | Products | 10,000 wholly synthetic, deterministic UK/GBP products |

@@ -1,0 +1,92 @@
+{
+  "successful_runs": [
+    {
+      "receipt": {
+        "event_kind": "pull_request",
+        "format": 1,
+        "image": "nexus.localhost:18185/search-api@sha256:1a4b1f428242f84e792f8bd6c3f6a5e3f6fa59f1b45f319dedaf829730cde39f",
+        "release_id": "84bf966af8c571085ff88daed2634ace05d82cc775aee68db7cf627eb2de2e89",
+        "run_attempt": "1",
+        "run_id": "13",
+        "source_repository": "elastic-agent/delivery-source",
+        "source_sha": "543a86ae6568f1e81159c9525b1dc03574139a76"
+      },
+      "platforms": [
+        {
+          "architecture": "amd64",
+          "os": "linux"
+        },
+        {
+          "architecture": "arm64",
+          "os": "linux"
+        },
+        {
+          "architecture": "unknown",
+          "os": "unknown"
+        },
+        {
+          "architecture": "unknown",
+          "os": "unknown"
+        }
+      ],
+      "started_at": "2026-09-27T10:27:26Z",
+      "completed_at": "2026-09-27T10:27:39Z",
+      "run_url": "http://127.0.0.1:31800/elastic-agent/delivery-source/actions/runs/13"
+    },
+    {
+      "receipt": {
+        "event_kind": "push",
+        "format": 1,
+        "image": "nexus.localhost:18185/search-api@sha256:eb24a2fb8f9fdcd905c9abf230e0bcedd4393ce1939b469c601b2af1243a7613",
+        "release_id": "c9b57fac10a6c72a0192fa4f74b50840e39bba7d02e78691a3e0a229a9e7141f",
+        "run_attempt": "1",
+        "run_id": "15",
+        "source_repository": "elastic-agent/delivery-source",
+        "source_sha": "b87f50acc0df7093649eddbb32bbda4fef26ad0a"
+      },
+      "platforms": [
+        {
+          "architecture": "amd64",
+          "os": "linux"
+        },
+        {
+          "architecture": "arm64",
+          "os": "linux"
+        },
+        {
+          "architecture": "unknown",
+          "os": "unknown"
+        },
+        {
+          "architecture": "unknown",
+          "os": "unknown"
+        }
+      ],
+      "started_at": "2026-09-27T10:29:07Z",
+      "completed_at": "2026-09-27T10:29:09Z",
+      "run_url": "http://127.0.0.1:31800/elastic-agent/delivery-source/actions/runs/15"
+    }
+  ],
+  "failed_run": {
+    "run_id": 14,
+    "sha": "7033d1e58b740a5e531f9f461787697a118f2681",
+    "conclusion": "failure",
+    "receipt_status": 404,
+    "url": "http://127.0.0.1:31800/elastic-agent/delivery-source/actions/runs/14"
+  },
+  "final_template_run": {
+    "receipt": {
+      "event_kind": "push",
+      "format": 1,
+      "image": "nexus.localhost:18185/search-api@sha256:5baf7d1e328ab37b6073ffd956f5667045eea2c510a50c2be5d00378b0405876",
+      "release_id": "83b7244479b9deb79f374876ad7a409f1acae0965649bcf1dbaf8e6b01e714dd",
+      "run_attempt": "1",
+      "run_id": "17",
+      "source_repository": "elastic-agent/delivery-source",
+      "source_sha": "36949f0a6b4da099ed241bbb50ea65757b143815"
+    },
+    "started_at": "2026-09-27T10:32:04Z",
+    "completed_at": "2026-09-27T10:32:07Z",
+    "run_url": "http://127.0.0.1:31800/elastic-agent/delivery-source/actions/runs/17"
+  }
+}
