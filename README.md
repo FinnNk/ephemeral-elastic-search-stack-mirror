@@ -1,12 +1,12 @@
 # Ephemeral search relevance lab
 
-This project is a planned home lab for comparing ecommerce search changes against a reproducible baseline. It will use synthetic UK retail data, a self-managed Elasticsearch cluster and short-lived Kubernetes workloads. The first dataset will contain 10,000 products and 50–100 judged queries. The prototype will remain in development until its design has been tested with 1,000,000 products and 1,000 queries.
+This project is a home lab for comparing ecommerce search changes against a reproducible baseline. It uses synthetic UK retail data, a self-managed Elasticsearch cluster and short-lived Kubernetes workloads. The first frozen dataset contains 10,000 products and 50 judged queries. The prototype remains in development until its design has been tested with 1,000,000 products and 1,000 queries.
 
 The [prototype design](docs/prototype-design.md) defines the architecture, quantitative targets, frozen datasets, environment lifecycle and three comparison modes: relevance, result preservation and Gatling performance. The design keeps a provider boundary for a later move from Gitea to GitHub Enterprise.
 
 Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram guide](docs/diagrams/README.md) for six Structurizr C4 views and seven interactive Archify views, with editable sources and rendering instructions.
 
-The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches and links the [next detailed plan](docs/plans/synthetic-traffic-gatling.md).
+The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches and links the [next detailed plan](docs/plans/million-product-scale.md).
 
 ## Current state
 
@@ -17,7 +17,8 @@ The design is merged. An [experimental research harness](research/platform-spike
 - [Local access](research/platform-spike/README.md#personal-access): named Gitea and Argo CD administrator logins and browser URLs.
 - [Lifecycle evidence](docs/research/evidence/lifecycle-measurement/README.md): named owner checks and 20/20 warm removals; nearest-rank deletion p95 53.844 seconds against the five-minute target.
 - [Index-change evidence](docs/research/evidence/index-change.md): separate frozen index, authenticated API comparison, access isolation and cleanup.
-- Next: Gatling profiles and scale validation. Apple silicon remains untested.
+- [Synthetic traffic and Gatling](docs/research/synthetic-traffic.md): frozen query/timestamp pairs, a finite Kubernetes Job runner and public-API performance comparisons. The long-duration and million-product gates remain to be measured.
+- Next: the million-product scale gate. Apple silicon remains untested.
 
 ## Repository workflow
 

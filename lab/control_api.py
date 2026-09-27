@@ -177,7 +177,8 @@ class Handler(BaseHTTPRequestHandler):
                 second = self.controller.store.get(payload['candidate_id'])
                 if not self.visible(first, identity) or not self.visible(second, identity):
                     return self.send_json(403, {'error': 'Comparison environment belongs to another owner.'})
-                row = self.controller.compare(payload['baseline_id'], payload['candidate_id'], payload['mode'])
+                row = self.controller.compare(payload['baseline_id'], payload['candidate_id'], payload['mode'],
+                                              profile=payload.get('profile', 'probe'))
                 return self.send_json(201 if row['state'] == 'complete' else 202, row)
             if len(parts) == 4 and parts[:2] == ['api', 'environments']:
                 if not self.visible(self.controller.store.get(parts[2]), identity):

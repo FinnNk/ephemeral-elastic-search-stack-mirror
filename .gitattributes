@@ -1,2 +1,4 @@
 # Diagram receipts bind exact source and artifact bytes across operating systems.
 docs/diagrams/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+lab/traffic/*.csv -text
+lab/traffic/*.json -text

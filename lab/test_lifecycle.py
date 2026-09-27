@@ -132,6 +132,10 @@ class LifecycleContract(unittest.TestCase):
         partial = self.service.compare(baseline['id'], candidate['id'], 'result-regression')
         self.assertEqual(partial['state'], 'incomplete')
         self.assertEqual(partial['verdict'], 'incomplete')
+        performance = self.service.compare(baseline['id'], candidate['id'], 'performance', profile='probe')
+        self.assertEqual(performance['profile'], 'probe')
+        with self.assertRaises(ValueError):
+            self.service.compare(baseline['id'], candidate['id'], 'performance', profile='unknown')
         with self.assertRaises(ValueError):
             self.service.compare(baseline['id'], baseline['id'], 'relevance')
 

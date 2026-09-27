@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>lab.relevance</groupId>
+  <artifactId>synthetic-search-traffic</artifactId>
+  <version>1.0.0</version>
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>io.gatling.highcharts</groupId>
+      <artifactId>gatling-charts-highcharts</artifactId>
+      <version>3.15.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin><artifactId>maven-compiler-plugin</artifactId><version>3.16.0</version></plugin>
+      <plugin>
+        <groupId>io.gatling</groupId><artifactId>gatling-maven-plugin</artifactId><version>4.21.12</version>
+        <configuration><simulationClass>lab.relevance.SyntheticSearchSimulation</simulationClass></configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
