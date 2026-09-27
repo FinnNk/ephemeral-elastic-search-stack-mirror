@@ -1,0 +1,39 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: lab-s3-probe
+  namespace: platform
+spec:
+  version: 9.5.4
+  secureSettings:
+    - secretName: lab-s3-snapshot-client
+  nodeSets:
+    - name: lab
+      count: 1
+      config:
+        node.store.allow_mmap: false
+        s3.client.lab.endpoint: http://relevance-snapshot-store:8333
+      podTemplate:
+        spec:
+          nodeSelector:
+            kubernetes.io/hostname: k3d-relevance-lab-agent-0
+          containers:
+            - name: elasticsearch
+              env:
+                - name: ES_JAVA_OPTS
+                  value: -Xms1g -Xmx1g
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 2Gi
+                limits:
+                  cpu: '2'
+                  memory: 3Gi
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes: [ReadWriteOnce]
+            resources:
+              requests:
+                storage: 3Gi

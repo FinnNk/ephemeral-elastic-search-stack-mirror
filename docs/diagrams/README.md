@@ -1,6 +1,6 @@
 # Architecture diagrams
 
-Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These sixteen views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic; snapshot restoration still needs a compatible repository in the serving cluster.
+Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These sixteen views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
 
 ## Reading order
 
@@ -12,8 +12,8 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 | --- | --- | --- |
 | [01 · C4 system context](rendered/01-context.svg) | Lab users, platform engineers and supporting systems. | [Structurizr DSL](workspace.dsl) |
 | [02 · C4 containers: control](rendered/02-control.svg) | Environment state, leases and deployment. | [Structurizr DSL](workspace.dsl) |
-| [03 · C4 containers: evaluation](rendered/03-evaluation.svg) | Frozen data, search APIs and diagnostics. | [Structurizr DSL](workspace.dsl) |
-| [05 · C4 local deployment](rendered/05-local.svg) | Host control process, k3d services and experiment workloads. | [Structurizr DSL](workspace.dsl) |
+| [03 · C4 containers: evaluation](rendered/03-evaluation.svg) | Frozen data, snapshots, search APIs and diagnostics. | [Structurizr DSL](workspace.dsl) |
+| [05 · C4 local deployment](rendered/05-local.svg) | Host control process and S3 store, k3d services and experiment workloads. | [Structurizr DSL](workspace.dsl) |
 | [06 · C4 Azure deployment](rendered/06-azure.svg) | GHES, ACR, Blob Storage and AKS. | [Structurizr DSL](workspace.dsl) |
 
 ### [Environment lifecycle](index.html#environment-lifecycle)
@@ -64,6 +64,7 @@ The Archify HTML files are standalone interactive viewers with theme, presentati
 - **Traffic preparation:** all queries and timestamps are synthetic. A frozen trace feeds a versioned profile recipe; compilation freezes windows, transformations, phases, request bindings and arrival buckets into one artifact used by both APIs. One-second buckets are the initial approximation; exact event timing needs a validated spike. Reports retain planned and actual arrivals. The [traffic contract](../prototype-design.md#frozen-traffic-and-workload-contract) owns these definitions.
 - **Shared-index example:** the boundaries group logical environment references, not storage locations. Definitions remain in retained storage. B and C use different API images and the same pinned query assets, index, dataset and engine. Both API deployments use scoped read-only access to index i1. The dataset and index sit outside the environment boundaries. These identifiers are illustrative. A mapping change requires a separate index from the same dataset.
 - **Fast creation:** API/query/ranking changes reuse a compatible read-only frozen index. Mapping/analyser changes use a dedicated index from the same immutable catalogue. When an exact recipe-marked live copy exists, the control plane can clone it. A configured, verified regular snapshot can restore a missing copy; otherwise the pinned recipe rebuilds it. Engine-version experiments need an exceptional separate cluster, omitted from the normal deployment views. A shared cluster still requires scoped credentials and contention measurements.
+- **Snapshot placement:** the local S3 service runs in host Docker with its own volume, outside the Elasticsearch Pod and data PVC. This survives Elasticsearch cluster recreation on the same host. It does not survive host or Docker-volume loss. The Azure Blob snapshot container in view 06 is proposed and still requires compatibility testing.
 - **Lifecycle:** the diagram shows the normal path and one representative indexing failure/retry path. It is not a complete executable state machine. Explicit deletion must also work before readiness and after failures. A ready environment has a 72-hour lease extended by genuine activity; polling does not extend it. Closing a PR does not immediately delete its environment. The same lifecycle applies independently to baseline and candidate runtimes. Active comparisons renew both leases; manual deletion cancels dependent comparison jobs. Frozen definitions, referenced images/assets, canonical datasets and reports survive removal. Recreating a runtime uses its retained definition; it may reuse or rebuild compatible index artifacts.
 - **Migration:** local Gitea services and the future enterprise services fulfil the same logical source/build contracts. CI workflows, event adapters and registry migration still require work. The Azure view is a placement proposal, not a network, identity, disaster-recovery or production sizing design. The organisation's GitHub Enterprise hosting and registry remain open choices.
 
