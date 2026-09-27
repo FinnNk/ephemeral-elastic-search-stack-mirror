@@ -7,3 +7,4 @@ docs/diagrams/interactive/*.visual-check.*
 .lab/
 __pycache__/
 *.pyc
+lab/gatling/target/

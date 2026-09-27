@@ -37,3 +37,9 @@ Add the third comparison mode: run the same frozen synthetic arrival schedule ag
 - [Traffic workload view](../diagrams/interactive/traffic-workload.html) and [performance workflow](../diagrams/interactive/performance-check.html)
 - [Current controlled API comparison](../../lab/control_comparison.py)
 - [Gatling feeders](https://docs.gatling.io/concepts/session/feeders/) and [open injection](https://docs.gatling.io/concepts/injection/)
+
+## Batch outcome
+
+The [10,000-product calibration](../research/evidence/gatling.md) demonstrates the frozen source, compiled profiles, finite Job cleanup, control UI performance mode and paired public-API reports. One five-minute smoke pair met the absolute budgets. The normal and peak pairs also met their provisional phase budgets. The stress/recovery pair reports the first tested breach, or explicitly records that none occurred.
+
+The three-pair relative smoke and baseline stability gate, fifteen-minute peak hold, two-minute stress holds and five-minute recovery remain open. They are included in the [million-product scale plan](million-product-scale.md), where the load results will be more useful for the final solution shape. The current short peak and stress runs are calibration, not endurance evidence.

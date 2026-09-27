@@ -67,6 +67,9 @@ class Store:
             for name, field_type in [('index_kind', 'TEXT'), ('index_name', 'TEXT'), ('mapping_sha256', 'TEXT')]:
                 if name not in columns:
                     db.execute(f'ALTER TABLE environments ADD COLUMN {name} {field_type}')
+            comparison_columns = {row['name'] for row in db.execute('PRAGMA table_info(comparisons)')}
+            if 'profile' not in comparison_columns:
+                db.execute('ALTER TABLE comparisons ADD COLUMN profile TEXT')
 
     @contextmanager
     def connection(self):
@@ -289,7 +292,7 @@ class Lifecycle:
                 expired.append(self.reconcile(row['id']))
         return expired
 
-    def compare(self, baseline_id, candidate_id, mode):
+    def compare(self, baseline_id, candidate_id, mode, profile='probe'):
         if baseline_id == candidate_id:
             raise ValueError('Select two distinct environments.')
         with self.lock:
@@ -301,18 +304,24 @@ class Lifecycle:
                 raise ValueError('Both environments must be ready.')
             if self.clock() >= parse_stamp(baseline['expires_at']) or self.clock() >= parse_stamp(candidate['expires_at']):
                 raise ValueError('An environment lease has expired.')
-            if mode not in ('result-regression', 'relevance'):
+            if mode not in ('result-regression', 'relevance', 'performance'):
                 raise ValueError('Unknown comparison mode.')
+            if mode == 'performance' and profile not in ('probe', 'smoke', 'normal', 'peak', 'stress'):
+                raise ValueError('Unknown performance profile.')
             self.activity(baseline_id)
             self.activity(candidate_id)
             now = stamp(self.clock())
             comparison_id = str(uuid.uuid4())
             self.store.put_comparison({'id': comparison_id, 'baseline_id': baseline_id,
-                'candidate_id': candidate_id, 'mode': mode, 'state': 'running',
+                'candidate_id': candidate_id, 'mode': mode, 'profile': profile if mode == 'performance' else None,
+                'state': 'running',
                 'created_at': now, 'updated_at': now, 'report_sha256': None,
                 'report_blob': None, 'verdict': None, 'summary': None, 'error': None})
             try:
-                if self.comparator is None:
+                if mode == 'performance' and self.comparator is None:
+                    from performance_pair import evaluate_performance_pair
+                    summary = evaluate_performance_pair(baseline, candidate, profile)
+                elif self.comparator is None:
                     from control_comparison import evaluate_pair
                     summary = evaluate_pair(baseline, candidate, mode)
                 else:

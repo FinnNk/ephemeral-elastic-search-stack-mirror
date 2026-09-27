@@ -1,0 +1,64 @@
+{
+  "owner": "elastic-agent",
+  "route": "authenticated control HTTP API",
+  "mode": "performance",
+  "profile": "probe",
+  "lab-perf-baseline": {
+    "state": "ready",
+    "source_sha": "e333d1b01744372110fa576a8bcaa80db78def13",
+    "fingerprint": "b32669b1945bbb8abd325270ded51a783e632954874fcb23f7e6dd3e0e170c34",
+    "final_state": "deleted"
+  },
+  "lab-perf-candidate": {
+    "state": "ready",
+    "source_sha": "29fd9c49f5d5652b3e173782b100d2140f0202ee",
+    "fingerprint": "aaba0c055c04e72ed5262110af8abb176fa387c35e1bc1b72886715019419c23",
+    "final_state": "deleted"
+  },
+  "comparison": {
+    "state": "complete",
+    "verdict": "within-budget",
+    "profile": "probe",
+    "report_sha256": "e5fd7a802ee96ef856c25a6d23435b77c92952ab94098509b96d51dce42eb7bb",
+    "report_blob": "runs/e5fd7a802ee96ef856c25a6d23435b77c92952ab94098509b96d51dce42eb7bb/performance-comparison.json",
+    "summary": {
+      "baseline_native_report_blob": "runs/ac516cf6347643bc8cda911dbf112f74ad2b3b0b1b6a55f6a8b0dc3460bff543/gatling-report.zip",
+      "candidate_native_report_blob": "runs/dae0975a8fa6df1e28f6959c32763f36e22a70894c89d55895fa5586e4e20c6d/gatling-report.zip",
+      "complete": true,
+      "first_stress_budget_breach": null,
+      "measured_phases": {
+        "normal": {
+          "baseline": {
+            "failed_percent": 0.0,
+            "offered_rps": 2.0,
+            "p95_ms": 22,
+            "p99_ms": 22,
+            "request_count": 20,
+            "within_budget": true
+          },
+          "budget": {
+            "failed_percent": 1.0,
+            "p95_ms": 250,
+            "p99_ms": 500
+          },
+          "candidate": {
+            "failed_percent": 0.0,
+            "offered_rps": 2.0,
+            "p95_ms": 22,
+            "p99_ms": 22,
+            "request_count": 20,
+            "within_budget": true
+          },
+          "candidate_p95_increase_percent": 0.0
+        }
+      },
+      "mode": "performance",
+      "profile": "probe",
+      "report_blob": "runs/e5fd7a802ee96ef856c25a6d23435b77c92952ab94098509b96d51dce42eb7bb/performance-comparison.json",
+      "report_sha256": "e5fd7a802ee96ef856c25a6d23435b77c92952ab94098509b96d51dce42eb7bb",
+      "verdict": "within-budget",
+      "workload_sha256": "fcdc01c4341da934e1ecb47a5c18fa4938e3dd947c343c9c7306f890b5b78218"
+    },
+    "wall_seconds": 143.907
+  }
+}

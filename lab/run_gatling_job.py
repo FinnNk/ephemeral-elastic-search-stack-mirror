@@ -1,0 +1,139 @@
+"""Run a finite Gatling Job in the lab cluster with no Kubernetes API credential."""
+import hashlib
+import json
+import sys
+import time
+import uuid
+
+sys.path.insert(0, 'research/platform-spike')
+from common import ROOT, STATE, apply, guard, k, record
+from compare_search import definition, immutable_blob
+from gatling_report import summarise
+from run_gatling import IMAGE, SIMULATION, archive, retain_workload
+from traffic import compile_profile
+
+NAMESPACE = 'lab-evaluation'
+TARGETS = {'baseline': 'retail-baseline', 'candidate': 'retail-candidate'}
+
+
+def run(profile, target, environment=None):
+    guard()
+    environment = environment or TARGETS[target]
+    pinned = definition(environment)
+    workload = compile_profile(profile)
+    short = uuid.uuid4().hex[:8]
+    name = 'gatling-' + short
+    run_dir = STATE / 'gatling-jobs' / short
+    run_dir.mkdir(parents=True, exist_ok=False)
+    apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NAMESPACE}})
+    project = ROOT / 'lab/gatling'
+    data = {'pom.xml': (project / 'pom.xml').read_text(encoding='utf-8'),
+            'Simulation.java': (project / 'src/test/java/lab/relevance/SyntheticSearchSimulation.java').read_text(encoding='utf-8'),
+            'run-job.sh': (project / 'run-job.sh').read_text(encoding='utf-8')}
+    source_name, workload_name = name + '-source', name + '-workload'
+    claim = name + '-results'
+    apply({'apiVersion': 'v1', 'kind': 'PersistentVolumeClaim',
+           'metadata': {'name': claim, 'namespace': NAMESPACE},
+           'spec': {'accessModes': ['ReadWriteOnce'], 'resources': {'requests': {'storage': '1Gi'}}}})
+    apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': source_name, 'namespace': NAMESPACE},
+           'data': data})
+    source = STATE / 'workloads' / workload['workload_sha256']
+    workload_files = {path.name: path.read_text(encoding='utf-8') for path in source.glob('*.csv')}
+    apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': workload_name, 'namespace': NAMESPACE},
+           'data': workload_files})
+    job = {'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': name, 'namespace': NAMESPACE,
+        'labels': {'lab': 'gatling', 'profile': profile, 'target': target}},
+        'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': workload['duration_seconds'] + 480,
+            'template': {'metadata': {'labels': {'lab': 'gatling'}},
+                'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never',
+                'initContainers': [{'name': 'prepare', 'image': IMAGE,
+                    'command': ['sh', '-c', 'mkdir -p /workspace/src/test/java/lab/relevance && cp /source/pom.xml /workspace/pom.xml && cp /source/Simulation.java /workspace/src/test/java/lab/relevance/SyntheticSearchSimulation.java'],
+                    'volumeMounts': [{'name': 'project', 'mountPath': '/workspace'},
+                                     {'name': 'source', 'mountPath': '/source'}]}],
+                'containers': [{'name': 'gatling', 'image': IMAGE, 'workingDir': '/workspace',
+                    'command': ['sh', '/source/run-job.sh'],
+                    'env': [{'name': 'LAB_BASE_URL',
+                             'value': 'http://search.' + environment + '.svc.cluster.local:8080'}],
+                    'resources': {'requests': {'cpu': '500m', 'memory': '512Mi'},
+                                  'limits': {'cpu': '2', 'memory': '2Gi'}},
+                    'volumeMounts': [{'name': 'project', 'mountPath': '/workspace'},
+                                     {'name': 'source', 'mountPath': '/source'},
+                                     {'name': 'workload', 'mountPath': '/workload'},
+                                     {'name': 'results', 'mountPath': '/results'}]}],
+                'volumes': [{'name': 'project', 'emptyDir': {}},
+                            {'name': 'results', 'persistentVolumeClaim': {'claimName': claim}},
+                            {'name': 'source', 'configMap': {'name': source_name}},
+                            {'name': 'workload', 'configMap': {'name': workload_name}}]}}}}
+    started = time.monotonic()
+    try:
+        apply(job)
+        k('wait', '--for=condition=complete', 'job/' + name, '-n', NAMESPACE,
+          '--timeout=' + str(workload['duration_seconds'] + 480) + 's')
+        pods = json.loads(k('get', 'pods', '-n', NAMESPACE, '-l', 'job-name=' + name, '-o', 'json').stdout)['items']
+        if len(pods) != 1:
+            raise RuntimeError('Expected one Gatling Job pod.')
+        pod = pods[0]['metadata']['name']
+        logs = k('logs', 'pod/' + pod, '-n', NAMESPACE).stdout
+        (run_dir / 'runner.log').write_text(logs, encoding='utf-8')
+        reader = name + '-reader'
+        apply({'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': reader, 'namespace': NAMESPACE},
+               'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never',
+                   'containers': [{'name': 'reader', 'image': IMAGE, 'command': ['sleep', '600'],
+                                   'volumeMounts': [{'name': 'results', 'mountPath': '/results'}]}],
+                   'volumes': [{'name': 'results', 'persistentVolumeClaim': {'claimName': claim}}]}})
+        k('wait', '--for=condition=ready', 'pod/' + reader, '-n', NAMESPACE, '--timeout=120s')
+        # kubectl cp treats a Windows drive-letter colon as a remote separator.
+        k('cp', '-n', NAMESPACE, reader + ':/results/report',
+          (run_dir / 'report').relative_to(ROOT).as_posix())
+        k('cp', '-n', NAMESPACE, reader + ':/results/arrivals.csv',
+          (run_dir / 'arrivals.csv').relative_to(ROOT).as_posix())
+        reports = list((run_dir / 'report').glob('syntheticsearchsimulation-*'))
+        if len(reports) != 1:
+            raise RuntimeError('Expected one copied Gatling native report.')
+        summary = summarise(reports[0], source, run_dir / 'arrivals.csv')
+        summary.update({'run_id': short, 'target': target, 'environment': environment,
+            'fingerprint': pinned['fingerprint'], 'index': pinned['index'], 'image': pinned['image'],
+            'runner_image': IMAGE, 'gatling_version': '3.15.1', 'maven_plugin': '4.21.12',
+            'simulation_sha256': hashlib.sha256(SIMULATION.read_bytes()).hexdigest(),
+            'duration_wall_seconds': round(time.monotonic() - started, 3), 'runner_exit_code': 0,
+            'runner_limits': {'cpu': 2, 'memory': '2Gi'}, 'host': 'Windows 11 / local k3d',
+            'execution': 'finite Kubernetes Job', 'job_name': name})
+        summary.update(retain_workload(workload))
+        files = {str(path.relative_to(reports[0])).replace('\\', '/'): path.read_bytes()
+                 for path in reports[0].rglob('*') if path.is_file()}
+        files['arrivals.csv'] = (run_dir / 'arrivals.csv').read_bytes()
+        files['runner.log'] = logs.encode()
+        files['simulation.java'] = SIMULATION.read_bytes()
+        files['pom.xml'] = (ROOT / 'lab/gatling/pom.xml').read_bytes()
+        files['run-job.sh'] = (ROOT / 'lab/gatling/run-job.sh').read_bytes()
+        payload = archive(files)
+        digest = hashlib.sha256(payload).hexdigest()
+        summary['native_report_sha256'] = digest
+        summary['native_report_blob'] = immutable_blob('runs', digest + '/gatling-report.zip', payload)
+        record('gatling-job-' + profile + '-' + target + '-' + short, summary)
+        return summary
+    except Exception as error:
+        pods_result = k('get', 'pods', '-n', NAMESPACE, '-l', 'job-name=' + name, '-o', 'json', check=False)
+        if pods_result.returncode == 0:
+            for pod in json.loads(pods_result.stdout)['items']:
+                logs_result = k('logs', 'pod/' + pod['metadata']['name'], '-n', NAMESPACE, check=False)
+                (run_dir / 'failure.log').write_text(logs_result.stdout + logs_result.stderr, encoding='utf-8')
+        record('gatling-job-failure-' + short, {'profile': profile, 'target': target,
+            'environment': environment, 'job_name': name,
+            'error_kind': type(error).__name__, 'error': str(error)[:500]})
+        raise
+    finally:
+        k('delete', 'pod/' + name + '-reader', '-n', NAMESPACE, '--ignore-not-found', '--wait=true', check=False)
+        k('delete', 'job/' + name, '-n', NAMESPACE, '--ignore-not-found', '--wait=true', check=False)
+        for config in (source_name, workload_name):
+            k('delete', 'configmap/' + config, '-n', NAMESPACE, '--ignore-not-found', check=False)
+        k('delete', 'pvc/' + claim, '-n', NAMESPACE, '--ignore-not-found', '--wait=true', check=False)
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress'))
+    parser.add_argument('target', choices=TARGETS)
+    args = parser.parse_args()
+    print(json.dumps(run(args.profile, args.target), indent=2))

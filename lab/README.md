@@ -34,7 +34,7 @@ python lab/verify_baseline.py
 
 The product generator uses unequal category shares, rotating product types and brands, seeded colour/material/availability, bounded category-specific prices and synthetic popularity. The 50 queries span type, colour, brand and material intents. Judgements come from rules applied to available products; they are useful as a repeatable seed, but they are not human relevance labels or exhaustive negatives. No production product or traffic data is used.
 
-Gatling phases, Apple silicon verification and the 1,000,000-product/1,000-query gate remain later batches. The local control service now implements 72-hour leases and automatic teardown. The current 10,000-product result counts demonstrate functional behaviour, not production performance.
+The local control service implements 72-hour leases and automatic teardown. The Gatling runner measures public API latency on this 10,000-product release; its short peak and stress phases calibrate the runner rather than establishing endurance. Apple silicon verification and the 1,000,000-product/1,000-query gate remain later batches.
 
 The later million-product release will use a [versioned ESCI-informed aggregate profile](profiles/esci-informed-uk-v1.json). Its [modelling note](../docs/research/esci-synthetic-calibration.md) separates reference observations from synthetic UK assumptions. It does not change this frozen 10,000-product release.
 
@@ -134,3 +134,18 @@ python lab/verify_index_http.py
 ```
 
 The direct run compared both public API modes: 20 of 51 ordered top tens changed, and synthetic nDCG@10 moved from 0.911474 to 0.899054. It removed the candidate index and both namespaces; the shared baseline retained 10,000 products and its write block. See the [evidence and limits](../docs/research/evidence/index-change.md). The UI uses the same control API create, compare and delete routes.
+
+## Compare API performance with Gatling
+
+The control UI offers **Gatling performance** with probe, smoke, normal, peak and stress/recovery profiles. It runs the two selected ready environments sequentially as finite Kubernetes Jobs, then stores the paired report and native Gatling output in Floci. A probe is useful for checking the path; use the five-minute smoke profile for the initial fixed-load budget. The UI can reopen a comparison after the environments have been removed.
+
+For a command-line pair against `retail-baseline` and `retail-candidate`, use PowerShell from the repository root:
+
+```powershell
+python lab/traffic.py generate
+python lab/run_gatling_job.py probe baseline
+python lab/run_gatling_job.py probe candidate
+python lab/compare_gatling_jobs.py probe <baseline-run-id> <candidate-run-id>
+```
+
+Copy each `run_id` from its Job output into the final command. The runner needs the k3d cluster, pinned API deployments, Floci forward on `14577` and the ignored `.lab` credentials. It uses namespace `lab-evaluation`, a 2 CPU/2 GiB cap, a temporary PVC, and a search NetworkPolicy allowance limited to labelled Gatling pods. It removes the Job, ConfigMaps and PVC after retaining the reports. See the [runner guide](gatling/README.md), [traffic assumptions](../docs/research/synthetic-traffic.md) and [measured evidence](../docs/research/evidence/gatling.md).
