@@ -77,6 +77,10 @@ The [reference CI/CD](delivery.md) publishes immutable Nexus releases and promot
 
 [Nexus](nexus.md) stores private images, deployment bundles and release descriptors. Floci retains datasets, recipes and evaluation reports; SeaweedFS retains index snapshots. Historical Gitea registry images remain available. The [detailed batches](plans/reference-ci-cd.md) and [operating guide](delivery.md) record the common Actions subset and provider-specific migration boundary.
 
+**Approved next placement, not yet implemented:** [batch 7i](plans/kubernetes-control-services.md) moves the UI/API, lease worker, PR watcher and delivery coordinator into `lab-control`. One active Pod and a persistent volume retain the present SQLite and writer-coordination model. Internal operations use service addresses and a runtime ServiceAccount. Bootstrap/recovery stays executable from the host; Nexus and snapshot storage retain their current independent lifetime. Cluster unavailability also makes these controls unavailable, which is accepted for the lab. The current diagrams still show the implemented host placement and will change with that batch.
+
+The [topology and contract assessment](plans/local-reference-boundaries.md) records the remaining local boundaries to demonstrate: installation from explicit durable inputs, interrupted-operation recovery, runtime authority, independent producers/evaluators and artifact retention references. It does not add statistical metric-validity requirements.
+
 ### Self-contained Git and build lifecycle
 
 Gitea produces the tested candidate image. The [comparison workflow](diagrams/interactive/change-to-comparison.html) then resolves and verifies both baseline and candidate environments.
@@ -210,6 +214,8 @@ Floci supports Blob CRUD and standard client connections. The lab now configures
 Add emulated Key Vault, registry, queue or AKS only when a real integration needs exercising. See [Floci AZ](https://github.com/floci-io/floci-az) and its [quick start](https://floci.io/floci-az/getting-started/quick-start/).
 
 ## Frozen dataset contract
+
+**Planned contract separation:** [batch 7j](plans/independent-data-evaluation-contracts.md) gives catalogues, query suites, judgements and traffic independent manifests. Environments pin software/catalogue/index inputs; executions pin requests and workloads; evaluations pin retained observations, judgements when required and the evaluator specification. Reports and promotion policy have separate versioned contracts. Revised judgements can rescore sufficient retained observations without rebuilding an index. Independent producer jobs publish the synthetic inputs, and the lab consumes their references. Existing combined releases and recipe hashes remain readable and unchanged through a legacy adapter; the current contract below describes those retained releases.
 
 A release is an immutable set of content-addressed objects plus a manifest. Example release ID: `uk-retail-v1`. Its manifest records:
 

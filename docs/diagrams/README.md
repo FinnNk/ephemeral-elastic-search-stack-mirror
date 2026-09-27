@@ -4,6 +4,8 @@ Open the [diagram gallery](index.html) in a browser, or start with the [system c
 
 ## Reading order
 
+The planned [Kubernetes control move](../plans/kubernetes-control-services.md) and [independent data/evaluation contracts](../plans/independent-data-evaluation-contracts.md) are not shown as deployed. Their implementation batches will update the C4 placement/ownership and Archify execution flows together.
+
 The gallery groups diagrams by task. The identifiers below remain stable.
 
 ### [System architecture](index.html#system-architecture)

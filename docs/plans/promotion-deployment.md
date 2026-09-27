@@ -38,4 +38,4 @@ Promote one tested Nexus release through integration, staging and simulated prod
 - `research/platform-spike/chart`, `applicationset.yaml`: Argo deployment and namespace isolation.
 - [Gitea Actions differences](https://docs.gitea.com/usage/actions/comparison/) and [Argo CD CI automation](https://argo-cd.readthedocs.io/en/stable/user-guide/ci_automation/).
 
-The next batch is [native, GHES and Azure validation](native-cloud-validation.md). It requires the relevant host and tenant access; local evidence does not close those gates.
+The next local batch is [Kubernetes control services](kubernetes-control-services.md), followed by [independent data/evaluation contracts](independent-data-evaluation-contracts.md). [Native, GHES and Azure validation](native-cloud-validation.md) remains the subsequent external gate.
