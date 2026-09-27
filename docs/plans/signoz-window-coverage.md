@@ -1,4 +1,6 @@
-# Batch 7k2d: connected window and investigation
+# Batch 7k2d: seven-day window assessment
+
+Status: implemented with deterministic synthetic fixtures; awaiting review. The live ledger, collector probe and investigation gates move to [batch 7k2e](signoz-investigation-overhead.md).
 
 ## Intent
 
@@ -14,11 +16,10 @@ Show when the local SigNoz view supports a seven-day search SLO decision, and tr
 
 ## Acceptance criteria
 
-1. Add a reproducible seven-day companion assessment or dashboard totals for eligible, good, bad, target, remaining budget, burn and sample count, with explicit collection coverage. Validate fast, slow-success, error, deadline and retry fixtures, including missing intervals and counter resets.
-2. Use the running system to follow a slow HTTP 200 to its trace and related log, a failed index restore to operation/dependency evidence, and a failed promotion verification to its exact release and deployment. Record filters and any manual fallback. If browser access is unavailable, record API/storage checks separately and keep the browser gate open.
-3. Check the installed control Pod and all three delivery targets with telemetry-enabled releases, preserving both comparison fingerprints and exact release references.
-4. Interrupt and restore the backend/collector. Confirm serving continues, identify the telemetry gap, and check sampled-out trace behaviour. Compare identical frozen normal Gatling loads with telemetry enabled/disabled against the provisional ≤5% relative p95 overhead hypothesis; report sample sizes and uncertainty.
-5. Update the runbook, design, diagrams where the actual path changes, evidence and roadmap. Create the next detailed plan.
+1. Compute seven-day eligible/good/bad totals, target, remaining budget, burn and sample count from explicit counter buckets.
+2. Require an independent request ledger, positive collector probe, complete aligned intervals and at least 100 requests before a `met` verdict.
+3. Exercise fast, slow HTTP 200, error, deadline, retry, missing interval, failed probe, mismatch, no-data and low-sample fixtures.
+4. Update the guide, evidence and roadmap; commit to a review branch and open stacked PRs. Leave `main` untouched.
 
 ## Where to find more information
 

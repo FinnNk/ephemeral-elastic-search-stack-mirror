@@ -34,6 +34,8 @@ class SloTests(unittest.TestCase):
         observed = analyse([self.event(True, True)], POLICY)
         self.assertEqual(observed['objectives']['search-success']['status'], 'unverified')
         self.assertTrue(observed['low_sample_count'])
+        low_sample = analyse([self.event(True, True)], POLICY, coverage_complete=True)
+        self.assertEqual(low_sample['objectives']['search-success']['status'], 'unverified')
 
     def test_failure_spends_both_budgets(self):
         events = [self.event(True, True) for _ in range(989)]

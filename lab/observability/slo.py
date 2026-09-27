@@ -35,10 +35,11 @@ def analyse(events, policy, now=None, coverage_complete=False):
         if moment < now - window:
             continue
         selected.append(event)
+    enough_samples = len(selected) >= policy['minimum_sample_count']
     result = {'policy': policy['kind'], 'window_days': window.days,
               'traffic_class': policy['traffic_class'], 'eligible': len(selected),
               'coverage': 'complete' if coverage_complete else 'unverified',
-              'low_sample_count': len(selected) < policy['minimum_sample_count'],
+              'low_sample_count': not enough_samples,
               'objectives': {}}
     for objective in policy['objectives']:
         target = objective['target']
@@ -59,7 +60,7 @@ def analyse(events, policy, now=None, coverage_complete=False):
             'remaining_budget': allowance - bad if eligible else None,
             'budget_consumed': bad / allowance if allowance else None,
             'status': ('no-data' if not eligible else
-                       'unverified' if not coverage_complete else
+                       'unverified' if not coverage_complete or not enough_samples else
                        'met' if good / eligible >= target else 'breached')}
     return result
 
