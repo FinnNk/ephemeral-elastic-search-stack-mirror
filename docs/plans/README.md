@@ -4,6 +4,14 @@ The [batch roadmap](roadmap.md) tracks lab work and review state. The [million-p
 
 The [reference CI/CD plan](reference-ci-cd.md) inserts batches 7f–7h: [Nexus](nexus-artifacts.md), [portable CI](portable-ci.md) and [promotion/deployment](promotion-deployment.md). Their implementation is ready for review.
 
-The next local batches are [7i: Kubernetes control services](kubernetes-control-services.md) and [7j: independent data/evaluation contracts](independent-data-evaluation-contracts.md). Both include intent, constraints, work, acceptance criteria and source references. The [topology and contract assessment](local-reference-boundaries.md) distinguishes the remaining structural checks from deliberate laptop simplifications. [Batch 8](native-cloud-validation.md) follows and requires external hardware/tenant access.
+The next local batches are:
+
+| Batch | Outcome |
+| --- | --- |
+| [7i: Kubernetes control services](kubernetes-control-services.md) | Runtime controls in their own namespace, with explicit state and recovery boundaries |
+| [7j: Independent data/evaluation contracts](independent-data-evaluation-contracts.md) | Separate producers, retained observations and independently versioned evaluation |
+| [7k: OpenTelemetry observability and SLOs](otel-observability.md) | SigNoz dashboard, connected metrics/traces/logs and error budgets; New Relic migration mapping |
+
+Each plan includes intent, constraints, work, acceptance criteria and source references. The [topology and contract assessment](local-reference-boundaries.md) distinguishes the remaining structural checks from deliberate laptop simplifications. [Batch 8](native-cloud-validation.md) follows and requires external hardware/tenant access, including New Relic for backend validation.
 
 The [prototype design](../prototype-design.md) owns the architecture and provisional quantitative targets. These plans organise delivery without replacing that design.

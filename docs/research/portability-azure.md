@@ -2,7 +2,7 @@
 
 The [C4 local](../diagrams/rendered/05-local.svg) and [Azure](../diagrams/rendered/06-azure.svg) deployment views show the placements. The lab has run on Windows x64. The Azure view is a migration design; neither AKS nor Apple silicon has been exercised.
 
-Before external validation, planned batches [7i](../plans/kubernetes-control-services.md) and [7j](../plans/independent-data-evaluation-contracts.md) move the local controls into Kubernetes and separate input producers/evaluation contracts. The current implementation and diagrams still use host controls. Reuse the resulting packages and contracts for Azure; multiple control replicas and real provider identity remain external design/validation work.
+Before external validation, planned batches [7i](../plans/kubernetes-control-services.md) and [7j](../plans/independent-data-evaluation-contracts.md) move the local controls into Kubernetes and separate input producers/evaluation contracts. [Batch 7k](../plans/otel-observability.md) adds SigNoz locally with OTel signals and a New Relic migration mapping. The current implementation and diagrams still use host controls. Reuse the resulting packages and contracts for Azure; multiple control replicas, real provider identity and New Relic ingestion/UI checks remain external design/validation work.
 
 ## Host portability
 
