@@ -63,6 +63,7 @@ The local lab now runs Gitea, Argo CD, ECK, the control UI/API and the lease con
 | API performance | Gatling open-source Java SDK, feeders, open injection, assertions and local HTML reports | Synthetic traffic/profile preparation, slot scheduling and baseline/candidate report comparison |
 | Metadata | SQLite for the local lab; a replaceable store interface | Environment records, leases and report references |
 | Self-contained source and build loop | Gitea, Actions runner and Nexus | Portable workflow, immutable release descriptor and provider adapter |
+| Connected observability (planned) | OpenTelemetry SDKs/Collector and self-hosted SigNoz; New Relic in the eventual target | Correlation attributes, activity/SLO dashboard, error-budget policies and backend query/link mappings |
 
 Argo CD is already used in the target production system and is a design constraint for the prototype.
 
@@ -79,7 +80,9 @@ The [reference CI/CD](delivery.md) publishes immutable Nexus releases and promot
 
 **Approved next placement, not yet implemented:** [batch 7i](plans/kubernetes-control-services.md) moves the UI/API, lease worker, PR watcher and delivery coordinator into `lab-control`. One active Pod and a persistent volume retain the present SQLite and writer-coordination model. Internal operations use service addresses and a runtime ServiceAccount. Bootstrap/recovery stays executable from the host; Nexus and snapshot storage retain their current independent lifetime. Cluster unavailability also makes these controls unavailable, which is accepted for the lab. The current diagrams still show the implemented host placement and will change with that batch.
 
-The [topology and contract assessment](plans/local-reference-boundaries.md) records the remaining local boundaries to demonstrate: installation from explicit durable inputs, interrupted-operation recovery, runtime authority, independent producers/evaluators and artifact retention references. It does not add statistical metric-validity requirements.
+**Planned observability:** [batch 7k](plans/otel-observability.md) adds SigNoz in `lab-observability` with OTel collection. One activity/SLO dashboard connects metrics, traces and logs: a breach leads to affected operations, their traces and related logs with applicable filters retained. Error budgets include slow successful responses and missed workflow deadlines. Unsampled SLI counts remain independent of trace sampling. Versioned instrumentation and SLO meanings carry to New Relic; dashboards, queries and deep links need backend-specific mappings. Resource fit and actual correlation support are implementation checks.
+
+The [topology and contract assessment](plans/local-reference-boundaries.md) records the remaining local boundaries to demonstrate: installation from explicit durable inputs, interrupted-operation recovery, runtime authority, independent producers/evaluators, artifact retention references and connected observability. Operational SLO accounting does not add statistical relevance-metric validity requirements.
 
 ### Self-contained Git and build lifecycle
 

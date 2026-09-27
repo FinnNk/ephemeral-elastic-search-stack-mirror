@@ -4,13 +4,14 @@
 
 Close the hardware and cloud gates left open by the Windows portability build. Reproduce the frozen-search lifecycle on Apple silicon, then validate the proposed GHES, Nexus/optional ACR, AKS and Azure Blob boundaries in a test tenant before using local measurements for a production proposal.
 
-Prerequisites: complete the planned [Kubernetes control deployment](kubernetes-control-services.md) and [independent data/evaluation contracts](independent-data-evaluation-contracts.md). Reuse their packaged services, artifact schemas and recovery procedures; do not count those planned capabilities as existing evidence.
+Prerequisites: complete the planned [Kubernetes control deployment](kubernetes-control-services.md), [independent data/evaluation contracts](independent-data-evaluation-contracts.md) and [OTel observability](otel-observability.md). Reuse their packaged services, artifact schemas, telemetry contracts and recovery procedures; do not count those planned capabilities as existing evidence.
 
 ## Constraints
 
 | Area | Constraint |
 | --- | --- |
 | Access | Requires an Apple silicon Mac and an authorised Azure subscription. A GHES test organisation is needed for provider migration checks. Do not label simulated checks as native or cloud evidence. |
+| Observability | Actual New Relic validation requires an authorised tenant and scoped ingest/provisioning credentials. Preserve OTel contracts; translate dashboard/query/service-level definitions and test the drill-through paths. A local OTLP receiver proves export shape only. |
 | Data | Use only the versioned synthetic UK/GBP releases, judgements and traffic profiles. Preserve byte hashes and report fingerprints across hosts. |
 | Comparison | Keep two frozen environments per check. The same public API relevance, result-preservation and Gatling contracts, query-level report and judgement-coverage caveat must run in both placements. |
 | Security | Use workload identity and scoped Blob roles in AKS, digest-pinned Nexus images (or verified ACR copies), index-scoped Elasticsearch roles and authenticated Git/webhook access. |
@@ -24,6 +25,7 @@ Prerequisites: complete the planned [Kubernetes control deployment](kubernetes-c
    Register and analyse a real Azure Blob snapshot repository with ECK workload identity. Restore the historical million-product snapshot to a separate index after deleting the source, verify recipe and ordered sample, and measure three searchable restore times. Keep S3 and Blob timing evidence separate.
 4. In a GHES test organisation, migrate application and desired-state repositories, build the same commit, resolve its Nexus digest or verified ACR copy, deliver signed events and run a baseline/candidate comparison through Argo CD. Map the local `lab-evaluate` opt-in and exact-head verdict status to GHES, then verify stale-head handling, idempotent retries and recreate-after-delete from retained source and data. Repeat control restart and state-restoration checks against the cloud storage/identity boundary, including recovery of an interrupted promotion.
 5. Measure at least 40 real shared-index API environments and controlled neighbour load on AKS; size Elasticsearch, node pools, disks, load generators and retained artifacts from p95/p99 and cost evidence. Test a controller/node failure during provisioning, comparison and deletion.
+6. Run the SigNoz investigation walkthrough on Apple silicon and the corresponding New Relic walkthrough against authorised synthetic traffic. Verify all three signals, service identity, trace/log correlation, available metric-to-trace navigation, asynchronous operation links and filter retention. Compare known good/bad/eligible counts and budgets under the mapped policies; record backend limitations, temporality/aggregation changes and ingest cost. Export outages must not stop the serving or control paths.
 
 ## Acceptance criteria
 
@@ -33,6 +35,7 @@ Prerequisites: complete the planned [Kubernetes control deployment](kubernetes-c
 - The migrated PR workflow links query-level reports and records the exact evaluated head SHA. An event retry does not duplicate a verdict; a changed SHA starts a separate run. The local polling prototype remains the reference behaviour, not evidence of signed GHES delivery.
 - The shared Actions workflow publishes a Nexus release on GHES. Protected PRs promote identical digests through all three targets; failed/stale evidence and missing review block merge. A reviewed rollback restores the complete previous deployment, including a historical schema.
 - Catalogue, query, judgement, observation and evaluator references remain distinct and immutable after migration. Revised judgements can rescore retained observations without rebuilding a search index; historical contract versions remain readable.
+- New Relic receives OTel metrics, traces and logs with the expected identities. A slow successful request consumes its latency budget; the dashboard reaches its trace/log evidence without manual ID copying where the platform supports it. Known-count SLO checks match the local contract, and UI/retention gaps have tested fallbacks.
 - Forty AKS APIs answer real searches with measured p95 readiness and cleanup; relevance/performance validity and resource contention are assessed against the provisional targets.
 - A capacity and operating-cost proposal states region, SKUs, replicas, retention, licences, expected tenant concurrency and uncertainty ranges.
 

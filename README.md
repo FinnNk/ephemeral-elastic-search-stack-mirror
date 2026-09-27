@@ -8,7 +8,7 @@ Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram 
 
 The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches, the [scale evidence](docs/research/evidence/million-scale.md), [concurrency evidence](docs/research/evidence/concurrency-isolation.md) and [native/cloud validation plan](docs/plans/native-cloud-validation.md).
 
-The next planned local batches move [control services into Kubernetes](docs/plans/kubernetes-control-services.md) and separate [data producers and evaluation contracts](docs/plans/independent-data-evaluation-contracts.md). The [topology assessment](docs/plans/local-reference-boundaries.md) records the remaining structural checks and accepted laptop simplifications.
+The next planned local batches move [control services into Kubernetes](docs/plans/kubernetes-control-services.md), separate [data producers and evaluation contracts](docs/plans/independent-data-evaluation-contracts.md), and add [OTel observability with SigNoz](docs/plans/otel-observability.md). The observability plan covers a shared activity/SLO dashboard, linked metrics/traces/logs, error budgets and migration to New Relic. The [topology assessment](docs/plans/local-reference-boundaries.md) records the remaining structural checks and accepted laptop simplifications.
 
 ## Current state
 

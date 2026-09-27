@@ -31,6 +31,7 @@ Use existing JSONL/CSV formats and a small versioned manifest envelope: artifact
 - **Storage:** Floci/Blob retains data, observations and reports; Nexus retains executable images and release bundles; SeaweedFS retains snapshots. Producer identities may publish their inputs, consumers read them, and report publication uses its own scope where the local service supports it. Document emulator permission gaps.
 - **Compatibility:** keep old manifests, recipes, environments and reports unchanged and readable through a legacy adapter. New catalogue-only manifests stop judgement/query changes from changing index recipes. New contracts are additive and versioned; never silently reinterpret an old hash.
 - **Synthetic-only lab:** all demonstration sources remain synthetic. External means outside the search/lab ownership boundary, not production data or an internet dependency.
+- **Observability:** carry operation/comparison IDs and artifact references across producer, runner and evaluator boundaries for [batch 7k](otel-observability.md). Keep transient trace context outside content-addressed data definitions; retained reports remain authoritative after telemetry expires.
 
 ## Versioning and execution
 
@@ -52,7 +53,7 @@ Result preservation consumes both ordered observation sets without judgements. R
 5. **Connect delivery policy.** Validate exact report/specification/policy references. A report for another catalogue, query suite, environment pair or policy input cannot authorise the current proposal. Policy evaluation and human approval remain distinct from report calculation.
 6. **Exercise schema and release ownership end to end.** In the isolated delivery repositories, build a release with a compatible new schema recipe, propose/deploy it, then restore the complete previous release/recipe through rollback. Use fresh executions where required. This demonstrates independently versioned software, data, schema and desired-state contracts; no claim of improved relevance is required.
 7. **Document retention dependencies.** Catalogue the references needed for comparison replay, rescoring and rollback, including image layers and evaluator versions. Add a read-only inventory/report of missing references and disposable artifacts. Automatic deletion remains disabled until a separate retention policy is accepted.
-8. **Synchronise the model.** Update the design, operating guide, C4 evaluation and deployment views, and Archify data preparation/evaluation/promotion workflows. Show independent producer ownership, two frozen APIs, retained observations and separate evaluation/policy steps. Update the roadmap, refresh the detailed external-validation plan and open the batch PR.
+8. **Synchronise the model.** Update the design, operating guide, C4 evaluation and deployment views, and Archify data preparation/evaluation/promotion workflows. Show independent producer ownership, two frozen APIs, retained observations and separate evaluation/policy steps. Update the roadmap, refine the next [observability batch](otel-observability.md), refresh the external-validation plan and open the batch PR.
 
 ## Where to find more information
 

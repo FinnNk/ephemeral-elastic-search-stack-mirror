@@ -2,7 +2,7 @@
 
 This assessment concerns component placement, ownership, interfaces and lifecycle. It does not assess whether synthetic relevance scores or laptop latency predict production outcomes.
 
-After batches [7i](kubernetes-control-services.md) and [7j](independent-data-evaluation-contracts.md), the intended local structure is representative of a small deployment: independent data producers publish immutable inputs; versioned search releases consume catalogues; evaluators consume API observations; reviewed desired state drives Argo CD; persistent services retain artifacts beyond ephemeral runtimes.
+After batches [7i](kubernetes-control-services.md), [7j](independent-data-evaluation-contracts.md) and [7k](otel-observability.md), the intended local structure is representative of a small deployment: independent producers publish immutable inputs; versioned search releases consume catalogues; evaluators consume API observations; reviewed desired state drives Argo CD; persistent services retain artifacts beyond ephemeral runtimes. OTel signals connect operations across these boundaries in a shared SigNoz dashboard.
 
 ## Remaining structural checks
 
@@ -14,6 +14,7 @@ After batches [7i](kubernetes-control-services.md) and [7j](independent-data-eva
 | Independent source and evaluation ownership | Dataset-name branches and a combined release manifest couple data selection, index recipes and evaluation. | Batch 7j: separately runnable producers/evaluator, explicit artifact/API/report contracts, independent revisions and backwards-compatible readers. |
 | Software/schema promotion | Promotion and rollback passed with an unchanged shared recipe; historical-schema recovery was tested separately. | Batch 7j: connect those contracts in one schema-changing delivery and rollback walkthrough. |
 | Artifact lifecycle | Frozen inputs, snapshots and releases survive runtime deletion, but no complete cross-store retention inventory or automatic cleanup exists. | Batch 7j: inventory reference dependencies and missing artifacts. Keep deletion disabled; distinguish retained evidence from disposable runtime. |
+| Connected observability | Current logs, diagnostic records and reports lack a common metrics/trace/log investigation surface and operational error-budget view. | Batch 7k: SigNoz and OTel contracts; demonstrate SLO breach → affected operation → trace → logs, including slow successful requests, with a New Relic mapping. |
 
 The first three are the main operational gaps that could otherwise leave a Kubernetes deployment dependent on one developer's workstation. They fit inside the planned control migration and do not require additional platforms.
 
@@ -27,9 +28,9 @@ The first three are the main operational gaps that could otherwise leave a Kuber
 | Gitea and local application identities | Demonstrates Git/CI/review/service contracts. GHES API behaviour, enterprise SSO and Azure workload identity require their actual systems. |
 | Private local HTTP and simple browser access | Sufficient for the local workflow. End-to-end TLS, enterprise ingress and certificate rotation remain deployment concerns; internal service discovery should already be explicit. |
 | Frozen catalogue and query inputs | Deliberate for reproducible development/evaluation. Streaming catalogue updates, customer sessions, live experiments and commerce backends are outside this reference. |
-| Basic logs, statuses and report links | Enough to inspect local operation boundaries. An organisation can attach its observability platform without making that stack a prerequisite for the lab. |
+| One local observability backend | Planned SigNoz shares the cluster failure domain, has bounded retention and requires additional memory/storage. An export outage must not block lab operations; external New Relic validation remains separate. |
 
-No further major platform component is recommended for the laptop reference on this basis. Full external-service disaster recovery, automatic retention cleanup and enterprise identity are recorded gaps, not claims of completed work or additional approved implementation batches. [Batch 8](native-cloud-validation.md) validates the real provider and hosting boundaries.
+SigNoz is the additional platform component requested for the local reference. Its resource fit is the first check in batch 7k. Full external-service disaster recovery, automatic retention cleanup and enterprise identity remain recorded gaps rather than additional implementation batches. [Batch 8](native-cloud-validation.md) validates the real provider, hosting and New Relic boundaries.
 
 ## Evidence behind the assessment
 
