@@ -36,7 +36,7 @@ python lab/verify_baseline.py
 
 The product generator uses unequal category shares, rotating product types and brands, seeded colour/material/availability, bounded category-specific prices and synthetic popularity. The 50 queries span type, colour, brand and material intents. Judgements come from rules applied to available products; they are useful as a repeatable seed, but they are not human relevance labels or exhaustive negatives. No production product or traffic data is used.
 
-The local control service implements 72-hour leases and automatic teardown. The Gatling runner measures public API latency; its short peak and stress phases calibrate the runner. The [portability design](../docs/research/portability-azure.md) gives Apple silicon and Azure steps, with native runs still open.
+The [Kubernetes control runtime](../docs/control-runtime.md) implements 72-hour leases and automatic teardown from `lab-control`. The Gatling runner measures public API latency; its short peak and stress phases calibrate the runner. The [portability design](../docs/research/portability-azure.md) gives Apple silicon and Azure steps, with native runs still open.
 
 ### Recreate an index after a schema change
 

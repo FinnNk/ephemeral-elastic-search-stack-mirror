@@ -126,9 +126,18 @@ def rendered(deployment, name):
     values_path = directory / 'values.json'
     values_path.write_bytes(canonical(values))
     result = run([HELM, 'template', name, str(directory / 'chart'), '-f', str(values_path)]).stdout
+    control_ingress = {
+        'apiVersion': 'networking.k8s.io/v1', 'kind': 'NetworkPolicy',
+        'metadata': {'name': 'control-search-ingress', 'namespace': name},
+        'spec': {'podSelector': {}, 'policyTypes': ['Ingress'],
+                 'ingress': [{'from': [{'namespaceSelector': {'matchLabels': {
+                     'kubernetes.io/metadata.name': 'lab-control'}},
+                     'podSelector': {'matchLabels': {'app': 'lab-control'}}}],
+                     'ports': [{'port': 8080, 'protocol': 'TCP'}]}]}}
     config = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': 'frozen-definition', 'namespace': name},
               'data': {'definition.json': canonical(values).decode()}}
-    return result.rstrip() + '\n---\n' + json.dumps(config, indent=2) + '\n'
+    return result.rstrip() + '\n---\n' + json.dumps(control_ingress, indent=2) + \
+        '\n---\n' + json.dumps(config, indent=2) + '\n'
 
 
 def checkout():

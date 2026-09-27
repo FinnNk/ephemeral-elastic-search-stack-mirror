@@ -21,6 +21,8 @@ def running():
 
 
 def start(baseline_run, release):
+    if (STATE / 'control-drain').exists():
+        raise RuntimeError('Host controls are drained for Kubernetes cutover.')
     if running():
         return {'watcher': 'already running'}
     STATE.mkdir(exist_ok=True)

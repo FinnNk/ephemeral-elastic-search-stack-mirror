@@ -92,6 +92,12 @@ spec:
               kubernetes.io/metadata.name: platform
         - namespaceSelector:
             matchLabels:
+              kubernetes.io/metadata.name: lab-control
+          podSelector:
+            matchLabels:
+              app: lab-control
+        - namespaceSelector:
+            matchLabels:
               kubernetes.io/metadata.name: lab-evaluation
           podSelector:
             matchExpressions:

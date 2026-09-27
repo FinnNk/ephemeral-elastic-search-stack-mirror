@@ -8,15 +8,15 @@ After batches [7i](kubernetes-control-services.md), [7j](independent-data-evalua
 
 | Boundary | Present gap | Bounded local demonstration |
 | --- | --- | --- |
-| Bootstrap and state recovery | The original platform setup is a sequential research recipe; controls depend on accumulated `.lab` state. GitHub mirrors project Git only. | Batch 7i: fresh-checkout control installation, explicit prerequisites and state bundle, repeatable installation, isolated state backup/restore and host recovery independent of the control Pod. Full all-service disaster recovery remains separate. |
-| Interrupted orchestration | Persisted-record recovery exists, but a live interruption during provision/comparison was not tested in the concurrency batch. Delivery metadata still resides on the host. | Batch 7i: actual Pod replacement during work, retry/reconciliation, dependency unavailability and failed deployment readiness; no duplicate publication or blocked lease left behind. |
-| Service and credential ownership | Host kubeconfig, loopback endpoints and setup identities are used by control code. | Batch 7i: internal Services, runtime ServiceAccount, explicit cross-namespace permissions, scoped application credentials and separate bootstrap/reviewer authority. Preserve narrow search/evaluation access. |
+| Bootstrap and state recovery | Control state now lives on a k3d PVC. An isolated import of an exported archive passed; fresh-checkout deployment and independent host recovery remain. | Finish batch 7i installation and recovery from separately retained state, credentials and services. Full all-service disaster recovery remains separate. |
+| Interrupted orchestration | Provisioning recovered automatically, deletion completed and an interrupted comparison failed explicitly while cleaning its Gatling resources. Unavailable dependencies and failed readiness still need trials. | Finish batch 7i dependency/readiness checks without duplicate publication or blocked leases. |
+| Service and credential ownership | Ordinary controls now use internal Services and a dedicated ServiceAccount; temporary index Jobs use `lab-indexing`. Bootstrap and reviewer authority stay separate. | Verify the complete runtime action set and negative authority probes, retaining narrow search/evaluation access. |
 | Independent source and evaluation ownership | Dataset-name branches and a combined release manifest couple data selection, index recipes and evaluation. | Batch 7j: separately runnable producers/evaluator, explicit artifact/API/report contracts, independent revisions and backwards-compatible readers. |
 | Software/schema promotion | Promotion and rollback passed with an unchanged shared recipe; historical-schema recovery was tested separately. | Batch 7j: connect those contracts in one schema-changing delivery and rollback walkthrough. |
 | Artifact lifecycle | Frozen inputs, snapshots and releases survive runtime deletion, but no complete cross-store retention inventory or automatic cleanup exists. | Batch 7j: inventory reference dependencies and missing artifacts. Keep deletion disabled; distinguish retained evidence from disposable runtime. |
 | Connected observability | Current logs, diagnostic records and reports lack a common metrics/trace/log investigation surface and operational error-budget view. | Batch 7k: SigNoz and OTel contracts; demonstrate SLO breach → affected operation → trace → logs, including slow successful requests, with a New Relic mapping. |
 
-The first three are the main operational gaps that could otherwise leave a Kubernetes deployment dependent on one developer's workstation. They fit inside the planned control migration and do not require additional platforms.
+The first three remain the main operational checks for removing workstation dependence. They fit within batch 7i and require no additional platform.
 
 ## Deliberate local simplifications
 

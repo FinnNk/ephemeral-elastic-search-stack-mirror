@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from common import STATE
 sys.path.insert(0, str(STATE / 'python-libs'))
+from azure.core.credentials import AzureNamedKeyCredential
 from azure.storage.blob import BlobSasPermissions, BlobServiceClient, generate_blob_sas
 
 # Public emulator key from Floci 0.13.0 application.yml. Never use it for Azure.
@@ -17,7 +18,10 @@ DEFAULT_POD_URL = 'http://floci.platform.svc:4577/devstoreaccount1'
 def settings():
     account_url = os.environ.get('LAB_BLOB_ACCOUNT_URL', DEFAULT_URL).rstrip('/')
     container = os.environ.get('LAB_BLOB_CONTAINER', 'datasets')
-    local = account_url == DEFAULT_URL
+    local = account_url == DEFAULT_URL or (
+        os.environ.get('LAB_BLOB_EMULATOR') == '1' and
+        urlparse(account_url).scheme == 'http' and
+        urlparse(account_url).hostname in ('floci.platform.svc', 'floci.platform.svc.cluster.local'))
     pod_url = os.environ.get('LAB_BLOB_POD_URL', DEFAULT_POD_URL if local else account_url).rstrip('/')
     if not local and (urlparse(account_url).scheme != 'https' or
                       urlparse(pod_url).scheme != 'https'):
@@ -29,7 +33,7 @@ def settings():
 
 def credential(local):
     if local:
-        return DEMO_KEY
+        return AzureNamedKeyCredential('devstoreaccount1', DEMO_KEY)
     from azure.identity import DefaultAzureCredential
     return DefaultAzureCredential()
 

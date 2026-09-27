@@ -200,7 +200,17 @@ def compile_profile(profile, release_id='retail-gb-10k-v1'):
                 'phase_counts': {phase: len(rows) for phase, rows in requests.items()},
                 'files': {name: sha(data) for name, data in files.items()},
                 'directory': str(directory)}
-    freeze(directory / 'manifest.json', (json.dumps(compiled, sort_keys=True, indent=2) + '\n').encode())
+    manifest_path = directory / 'manifest.json'
+    if manifest_path.exists():
+        previous = json.loads(manifest_path.read_text(encoding='utf-8'))
+        # Older manifests recorded a host-specific absolute directory. The
+        # workload identity and every content hash must still agree.
+        if {key: value for key, value in previous.items() if key != 'directory'} != \
+                {key: value for key, value in compiled.items() if key != 'directory'}:
+            raise ValueError(f'Frozen workload manifest differs: {manifest_path}')
+    else:
+        portable = {**compiled, 'directory': 'workloads/' + identity}
+        freeze(manifest_path, (json.dumps(portable, sort_keys=True, indent=2) + '\n').encode())
     return {**compiled, 'source_path': str(trace_path), 'recipe_path': str(recipe_path)}
 
 

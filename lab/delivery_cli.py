@@ -12,6 +12,7 @@ from delivery_gates import evaluate
 from delivery_promote import (RECORDS, bootstrap, demonstrate_merge, propose, validate_pr,
                               verify_target, watch_once)
 from delivery_provider import DESIRED, git
+from common import STATE
 
 
 def parser():
@@ -108,6 +109,8 @@ def main():
             singleton.bind(('127.0.0.1', 18087))
             singleton.listen(1)
             while True:
+                if (STATE / 'control-drain').exists():
+                    return
                 try:
                     with writer():
                         result = execute(args)

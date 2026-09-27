@@ -36,10 +36,10 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             }
         }
         lab = softwareSystem "Search relevance lab" "Creates environments; checks relevance, results and performance." {
-            ui = container "Lab web UI" "Creates environments and displays comparisons." "Host-served HTML / JavaScript locally"
-            api = container "Lab API" "Manages experiments, leases and comparisons." "Python HTTP API locally"
-            coordinator = container "Delivery coordinator" "Validates promotion PRs and verifies deployments." "Python host process / provider adapter"
-            metadata = container "Lab metadata" "Retains environment records, leases and report links." "SQLite locally; shared store for AKS" {
+            ui = container "Lab web UI" "Creates environments and displays comparisons." "HTML / JavaScript in control Pod"
+            api = container "Lab API" "Manages experiments, leases and comparisons." "Python HTTP API in control Pod"
+            coordinator = container "Delivery coordinator" "Validates promotion PRs and verifies deployments." "Python worker in control Pod / provider adapter"
+            metadata = container "Lab metadata" "Retains environment records, leases and report links." "SQLite on control PVC; shared store for AKS" {
                 tags "Store"
             }
             search = container "Search API" "Understands queries, retrieves products and reranks results." "HTTP API / pinned OCI image" {
@@ -66,7 +66,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             elastic = container "Shared search engine" "Serves shared frozen indices and dedicated experiment indices." "Self-managed Elasticsearch" {
                 tags "Store"
             }
-            expiry = container "Lease cleanup job" "Reconciles expired leases and partial deletion." "Host process locally; Kubernetes CronJob target" {
+            expiry = container "Lease cleanup worker" "Reconciles expired leases and partial deletion." "Python worker in control Pod" {
                 tags "Job"
             }
         }
@@ -91,7 +91,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         api -> registry "Resolves candidate image digests after migration" "OCI API" {
             tags "Future"
         }
-        expiry -> metadata "Finds expired leases and records cleanup" "SQL locally; API contract on AKS"
+        expiry -> metadata "Finds expired leases and records cleanup" "SQLite"
         gitea -> runner "Offers a build for a pinned commit" "Actions protocol"
         runner -> gitea "Pushes tested image and digest" "OCI / HTTPS"
         runner -> nexus "Publishes image, bundle and release receipt" "OCI / REST"
@@ -145,13 +145,6 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
 
         deploymentEnvironment "Local lab" {
             deploymentNode "Developer machine" "Windows x64; Apple silicon support to validate" "Local host" {
-                deploymentNode "Local control process" "Loopback UI/API and SQLite state" "Host process" {
-                    containerInstance ui
-                    containerInstance api
-                    containerInstance metadata
-                    containerInstance expiry
-                    containerInstance coordinator
-                }
                 deploymentNode "Snapshot storage" "Docker volume survives Elasticsearch Pod and data-PVC replacement" "Host Docker service" {
                     containerInstance snapshots
                 }
@@ -169,6 +162,13 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                         containerInstance argo
                         containerInstance eck
                     }
+                    deploymentNode "Lab control namespace" "One active Pod and retained SQLite/Git state" "Namespace / persistent volume" {
+                        containerInstance ui
+                        containerInstance api
+                        containerInstance metadata
+                        containerInstance expiry
+                        containerInstance coordinator
+                    }
                     deploymentNode "Persistent lab services" "Floci survives environment deletion" "Namespace / persistent volume" {
                         containerInstance artifacts
                     }
@@ -177,6 +177,8 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                     }
                     deploymentNode "Experiment namespaces" "2–3 locally; one API deployment per namespace" "Namespaces / quotas / policies" {
                         containerInstance search
+                    }
+                    deploymentNode "Indexing namespace" "Temporary index Jobs and credentials" "Namespace / Job" {
                         containerInstance indexing
                     }
                     deploymentNode "Comparison jobs" "Bounded jobs spanning baseline and candidate" "Namespace / quotas" {

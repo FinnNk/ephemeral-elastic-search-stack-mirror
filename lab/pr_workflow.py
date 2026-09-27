@@ -1,12 +1,13 @@
 """Opt-in Gitea PR revision to frozen candidate and three check reports."""
 import argparse
 import json
+import os
 import socket
 import sys
 import time
 
 sys.path.insert(0, 'research/platform-spike')
-from common import guard, record
+from common import STATE, guard, record
 from environments import build_record
 from gitea import api
 from deploy_baseline import successful_run
@@ -14,7 +15,7 @@ from lifecycle import local_lifecycle
 
 REPO = '/repos/elastic-agent/search-spike'
 LABEL = 'lab-evaluate'
-CONTROL = 'http://localhost:18082/'
+CONTROL = os.environ.get('LAB_CONTROL_PUBLIC_URL', 'http://localhost:18082/').rstrip('/') + '/'
 
 
 def opted_in(pr):
@@ -134,6 +135,8 @@ def watch(baseline_run, release_id, profile, once=False, interval=30):
 
 def watch_loop(baseline_run, release_id, profile, once, interval):
     while True:
+        if (STATE / 'control-drain').exists():
+            return
         pulls = api(REPO + '/pulls?state=open&limit=50')
         for pr in pulls:
             if not opted_in(pr):

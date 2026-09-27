@@ -1,7 +1,7 @@
 """Gitea setup for the local spike. Credentials stay under .lab/."""
-import base64,json,secrets,urllib.request,urllib.error
+import base64,json,os,secrets,urllib.request,urllib.error
 from common import *
-BASE='http://127.0.0.1:31800/api/v1'
+BASE=os.environ.get('LAB_GITEA_API_URL','http://127.0.0.1:31800/api/v1').rstrip('/')
 def api(path,method='GET',body=None,identity='agent'):
     c=json.loads((STATE/'credentials.json').read_text())
     if identity=='agent':c=c['agent']

@@ -4,6 +4,9 @@ import urllib.error
 import urllib.request
 import unittest
 from http.server import ThreadingHTTPServer
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from control_api import Handler
 from control_identity import Sessions
@@ -44,6 +47,9 @@ class FakeIdentity:
 class LocalControlApi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.state = TemporaryDirectory()
+        cls.drain_patch = patch('control_api.DRAIN', Path(cls.state.name) / 'control-drain')
+        cls.drain_patch.start()
         Handler.controller = EmptyController()
         Handler.sessions = Sessions()
         Handler.identity_provider = FakeIdentity()
@@ -57,6 +63,8 @@ class LocalControlApi(unittest.TestCase):
         cls.server.shutdown()
         cls.server.server_close()
         cls.thread.join(timeout=2)
+        cls.drain_patch.stop()
+        cls.state.cleanup()
 
     def test_loopback_reads(self):
         with urllib.request.urlopen(self.base + '/api/health') as response:

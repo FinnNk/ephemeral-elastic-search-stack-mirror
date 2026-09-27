@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, 'research/platform-spike')
-from common import ROOT, STATE, apply, guard, k, record
+from common import IN_CLUSTER, ROOT, STATE, apply, guard, k, record
 from data_contract import elastic
 from blob_config import service, settings, signed_read_url
 from azure.core.exceptions import ResourceExistsError
@@ -85,22 +85,35 @@ def create_index():
 def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer',
               expected_count=10_000, compression='none', deadline_seconds=300,
               worker_source=None, worker_image=INDEXER_IMAGE):
+    namespace = 'lab-indexing' if IN_CLUSTER else 'platform'
+    labels = {'app.kubernetes.io/managed-by': 'lab-control-indexing'} if IN_CLUSTER else {}
+    if IN_CLUSTER:
+        apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': namespace,
+            'labels': {'lab': 'indexing'}}})
+        # A previous control Pod may have stopped before the Job's finally block.
+        for resource in ('job/' + role, 'secret/' + role,
+                         'secret/' + role + '-ca', 'configmap/' + role):
+            k('delete', resource, '-n', namespace, '--ignore-not-found', '--wait=true')
     password = secrets.token_urlsafe(24)
     dataset_url = signed_read_url(blob_path,
         datetime.now(timezone.utc) + timedelta(seconds=deadline_seconds + 300))
     elastic('/_security/role/' + role, 'PUT', {'indices': [{'names': [index], 'privileges': ['write', 'maintenance']} ]})
     elastic('/_security/user/' + role, 'PUT', {'password': password, 'roles': [role]})
     try:
-        apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role, 'namespace': 'platform'},
+        apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role, 'namespace': namespace,
+            'labels': labels},
             'stringData': {'ES_USER': role, 'ES_PASSWORD': password, 'ES_INDEX': index,
                 'DATASET_URL': dataset_url,
                 'DATASET_SHA256': digest, 'DATASET_COMPRESSION': compression}})
         cert = json.loads(k('get', 'secret/shared-es-http-certs-public', '-n', 'platform', '-o', 'json').stdout)['data']
-        apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role + '-ca', 'namespace': 'platform'}, 'data': cert})
-        apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': role, 'namespace': 'platform'},
+        apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role + '-ca', 'namespace': namespace,
+            'labels': labels}, 'data': cert})
+        apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': role, 'namespace': namespace,
+            'labels': labels},
             'data': {'index_job.py': worker_source if worker_source is not None else
                      (ROOT / 'research/platform-spike/index_job.py').read_text(encoding='utf-8')}})
-        apply({'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': role, 'namespace': 'platform'},
+        apply({'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': role, 'namespace': namespace,
+            'labels': labels},
             'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': deadline_seconds, 'template': {'spec': {
                 'automountServiceAccountToken': False, 'restartPolicy': 'Never',
                 'containers': [{'name': 'index', 'image': worker_image,
@@ -115,18 +128,18 @@ def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer',
                 'volumes': [{'name': 'source', 'configMap': {'name': role}},
                             {'name': 'ca', 'secret': {'secretName': role + '-ca'}}],
             }}}})
-        k('wait', '--for=condition=complete', 'job/' + role, '-n', 'platform',
+        k('wait', '--for=condition=complete', 'job/' + role, '-n', namespace,
           '--timeout=' + str(deadline_seconds + 15) + 's')
-        result = json.loads(k('logs', 'job/' + role, '-n', 'platform').stdout)
+        result = json.loads(k('logs', 'job/' + role, '-n', namespace).stdout)
         assert result['indexed'] == expected_count and result['dataset_sha256'] == digest, result
         return result
     finally:
-        k('delete', 'job/' + role, '-n', 'platform', '--ignore-not-found', '--wait=true')
+        k('delete', 'job/' + role, '-n', namespace, '--ignore-not-found', '--wait=true')
         elastic('/_security/user/' + role, 'DELETE')
         elastic('/_security/role/' + role, 'DELETE')
-        k('delete', 'secret/' + role, '-n', 'platform', '--ignore-not-found')
-        k('delete', 'secret/' + role + '-ca', '-n', 'platform', '--ignore-not-found')
-        k('delete', 'configmap/' + role, '-n', 'platform', '--ignore-not-found')
+        k('delete', 'secret/' + role, '-n', namespace, '--ignore-not-found')
+        k('delete', 'secret/' + role + '-ca', '-n', namespace, '--ignore-not-found')
+        k('delete', 'configmap/' + role, '-n', namespace, '--ignore-not-found')
 
 
 def main():

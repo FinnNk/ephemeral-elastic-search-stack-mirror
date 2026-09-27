@@ -1,6 +1,7 @@
 """Loopback-only UI and API for the local environment lifecycle."""
 import hashlib
 import json
+import os
 import sys
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -16,6 +17,7 @@ from control_identity import GiteaIdentity, Sessions, expired_cookie, session_co
 
 PORT = 18082
 UI = Path(__file__).with_name('control-ui.html')
+DRAIN = STATE / 'control-drain'
 
 
 class ControlServer(ThreadingHTTPServer):
@@ -84,7 +86,7 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['']:
             return self.send_bytes(200, UI.read_bytes(), 'text/html; charset=utf-8')
         if parts == ['api', 'health']:
-            return self.send_json(200, {'ready': True})
+            return self.send_json(503 if DRAIN.exists() else 200, {'ready': not DRAIN.exists()})
         identity = self.identity()
         if identity is None:
             return self.send_json(401, {'error': 'Sign in with Gitea.'})
@@ -131,6 +133,8 @@ class Handler(BaseHTTPRequestHandler):
             if len(parts) == 3:
                 return self.send_json(200, row)
             if len(parts) == 4 and parts[3] == 'search':
+                if DRAIN.exists():
+                    return self.send_json(503, {'error': 'Control service is moving; retry shortly.'})
                 if self.headers.get('X-Lab-Intent') != '1':
                     return self.send_json(400, {'error': 'Search requires X-Lab-Intent: 1.'})
                 if row['state'] != 'ready':
@@ -167,6 +171,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.host_allowed():
             return
+        if DRAIN.exists():
+            return self.send_json(503, {'error': 'Control service is moving; retry shortly.'})
         parts = self.path_parts()
         try:
             payload = self.body()
@@ -217,6 +223,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         if not self.host_allowed():
             return
+        if DRAIN.exists():
+            return self.send_json(503, {'error': 'Control service is moving; retry shortly.'})
         parts = self.path_parts()
         try:
             payload = self.body()
@@ -248,9 +256,11 @@ def serve():
     Handler.controller = controller
     Handler.sessions = Sessions()
     Handler.identity_provider = GiteaIdentity()
-    Handler.canonical_host = f'localhost:{PORT}'
-    with ControlServer(('127.0.0.1', PORT), Handler) as server:
-        print(f'Local lifecycle UI: http://localhost:{PORT}/', flush=True)
+    public_url = os.environ.get('LAB_CONTROL_PUBLIC_URL', f'http://localhost:{PORT}/').rstrip('/')
+    Handler.canonical_host = urllib.parse.urlparse(public_url).netloc
+    bind_address = os.environ.get('LAB_CONTROL_BIND', '127.0.0.1')
+    with ControlServer((bind_address, PORT), Handler) as server:
+        print(f'Lifecycle UI: {public_url}/', flush=True)
         server.serve_forever()
 
 

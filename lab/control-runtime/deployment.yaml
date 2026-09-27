@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-control
+  namespace: lab-control
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: lab-control
+  template:
+    metadata:
+      labels:
+        app: lab-control
+    spec:
+      serviceAccountName: lab-control
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      imagePullSecrets:
+        - name: nexus-read
+      terminationGracePeriodSeconds: 40
+      containers:
+        - name: api
+          image: __CONTROL_IMAGE__
+          imagePullPolicy: IfNotPresent
+          command: [python, lab/control_api.py]
+          envFrom:
+            - configMapRef:
+                name: lab-control-config
+          ports:
+            - containerPort: 18082
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: localhost:18082
+            periodSeconds: 5
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: '1', memory: 1Gi}
+          volumeMounts: &mounts
+            - {name: state, mountPath: /state}
+            - {name: runtime-gitea, mountPath: /state/credentials.json, subPath: credentials.json, readOnly: true}
+            - {name: runtime-nexus, mountPath: /state/nexus.json, subPath: nexus.json, readOnly: true}
+            - {name: scratch, mountPath: /tmp}
+        - name: leases
+          image: __CONTROL_IMAGE__
+          imagePullPolicy: IfNotPresent
+          command: [sh, -c, 'until wget -q -O /dev/null --header="Host: localhost:18082" http://127.0.0.1:18082/api/health; do sleep 2; done; exec python lab/reconcile_leases.py']
+          envFrom:
+            - configMapRef:
+                name: lab-control-config
+          resources:
+            requests: {cpu: 25m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          volumeMounts: *mounts
+        - name: pr-watcher
+          image: __CONTROL_IMAGE__
+          imagePullPolicy: IfNotPresent
+          command: [sh, -c, 'until wget -q -O /dev/null --header="Host: localhost:18082" http://127.0.0.1:18082/api/health; do sleep 2; done; exec python lab/pr_workflow.py --watch --baseline-run "$LAB_PR_BASELINE_RUN" --release retail-gb-10k-v1']
+          envFrom:
+            - configMapRef:
+                name: lab-control-config
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {cpu: '1', memory: 1Gi}
+          volumeMounts: *mounts
+        - name: delivery-watcher
+          image: __CONTROL_IMAGE__
+          imagePullPolicy: IfNotPresent
+          command: [sh, -c, 'until wget -q -O /dev/null --header="Host: localhost:18082" http://127.0.0.1:18082/api/health; do sleep 2; done; exec python lab/delivery_cli.py watch']
+          envFrom:
+            - configMapRef:
+                name: lab-control-config
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {cpu: '1', memory: 1Gi}
+          volumeMounts: *mounts
+      volumes:
+        - name: state
+          persistentVolumeClaim:
+            claimName: lab-control-state
+        - name: runtime-gitea
+          secret:
+            secretName: lab-control-gitea
+            defaultMode: 288
+        - name: runtime-nexus
+          secret:
+            secretName: lab-control-nexus
+            defaultMode: 288
+        - name: scratch
+          emptyDir: {}

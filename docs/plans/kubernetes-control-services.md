@@ -4,7 +4,7 @@
 
 Move the lab UI/API, lease reconciler, PR watcher and delivery coordinator into a dedicated `lab-control` namespace. Preserve their responsibilities, frozen definitions and existing workflows. This changes deployment placement and removes host dependencies; it does not introduce a new orchestration platform.
 
-**Status: planned.** The current controls still run on the host. The user accepts that control services become unavailable when the local cluster is unavailable.
+**Status: in progress on `slice/kubernetes-control-services`.** The local controls now run in one `lab-control` Pod with retained state. Shared-index and dedicated-index previews, the three checks, lease expiry, Pod replacement, state export/import and real provision/comparison/deletion interruptions have passed. A multi-platform image was published; Kubernetes delivery verification and a reviewed promotion proposal passed. [Evidence](../research/evidence/kubernetes-control-services.md) records the remaining installation, dependency/readiness and promotion/rollback checks. The user accepts that control services become unavailable when the local cluster is unavailable.
 
 ## Constraints and placement
 

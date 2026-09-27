@@ -8,6 +8,8 @@ import time
 
 
 def main():
+    if (Path('.lab') / 'control-drain').exists():
+        raise RuntimeError('Host controls are drained for Kubernetes cutover.')
     try:
         with socket.create_connection(('127.0.0.1', 18087), timeout=1):
             print('Delivery watcher is already running.')

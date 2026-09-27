@@ -62,7 +62,7 @@ control.relationships = control.relationships.filter(r=>{
     !(name(m.sourceId)==='Deployment platform' && name(m.destinationId)==='Source and build platform');
 });
 position(control, {'Lab web UI':[100,700],'Lab API':[900,700],'Lab metadata':[1700,700],
-  'Search API':[1700,1200],'Lease cleanup job':[100,1200],'Source and build platform':[900,100],
+  'Search API':[1700,1200],'Lease cleanup worker':[100,1200],'Source and build platform':[900,100],
   'Deployment platform':[900,1800]});
 route(control,'Lab API','Source and build platform',[[820,500],[820,230]],55);
 route(control,'Source and build platform','Lab API',[[1430,230],[1430,500]],55);
@@ -113,15 +113,16 @@ function placeDeployment(view, groups) {
   }
 }
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
-  'Local control process':{x:160,y:160,cols:2},
-  'Snapshot storage':{x:1480,y:160,cols:1},
-  'Release storage':{x:2080,y:160,cols:1},
-  'Persistent platform namespace':{x:160,y:1550,cols:2},
-  'Local control plane':{x:160,y:2500,cols:1},
-  'Persistent lab services':{x:1480,y:1550,cols:2},
-  'Experiment namespaces':{x:160,y:3100,cols:3},
-  'Shared search namespace':{x:2080,y:3100,cols:1},
-  'Comparison jobs':{x:160,y:3700,cols:2}
+  'Snapshot storage':{x:160,y:160,cols:1},
+  'Release storage':{x:1480,y:160,cols:1},
+  'Lab control namespace':{x:160,y:1500,cols:2},
+  'Persistent platform namespace':{x:1480,y:1500,cols:2},
+  'Local control plane':{x:160,y:2950,cols:1},
+  'Persistent lab services':{x:1480,y:2950,cols:2},
+  'Experiment namespaces':{x:160,y:3650,cols:3},
+  'Indexing namespace':{x:1480,y:3650,cols:1},
+  'Shared search namespace':{x:2080,y:3650,cols:1},
+  'Comparison jobs':{x:160,y:4350,cols:2}
 });
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Organisation delivery services':{x:160,y:160,cols:2},
@@ -135,7 +136,7 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
 });
 const canvases = {'01-context':[2380,1500], '02-control':[2380,2250],
   '03-evaluation':[2380,2110], '04-create':[2850,1450],
-  '05-local':[2800,4550], '06-azure':[2800,4310], '18-delivery':[3250,2150]};
+  '05-local':[2800,5250], '06-azure':[2800,4310], '18-delivery':[3250,2150]};
 for (const collection of ['systemContextViews','containerViews','dynamicViews','deploymentViews']) {
   for (const view of workspace.views[collection] || []) {
     const [width,height]=canvases[view.key];
