@@ -67,7 +67,7 @@ route(control,'Source and build platform','Lab API',[[1430,230],[1430,500]],55);
 const evaluation = workspace.views.containerViews.find(v=>v.key==='03-evaluation');
 position(evaluation, {'Dataset and workload generator':[100,100],'Artifact store':[900,100],'Index build job':[1700,100],
   'Evaluation job':[100,800],'Search API':[900,800],'Shared search engine':[1700,800],
-  'Gatling load job':[900,1500]});
+  'Gatling load job':[900,1500],'Index snapshot repository':[1700,1500]});
 route(evaluation,'Evaluation job','Shared search engine',[[310,1260],[1910,1260]],80);
 route(evaluation,'Gatling load job','Artifact store',[[1360,1630],[1360,500],[1250,500]],35);
 
@@ -97,6 +97,7 @@ function placeDeployment(view, groups) {
 }
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Local control process':{x:160,y:160,cols:2},
+  'Snapshot storage':{x:1480,y:160,cols:1},
   'Persistent platform namespace':{x:160,y:1100,cols:2},
   'Local control plane':{x:160,y:2050,cols:1},
   'Persistent lab services':{x:1480,y:1100,cols:2},
@@ -107,7 +108,7 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Organisation delivery services':{x:160,y:160,cols:2},
   'Azure Container Registry':{x:2080,y:160,cols:1},
-  'Azure Blob Storage':{x:2080,y:760,cols:1},
+  'Azure Blob Storage':{x:1280,y:160,cols:1},
   'Platform and lab services':{x:160,y:1450,cols:3},
   'Managed control plane':{x:2080,y:1450,cols:1},
   'Experiment worker nodes':{x:160,y:2500,cols:3},

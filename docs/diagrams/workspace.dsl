@@ -53,6 +53,9 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             artifacts = container "Artifact store" "Retains frozen data, index recipes, workloads, query assets and reports." "Floci AZ locally / Azure Blob Storage later" {
                 tags "Store"
             }
+            snapshots = container "Index snapshot repository" "Retains regular Elasticsearch snapshots independently of index and environment lifetimes." "SeaweedFS S3 locally / Azure Blob proposed" {
+                tags "Store"
+            }
             elastic = container "Shared search engine" "Serves shared frozen indices and dedicated experiment indices." "Self-managed Elasticsearch" {
                 tags "Store"
             }
@@ -113,6 +116,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         }
         indexing -> artifacts "Reads immutable catalogue" "Azure Blob API"
         indexing -> elastic "Creates a dedicated index" "Bulk REST API"
+        elastic -> snapshots "Saves and restores recipe-matched index copies" "S3 locally / Azure Blob proposed"
         generator -> artifacts "Reads inputs; freezes data, traces and workloads" "Azure Blob API"
         api -> elastic "Verifies, clones or restores frozen indices; manages scoped access and cleanup" "Elasticsearch REST"
 
@@ -123,6 +127,9 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                     containerInstance api
                     containerInstance metadata
                     containerInstance expiry
+                }
+                deploymentNode "Snapshot storage" "Docker volume survives Elasticsearch Pod and data-PVC replacement" "Host Docker service" {
+                    containerInstance snapshots
                 }
                 deploymentNode "Local Kubernetes" "Measured two-node k3d cluster" "Kubernetes" {
                     deploymentNode "Local control plane" "Cluster control services" "Kubernetes control plane" {
@@ -157,8 +164,9 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                 containerInstance runner
             }
             deploymentNode "Azure subscription" "Hosts lab workloads and retained artifacts" "Azure" {
-                deploymentNode "Azure Blob Storage" "Frozen releases and reports" "Azure managed service" {
+                deploymentNode "Azure Blob Storage" "Frozen releases, reports and proposed snapshot container" "Azure managed service" {
                     containerInstance artifacts
+                    containerInstance snapshots
                 }
                 deploymentNode "Azure Container Registry" "Pinned multi-architecture API images" "Azure managed service" {
                     containerInstance registry
@@ -203,7 +211,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         }
         container lab "03-evaluation" {
             title "C4 Containers — frozen data and end-to-end evaluation"
-            include generator artifacts indexing elastic search evaluation performance
+            include generator artifacts indexing elastic snapshots search evaluation performance
             autolayout lr
         }
         dynamic lab "04-create" {

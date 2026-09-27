@@ -157,24 +157,24 @@
   "c4": {
     "validation": "Structurizr validate and SVG/PNG export passed",
     "visual_review": "passed",
-    "review_scope": "Regenerated six C4 views after updating control-plane index operations. Inspected the new Archify views separately; C4 presentation positions remain unchanged.",
+    "review_scope": "Regenerated and inspected the evaluation, local and Azure deployment views with the snapshot repository; checked all six C4 exports for validation and placement.",
     "sources": {
-      "workspace.dsl": "58309170d7ea30d361642f858f0c97df10c1189a85c44bba71a794ef7dd58fd4",
-      "layout.mjs": "c019213c9aff9d5bacaff5452d0a8fd25a7e1248d35cd7aa9a975c8751a398c4"
+      "workspace.dsl": "6fccede1e3a5440e4c0aecfa73f0e4d99225aa6a33643c950d9a5ad089a3e0f2",
+      "layout.mjs": "81114645389420cc4fd95b1b870fb4992fee1bd15ee3e3c68a4aa79861d0ee56"
     },
     "svg_sha256": {
       "01-context-key.svg": "7d958dfb84c6dbbc55d60e7146a0e8947f363806e736c17ed3555c21a876f5aa",
-      "01-context.svg": "f0664fb6f49fe238c8ac4db6a0deb0ecd02a0c7655d3a276e21cc5f76b64d862",
+      "01-context.svg": "d0cc7ac7c08850f7916743506586aba968f2150389bf20c34f85c76705971f54",
       "02-control-key.svg": "b37e211ed58aaed3ef6cd72427088d61d7ece40dbb436554785b5319f4eebc02",
-      "02-control.svg": "f8d7213f9589bdb7d5a72c21dd8af2320b4938257a7833e58238ba90b935e06f",
+      "02-control.svg": "12872e85bf907323b46eb8c6f933a4730918e850137a18457244d3f2e7ff0c84",
       "03-evaluation-key.svg": "b567dc0262179f88c5f4175d5a14356ee630ab21d18ebe036b1c1709067909d4",
-      "03-evaluation.svg": "79669bc0126308b46d78c5a1c2dd1c92c77f8a1367acb7a761ed5c8333b2fce1",
+      "03-evaluation.svg": "b23f035f3a6a379ce883fc3bb19a6db71d5eacb13d05257347acc8ba1d1d78c8",
       "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
-      "04-create.svg": "e9ea02135d76e9e3ed0ec5c14c1133ec9ecc44a0ae2f0c7a0cedf9b013e0dc39",
+      "04-create.svg": "c158ba3d0d0962070b35c82de4e67839cbee4b97fd8b672d7f36163a48335875",
       "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
-      "05-local.svg": "5efda67bb27fca4cd94e7c70caf40c8897bfdaf08e3d1844179debcf36c5388b",
+      "05-local.svg": "3273bd62a0c874d04e0e1bdc54a51f84f5c5811c35db33c2a312d372d124352a",
       "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
-      "06-azure.svg": "baee5deb8feee187fc12f7e08a8be34dbd6b2d1940cdc32422a20e83b95a643f"
+      "06-azure.svg": "bbda4fdcc997e73719c254050ea08986a848fb3b24a4b4d8c80d360dd4669926"
     }
   }
 }
