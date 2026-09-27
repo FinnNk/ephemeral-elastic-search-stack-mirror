@@ -166,6 +166,20 @@ python lab/compare_gatling_jobs.py probe <baseline-run-id> <candidate-run-id>
 
 Copy each `run_id` from its Job output into the final command. The runner needs the k3d cluster, pinned API deployments, Floci forward on `14577` and the ignored `.lab` credentials. It uses namespace `lab-evaluation`, a 2 CPU/2 GiB cap, a temporary PVC, and a search NetworkPolicy allowance limited to labelled Gatling pods. It removes the Job, ConfigMaps and PVC after retaining the reports. See the [runner guide](gatling/README.md), [traffic assumptions](../docs/research/synthetic-traffic.md) and [measured evidence](../docs/research/evidence/gatling.md).
 
+## Review a Gitea PR against a frozen baseline
+
+Add the `lab-evaluate` label to an open PR in the local `search-spike` repository. Start the local watcher from the repository root:
+
+```powershell
+python lab/start_pr_watch.py --baseline-run 6
+```
+
+The watcher polls opted-in PRs, resolves each head SHA to its successful Gitea image build, and creates separate 72-hour baseline and candidate environments owned by the PR author. It runs a 50-query result preflight, the full frozen result suite, synthetic relevance and a short Gatling probe. The PR receives one updateable comment per head SHA with pinned report links and hashes, plus a `relevance-lab/evaluation` status. The status confirms that the tooling completed; inspect the relevance and result changes before accepting the source change. A new head SHA gets its own evaluation. The optional `lab-preserve-results` label asks the result check to pass only when ordered results are unchanged.
+
+For one PR, use `python lab/pr_workflow.py --pr <number> --baseline-run 6`. The watcher is local and must remain running; a failed run can be retried with this command. A completed comparison is reused for the same pinned pair, mode and scope. Reports remain available through their content hash after an environment expires. The UI's comparison history links to a query inspector with side-by-side ordered IDs, scores, unjudged IDs and selected diagnostics, as well as the raw report.
+
+Relevance uses the existing frozen synthetic judgements. Reports identify their provenance and each side's top-ten judgement coverage. The million-product judgement pool contains results from an earlier candidate, so a ranking that retrieves different products can have very low coverage. A report with under 80% coverage on either side is marked insufficient for a strong relevance claim; it does not create new labels. The [local end-to-end evidence](../docs/research/evidence/developer-evaluation-loop.md) records the measurements and limits.
+
 ## Exercise the million-product release
 
 Generate the deterministic release, then publish and build its write-blocked shared index:

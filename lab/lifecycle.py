@@ -80,6 +80,8 @@ class Store:
             comparison_columns = {row['name'] for row in db.execute('PRAGMA table_info(comparisons)')}
             if 'profile' not in comparison_columns:
                 db.execute('ALTER TABLE comparisons ADD COLUMN profile TEXT')
+            if 'scope' not in comparison_columns:
+                db.execute('ALTER TABLE comparisons ADD COLUMN scope TEXT')
             db.execute("CREATE UNIQUE INDEX IF NOT EXISTS active_environment_name "
                        "ON environments(name) WHERE state!='deleted'")
 
@@ -541,7 +543,7 @@ class Lifecycle:
                 expired.append(self.reconcile(row['id']))
         return expired
 
-    def compare(self, baseline_id, candidate_id, mode, profile='probe'):
+    def compare(self, baseline_id, candidate_id, mode, profile='probe', scope='full'):
         if baseline_id == candidate_id:
             raise ValueError('Select two distinct environments.')
         with self.lock:
@@ -557,6 +559,8 @@ class Lifecycle:
                 raise ValueError('An environment lease has expired.')
             if mode not in ('result-regression', 'relevance', 'performance'):
                 raise ValueError('Unknown comparison mode.')
+            if scope not in ('quick', 'full') or (mode == 'performance' and scope != 'full'):
+                raise ValueError('Unknown or unsupported comparison scope.')
             if mode == 'performance' and profile not in (
                     'probe', 'smoke', 'normal', 'peak', 'stress',
                     'normal-full', 'sustained-peak', 'stress-full'):
@@ -567,6 +571,7 @@ class Lifecycle:
             comparison_id = str(uuid.uuid4())
             self.store.put_comparison({'id': comparison_id, 'baseline_id': baseline_id,
                 'candidate_id': candidate_id, 'mode': mode, 'profile': profile if mode == 'performance' else None,
+                'scope': scope if mode != 'performance' else None,
                 'state': 'running',
                 'created_at': now, 'updated_at': now, 'report_sha256': None,
                 'report_blob': None, 'verdict': None, 'summary': None, 'error': None})
@@ -577,7 +582,7 @@ class Lifecycle:
                     summary = evaluate_performance_pair(baseline, candidate, profile)
             elif self.comparator is None:
                 from control_comparison import evaluate_pair
-                summary = evaluate_pair(baseline, candidate, mode)
+                summary = evaluate_pair(baseline, candidate, mode, scope=scope)
             else:
                 summary = self.comparator(baseline, candidate, mode)
         except Exception as error:

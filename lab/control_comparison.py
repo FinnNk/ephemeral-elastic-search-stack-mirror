@@ -6,14 +6,18 @@ import sys
 sys.path.insert(0, 'research/platform-spike')
 from compare_search import definition, frozen_suite, immutable_blob, jaccard, rbo, response
 from blob_config import settings
-from evaluate_relevance import frozen_judgements, score
+from evaluate_relevance import frozen_judgements, query_ndcg, score
+from measure import search
 
 MODES = ('result-regression', 'relevance')
+SCOPES = ('quick', 'full')
 
 
-def evaluate_pair(baseline, candidate, mode):
+def evaluate_pair(baseline, candidate, mode, scope='full'):
     if mode not in MODES:
         raise ValueError('Comparison mode must be result-regression or relevance.')
+    if scope not in SCOPES:
+        raise ValueError('Comparison scope must be quick or full.')
     if baseline['state'] != 'ready' or candidate['state'] != 'ready':
         raise ValueError('Both environments must be ready.')
     first = definition(baseline['name'])
@@ -31,13 +35,19 @@ def evaluate_pair(baseline, candidate, mode):
     if mode == 'relevance':
         pooled = release_id == 'retail-gb-1m-v1'
         suite, judgements, pool_manifest = frozen_judgements(release_id, pooled=pooled)
-        suite_sha = manifest['sha256']['queries.jsonl']
-        suite_blob = settings()[1] + '/' + release_id + '/queries.jsonl'
     else:
         suite = full_suite
         judgements = None
-        suite_sha = full_suite_sha
-        suite_blob = immutable_blob(settings()[1], suite_sha + '/query-suite.jsonl', suite_bytes)
+        pool_manifest = None
+    if scope == 'quick':
+        suite = suite[:50]
+    if judgements is not None:
+        selected = {row['query_id'] for row in suite}
+        judgements = [row for row in judgements if row['query_id'] in selected]
+    suite_bytes = b''.join((json.dumps(row, sort_keys=True, separators=(',', ':')) + '\n').encode()
+                           for row in suite)
+    suite_sha = hashlib.sha256(suite_bytes).hexdigest()
+    suite_blob = immutable_blob(settings()[1], suite_sha + '/query-suite.jsonl', suite_bytes)
     results = []
     errors = []
     zero_counts = {'baseline': 0, 'candidate': 0}
@@ -49,10 +59,23 @@ def evaluate_pair(baseline, candidate, mode):
                 errors.append({'query_id': suite[0]['query_id'], 'side': side,
                                'kind': type(error).__name__, 'detail': str(error)[:120],
                                'stage': 'response preflight'})
+    if not errors:
+        from evaluation_job import run as run_job
+        try:
+            observations, execution = run_job(suite_bytes, baseline['name'], candidate['name'])
+        except (AssertionError, KeyError, RuntimeError, TimeoutError, TypeError, ValueError) as error:
+            observations, execution = [], {'execution': 'in-cluster evaluator Job', 'error': type(error).__name__}
+            errors.append({'kind': type(error).__name__, 'detail': str(error)[:120], 'stage': 'evaluation job'})
+    else:
+        observations, execution = [], {'execution': 'preflight only'}
+    by_query = {row['query_id']: row for row in observations}
     for query in suite if not errors else ():
         try:
-            left = response(baseline['name'], query)
-            right = response(candidate['name'], query)
+            observation = by_query[query['query_id']]
+            if 'error' in observation:
+                errors.append({'query_id': query['query_id'], **observation['error']})
+                continue
+            left, right = observation['baseline'], observation['candidate']
             zero_counts['baseline'] += left['total'] == 0
             zero_counts['candidate'] += right['total'] == 0
             ids_a, ids_b = left['ids'], right['ids']
@@ -77,12 +100,61 @@ def evaluate_pair(baseline, candidate, mode):
     if mode == 'relevance' and complete:
         metrics = {side: score(judgements, {row['query_id']: row[side]['ids'] for row in results})
                    for side in ('baseline', 'candidate')}
-    report = {'kind': 'controlled-api-comparison', 'mode': mode, 'complete': complete, 'verdict': verdict,
+        graded = {}
+        for judgement in judgements:
+            graded.setdefault(judgement['query_id'], set()).add(judgement['product_id'])
+        per_query = {side: query_ndcg(judgements, {row['query_id']: row[side]['ids'] for row in results})
+                     for side in ('baseline', 'candidate')}
+        for row in results:
+            qid = row['query_id']
+            for side in ('baseline', 'candidate'):
+                ids = row[side]['ids']
+                row[side]['unjudged_top_10_ids'] = [pid for pid in ids if pid not in graded.get(qid, set())]
+                row[side]['judged_top_10_count'] = len(ids) - len(row[side]['unjudged_top_10_ids'])
+                row[side]['ndcg_at_10'] = per_query[side].get(qid, 0.0)
+            row['ndcg_delta_at_10'] = round(row['candidate']['ndcg_at_10'] - row['baseline']['ndcg_at_10'], 6)
+    coverage = None
+    if mode == 'relevance' and complete:
+        coverage = {side: {'judged': sum(row[side]['judged_top_10_count'] for row in results),
+                           'returned': sum(len(row[side]['ids']) for row in results)}
+                    for side in ('baseline', 'candidate')}
+        for value in coverage.values():
+            value['fraction'] = round(value['judged'] / value['returned'], 6) if value['returned'] else None
+    coverage_status = ('insufficient' if coverage and any(
+        value['fraction'] is None or value['fraction'] < 0.8 for value in coverage.values())
+        else 'reported' if coverage else None)
+    # A small selected diagnostic replay explains differences without changing the
+    # black-box verdict or being counted as a latency measurement.
+    if complete:
+        changed_rows = [row for row in results if not row['equal_top_10']]
+        if mode == 'relevance':
+            changed_rows.sort(key=lambda row: row['ndcg_delta_at_10'])
+        for row in changed_rows[:10]:
+            for side, environment in (('baseline', baseline), ('candidate', candidate)):
+                try:
+                    answer = search(environment['name'], row['query'],
+                                    request_id=row['query_id'] + '-' + side)
+                    if answer and answer.get('ids', [])[:10] == row[side]['ids']:
+                        detail = answer.get('diagnostics')
+                        if detail:
+                            row[side]['diagnostics'] = {key: value for key, value in detail.items()
+                                                        if key != 'stage_ms'}
+                except (RuntimeError, TimeoutError, ValueError):
+                    pass
+    stable_execution = {key: value for key, value in execution.items() if key not in ('seconds', 'job_name')}
+    report = {'kind': 'controlled-api-comparison', 'mode': mode, 'scope': scope,
+              'complete': complete, 'verdict': verdict, 'execution': stable_execution,
               'baseline': {'runtime_id': baseline['id'], 'source_sha': baseline['source_sha'], **first},
               'candidate': {'runtime_id': candidate['id'], 'source_sha': candidate['source_sha'], **second},
               'suite_sha256': suite_sha, 'suite_blob': suite_blob,
               'judgement_sha256': pool_manifest['sha256']['judgements.jsonl'] if mode == 'relevance' else None,
               'judgement_pool': pool_manifest.get('judgement_pool') if mode == 'relevance' else None,
+              'judgement_provenance': ({'source': 'candidate-derived-synthetic-pool' if pooled else 'frozen-synthetic-release',
+                                        'independent_of_evaluated_candidate': not pooled,
+                                        'candidate_derived_pool_is_proxy': pooled}
+                                       if mode == 'relevance' else None),
+              'judgement_coverage': coverage,
+              'judgement_coverage_status': coverage_status,
               'judgement_usage': ('Symmetric frozen synthetic E/S/C/I pool from baseline and both candidates; '
                                   'future results may be unjudged.'
                                   if release_id != 'retail-gb-10k-v1' else
@@ -94,5 +166,8 @@ def evaluate_pair(baseline, candidate, mode):
     digest = hashlib.sha256(payload).hexdigest()
     location = immutable_blob('runs', digest + '/controlled-comparison.json', payload)
     return {'report_sha256': digest, 'report_blob': location, 'mode': mode, 'complete': complete,
-            'verdict': verdict, 'query_count': len(suite), 'completed_query_count': len(results),
-            'changed_query_ids': changed, 'zero_result_counts': zero_counts, 'metrics': metrics, 'errors': errors}
+            'verdict': verdict, 'scope': scope, 'execution': execution,
+            'query_count': len(suite), 'completed_query_count': len(results),
+            'changed_query_ids': changed, 'zero_result_counts': zero_counts,
+            'metrics': metrics, 'judgement_coverage': coverage,
+            'judgement_coverage_status': coverage_status, 'errors': errors}

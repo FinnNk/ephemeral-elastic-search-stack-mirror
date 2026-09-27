@@ -54,6 +54,15 @@ def score(judgements, results):
     return {str(metric): round(values[metric], 6) for metric in MEASURES}
 
 
+def query_ndcg(judgements, results):
+    metric = ir_measures.nDCG @ 10
+    qrels = [ir_measures.Qrel(row['query_id'], row['product_id'], row['grade']) for row in judgements]
+    run = [ir_measures.ScoredDoc(qid, product_id, 10 - rank)
+           for qid, ids in results.items() for rank, product_id in enumerate(ids[:10])]
+    return {item.query_id: round(item.value, 6)
+            for item in ir_measures.iter_calc([metric], qrels, run)}
+
+
 def evaluate():
     guard()
     baseline = definition(BASELINE)

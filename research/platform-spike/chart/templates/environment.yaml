@@ -94,8 +94,8 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: lab-evaluation
           podSelector:
-            matchLabels:
-              lab: gatling
+            matchExpressions:
+              - {key: lab, operator: In, values: [gatling, evaluator]}
       ports:
         - port: 8080
   egress:

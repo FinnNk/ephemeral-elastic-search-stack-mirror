@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\pr-to-verdict.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\pr-to-verdict.html",
+  "specification": {
+    "sha256": "06caaa29f232aa0deaa0690c9b21ad5df4f7721e3e12f3df9957eb4cd79312b1",
+    "bytes": 3238
+  },
+  "artifact": {
+    "sha256": "4a5017c523c3d93bd6fd5ec8887cd506cdba9d24c8fc1d854d467eb152807040",
+    "bytes": 810263
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

@@ -77,7 +77,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         api -> search "Proxies interactive search" "JSON / HTTP"
         api -> argo "Publishes environment and job desired state" "Git files or plugin; TBC"
         api -> kube "Observes readiness and job completion" "Kubernetes API"
-        api -> gitea "Resolves source, images and PR status" "Git / REST"
+        api -> gitea "Polls labelled PR revisions, resolves exact builds and posts check status" "Gitea REST"
         api -> enterprise "Future provider adapter" "Git / REST" {
             tags "Future"
         }
@@ -90,8 +90,12 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         runner -> registry "Pushes tested image after migration" "OCI / HTTPS" {
             tags "Future"
         }
-        runner -> api "Reports verified build digest" "Authenticated callback"
-        gitea -> api "Sends source and PR events" "Signed webhook"
+        runner -> api "Future verified build callback" "Authenticated callback" {
+            tags "Future"
+        }
+        gitea -> api "Future source and PR events" "Signed webhook" {
+            tags "Future"
+        }
         enterprise -> api "Future source and PR events" "Signed webhook" {
             tags "Future"
         }
@@ -215,10 +219,10 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             autolayout lr
         }
         dynamic lab "04-create" {
-            title "C4 Dynamic — create a candidate from a Gitea change"
+            title "C4 Dynamic — create a candidate from a labelled Gitea PR"
             gitea -> runner "Builds pinned source revision"
             runner -> gitea "Publishes tested OCI image digest"
-            runner -> api "Reports verified revision and digest"
+            api -> gitea "Polls PR head and matching successful build"
             api -> argo "Publishes desired environment"
             argo -> kube "Reconciles declared resources"
             kube -> search "Starts pinned search API"

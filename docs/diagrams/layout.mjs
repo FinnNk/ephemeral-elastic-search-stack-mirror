@@ -74,9 +74,10 @@ route(evaluation,'Gatling load job','Artifact store',[[1360,1630],[1360,500],[12
 route(evaluation,'Gatling load job','Search API',[],75);
 
 const create = workspace.views.dynamicViews[0];
-position(create, {'Gitea':[100,100],'Build runner':[750,100],'Lab API':[1500,100],
+position(create, {'Gitea':[100,200],'Build runner':[750,200],'Lab API':[1500,200],
   'Argo CD':[100,800],'Kubernetes API':[750,800],'Search API':[1500,800],'Shared search engine':[2150,800]});
 route(create,'Build runner','Gitea',[[960,490],[310,490]],50);
+route(create,'Lab API','Gitea',[[1710,85],[310,85]],62);
 
 route(create,'Lab API','Argo CD',[[1400,650],[310,650]],60);
 
