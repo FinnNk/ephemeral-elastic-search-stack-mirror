@@ -1,0 +1,13 @@
+{
+  "expired_namespace_removed": true,
+  "retained_products": 1000000,
+  "recreated": {
+    "name": "lab-delivery-run-15-6ff8e47b",
+    "id": "lab-delivery-run-15-6ff8e47b",
+    "state": "ready",
+    "source_sha": "b87f50acc0df7093649eddbb32bbda4fef26ad0a",
+    "release_id": "retail-gb-1m-v1",
+    "fingerprint": "00cd57233b8a30a6e452a82e7237e97892553c1408af21fc9aa1deb7e2845dea"
+  },
+  "same_fingerprint": true
+}

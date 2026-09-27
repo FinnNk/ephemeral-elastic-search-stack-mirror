@@ -23,12 +23,12 @@ def build_record(run_id):
     with urllib.request.urlopen(req) as r:log=r.read().decode()
     image=re.findall(r'gitea.localhost:31800/elastic-agent/search-spike@sha256:[a-f0-9]{64}',log)[-1]
     return {'run':run_id,'source_sha':runinfo['head_sha'],'image':image,'started_at':job['started_at'],'completed_at':job['completed_at']}
-def provision_access(name,index):
+def provision_access(name,index,read_indices=None):
     apply({'apiVersion':'v1','kind':'Namespace','metadata':{'name':name,'labels':{'lab':'search-spike'}}})
     existing=k('get','secret/search-access','-n',name,'-o','json',check=False)
     password=(base64.b64decode(json.loads(existing.stdout)['data']['ES_PASSWORD']).decode()
               if existing.returncode==0 else secrets.token_urlsafe(24))
-    elastic('/_security/role/'+name,'PUT',{'indices':[{'names':[index],'privileges':['read','view_index_metadata']}]})
+    elastic('/_security/role/'+name,'PUT',{'indices':[{'names':read_indices or [index],'privileges':['read','view_index_metadata']}]})
     elastic('/_security/user/'+name,'PUT',{'password':password,'roles':[name]})
     apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'search-access','namespace':name},'stringData':{'ES_USER':name,'ES_PASSWORD':password}})
     cert=json.loads(k('get','secret','shared-es-http-certs-public','-n','platform','-o','json').stdout)['data']

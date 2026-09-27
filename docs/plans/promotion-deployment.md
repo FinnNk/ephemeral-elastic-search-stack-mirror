@@ -2,6 +2,8 @@
 
 ## Intent
 
+Implemented on `slice/promotion-deployment`; [operating guide](../delivery.md) and [measured evidence](../research/evidence/promotion-deployment.md). Project review is pending.
+
 Promote one tested Nexus release through integration, staging and simulated production using reviewed desired-state PRs. Argo CD deploys; verification records whether the declared release is serving correctly.
 
 ## Constraints
@@ -36,4 +38,4 @@ Promote one tested Nexus release through integration, staging and simulated prod
 - `research/platform-spike/chart`, `applicationset.yaml`: Argo deployment and namespace isolation.
 - [Gitea Actions differences](https://docs.gitea.com/usage/actions/comparison/) and [Argo CD CI automation](https://argo-cd.readthedocs.io/en/stable/user-guide/ci_automation/).
 
-At completion, leave native Apple silicon, GHES and Azure execution as explicit external gates in [batch 8](native-cloud-validation.md).
+The next batch is [native, GHES and Azure validation](native-cloud-validation.md). It requires the relevant host and tenant access; local evidence does not close those gates.

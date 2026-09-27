@@ -1,0 +1,263 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Build once; promote the same release",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "Review"
+        },
+        "backend": {
+          "label": "Automation"
+        },
+        "database": {
+          "label": "Frozen inputs"
+        },
+        "security": {
+          "label": "Gate"
+        },
+        "cloud": {
+          "label": "Deployment"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "build",
+      "label": "Source and release"
+    },
+    {
+      "id": "compare",
+      "label": "Frozen comparison"
+    },
+    {
+      "id": "promote",
+      "label": "Promotion and deployment"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "source",
+      "lane": "build",
+      "col": 0,
+      "type": "backend",
+      "label": "Actions CI",
+      "sublabel": "Exact SHA",
+      "width": 125
+    },
+    {
+      "id": "release",
+      "lane": "build",
+      "col": 1,
+      "type": "database",
+      "label": "Nexus release",
+      "sublabel": "Pinned digests",
+      "width": 125
+    },
+    {
+      "id": "baseline",
+      "lane": "compare",
+      "col": 0,
+      "type": "database",
+      "label": "Frozen baseline",
+      "sublabel": "Current target",
+      "width": 125
+    },
+    {
+      "id": "candidate",
+      "lane": "compare",
+      "col": 1,
+      "type": "database",
+      "label": "Frozen candidate",
+      "sublabel": "Release + index",
+      "width": 125
+    },
+    {
+      "id": "checks",
+      "lane": "compare",
+      "col": 2,
+      "type": "backend",
+      "label": "Public API checks",
+      "sublabel": "Three checks",
+      "width": 125
+    },
+    {
+      "id": "gate",
+      "lane": "build",
+      "col": 3,
+      "type": "security",
+      "label": "Validate proposal",
+      "sublabel": "Current inputs",
+      "width": 125
+    },
+    {
+      "id": "pr",
+      "lane": "promote",
+      "col": 3,
+      "type": "frontend",
+      "label": "Promotion PR",
+      "sublabel": "Review evidence",
+      "width": 125
+    },
+    {
+      "id": "deploy",
+      "lane": "promote",
+      "col": 4,
+      "type": "cloud",
+      "label": "Argo CD deploys",
+      "sublabel": "Approved state",
+      "width": 125
+    },
+    {
+      "id": "verify",
+      "lane": "promote",
+      "col": 5,
+      "type": "security",
+      "label": "Verify deployment",
+      "sublabel": "Image + API",
+      "width": 125
+    },
+    {
+      "id": "next",
+      "lane": "build",
+      "col": 5,
+      "type": "cloud",
+      "label": "Next target",
+      "sublabel": "Same release",
+      "width": 125
+    },
+    {
+      "id": "stop",
+      "lane": "compare",
+      "col": 4,
+      "type": "security",
+      "label": "Block promotion",
+      "sublabel": "Stale or failed",
+      "width": 125
+    },
+    {
+      "id": "rollback",
+      "lane": "compare",
+      "col": 5,
+      "type": "database",
+      "label": "Prior deployment",
+      "sublabel": "Image + index",
+      "width": 125
+    }
+  ],
+  "edges": [
+    {
+      "from": "source",
+      "to": "release",
+      "label": "Publish once",
+      "role": "main"
+    },
+    {
+      "from": "release",
+      "to": "candidate",
+      "label": "Resolve digests",
+      "role": "main"
+    },
+    {
+      "from": "baseline",
+      "to": "checks",
+      "label": "Baseline responses",
+      "role": "branch"
+    },
+    {
+      "from": "candidate",
+      "to": "checks",
+      "label": "Candidate responses",
+      "role": "main"
+    },
+    {
+      "from": "checks",
+      "to": "gate",
+      "label": "Retained reports",
+      "role": "main"
+    },
+    {
+      "from": "gate",
+      "to": "pr",
+      "label": "Passing status",
+      "role": "main"
+    },
+    {
+      "from": "gate",
+      "to": "stop",
+      "label": "Invalid inputs",
+      "role": "branch"
+    },
+    {
+      "from": "pr",
+      "to": "deploy",
+      "label": "Approve + merge",
+      "role": "main"
+    },
+    {
+      "from": "deploy",
+      "to": "verify",
+      "label": "Declared state",
+      "role": "main"
+    },
+    {
+      "from": "verify",
+      "to": "next",
+      "label": "Verified",
+      "role": "main"
+    },
+    {
+      "from": "verify",
+      "to": "rollback",
+      "label": "Recovery needed",
+      "role": "branch"
+    },
+    {
+      "from": "rollback",
+      "to": "pr",
+      "label": "Fresh checks + PR",
+      "role": "return"
+    }
+  ],
+  "mainPath": [
+    "source",
+    "release",
+    "candidate",
+    "checks",
+    "gate",
+    "pr",
+    "deploy",
+    "verify",
+    "next"
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Integration, staging, simulated production",
+      "items": [
+        "Every target runs the same image and bundle digests",
+        "A target must verify its deployment before onward promotion"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Two frozen definitions; compatible storage may be shared",
+      "items": [
+        "Result, relevance and Gatling checks use frozen inputs",
+        "Schema changes select a separate recipe; rollback restores the full definition"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Review remains explicit",
+      "items": [
+        "Result-preserving changes require exact ordered-result equality",
+        "Intentional ranking changes require relevance and coverage review"
+      ]
+    }
+  ]
+}

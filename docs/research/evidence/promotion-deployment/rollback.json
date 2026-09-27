@@ -1,0 +1,47 @@
+{
+  "state": "verified",
+  "fingerprint": "00cd57233b8a30a6e452a82e7237e97892553c1408af21fc9aa1deb7e2845dea",
+  "git_revision": "f3e58acc3b0068c179adf51ad4a6aec78f858f05",
+  "environment": "lab-delivery-production",
+  "verified_at": "2026-09-27T11:01:36.075898+00:00",
+  "seconds": 3.406,
+  "sample_ids": [
+    "gb-0490675",
+    "gb-0490955",
+    "gb-0491535",
+    "gb-0491655",
+    "gb-0495370",
+    "gb-0500735",
+    "gb-0501600",
+    "gb-0503535",
+    "gb-0504760",
+    "gb-0506560"
+  ],
+  "deployment": {
+    "build_run": 15,
+    "fields": {
+      "bundle_sha256": "6f3efc56ddacf4ffead53c07090f078835a5c06c67b36cf18cd40129f2036327",
+      "dataset_release": "retail-gb-1m-v1",
+      "dataset_sha256": "a6c78afb7df078016828a8a9a93b88b2d1db6a16ef64080a37dc33c23c2cc1d6",
+      "engine": "9.5.4",
+      "image": "nexus.localhost:18185/search-api@sha256:eb24a2fb8f9fdcd905c9abf230e0bcedd4393ce1939b469c601b2af1243a7613",
+      "index": "retail-gb-1m-v1",
+      "index_recipe_sha256": "6ff8e47b2e6038fe03f2d99c6c351c5a50f0733d539d5af62a3f990f0c75edb1",
+      "mapping_sha256": "d3dd2954162a449a0e9fff6f97135a9cdf474000181ede2b3283f0e60f1e7562",
+      "request_context": {
+        "country": "GB",
+        "currency": "GBP"
+      },
+      "software_release_id": "c9b57fac10a6c72a0192fa4f74b50840e39bba7d02e78691a3e0a229a9e7141f",
+      "source_sha": "b87f50acc0df7093649eddbb32bbda4fef26ad0a"
+    },
+    "fingerprint": "00cd57233b8a30a6e452a82e7237e97892553c1408af21fc9aa1deb7e2845dea"
+  },
+  "report": {
+    "sha256": "f390c8f6313bf34af053c6d2d99235ad673faa882c3a42d049bcf9845594841e",
+    "blob": "runs/f390c8f6313bf34af053c6d2d99235ad673faa882c3a42d049bcf9845594841e/deployment-verification.json"
+  },
+  "merge_to_verified_seconds": 4.266,
+  "pr": 5,
+  "approval_kind": "automated demonstration by separate lab administrator"
+}

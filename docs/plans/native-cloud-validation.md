@@ -11,24 +11,25 @@ Close the hardware and cloud gates left open by the Windows portability build. R
 | Access | Requires an Apple silicon Mac and an authorised Azure subscription. A GHES test organisation is needed for provider migration checks. Do not label simulated checks as native or cloud evidence. |
 | Data | Use only the versioned synthetic UK/GBP releases, judgements and traffic profiles. Preserve byte hashes and report fingerprints across hosts. |
 | Comparison | Keep two frozen environments per check. The same public API relevance, result-preservation and Gatling contracts, query-level report and judgement-coverage caveat must run in both placements. |
-| Security | Use workload identity and scoped Blob roles in AKS, digest-pinned ACR images, index-scoped Elasticsearch roles and authenticated Git/webhook access. |
+| Security | Use workload identity and scoped Blob roles in AKS, digest-pinned Nexus images (or verified ACR copies), index-scoped Elasticsearch roles and authenticated Git/webhook access. |
 | Review | Record each external validation as evidence on a branch and PR. Keep local and cloud results separate. |
 
 ## Work
 
 1. On Apple silicon, bootstrap a fresh k3d cluster with native tools. Run the 10,000-product walkthrough, million-product release, one API candidate, one index candidate, all three checks, activity extension and deletion. Record native image digests, resource headroom and timing distributions.
-2. In an Azure test tenant, provision AKS, ACR, Blob Storage, workload identity, Argo CD and ECK through reviewed infrastructure definitions. Package the control API and durable metadata store for AKS; replace the single-checkout writer coordination before multiple replicas.
-3. Verify identity-scoped Blob create/read, a user-delegation read SAS with expiry, immutable hashes, ACR pulls and a self-managed Elasticsearch bulk build. Test private DNS and network policies with negative access probes.
+2. In an Azure test tenant, provision AKS, Nexus access (optionally ACR), Blob Storage, workload identity, Argo CD and ECK through reviewed infrastructure definitions. Package the control API and durable metadata store for AKS; replace the single-checkout writer coordination before multiple replicas.
+3. Verify identity-scoped Blob create/read, a user-delegation read SAS with expiry, immutable hashes, private registry pulls and a self-managed Elasticsearch bulk build. Test private DNS and network policies with negative access probes.
    Register and analyse a real Azure Blob snapshot repository with ECK workload identity. Restore the historical million-product snapshot to a separate index after deleting the source, verify recipe and ordered sample, and measure three searchable restore times. Keep S3 and Blob timing evidence separate.
-4. In a GHES test organisation, migrate application and desired-state repositories, build the same commit, resolve its ACR digest, deliver signed events and run a baseline/candidate comparison through Argo CD. Map the local `lab-evaluate` opt-in and exact-head verdict status to GHES, then verify stale-head handling, idempotent retries and recreate-after-delete from retained source and data.
+4. In a GHES test organisation, migrate application and desired-state repositories, build the same commit, resolve its Nexus digest or verified ACR copy, deliver signed events and run a baseline/candidate comparison through Argo CD. Map the local `lab-evaluate` opt-in and exact-head verdict status to GHES, then verify stale-head handling, idempotent retries and recreate-after-delete from retained source and data. Move the delivery coordinator and verification cache into durable shared state; recover an interrupted promotion after controller restart.
 5. Measure at least 40 real shared-index API environments and controlled neighbour load on AKS; size Elasticsearch, node pools, disks, load generators and retained artifacts from p95/p99 and cost evidence. Test a controller/node failure during provisioning, comparison and deletion.
 
 ## Acceptance criteria
 
 - Apple silicon runs the complete lifecycle natively with matching release hashes and valid comparison reports; native performance figures are recorded separately from Windows.
-- AKS creates and removes baseline, API and index candidates with no orphaned namespace, index credential or writer permission. Blob and ACR identity checks pass, including negative access and expired SAS.
-- GHES source SHA and ACR OCI digest remain pinned through build, environment, report and recreation. Argo CD converges from the migrated desired-state repository.
+- AKS creates and removes baseline, API and index candidates with no orphaned namespace, index credential or writer permission. Blob and registry identity checks pass, including negative access and expired SAS.
+- GHES source SHA and OCI image digest remain pinned through build, environment, report and recreation. Argo CD converges from the migrated desired-state repository.
 - The migrated PR workflow links query-level reports and records the exact evaluated head SHA. An event retry does not duplicate a verdict; a changed SHA starts a separate run. The local polling prototype remains the reference behaviour, not evidence of signed GHES delivery.
+- The shared Actions workflow publishes a Nexus release on GHES. Protected PRs promote identical digests through all three targets; failed/stale evidence and missing review block merge. A reviewed rollback restores the complete previous deployment, including a historical schema.
 - Forty AKS APIs answer real searches with measured p95 readiness and cleanup; relevance/performance validity and resource contention are assessed against the provisional targets.
 - A capacity and operating-cost proposal states region, SKUs, replicas, retention, licences, expected tenant concurrency and uncertainty ranges.
 
