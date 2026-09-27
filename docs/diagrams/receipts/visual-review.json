@@ -1,7 +1,7 @@
 {
   "reviewed_on": "2026-09-27",
   "reviewer": "Codex image review",
-  "claim_scope": "Diagram validation and visual inspection only; no lab implementation or performance evidence.",
+  "claim_scope": "Diagram validation and visual inspection only; runtime evidence is recorded separately.",
   "archify": [
     {
       "diagram_type": "workflow",
@@ -107,29 +107,74 @@
         "2048x1320 dark screenshot"
       ],
       "observations": "Reviewed synthetic trace generation, profile transformations, frozen compiled artifact, shared B/C inputs and phase assessment. Two deterministic readability repairs preceded delivery; no visual repair was needed. Labels and routes are legible in both themes. Viewer export interactions were not manually exercised."
+    },
+    {
+      "diagram_type": "workflow",
+      "output": "interactive/schema-evolution.html",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "visual_review": "passed",
+      "observations": "Old and new schema paths, separate indices, shared release and comparison gate are readable in light and dark themes.",
+      "specification_sha256": "90ff2e62949c43c804a1fee142c3fe0a36ba2fd1c7293b4f76e7d9b078ce673d",
+      "artifact_sha256": "3868b57dcad7ad580c46e22183f2f59c0db91fc56c16ff1a6a943fc617a1b7de",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed"
+    },
+    {
+      "diagram_type": "workflow",
+      "output": "interactive/live-index-clone.html",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "visual_review": "passed",
+      "observations": "Exact source verification, distinct clone target, target verification and fallback are readable in light and dark themes.",
+      "specification_sha256": "5f65694c1351232b20f64c21399bfdba2f01708a0ed84e9ec3f1f751c15caefa",
+      "artifact_sha256": "d1f41c70ef834c91bc3b8dca8b320e930eef6c886da98a637cb14cf22d99293c",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed"
+    },
+    {
+      "diagram_type": "workflow",
+      "output": "interactive/snapshot-restore.html",
+      "correction_rounds": 1,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "visual_review": "passed",
+      "observations": "Snapshot capture, retained copy, source-deleted restore and rebuild fallback returning to verification are readable in light and dark themes.",
+      "specification_sha256": "19a611041721264b40d4c2ff1abc4615971858bec45e0f474f1095fd3ce085f7",
+      "artifact_sha256": "deadd94e6bf627f5fc1d6a933d05fbf1953b37c944bf9567d02204b151d41566",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed"
     }
   ],
   "c4": {
     "validation": "Structurizr validate and SVG/PNG export passed",
     "visual_review": "passed",
-    "review_scope": "Regenerated all six C4 views after moving the local UI, API, metadata and expiry process to the host and adding ACR to the Azure target. Inspected the local and Azure PNGs for readable labels, separated boundaries and correct component placement; the remaining views retain their previous layout.",
+    "review_scope": "Regenerated six C4 views after updating control-plane index operations. Inspected the new Archify views separately; C4 presentation positions remain unchanged.",
     "sources": {
-      "workspace.dsl": "dbc4eb74f55c16c118cb40fb797ed5bb418a88981249bfc04b16ddd29ddaaa4f",
+      "workspace.dsl": "58309170d7ea30d361642f858f0c97df10c1189a85c44bba71a794ef7dd58fd4",
       "layout.mjs": "c019213c9aff9d5bacaff5452d0a8fd25a7e1248d35cd7aa9a975c8751a398c4"
     },
     "svg_sha256": {
       "01-context-key.svg": "7d958dfb84c6dbbc55d60e7146a0e8947f363806e736c17ed3555c21a876f5aa",
-      "01-context.svg": "45f7b9257d6b64e6db147837c3c571190fa65cba48bf20eb530588cf459c47b4",
+      "01-context.svg": "f0664fb6f49fe238c8ac4db6a0deb0ecd02a0c7655d3a276e21cc5f76b64d862",
       "02-control-key.svg": "b37e211ed58aaed3ef6cd72427088d61d7ece40dbb436554785b5319f4eebc02",
-      "02-control.svg": "9651ffb00eb1835ed30862b7751d73b4634f5409e5316e39d4e044e756007c32",
+      "02-control.svg": "f8d7213f9589bdb7d5a72c21dd8af2320b4938257a7833e58238ba90b935e06f",
       "03-evaluation-key.svg": "b567dc0262179f88c5f4175d5a14356ee630ab21d18ebe036b1c1709067909d4",
-      "03-evaluation.svg": "00b90e0393218d4130ba00742f9ab7a975a254d365fbbb71b2c626a9b6e753d5",
+      "03-evaluation.svg": "79669bc0126308b46d78c5a1c2dd1c92c77f8a1367acb7a761ed5c8333b2fce1",
       "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
-      "04-create.svg": "66bd32d5531ae940db88f051d851768245980a0f01d0fe78f987f44c95316076",
+      "04-create.svg": "e9ea02135d76e9e3ed0ec5c14c1133ec9ecc44a0ae2f0c7a0cedf9b013e0dc39",
       "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
-      "05-local.svg": "806cc27f2e785f9a0521f69fde8febcb018f917a83e35c4589720fefc41272f4",
+      "05-local.svg": "5efda67bb27fca4cd94e7c70caf40c8897bfdaf08e3d1844179debcf36c5388b",
       "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
-      "06-azure.svg": "006d0d71cedca2457072b834e8951b45cea14c23a32197a6ddf20876e8181075"
+      "06-azure.svg": "baee5deb8feee187fc12f7e08a8be34dbd6b2d1940cdc32422a20e83b95a643f"
     }
   }
 }

@@ -1,0 +1,34 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {"title": "Clone an exact frozen index", "locale": "en", "quality_profile": "showcase",
+    "legend": {"entries": {"database": {"label": "Frozen artifact"}, "backend": {"label": "Lab operation"}, "cloud": {"label": "Elasticsearch index"}, "security": {"label": "Verification"}}}},
+  "lanes": [
+    {"id": "source", "label": "Live source"},
+    {"id": "target", "label": "Dedicated target"},
+    {"id": "fallback", "label": "Fallback"}
+  ],
+  "nodes": [
+    {"id": "recipe", "lane": "source", "col": 0, "type": "database", "label": "Load recipe", "sublabel": "Exact SHA + release", "width": 135},
+    {"id": "find", "lane": "source", "col": 1, "type": "backend", "label": "Find live copy", "sublabel": "Same cluster", "width": 135},
+    {"id": "check", "lane": "source", "col": 2, "type": "security", "label": "Verify source", "sublabel": "Marker + frozen data", "width": 135},
+    {"id": "clone", "lane": "target", "col": 3, "type": "backend", "label": "Clone index", "sublabel": "Distinct target name", "width": 135},
+    {"id": "ready", "lane": "target", "col": 4, "type": "security", "label": "Verify target", "sublabel": "Active shard + IDs", "width": 135},
+    {"id": "bind", "lane": "target", "col": 5, "type": "cloud", "label": "Bind Search API", "sublabel": "Read-only access", "width": 135},
+    {"id": "next", "lane": "fallback", "col": 3, "type": "backend", "label": "Try snapshot", "sublabel": "Then recipe rebuild", "width": 135}
+  ],
+  "edges": [
+    {"from": "recipe", "to": "find", "label": "Pinned SHA", "role": "main"},
+    {"from": "find", "to": "check", "label": "Candidate", "role": "main"},
+    {"from": "check", "to": "clone", "label": "Exact copy", "role": "main"},
+    {"from": "clone", "to": "ready", "label": "New index", "role": "main"},
+    {"from": "ready", "to": "bind", "label": "Verified", "role": "main"},
+    {"from": "check", "to": "next", "label": "Missing / mismatch", "role": "branch"},
+    {"from": "clone", "to": "next", "label": "Clone fails", "role": "branch"}
+  ],
+  "mainPath": ["recipe", "find", "check", "clone", "ready", "bind"],
+  "cards": [
+    {"dot": "cyan", "title": "Fast copy of a live index", "items": ["The source must remain available and write blocked", "A new mapping needs a different build"]},
+    {"dot": "emerald", "title": "No partial target is served", "items": ["Check count, settings, marker and ordered IDs", "Remove a failed clone before fallback"]}
+  ]
+}

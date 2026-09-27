@@ -9,6 +9,7 @@
 <section class="intro"><p><strong>Both APIs receive the same queries.</strong> Score relevance, check unchanged results or measure performance with Gatling.</p></section><nav class="section-nav" aria-label="Diagram sections">
 <a href="#system-architecture">System architecture</a>
 <a href="#environment-lifecycle">Environment lifecycle</a>
+<a href="#schema-and-index-recovery">Schema and index recovery</a>
 <a href="#compare-search-changes">Compare search changes</a>
 <a href="#prepare-evaluation-inputs">Prepare evaluation inputs</a>
 </nav>
@@ -49,7 +50,13 @@
 
 </div>
 </section>
-<section class="diagram-section" id="compare-search-changes" aria-labelledby="compare-search-changes-title">
+<section class="diagram-section" id="schema-and-index-recovery" aria-labelledby="schema-and-index-recovery-title">
+<h2 id="schema-and-index-recovery-title">Schema and index recovery</h2>
+<div class="grid comparison-grid">
+<article><div class="card-copy"><span class="diagram-type">ARCHIFY · INTERACTIVE</span><h3><a href="interactive/schema-evolution.html">Compare schemas</a></h3><p>Old and new recipes create separate indices over one frozen release.</p></div><a class="preview" href="interactive/schema-evolution.html"><img loading="lazy" src="rendered/schema-evolution.png" alt="Historical and new schema comparison workflow"></a><div class="card-links"><a href="interactive/schema-evolution.html">Open interactive view →</a><a href="archify/schema-evolution.json">JSON source</a></div></article>
+<article><div class="card-copy"><span class="diagram-type">ARCHIFY · INTERACTIVE</span><h3><a href="interactive/live-index-clone.html">Clone a live index</a></h3><p>An exact, write-blocked copy becomes a dedicated index.</p></div><a class="preview" href="interactive/live-index-clone.html"><img loading="lazy" src="rendered/live-index-clone.png" alt="Verified live-index clone workflow"></a><div class="card-links"><a href="interactive/live-index-clone.html">Open interactive view →</a><a href="archify/live-index-clone.json">JSON source</a></div></article>
+<article><div class="card-copy"><span class="diagram-type">ARCHIFY · INTERACTIVE</span><h3><a href="interactive/snapshot-restore.html">Restore a snapshot</a></h3><p>A regular snapshot restores a missing index; the recipe remains the fallback.</p></div><a class="preview" href="interactive/snapshot-restore.html"><img loading="lazy" src="rendered/snapshot-restore.png" alt="Verified regular snapshot restoration workflow"></a><div class="card-links"><a href="interactive/snapshot-restore.html">Open interactive view →</a><a href="archify/snapshot-restore.json">JSON source</a></div></article>
+</div></section><section class="diagram-section" id="compare-search-changes" aria-labelledby="compare-search-changes-title">
 <h2 id="compare-search-changes-title">Compare search changes</h2>
 <div class="grid comparison-grid">
 <article>

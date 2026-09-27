@@ -1,4 +1,6 @@
-# Optional snapshot restoration integration
+# Index restoration integration
+
+Implementation status: selection and reporting are on `slice/index-recovery-workflows`. A disposable live clone and an isolated snapshot capture/source-deletion/restore passed end-to-end checks. The snapshot path is enabled only when `LAB_SNAPSHOT_REPOSITORY` names an already registered repository. A durable repository and serving-cluster restore check remain in the [next batch](durable-snapshot-repository.md).
 
 ## Intent
 
@@ -19,7 +21,7 @@ Add regular snapshots as an accelerator for historical frozen index creation whe
 
 - A compatible snapshot can recreate a deleted dedicated historical index without a bulk reindex; the API sees the original schema and returns the frozen ordered sample.
 - A missing or incompatible snapshot falls back to a recipe rebuild for the same definition. A hash or mapping mismatch never falls back to a different recipe.
-- Reuse, restore and rebuild timings are captured separately from API readiness. At least three million-product restores and a cold Pod/cluster recovery are recorded for the selected repository.
+- Reuse, clone, restore and rebuild paths and timings are captured separately from API readiness. At least three million-product restores and a cold Pod/cluster recovery are required for the selected durable repository; the isolated filesystem research measurements do not satisfy that gate.
 - Snapshot retention and cleanup preserve snapshots referenced by retained environment definitions; 72-hour runtime expiry does not erase them.
 - The chosen Azure or local object repository has passed repository analysis, version compatibility and operational recovery checks. If no durable repository passes, this batch remains unimplemented and the current rebuild path remains supported.
 

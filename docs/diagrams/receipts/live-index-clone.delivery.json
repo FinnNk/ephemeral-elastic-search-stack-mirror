@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\live-index-clone.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\live-index-clone.html",
+  "specification": {
+    "sha256": "5f65694c1351232b20f64c21399bfdba2f01708a0ed84e9ec3f1f751c15caefa",
+    "bytes": 2491
+  },
+  "artifact": {
+    "sha256": "d1f41c70ef834c91bc3b8dca8b320e930eef6c886da98a637cb14cf22d99293c",
+    "bytes": 806098
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

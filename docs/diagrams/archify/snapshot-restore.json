@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {"title": "Restore a frozen index snapshot", "locale": "en", "quality_profile": "showcase",
+    "legend": {"entries": {"database": {"label": "Retained artifact"}, "backend": {"label": "Lab operation"}, "cloud": {"label": "Elasticsearch index"}, "security": {"label": "Verification"}}}},
+  "lanes": [
+    {"id": "capture", "label": "Capture once per recipe"},
+    {"id": "restore", "label": "Restore after source loss"},
+    {"id": "fallback", "label": "Fallback"}
+  ],
+  "nodes": [
+    {"id": "frozen", "lane": "capture", "col": 0, "type": "cloud", "label": "Frozen index", "sublabel": "Recipe marker", "width": 125},
+    {"id": "snapshot", "lane": "capture", "col": 1, "type": "backend", "label": "Save snapshot", "sublabel": "Index only", "width": 125},
+    {"id": "repo", "lane": "capture", "col": 2, "type": "database", "label": "Retain snapshot", "sublabel": "Retained", "width": 125},
+    {"id": "request", "lane": "restore", "col": 0, "type": "database", "label": "Load old recipe", "sublabel": "Exact SHA + release", "width": 125},
+    {"id": "check", "lane": "restore", "col": 2, "type": "security", "label": "Check snapshot", "sublabel": "Metadata + repo", "width": 125},
+    {"id": "restore", "lane": "restore", "col": 3, "type": "backend", "label": "Restore by name", "sublabel": "New index", "width": 125},
+    {"id": "verify", "lane": "restore", "col": 4, "type": "security", "label": "Verify index", "sublabel": "Mapping + IDs", "width": 125},
+    {"id": "bind", "lane": "restore", "col": 5, "type": "cloud", "label": "Bind Search API", "sublabel": "Report time", "width": 125},
+    {"id": "rebuild", "lane": "fallback", "col": 3, "type": "backend", "label": "Rebuild recipe", "sublabel": "Pinned products", "width": 125}
+  ],
+  "edges": [
+    {"from": "frozen", "to": "snapshot", "label": "Write blocked", "role": "branch"},
+    {"from": "snapshot", "to": "repo", "label": "Recipe metadata", "role": "branch"},
+    {"from": "request", "to": "check", "label": "Pinned SHA", "role": "main"},
+    {"from": "repo", "to": "check", "label": "Matching copy", "role": "branch"},
+    {"from": "check", "to": "restore", "label": "Compatible", "role": "main"},
+    {"from": "restore", "to": "verify", "label": "Active shard", "role": "main"},
+    {"from": "verify", "to": "bind", "label": "Verified", "role": "main"},
+    {"from": "check", "to": "rebuild", "label": "Missing / mismatch", "role": "branch"},
+    {"from": "restore", "to": "rebuild", "label": "Restore fails", "role": "branch"},
+    {"from": "rebuild", "to": "verify", "label": "Rebuilt index", "role": "branch"}
+  ],
+  "mainPath": ["request", "check", "restore", "verify", "bind"],
+  "cards": [
+    {"dot": "cyan", "title": "Regular snapshot, not source-only", "items": ["A compatible repository must be configured", "Snapshot retention outlives the 72-hour runtime"]},
+    {"dot": "emerald", "title": "A failed restore rebuilds", "items": ["Delete any partial target before bulk indexing", "Never switch to a newer recipe silently"]}
+  ]
+}

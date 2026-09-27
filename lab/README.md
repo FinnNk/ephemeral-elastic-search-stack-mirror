@@ -36,6 +36,14 @@ The product generator uses unequal category shares, rotating product types and b
 
 The local control service implements 72-hour leases and automatic teardown. The Gatling runner measures public API latency; its short peak and stress phases calibrate the runner. The [portability design](../docs/research/portability-azure.md) gives Apple silicon and Azure steps, with native runs still open.
 
+### Recreate an index after a schema change
+
+Create a dedicated environment with a versioned `index_kind`. Its content-addressed recipe pins the mapping, settings, product release, engine and indexer. To recreate that historical version after the mapping file changes, enter the old recipe SHA-256 in the control UI and choose the same index kind and release. The recipe must already belong to a recorded lab environment. Build a second environment with the new mapping kind, then compare their public Search APIs with the same frozen queries. The [schema workflow](../docs/diagrams/interactive/schema-evolution.html) shows both indices.
+
+When a requested index is absent, the controller checks for another live, write-blocked index with the **same recipe marker**, mapping, settings, count and ordered product IDs. It clones that index into a dedicated name if available. The [clone workflow](../docs/diagrams/interactive/live-index-clone.html) shows the verification and fallback. Older shared indices without a recipe marker are not clone sources.
+
+To enable regular snapshot capture and restore, first register and verify a compatible Elasticsearch repository on the serving cluster. Set `LAB_SNAPSHOT_REPOSITORY` to that existing repository name in the control process. The controller retains one snapshot per recipe SHA-256, with recipe and release metadata, independently of environment expiry. A missing dedicated index can be restored under its own name; a missing or invalid snapshot falls back to a recipe rebuild. The environment card reports `reuse`, `clone`, `snapshot` or `rebuild`, elapsed index time and any fallback errors. No repository is configured on the shared local cluster by default. The tested Floci Azure emulator failed repository verification, and the local filesystem research PVC is not an off-host backup. See the [snapshot workflow](../docs/diagrams/interactive/snapshot-restore.html) and [repository choices](../docs/research/index-restoration-options.md).
+
 The separate [million-product release](../docs/research/million-synthetic-release.md) uses a [versioned ESCI-informed aggregate profile](profiles/esci-informed-uk-v1.json). Its [modelling note](../docs/research/esci-synthetic-calibration.md) separates reference observations from synthetic UK assumptions. It does not change this frozen 10,000-product release.
 
 ## Compare a pinned API candidate
