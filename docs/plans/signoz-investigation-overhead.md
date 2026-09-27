@@ -4,6 +4,8 @@
 
 Complete the local path from a seven-day search or operation SLO breach to the exact request, dependency and immutable report. Use the [seven-day companion](signoz-window-coverage.md) and installed SigNoz dashboard, then measure telemetry failure isolation and search latency overhead.
 
+The current integration, staging and production `search` Deployments have no `OTEL_EXPORTER_OTLP_ENDPOINT`, `LAB_RELEASE_SHA` or `LAB_DEPLOYMENT_TIER` environment variables, although the repository's delivery chart template now defines them. Build and promote a telemetry-enabled release through desired state before treating those targets as instrumented. Preserve each target's exact release and deployment fingerprint during that rehearsal.
+
 ## Constraints
 
 - Keep Search API and control telemetry vendor-neutral. Blob reports and human review remain authoritative for promotion.
