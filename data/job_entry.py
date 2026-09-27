@@ -12,7 +12,7 @@ def main():
     output = Path('/output')
     release = output / 'release'
     build(release)
-    result = publish(release, output / 'manifests', 'independent-example-v1',
+    result = publish(release, output / 'manifests', 'independent-example-v2', RELEASE,
                      blob_url=os.environ['DATA_BLOB_URL'])
     print(json.dumps({'release': RELEASE, 'artifacts': result}, sort_keys=True), flush=True)
 

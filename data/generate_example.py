@@ -1,13 +1,12 @@
 """Generate a second, small synthetic retail input pack independently."""
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 
 from contracts import canonical
 
-RELEASE = 'retail-gb-independent-example-v1'
+RELEASE = 'retail-gb-independent-example-v2'
 
 
 def build(directory):
@@ -33,22 +32,19 @@ def build(directory):
     payloads = {'products.jsonl': b''.join(canonical(row) for row in products),
                 'queries.jsonl': b''.join(canonical(row) for row in queries),
                 'judgements.jsonl': b''.join(canonical(row) for row in judgements)}
-    manifest = {'release': RELEASE, 'count': len(products),
+    description = {'source_release': RELEASE, 'count': len(products),
                 'query_count': len(queries), 'judgement_count': len(judgements),
                 'country': 'GB', 'currency': 'GBP', 'fixed_time': '2026-01-01T00:00:00Z',
-                'sha256': {name: hashlib.sha256(value).hexdigest()
-                           for name, value in payloads.items()},
                 'assumptions': ['All inputs are synthetic.',
                                 'Three departments have four variants each.',
                                 'Rules-based positive grades are not exhaustive judgements.']}
-    payloads['manifest.json'] = json.dumps(manifest, sort_keys=True, indent=2).encode() + b'\n'
     for name, payload in payloads.items():
         path = directory / name
         if path.exists() and path.read_bytes() != payload:
             raise ValueError('Existing frozen example differs: ' + str(path))
         if not path.exists():
             path.write_bytes(payload)
-    return manifest
+    return description
 
 
 if __name__ == '__main__':

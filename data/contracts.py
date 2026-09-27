@@ -43,19 +43,16 @@ def rows(path):
             yield value
 
 
-def release_files(directory):
+def input_files(directory):
     directory = Path(directory)
-    original = json.loads((directory / 'manifest.json').read_text(encoding='utf-8'))
     selected = {}
     for kind in ('catalogue', 'query-suite', 'judgement-set'):
         matches = [directory / name for name in FILES[kind] if (directory / name).is_file()]
         if len(matches) != 1:
             raise ValueError(f'Expected one {kind} file in {directory}.')
         path = matches[0]
-        if sha_file(path) != original['sha256'][path.name]:
-            raise ValueError(f'Frozen {kind} bytes differ from the legacy manifest.')
         selected[kind] = path
-    return original, selected
+    return selected
 
 
 def validate_records(files, traffic=None):

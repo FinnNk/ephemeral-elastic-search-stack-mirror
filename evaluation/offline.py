@@ -32,35 +32,6 @@ def source_identity():
     return sha(Path(__file__).read_bytes())
 
 
-def import_legacy(report, report_sha256, captured_at=None):
-    """Adapt an existing complete comparison report; preserve the old report."""
-    if report.get('kind') != 'controlled-api-comparison' or not report.get('complete'):
-        raise ValueError('A complete public-API comparison report is required.')
-    observations = []
-    market = report['baseline']['request_context']
-    for row in report['queries']:
-        observations.append({'query_id': row['query_id'],
-                             'request': {'query': row['query'], 'country': market['country'],
-                                         'currency': market['currency'], 'filters': {}},
-                             'baseline': {'ids': row['baseline']['ids'],
-                                          'total': row['baseline']['total']},
-                             'candidate': {'ids': row['candidate']['ids'],
-                                           'total': row['candidate']['total']}})
-    if len(observations) != report['query_count'] or \
-            len({row['query_id'] for row in observations}) != len(observations):
-        raise ValueError('Legacy report has incomplete or duplicate query observations.')
-    return {'kind': 'search-observation-set', 'schema_version': SCHEMA,
-            'baseline_fingerprint': report['baseline']['fingerprint'],
-            'candidate_fingerprint': report['candidate']['fingerprint'],
-            'catalogue_sha256': report['baseline']['dataset_sha256'],
-            'query_suite_sha256': report['suite_sha256'],
-            'captured_at': captured_at,
-            'request_adapter': 'search-api-v1', 'execution': report['execution'],
-            'errors': [],
-            'captured_depth': 10, 'source_report_sha256': report_sha256,
-            'observations': observations}
-
-
 def validate_observations(value):
     if value.get('kind') != 'search-observation-set' or value.get('schema_version') != SCHEMA:
         raise ValueError('Unsupported observation contract.')

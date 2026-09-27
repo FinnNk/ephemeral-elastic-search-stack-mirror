@@ -13,14 +13,14 @@ The `data/` package owns synthetic input generation, validation and publication.
 | Evaluation report | Exact observation, judgement, specification and evaluator hashes; scores, coverage and completeness | Delivery policy and comparison history |
 | Promotion policy | Required metrics, evidence age, coverage and human review rule; separate policy hash | Delivery validator |
 
-The v1 input envelope is a small JSON document with `kind`, `schema_version`, `content`, `dependencies`, `producer` and `record_count`. `content.object` is addressed by the unchanged file hash. An absent judgement is **unknown**; grade zero is an explicit non-relevant assessment. A catalogue may contain several countries, but each country has one currency. The validator streams catalogue records through a temporary SQLite identity index and checks duplicate IDs, judgement references, market context, frozen file hashes and traffic/query references. It validated the existing 1M pack without changing any input bytes.
+The input envelope has `kind`, `schema_version`, `content`, `dependencies`, `producer` and `record_count`. `content.object` is addressed by the source file hash. `producer.source_release` identifies the synthetic source pack; publication does not read a combined release manifest. An absent judgement is **unknown**; grade zero is explicitly non-relevant. A catalogue may contain several countries, each with one currency. The validator streams records through a temporary SQLite identity index and checks IDs, references, market context and traffic/query links. It validated the existing 1M input bytes.
 
 ## Publish independent inputs
 
 ```powershell
-python data/generate_example.py --output .lab/releases/retail-gb-independent-example-v1
-python data/publish.py --release-dir .lab/releases/retail-gb-independent-example-v1 --output .lab/artifacts/retail-gb-independent-example-v1 --producer independent-example-v1
-python data/publish.py --release-dir .lab/releases/retail-gb-1m-v1 --output .lab/artifacts/retail-gb-1m-v1 --producer legacy-million-v1 --traffic lab/traffic/source-trace-million-v2.csv
+python data/generate_example.py --output .lab/releases/retail-gb-independent-example-v2
+python data/publish.py --input-dir .lab/releases/retail-gb-independent-example-v2 --output .lab/artifacts/retail-gb-independent-example-v2 --producer independent-example-v2 --source-release retail-gb-independent-example-v2
+python data/publish.py --input-dir .lab/releases/retail-gb-1m-v1 --output .lab/artifacts/retail-gb-1m-independent-v2 --producer synthetic-million-v1 --source-release retail-gb-1m-v1 --traffic lab/traffic/source-trace-million-v2.csv
 ```
 
 Set `DATA_BLOB_CONNECTION_STRING` using the separately retained emulator credential, add `--blob-url http://127.0.0.1:14577/devstoreaccount1`, and the publisher stores both original files and manifests in Floci's `datasets` container. Repeating publication verifies the existing immutable objects. For Azure, use an HTTPS account URL and workload identity; the producer package does not assume an emulator key. The local emulator currently shares one account credential across producer and consumer roles, so it cannot demonstrate separate write scopes.
@@ -29,9 +29,9 @@ Set `DATA_BLOB_CONNECTION_STRING` using the separately retained emulator credent
 
 ## Capture once, score again
 
-New functional comparisons retain a `search-observation-set` Blob independently of the comparison report. The comparison API exposes its hash and Blob reference. The first demonstration also used `evaluation/import_legacy.py` to adapt a complete earlier report; it did not reinterpret or rewrite that report.
+Functional comparisons retain a `search-observation-set` Blob independently of the comparison report. The comparison API exposes its hash and Blob reference. Older reports remain retained as evidence; new evaluations consume captured observations directly.
 
-`evaluation/capture.py` accepts a selected query file and manifest, a catalogue manifest, and the names of two already frozen APIs. It verifies their catalogue hashes, sends the exact original requests through the existing finite comparison Job, and retains a new observation set. A three-query revised suite ran this way without another environment or index build. This explicit-input command is currently separate from the web UI's legacy release-based comparison selector.
+`evaluation/capture.py` accepts a selected query file and manifest, a catalogue manifest, and the names of two frozen APIs. It verifies their catalogue hashes, sends the original requests through a finite comparison Job, and retains an observation set. A revised suite can be captured without rebuilding an environment or index. The control UI still selects queries through a combined release; independent query selection there is an [open integration gate](plans/independent-data-evaluation-contracts.md).
 
 The evaluator accepts observation, catalogue, query and judgement manifests plus a versioned specification. It rejects another catalogue/query suite, a mismatched judgement dependency, duplicate results, incomplete capture and a metric cut-off deeper than the captured list. It uses `ir-measures==0.4.3` with explicit nDCG, Judged and RR definitions. Missing labels remain unknown in the contract; the library treats them as zero for these metrics, so coverage is reported separately.
 
@@ -52,10 +52,10 @@ python evaluation/run_job.py --observation-reference .lab/offline-7j/observation
 
 The `.lab/` fixture and credential files are local ignored state; publish or fetch equivalent immutable references before using a clean checkout.
 
-Delivery's [observation evidence policy](../lab/delivery/policies/observation-evidence-v1.json) checks exact environment/data/observation/judgement/specification/evaluator hashes, capture and evaluation age, required metrics, coverage and human review. `lab/attach_offline_evidence.py` takes the existing three-check evidence reference, retained offline report and policy references, and an explicit expected-input JSON file. It retains a new evidence version, verifies the policy bytes against the checked-in policy, and binds catalogue, query and observation hashes to the existing full relevance capture. Proposal validation repeats these checks. The legacy three-check path remains valid when no offline addendum is selected. A passing evaluation policy does not approve a release.
+Delivery's [observation evidence policy](../lab/delivery/policies/observation-evidence-v1.json) checks exact environment/data/observation/judgement/specification/evaluator hashes, capture and evaluation age, required metrics, coverage and human review. `lab/attach_offline_evidence.py` binds an offline report and its input hashes to existing comparison evidence. Proposal validation repeats these checks. The optional policy addendum has not yet replaced the original three checks in the control UI. A passing evaluation policy does not approve a release.
 
 ## Index and retention boundaries
 
-Existing format-1 index recipes remain readable. Format 2 pins a catalogue manifest and product bytes without pinning query or judgement changes. A new v2 recipe is admitted only if its exact catalogue manifest is retained in Blob storage. A 10k dedicated-index preview using format 2 served search and was explicitly deleted. The 1M catalogue was published through the same envelope path; the existing shared index was not rebuilt for this contract demonstration.
+Index recipe format 2 pins a catalogue manifest and product bytes independently of query and judgement changes. A new recipe is admitted only if its exact catalogue manifest is retained in Blob storage. Existing format-1 recipes still support historical frozen-index recovery; default environment creation and delivery still use them. Moving those defaults to catalogue recipes is a [separate migration gate](plans/reference-clarity.md), since deleting the recovery path would break reproducibility.
 
 Retain catalogue bytes/manifests, query and judgement versions, traffic/workload sources, observations, evaluation specifications/reports, evaluator and Search API image digests, index recipes/snapshots, desired-state revisions and verification reports for replay and rollback. Preview Jobs, Pods, temporary credentials and namespaces are disposable after their references are retained. Automatic artifact deletion remains disabled. Floci data, Nexus layers, Git, Elasticsearch snapshots and the control PVC require separate backups.

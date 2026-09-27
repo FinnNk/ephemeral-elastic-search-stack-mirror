@@ -6,13 +6,13 @@ The [prototype design](docs/prototype-design.md) defines the architecture, quant
 
 Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram guide](docs/diagrams/README.md) for seven Structurizr C4 views and twelve interactive Archify views, with editable sources and rendering instructions.
 
-The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches, the [scale evidence](docs/research/evidence/million-scale.md), [concurrency evidence](docs/research/evidence/concurrency-isolation.md) and [native/cloud validation plan](docs/plans/native-cloud-validation.md).
+The [delivery roadmap](docs/plans/roadmap.md) summarises demonstrated behaviour and remaining gates. See the [scale evidence](docs/research/evidence/million-scale.md), [concurrency evidence](docs/research/evidence/concurrency-isolation.md) and [native/cloud validation plan](docs/plans/native-cloud-validation.md).
 
-The next planned local batches move [control services into Kubernetes](docs/plans/kubernetes-control-services.md), separate [data producers and evaluation contracts](docs/plans/independent-data-evaluation-contracts.md), and add [OTel observability with SigNoz](docs/plans/otel-observability.md). The observability plan covers a shared activity/SLO dashboard, linked metrics/traces/logs, error budgets and migration to New Relic. The [topology assessment](docs/plans/local-reference-boundaries.md) records the remaining structural checks and accepted laptop simplifications.
+The control services run in Kubernetes, and synthetic inputs and offline evaluation have separate contracts. The Search API emits OpenTelemetry signals; the SigNoz backend and connected investigation remain [planned](docs/plans/signoz-backend-and-investigation.md). The [roadmap](docs/plans/roadmap.md) lists the remaining integration and validation gates.
 
 ## Current state
 
-The design is merged. An [experimental research harness](research/platform-spike/README.md) runs local Gitea, Argo CD, Elasticsearch and Floci. The [runnable lab slice](lab/README.md) adds browser pages and search APIs over a frozen synthetic UK retail release. It compares query-understanding and ranking changes through the public APIs, with correlated diagnostic evidence. A loopback control UI creates, searches, compares and removes pinned API environments with durable leases, using either the shared frozen index or a dedicated mapping-change index.
+The [platform guide](research/platform-spike/README.md) runs local Gitea, Argo CD, Elasticsearch and Floci. The [lab guide](lab/README.md) covers browser pages and search APIs over frozen synthetic UK retail inputs. It compares query-understanding and ranking changes through the public APIs, with correlated diagnostics. Kubernetes-hosted control services create, search, compare and remove pinned API environments with durable leases, using either a shared index or a dedicated mapping-change index.
 
 - [Research results](docs/research/platform-spike.md): 20 warm lifecycle trials, API and analyser comparisons, isolation and failure recovery.
 - [Proposed decision](docs/adr/ADR-0001-reconcile-environments-from-git.md): reconcile environments from Git-file ApplicationSets; use k3d provisionally.

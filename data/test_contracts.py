@@ -7,8 +7,9 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from contracts import release_files, validate_records
+from contracts import input_files, validate_envelope, validate_records
 from generate_example import build
+from publish import publish
 
 
 class InputContractTests(unittest.TestCase):
@@ -19,12 +20,26 @@ class InputContractTests(unittest.TestCase):
         build(self.release)
 
     def test_independent_example_has_valid_references(self):
-        _, files = release_files(self.release)
+        files = input_files(self.release)
+        self.assertFalse((self.release / 'manifest.json').exists())
         self.assertEqual(validate_records(files),
                          {'catalogue': 12, 'query-suite': 3, 'judgement-set': 12})
 
+    def test_publication_uses_independent_inputs(self):
+        output = Path(self.temporary.name) / 'artifacts'
+        first = publish(self.release, output, 'example-producer', 'example-source')
+        self.assertEqual(first, publish(self.release, output, 'example-producer',
+                                        'example-source'))
+        catalogue = validate_envelope(json.loads((output / 'catalogue.json').read_text()))
+        judgement = validate_envelope(json.loads((output / 'judgement-set.json').read_text()))
+        self.assertEqual(catalogue['producer']['source_release'], 'example-source')
+        self.assertEqual(judgement['dependencies']['catalogue'],
+                         catalogue['content']['sha256'])
+        with self.assertRaisesRegex(ValueError, 'Existing artifact manifest differs'):
+            publish(self.release, output, 'another-producer', 'example-source')
+
     def test_country_cannot_switch_currency_within_catalogue(self):
-        _, files = release_files(self.release)
+        files = input_files(self.release)
         altered = self.release / 'altered-products.jsonl'
         records = [json.loads(line) for line in files['catalogue'].read_text().splitlines()]
         records[1]['currency'] = 'EUR'
@@ -34,7 +49,7 @@ class InputContractTests(unittest.TestCase):
             validate_records(files)
 
     def test_judgement_cannot_reference_unknown_product(self):
-        _, files = release_files(self.release)
+        files = input_files(self.release)
         altered = self.release / 'altered-judgements.jsonl'
         records = [json.loads(line) for line in files['judgement-set'].read_text().splitlines()]
         records[0]['product_id'] = 'missing'

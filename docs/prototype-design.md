@@ -78,7 +78,7 @@ The [reference CI/CD](delivery.md) publishes immutable Nexus releases and promot
 
 [Nexus](nexus.md) stores private images, deployment bundles and release descriptors. Floci retains datasets, recipes and evaluation reports; SeaweedFS retains index snapshots. Historical Gitea registry images remain available. The [detailed batches](plans/reference-ci-cd.md) and [operating guide](delivery.md) record the common Actions subset and provider-specific migration boundary.
 
-**Approved next placement, not yet implemented:** [batch 7i](plans/kubernetes-control-services.md) moves the UI/API, lease worker, PR watcher and delivery coordinator into `lab-control`. One active Pod and a persistent volume retain the present SQLite and writer-coordination model. Internal operations use service addresses and a runtime ServiceAccount. Bootstrap/recovery stays executable from the host; Nexus and snapshot storage retain their current independent lifetime. Cluster unavailability also makes these controls unavailable, which is accepted for the lab. The current diagrams still show the implemented host placement and will change with that batch.
+**Control placement:** [batch 7i](plans/kubernetes-control-services.md) placed the UI/API, lease worker, PR watcher and delivery coordinator in `lab-control`. One active Pod and a persistent volume retain SQLite and writer coordination. Internal operations use service addresses and a runtime ServiceAccount. Host-side bootstrap and recovery remain available; Nexus and snapshot storage retain independent lifetimes. The remaining activation and recovery checks are listed in the [roadmap](plans/roadmap.md).
 
 **Observability:** [the 7k1 foundation](observability-foundation.md) now emits Search API traces, unsampled SLI counters and correlated structured logs through a vendor-neutral OTel contract. Synthetic fixtures verify that slow successes spend the responsiveness budget. [The 7k2 plan](plans/signoz-backend-and-investigation.md) adds a Collector and SigNoz in `lab-observability`, then demonstrates a breach → affected operation → trace → log investigation with filters retained. Missed workflow deadlines, system-wide coverage and New Relic mappings remain in that batch. Measured k3d memory headroom is below SigNoz's published minimum, so the backend needs a deliberate capacity allocation.
 
@@ -218,9 +218,9 @@ Add emulated Key Vault, registry, queue or AKS only when a real integration need
 
 ## Frozen dataset contract
 
-**Independent contract slice:** [batch 7j](plans/independent-data-evaluation-contracts.md) publishes catalogues, query suites, judgements and traffic under separate manifests. Environments pin software, catalogue and index inputs; executions pin requests and workloads; evaluations pin retained observations, judgements and the evaluator specification. An independent producer Job publishes synthetic inputs, and a separate evaluator image rescores observations without another search or index build. A revised query suite produced another capture against the same environments. Reports and promotion policy have separate contracts. The control UI and existing delivery coordinator still use their legacy selectors and gates; [the contract guide](data-evaluation-contracts.md) and [evidence](research/evidence/independent-data-evaluation-contracts.md) identify that integration work. Existing combined releases and recipe hashes remain readable and unchanged.
+**Independent inputs:** [batch 7j](plans/independent-data-evaluation-contracts.md) publishes catalogues, query suites, judgements and traffic under separate manifests. Environments pin software, catalogue and index inputs; executions pin requests and workloads; evaluations pin observations, judgements and the evaluator specification. A producer Job publishes synthetic inputs; a separate evaluator Job rescores observations without another search or index build. The control UI still selects queries from combined releases, and default environment creation still builds format-1 recipes. Those [integration gates](plans/reference-clarity.md) remain open; historical recipe hashes remain usable for recovery.
 
-A release is an immutable set of content-addressed objects plus a manifest. Example release ID: `uk-retail-v1`. Its manifest records:
+Each independent input has a content-addressed object and manifest. A synthetic source pack groups inputs for generation and provenance; an environment pins the catalogue and index recipe, while an evaluation separately pins queries and judgements. Source metadata records:
 
 - Generator source revision, generator version, seed and deterministic ID scheme.
 - Schema version, country `GB`, locale `en-GB`, currency `GBP` and a fixed effective timestamp.
@@ -229,7 +229,7 @@ A release is an immutable set of content-addressed objects plus a manifest. Exam
 - Query intents and frequencies, original request text and context, graded relevance judgements, judgement-generation method and known biases. Keep original input separate from any API-produced normalisation or rewrite.
 - Optional synthetic click, add-to-basket and purchase events with an explicit behavioural model.
 
-The million-product generator will use the versioned [ESCI-informed synthetic profile](research/esci-synthetic-calibration.md) as a modelling reference. It uses aggregate catalogue shape and judgement depth while generating all product and query records anew. The 10,000-product `retail-gb-10k-v1` release remains unchanged.
+The million-product generator uses the versioned [ESCI-informed synthetic profile](research/esci-synthetic-calibration.md) as a modelling reference. It uses aggregate catalogue shape and judgement depth while generating all product and query records anew. The 10,000-product `retail-gb-10k-v1` release remains unchanged.
 
 Product and release rules:
 

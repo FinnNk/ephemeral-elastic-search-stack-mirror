@@ -1,17 +1,7 @@
-# Delivery plan
+# Delivery plans
 
-The [batch roadmap](roadmap.md) tracks lab work and review state. The [million-product](million-product-scale.md), [concurrency](concurrency-isolation.md), [portability](portability-azure.md) and [native/cloud validation](native-cloud-validation.md) plans record intent, constraints and acceptance checks. Each batch is committed on a branch and submitted as a pull request. Later pull requests may target the preceding branch so work can continue while the stack awaits review; merge them in order.
+Start with the [current roadmap](roadmap.md). It distinguishes implemented local behaviour from remaining integration and validation gates. The [reference-clarity audit](reference-clarity.md) records where earlier contracts still affect the active path.
 
-The [reference CI/CD plan](reference-ci-cd.md) inserts batches 7f–7h: [Nexus](nexus-artifacts.md), [portable CI](portable-ci.md) and [promotion/deployment](promotion-deployment.md). Their implementation is ready for review.
+Earlier batch plans in this directory record the decisions and acceptance checks used during implementation. Their original status text is historical; use the roadmap for current status and each plan's evidence link for measured results. The [prototype design](../prototype-design.md) owns the architecture and provisional targets.
 
-The next local batches are:
-
-| Batch | Outcome |
-| --- | --- |
-| [7i: Kubernetes control services](kubernetes-control-services.md) | Runtime controls in their own namespace, with explicit state and recovery boundaries |
-| [7j: Independent data/evaluation contracts](independent-data-evaluation-contracts.md) | Separate producers, retained observations and independently versioned evaluation |
-| [7k: OpenTelemetry observability and SLOs](otel-observability.md) | SigNoz dashboard, connected metrics/traces/logs and error budgets; New Relic migration mapping |
-
-Each plan includes intent, constraints, work, acceptance criteria and source references. The [topology and contract assessment](local-reference-boundaries.md) distinguishes the remaining structural checks from deliberate laptop simplifications. [Batch 8](native-cloud-validation.md) follows and requires external hardware/tenant access, including New Relic for backend validation.
-
-The [prototype design](../prototype-design.md) owns the architecture and provisional quantitative targets. These plans organise delivery without replacing that design.
+Work in reviewable batches on branches. Update the roadmap and the next detailed plan, commit the batch and open a PR. Merge to `main` after acceptance.

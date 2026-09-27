@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from contracts import canonical, envelope, release_files, sha_file, validate_records
+from contracts import canonical, envelope, input_files, sha_file, validate_records
 
 
 def upload(client, container, object_name, payload, digest, size):
@@ -32,19 +32,14 @@ def blob_client(url):
     return BlobServiceClient(account_url=url, credential=DefaultAzureCredential())
 
 
-def publish(directory, output, producer, traffic=None, blob_url=None, container='datasets'):
+def publish(directory, output, producer, source_release, traffic=None, blob_url=None,
+            container='datasets'):
     directory, output = Path(directory), Path(output)
-    legacy, files = release_files(directory)
+    files = input_files(directory)
     if traffic is not None:
         files['traffic-trace'] = Path(traffic)
     counts = validate_records(files, traffic)
-    if counts['catalogue'] != legacy['count'] or counts['query-suite'] != legacy['query_count'] or \
-            counts['judgement-set'] != legacy['judgement_count']:
-        raise ValueError('Legacy manifest record counts differ.')
-    provenance = {'source_release': legacy['release'],
-                  'source_manifest_sha256': sha_file(directory / 'manifest.json')}
-    if legacy.get('generator_sha256'):
-        provenance['generator_sha256'] = legacy['generator_sha256']
+    provenance = {'source_release': source_release}
     output.mkdir(parents=True, exist_ok=True)
     manifests = {}
     for kind, path in files.items():
@@ -85,15 +80,18 @@ def publish(directory, output, producer, traffic=None, blob_url=None, container=
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--release-dir', required=True, type=Path)
+    parser.add_argument('--input-dir', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--producer', required=True)
+    parser.add_argument('--source-release', required=True,
+                        help='Stable identity of the synthetic source pack')
     parser.add_argument('--traffic', type=Path)
     parser.add_argument('--blob-url')
     parser.add_argument('--container', default='datasets')
     args = parser.parse_args()
-    print(json.dumps(publish(args.release_dir, args.output, args.producer,
-                             args.traffic, args.blob_url, args.container), indent=2))
+    print(json.dumps(publish(args.input_dir, args.output, args.producer,
+                             args.source_release, args.traffic, args.blob_url,
+                             args.container), indent=2))
 
 
 if __name__ == '__main__':

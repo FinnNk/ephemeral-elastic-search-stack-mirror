@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'data'))
-from contracts import release_files, sha_file, validate_envelope
+from contracts import input_files, sha_file, validate_envelope
 
 
 def blob_service():
@@ -30,22 +30,26 @@ def blob_status(service, container, name, digest, size=None):
     if properties.metadata.get('sha256') == digest and \
             (size is None or properties.size == size):
         return 'present'
-    # Older retained recipes predate hash metadata; verify those bytes directly.
+    # Content hashes remain authoritative when object metadata is unavailable.
     payload = blob.download_blob().readall()
     return 'present' if hashlib.sha256(payload).hexdigest() == digest and \
         (size is None or len(payload) == size) else 'mismatch'
 
 
-def inventory(release_dir, manifest_dir, references, recipe_shas, image_file):
+def inventory(input_dir, manifest_dir, references, recipe_shas, image_file):
     service = blob_service()
-    release_dir, manifest_dir = Path(release_dir), Path(manifest_dir)
-    legacy, files = release_files(release_dir)
-    result = {'release': legacy['release'], 'entries': [],
+    input_dir, manifest_dir = Path(input_dir), Path(manifest_dir)
+    files = input_files(input_dir)
+    result = {'source_release': None, 'entries': [],
               'external_backups': ['Gitea desired-state history', 'Nexus volume and image layers',
                                    'Elasticsearch snapshot repository', 'control PVC and credentials']}
     for path in sorted(manifest_dir.glob('*.json')):
         manifest_bytes = path.read_bytes()
         manifest = validate_envelope(json.loads(manifest_bytes))
+        source_release = manifest['producer']['source_release']
+        if result['source_release'] not in (None, source_release):
+            raise ValueError('Input manifests describe different source packs.')
+        result['source_release'] = source_release
         kind, content = manifest['kind'], manifest['content']
         file = files.get(kind)
         if kind == 'traffic-trace':
@@ -86,20 +90,20 @@ def inventory(release_dir, manifest_dir, references, recipe_shas, image_file):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--release-dir', required=True, type=Path)
+    parser.add_argument('--input-dir', required=True, type=Path)
     parser.add_argument('--manifest-dir', required=True, type=Path)
     parser.add_argument('--reference', action='append', type=Path, default=[])
     parser.add_argument('--recipe-sha', action='append', default=[])
     parser.add_argument('--image-file', type=Path)
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
-    value = inventory(args.release_dir, args.manifest_dir, args.reference,
+    value = inventory(args.input_dir, args.manifest_dir, args.reference,
                       args.recipe_sha, args.image_file)
     payload = json.dumps(value, indent=2, sort_keys=True) + '\n'
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(payload, encoding='utf-8')
-    print(json.dumps({'release': value['release'], 'checked': len(value['entries']),
+    print(json.dumps({'source_release': value['source_release'], 'checked': len(value['entries']),
                       'missing': len(value['missing'])}))
     if value['missing']:
         raise SystemExit(1)
