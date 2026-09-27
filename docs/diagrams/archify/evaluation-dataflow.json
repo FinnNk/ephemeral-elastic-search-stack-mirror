@@ -47,7 +47,7 @@
     {
       "id": "queries",
       "label": "Query suite",
-      "sublabel": "Frozen requests",
+      "sublabel": "Selected manifest SHA",
       "stage": 0,
       "row": 1,
       "type": "database"
@@ -89,7 +89,7 @@
     {
       "id": "judgements",
       "label": "Judgements",
-      "sublabel": "Versioned grades",
+      "sublabel": "Selected manifest SHA",
       "stage": 3,
       "row": 0,
       "type": "database"
@@ -200,9 +200,10 @@
   "cards": [
     {
       "dot": "violet",
-      "title": "Each environment pins its index",
+      "title": "Pin environments and input versions",
       "items": [
-        "API image, query config, catalogue, recipe and engine"
+        "Each API pins its image, catalogue, recipe and engine",
+        "One query suite and judgement set are selected for the comparison"
       ]
     },
     {

@@ -36,8 +36,8 @@
     {
       "diagram_type": "dataflow",
       "output": "interactive/evaluation-dataflow.html",
-      "specification_sha256": "76be568b81a7cbcd5cd78bb444559281587a60bade8df14529e37e96c5ba8b71",
-      "artifact_sha256": "f15f82667603f784f25f919e0f005133258039db97b7ec121ca31fc843eb6502",
+      "specification_sha256": "27fd66a4afd5c634aeecb5c8b5e80123c589b5bab7fa5f98456bf1a2ed983ca4",
+      "artifact_sha256": "a17047e5ff731be6ac3251b860db41367e33b00c626f4865f9b93276bfe15f38",
       "validation": "9/9 showcase, 0 errors, 0 warnings",
       "browser_evidence": "passed",
       "visual_review": "passed",
@@ -46,7 +46,7 @@
         "1440x900 light screenshot",
         "2048x1320 dark screenshot"
       ],
-      "observations": "Reviewed separate frozen APIs, ordered observations, selected synthetic grades and offline rescoring. The light preview is legible; browser checks passed. Viewer export interactions were not manually exercised."
+      "observations": "Reviewed separate frozen APIs, ordered observations, manifest-selected queries and judgements, and offline rescoring. Light and dark previews are legible; browser checks passed. Viewer export interactions were not manually exercised."
     },
     {
       "diagram_type": "architecture",

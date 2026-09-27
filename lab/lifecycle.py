@@ -23,6 +23,7 @@ from index_recipe import (current_recipe, digest as recipe_digest, load as load_
                           publish as publish_index_recipe, validate as validate_index_recipe,
                           verify_catalogue_manifest)
 from shared_index import ensure_shared_index
+from input_selection import DEFAULTS, HASH
 
 LEASE = timedelta(hours=72)
 NAME_PATTERN = re.compile(r'lab-[a-z0-9](?:[a-z0-9-]{0,42}[a-z0-9])?\Z')
@@ -84,7 +85,8 @@ class Store:
                 db.execute('ALTER TABLE comparisons ADD COLUMN profile TEXT')
             if 'scope' not in comparison_columns:
                 db.execute('ALTER TABLE comparisons ADD COLUMN scope TEXT')
-            for name in ('observation_sha256', 'observation_blob'):
+            for name in ('observation_sha256', 'observation_blob',
+                         'query_manifest_sha256', 'judgement_manifest_sha256'):
                 if name not in comparison_columns:
                     db.execute(f'ALTER TABLE comparisons ADD COLUMN {name} TEXT')
             db.execute("CREATE UNIQUE INDEX IF NOT EXISTS active_environment_name "
@@ -555,7 +557,8 @@ class Lifecycle:
                 expired.append(self.reconcile(row['id']))
         return expired
 
-    def compare(self, baseline_id, candidate_id, mode, profile='probe', scope='full'):
+    def compare(self, baseline_id, candidate_id, mode, profile='probe', scope='full',
+                query_manifest_sha=None, judgement_manifest_sha=None):
         if baseline_id == candidate_id:
             raise ValueError('Select two distinct environments.')
         with self.lock:
@@ -565,8 +568,10 @@ class Lifecycle:
                 raise KeyError('Environment not found.')
             if baseline['state'] != 'ready' or candidate['state'] != 'ready':
                 raise ValueError('Both environments must be ready.')
-            if (baseline.get('release_id') or DATASET) != (candidate.get('release_id') or DATASET):
-                raise ValueError('Comparisons require the same frozen release.')
+            if baseline['dataset_sha256'] != candidate['dataset_sha256']:
+                raise ValueError('Comparisons require the same frozen catalogue.')
+            if mode == 'performance' and baseline['release_id'] != candidate['release_id']:
+                raise ValueError('Performance requires the same frozen workload release.')
             if self.clock() >= parse_stamp(baseline['expires_at']) or self.clock() >= parse_stamp(candidate['expires_at']):
                 raise ValueError('An environment lease has expired.')
             if mode not in ('result-regression', 'relevance', 'performance'):
@@ -577,6 +582,19 @@ class Lifecycle:
                     'probe', 'smoke', 'normal', 'peak', 'stress',
                     'normal-full', 'sustained-peak', 'stress-full'):
                 raise ValueError('Unknown performance profile.')
+            if mode == 'performance' and (query_manifest_sha or judgement_manifest_sha):
+                raise ValueError('Performance uses its pinned workload rather than functional input selection.')
+            if mode != 'performance':
+                defaults = DEFAULTS[baseline.get('release_id') or DATASET]
+                query_manifest_sha = query_manifest_sha or defaults['query-suite']
+                if mode == 'relevance':
+                    judgement_manifest_sha = judgement_manifest_sha or defaults['judgement-set']
+                elif judgement_manifest_sha:
+                    raise ValueError('Judgements can only be selected for relevance.')
+                for selected_sha in (query_manifest_sha, judgement_manifest_sha):
+                    if selected_sha is not None and (not isinstance(selected_sha, str) or
+                                                     not HASH.fullmatch(selected_sha)):
+                        raise ValueError('Select a valid independent input manifest SHA-256.')
             self.activity(baseline_id)
             self.activity(candidate_id)
             now = stamp(self.clock())
@@ -584,6 +602,8 @@ class Lifecycle:
             self.store.put_comparison({'id': comparison_id, 'baseline_id': baseline_id,
                 'candidate_id': candidate_id, 'mode': mode, 'profile': profile if mode == 'performance' else None,
                 'scope': scope if mode != 'performance' else None,
+                'query_manifest_sha256': query_manifest_sha,
+                'judgement_manifest_sha256': judgement_manifest_sha,
                 'state': 'running',
                 'created_at': now, 'updated_at': now, 'report_sha256': None,
                 'report_blob': None, 'verdict': None, 'summary': None, 'error': None})
@@ -594,7 +614,9 @@ class Lifecycle:
                     summary = evaluate_performance_pair(baseline, candidate, profile)
             elif self.comparator is None:
                 from control_comparison import evaluate_pair
-                summary = evaluate_pair(baseline, candidate, mode, scope=scope)
+                summary = evaluate_pair(baseline, candidate, mode, scope=scope,
+                                        query_manifest_sha=query_manifest_sha,
+                                        judgement_manifest_sha=judgement_manifest_sha)
             else:
                 summary = self.comparator(baseline, candidate, mode)
         except Exception as error:

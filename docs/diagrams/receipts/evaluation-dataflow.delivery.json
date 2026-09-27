@@ -3,15 +3,15 @@
   "ok": true,
   "command": "deliver",
   "type": "dataflow",
-  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\evaluation-dataflow.json",
-  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\evaluation-dataflow.html",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\archify\\evaluation-dataflow.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\interactive\\evaluation-dataflow.html",
   "specification": {
-    "sha256": "76be568b81a7cbcd5cd78bb444559281587a60bade8df14529e37e96c5ba8b71",
-    "bytes": 4466
+    "sha256": "27fd66a4afd5c634aeecb5c8b5e80123c589b5bab7fa5f98456bf1a2ed983ca4",
+    "bytes": 4559
   },
   "artifact": {
-    "sha256": "f15f82667603f784f25f919e0f005133258039db97b7ec121ca31fc843eb6502",
-    "bytes": 811565
+    "sha256": "a17047e5ff731be6ac3251b860db41367e33b00c626f4865f9b93276bfe15f38",
+    "bytes": 811705
   },
   "validation": {
     "checksPassed": 9,

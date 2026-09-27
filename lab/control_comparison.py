@@ -5,16 +5,18 @@ import sys
 from datetime import datetime, timezone
 
 sys.path.insert(0, 'research/platform-spike')
-from compare_search import definition, frozen_suite, immutable_blob, jaccard, rbo, response
+from compare_search import definition, immutable_blob, jaccard, rbo, response
 from blob_config import settings
-from evaluate_relevance import frozen_judgements, query_ndcg, score
+from evaluate_relevance import query_ndcg, score
 from measure import search
+from input_selection import select
 
 MODES = ('result-regression', 'relevance')
 SCOPES = ('quick', 'full')
 
 
-def evaluate_pair(baseline, candidate, mode, scope='full'):
+def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=None,
+                  judgement_manifest_sha=None):
     if mode not in MODES:
         raise ValueError('Comparison mode must be result-regression or relevance.')
     if scope not in SCOPES:
@@ -29,22 +31,16 @@ def evaluate_pair(baseline, candidate, mode, scope='full'):
         raise ValueError('Environments use different product releases.')
     if first['engine'] != second['engine']:
         raise ValueError('Environments use different Elasticsearch versions.')
-    release_id = baseline.get('release_id') or 'retail-gb-10k-v1'
-    if release_id != (candidate.get('release_id') or 'retail-gb-10k-v1'):
-        raise ValueError('Environments use different frozen releases.')
-    full_suite, suite_bytes, full_suite_sha, manifest = frozen_suite(release_id)
-    if mode == 'relevance':
-        pooled = release_id == 'retail-gb-1m-v1'
-        suite, judgements, pool_manifest = frozen_judgements(release_id, pooled=pooled)
-    else:
-        suite = full_suite
-        judgements = None
-        pool_manifest = None
+    release_id = baseline['release_id']
+    selected = select(release_id, first['dataset_sha256'], query_manifest_sha,
+                      judgement_manifest_sha, relevance=mode == 'relevance')
+    suite = selected['queries']
+    judgements = selected.get('judgements')
     if scope == 'quick':
         suite = suite[:50]
     if judgements is not None:
-        selected = {row['query_id'] for row in suite}
-        judgements = [row for row in judgements if row['query_id'] in selected]
+        selected_ids = {row['query_id'] for row in suite}
+        judgements = [row for row in judgements if row['query_id'] in selected_ids]
     suite_bytes = b''.join((json.dumps(row, sort_keys=True, separators=(',', ':')) + '\n').encode()
                            for row in suite)
     suite_sha = hashlib.sha256(suite_bytes).hexdigest()
@@ -160,7 +156,8 @@ def evaluate_pair(baseline, candidate, mode, scope='full'):
                        'baseline_fingerprint': first['fingerprint'],
                        'candidate_fingerprint': second['fingerprint'],
                        'catalogue_sha256': first['dataset_sha256'],
-                       'query_suite_sha256': suite_sha, 'captured_depth': 10,
+                       'query_suite_sha256': selected['query_manifest']['content']['sha256'],
+                       'captured_depth': 10,
                        'captured_at': datetime.now(timezone.utc).isoformat(),
                        'request_adapter': 'search-api-v1', 'execution': stable_execution,
                        'errors': errors, 'observations': retained_observations}
@@ -173,20 +170,18 @@ def evaluate_pair(baseline, candidate, mode, scope='full'):
               'baseline': {'runtime_id': baseline['id'], 'source_sha': baseline['source_sha'], **first},
               'candidate': {'runtime_id': candidate['id'], 'source_sha': candidate['source_sha'], **second},
               'suite_sha256': suite_sha, 'suite_blob': suite_blob,
+              'query_manifest_sha256': selected['query_manifest_sha256'],
               'observation_sha256': observation_sha, 'observation_blob': observation_blob,
-              'judgement_sha256': pool_manifest['sha256']['judgements.jsonl'] if mode == 'relevance' else None,
-              'judgement_pool': pool_manifest.get('judgement_pool') if mode == 'relevance' else None,
-              'judgement_provenance': ({'source': 'candidate-derived-synthetic-pool' if pooled else 'frozen-synthetic-release',
-                                        'independent_of_evaluated_candidate': not pooled,
-                                        'candidate_derived_pool_is_proxy': pooled}
-                                       if mode == 'relevance' else None),
+              'judgement_sha256': selected['judgement_manifest']['content']['sha256']
+              if mode == 'relevance' else None,
+              'judgement_manifest_sha256': selected['judgement_manifest_sha256']
+              if mode == 'relevance' else None,
+              'judgement_provenance': selected['judgement_manifest']['producer']
+              if mode == 'relevance' else None,
               'judgement_coverage': coverage,
               'judgement_coverage_status': coverage_status,
-              'judgement_usage': ('Symmetric frozen synthetic E/S/C/I pool from baseline and both candidates; '
-                                  'future results may be unjudged.'
-                                  if release_id != 'retail-gb-10k-v1' else
-                                  'Incomplete positive-only synthetic labels; unjudged products are unknown.')
-              if mode == 'relevance' else 'Not used for result preservation.',
+              'judgement_usage': ('Selected synthetic labels; unjudged products remain unknown.'
+                                  if mode == 'relevance' else 'Not used for result preservation.'),
               'query_count': len(suite), 'completed_query_count': len(results), 'zero_result_counts': zero_counts,
               'changed_query_ids': changed, 'metrics': metrics, 'errors': errors, 'queries': results}
     payload = (json.dumps(report, sort_keys=True, indent=2) + '\n').encode()
@@ -197,5 +192,7 @@ def evaluate_pair(baseline, candidate, mode, scope='full'):
             'verdict': verdict, 'scope': scope, 'execution': execution,
             'query_count': len(suite), 'completed_query_count': len(results),
             'changed_query_ids': changed, 'zero_result_counts': zero_counts,
+            'query_manifest_sha256': selected['query_manifest_sha256'],
+            'judgement_manifest_sha256': selected.get('judgement_manifest_sha256'),
             'metrics': metrics, 'judgement_coverage': coverage,
             'judgement_coverage_status': coverage_status, 'errors': errors}

@@ -23,6 +23,7 @@ RUN apk add --no-cache --virtual .build-deps build-base && \
     apk del .build-deps
 
 COPY lab/ /app/lab/
+COPY data/ /app/data/
 COPY research/platform-spike/ /app/research/platform-spike/
 
 ENV LAB_IN_CLUSTER=1 LAB_STATE_DIR=/state PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1

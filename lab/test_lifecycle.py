@@ -133,13 +133,13 @@ class LifecycleContract(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.service.activity(row['id'])
 
-    def test_release_is_immutable_and_cross_release_comparison_is_rejected(self):
+    def test_release_is_immutable_and_cross_catalogue_comparison_is_rejected(self):
         first = self.service.create('lab-first', 3)
         second = self.service.create('lab-second', 3)
         with self.assertRaisesRegex(ValueError, 'different inputs'):
             self.service.create('lab-first', 3, release_id='retail-gb-1m-v1')
-        self.store.update(second['id'], release_id='retail-gb-1m-v1')
-        with self.assertRaisesRegex(ValueError, 'same frozen release'):
+        self.store.update(second['id'], release_id='retail-gb-1m-v1', dataset_sha256='f' * 64)
+        with self.assertRaisesRegex(ValueError, 'same frozen catalogue'):
             self.service.compare(first['id'], second['id'], 'result-regression')
 
     def test_failed_provision_is_cleaned_when_lease_expires(self):
@@ -193,10 +193,18 @@ class LifecycleContract(unittest.TestCase):
         self.service.comparator = lambda _a, _b, mode: {
             'complete': True, 'verdict': 'unchanged', 'report_sha256': 'd' * 64,
             'report_blob': 'runs/' + 'd' * 64 + '/report.json', 'mode': mode}
-        row = self.service.compare(baseline['id'], candidate['id'], 'result-regression')
+        row = self.service.compare(baseline['id'], candidate['id'], 'result-regression',
+                                   query_manifest_sha='a' * 64)
         self.assertEqual(row['state'], 'complete')
         self.assertEqual(row['verdict'], 'unchanged')
-        self.assertEqual(self.store.get_comparison(row['id'])['summary']['mode'], 'result-regression')
+        persisted = self.store.get_comparison(row['id'])
+        self.assertEqual(persisted['summary']['mode'], 'result-regression')
+        self.assertEqual(persisted['query_manifest_sha256'], 'a' * 64)
+        self.assertIsNone(persisted['judgement_manifest_sha256'])
+        relevance = self.service.compare(baseline['id'], candidate['id'], 'relevance',
+                                         query_manifest_sha='a' * 64,
+                                         judgement_manifest_sha='b' * 64)
+        self.assertEqual(self.store.get_comparison(relevance['id'])['judgement_manifest_sha256'], 'b' * 64)
         self.service.comparator = lambda _a, _b, mode: {
             'complete': False, 'verdict': 'incomplete', 'report_sha256': 'e' * 64,
             'report_blob': 'runs/' + 'e' * 64 + '/report.json', 'mode': mode}

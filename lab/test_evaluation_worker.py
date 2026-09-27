@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import evaluation_worker
 from pr_workflow import matching_comparison, opted_in, verdict_comment
+from input_selection import DEFAULTS
 
 
 class EvaluatorContract(unittest.TestCase):
@@ -29,16 +30,21 @@ class EvaluatorContract(unittest.TestCase):
 
     def test_comparison_reuses_exact_pair_mode_scope_and_profile(self):
         row = {'id': 'report', 'baseline_id': 'a', 'candidate_id': 'b', 'mode': 'result-regression',
-               'scope': 'quick', 'profile': None, 'state': 'complete'}
+               'scope': 'quick', 'profile': None, 'state': 'complete',
+               'query_manifest_sha256': DEFAULTS['retail-gb-10k-v1']['query-suite'],
+               'judgement_manifest_sha256': None}
         class Store:
             def all_comparisons(self):
                 return [row]
         class Controller:
             store = Store()
-        self.assertEqual(matching_comparison(Controller(), {'id': 'a'}, {'id': 'b'},
+        self.assertEqual(matching_comparison(Controller(), {'id': 'a', 'release_id': 'retail-gb-10k-v1'}, {'id': 'b'},
                                              'result-regression', 'quick'), row)
-        self.assertIsNone(matching_comparison(Controller(), {'id': 'a'}, {'id': 'b'},
+        self.assertIsNone(matching_comparison(Controller(), {'id': 'a', 'release_id': 'retail-gb-10k-v1'}, {'id': 'b'},
                                               'result-regression', 'full'))
+        row['query_manifest_sha256'] = 'f' * 64
+        self.assertIsNone(matching_comparison(Controller(), {'id': 'a', 'release_id': 'retail-gb-10k-v1'}, {'id': 'b'},
+                                              'result-regression', 'quick'))
 
     def test_comment_links_exact_revision_and_report(self):
         environment = {'fingerprint': 'f' * 64, 'release_id': 'retail-gb-10k-v1'}

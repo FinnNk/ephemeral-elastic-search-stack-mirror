@@ -12,6 +12,7 @@ from environments import build_record
 from gitea import api
 from deploy_baseline import successful_run
 from lifecycle import local_lifecycle
+from input_selection import DEFAULTS
 
 REPO = '/repos/elastic-agent/search-spike'
 LABEL = 'lab-evaluate'
@@ -23,10 +24,14 @@ def opted_in(pr):
 
 
 def matching_comparison(controller, baseline, candidate, mode, scope='full', profile=None):
+    defaults = DEFAULTS[baseline['release_id']] if mode != 'performance' else None
     for row in controller.store.all_comparisons():
         if (row['baseline_id'] == baseline['id'] and row['candidate_id'] == candidate['id'] and
                 row['mode'] == mode and row.get('scope') == (scope if mode != 'performance' else None) and
-                row.get('profile') == profile and row['state'] == 'complete'):
+                row.get('profile') == profile and row['state'] == 'complete' and
+                row.get('query_manifest_sha256') == (defaults['query-suite'] if defaults else None) and
+                row.get('judgement_manifest_sha256') ==
+                (defaults['judgement-set'] if defaults and mode == 'relevance' else None)):
             return row
     return None
 
@@ -54,7 +59,7 @@ def verdict_comment(pr, sha, baseline, candidate, checks, ready_seconds, check_s
         lines.append(f'- **{label}: {row.get("verdict") or row["state"]}** · {details} · [inspect report]({link})')
         if row.get('report_sha256'):
             lines.append(f'  - Report SHA-256 `{row["report_sha256"]}`')
-    lines.extend(['', 'Relevance scores use frozen synthetic judgements. The million-product pool includes earlier candidate results; coverage and unjudged IDs are in the report. A measured relevance result requires human review.'])
+    lines.extend(['', 'Relevance scores use selected frozen synthetic judgements. Coverage and unjudged IDs are in the report. A measured relevance result requires human review.'])
     if stale:
         lines.extend(['', '**The PR head changed during evaluation. This report belongs to the earlier SHA; rerun the new head.**'])
     return '\n'.join(lines)

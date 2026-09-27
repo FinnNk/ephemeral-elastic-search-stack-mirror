@@ -10,40 +10,13 @@ sys.path.insert(0, str(Path('.lab/python-libs').resolve()))
 import ir_measures
 
 sys.path.insert(0, 'research/platform-spike')
-from common import STATE, guard, record
+from common import guard, record
 from compare_search import definition, immutable_blob, response
+from input_selection import select
 
 BASELINE = 'retail-baseline'
 CANDIDATE = 'retail-price-rank'
 MEASURES = (ir_measures.nDCG @ 10, ir_measures.Judged @ 10, ir_measures.RR(rel=2) @ 10)
-
-
-def frozen_judgements(release_id='retail-gb-10k-v1', pooled=False):
-    release = STATE / 'releases' / release_id
-    manifest = json.loads((release / 'manifest.json').read_text())
-    payloads = {}
-    for name in ('queries.jsonl', 'judgements.jsonl'):
-        if name == 'judgements.jsonl' and pooled:
-            pool_manifest = json.loads((release / 'judgement-pool-v2-manifest.json').read_text(encoding='utf-8'))
-            assert pool_manifest['query_sha256'] == manifest['sha256']['queries.jsonl']
-            assert pool_manifest['original_judgement_sha256'] == manifest['sha256']['judgements.jsonl']
-            payload = (release / 'judgements-pool-v2.jsonl').read_bytes()
-            assert hashlib.sha256(payload).hexdigest() == pool_manifest['sha256']
-            manifest['sha256'][name] = pool_manifest['sha256']
-            manifest['judgement_count'] = pool_manifest['count']
-            manifest['judgement_pool'] = pool_manifest
-        else:
-            payload = (release / name).read_bytes()
-            assert hashlib.sha256(payload).hexdigest() == manifest['sha256'][name]
-        payloads[name] = [json.loads(line) for line in payload.splitlines()]
-    queries = payloads['queries.jsonl']
-    judgements = payloads['judgements.jsonl']
-    assert len(queries) == manifest['query_count']
-    assert len(judgements) == manifest['judgement_count']
-    qids = {row['query_id'] for row in queries}
-    assert len(qids) == manifest['query_count'] and {row['query_id'] for row in judgements} == qids
-    assert all(0 <= row['grade'] <= 3 for row in judgements)
-    return queries, judgements, manifest
 
 
 def score(judgements, results):
@@ -71,7 +44,8 @@ def evaluate():
     assert baseline['index'] == candidate['index']
     assert baseline['engine'] == candidate['engine']
     assert baseline['image'] != candidate['image']
-    queries, judgements, manifest = frozen_judgements()
+    selected = select('retail-gb-10k-v1', baseline['dataset_sha256'], relevance=True)
+    queries, judgements = selected['queries'], selected['judgements']
     judged = defaultdict(set)
     for row in judgements:
         judged[row['query_id']].add(row['product_id'])
@@ -94,8 +68,10 @@ def evaluate():
                          if row[BASELINE]['ids'] != row[CANDIDATE]['ids']]
     report = {'kind': 'black-box-graded-relevance-evaluation', 'complete': True,
         'baseline': baseline, 'candidate': candidate,
-        'query_sha256': manifest['sha256']['queries.jsonl'],
-        'judgement_sha256': manifest['sha256']['judgements.jsonl'],
+        'query_sha256': selected['query_manifest']['content']['sha256'],
+        'query_manifest_sha256': selected['query_manifest_sha256'],
+        'judgement_sha256': selected['judgement_manifest']['content']['sha256'],
+        'judgement_manifest_sha256': selected['judgement_manifest_sha256'],
         'query_count': len(queries), 'judgement_count': len(judgements),
         'evaluation_library': 'ir-measures==0.4.3',
         'interpretation': 'Rules-based positive-only synthetic qrels are incomplete. Unjudged results are unknown, '

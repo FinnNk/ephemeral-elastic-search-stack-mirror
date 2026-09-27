@@ -13,6 +13,7 @@ from blob_config import service
 from measure import search
 from lifecycle import ActiveComparisonError, DATASET, RELEASES, local_lifecycle, parse_stamp, utcnow
 from index_candidate import available_kinds
+from input_selection import DEFAULTS
 from control_identity import GiteaIdentity, Sessions, expired_cookie, session_cookie
 
 PORT = 18082
@@ -102,6 +103,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(200, releases)
         if parts == ['api', 'index-kinds']:
             return self.send_json(200, {release_id: available_kinds(release_id) for release_id in RELEASES})
+        if parts == ['api', 'input-sets']:
+            return self.send_json(200, DEFAULTS)
         if parts == ['api', 'environments']:
             return self.send_json(200, [row for row in self.controller.store.all() if self.visible(row, identity)])
         if parts == ['api', 'comparisons']:
@@ -203,7 +206,9 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send_json(403, {'error': 'Comparison environment belongs to another owner.'})
                 row = self.controller.compare(payload['baseline_id'], payload['candidate_id'], payload['mode'],
                                               profile=payload.get('profile', 'probe'),
-                                              scope=payload.get('scope', 'full'))
+                                              scope=payload.get('scope', 'full'),
+                                              query_manifest_sha=payload.get('query_manifest_sha256') or None,
+                                              judgement_manifest_sha=payload.get('judgement_manifest_sha256') or None)
                 return self.send_json(201 if row['state'] == 'complete' else 202, row)
             if len(parts) == 4 and parts[:2] == ['api', 'environments']:
                 if not self.visible(self.controller.store.get(parts[2]), identity):

@@ -28,6 +28,7 @@ class EmptyStore:
 
 class EmptyController:
     store = EmptyStore()
+    last_comparison = None
 
     def create_many(self, names, build_run, owner, release_id):
         return [{'id': name, 'name': name, 'owner': owner, 'build_run': build_run,
@@ -35,6 +36,10 @@ class EmptyController:
 
     def delete_many(self, ids):
         return [self.store.get(instance_id) for instance_id in ids]
+
+    def compare(self, baseline_id, candidate_id, mode, **options):
+        self.last_comparison = (baseline_id, candidate_id, mode, options)
+        return {'state': 'complete', 'verdict': 'unchanged'}
 
 
 class FakeIdentity:
@@ -75,6 +80,21 @@ class LocalControlApi(unittest.TestCase):
         self.assertEqual(error.exception.code, 401)
         with urllib.request.urlopen(self.base + '/') as response:
             self.assertIn(b'Search environments', response.read())
+
+    def test_selected_input_hashes_reach_comparison(self):
+        cookie = self.login('admin')
+        inputs = urllib.request.Request(self.base + '/api/input-sets', headers={'Cookie': cookie})
+        with urllib.request.urlopen(inputs) as response:
+            self.assertIn('retail-gb-10k-v1', json.load(response))
+        request = urllib.request.Request(self.base + '/api/comparisons', method='POST',
+            data=json.dumps({'baseline_id': 'known', 'candidate_id': 'other',
+                             'mode': 'relevance', 'query_manifest_sha256': 'a' * 64,
+                             'judgement_manifest_sha256': 'b' * 64}).encode(),
+            headers={'Cookie': cookie, 'Content-Type': 'application/json', 'X-Lab-Intent': '1'})
+        with urllib.request.urlopen(request) as response:
+            self.assertEqual(response.status, 201)
+        self.assertEqual(Handler.controller.last_comparison[3]['query_manifest_sha'], 'a' * 64)
+        self.assertEqual(Handler.controller.last_comparison[3]['judgement_manifest_sha'], 'b' * 64)
 
     def test_mutation_requires_json_intent_header(self):
         request = urllib.request.Request(self.base + '/api/environments', method='POST', data=b'{}',

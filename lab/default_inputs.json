@@ -1,0 +1,12 @@
+{
+  "retail-gb-10k-v1": {
+    "catalogue": "e65c481acbb0f9917526841fd7ee51573104fb76e190805150c000d44f646c6a",
+    "query-suite": "144c51398442422cb638b6ef0f9df8c890e54afa6f3cad9383fbd1f93ad495fa",
+    "judgement-set": "f30d8e10880e774d2987555450d71b3f0186c2736b534238d0a2c90d2373c69d"
+  },
+  "retail-gb-1m-v1": {
+    "catalogue": "83686fb7afb11d3a5e4f691a950a8ed4e9fc0dc23343c78f54849659cf9393f5",
+    "query-suite": "158e982e64a245ae2faf558284550c3dafefa5fd45e5634c488cc1e34929f868",
+    "judgement-set": "690476679424fd789d5ed9021cdba7e4641117b19a255d6b790568deb02400c7"
+  }
+}

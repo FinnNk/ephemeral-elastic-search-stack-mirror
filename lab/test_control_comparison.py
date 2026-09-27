@@ -20,8 +20,9 @@ class ControlledComparisonPreflight(unittest.TestCase):
                 raise KeyError('total')
             return {'ids': [], 'total': 0}
         with patch.object(control_comparison, 'definition', side_effect=lambda name: definitions[name]), \
-             patch.object(control_comparison, 'frozen_suite', return_value=(suite, b'queries', 'suite',
-                 {'sha256': {'queries.jsonl': 'queries', 'judgements.jsonl': 'judgements'}})), \
+             patch.object(control_comparison, 'select', return_value={
+                 'queries': suite, 'query_manifest_sha256': 'a' * 64,
+                 'query_manifest': {'content': {'sha256': 'b' * 64}}}), \
              patch.object(control_comparison, 'response', side_effect=probe) as calls, \
              patch.object(control_comparison, 'immutable_blob', return_value='runs/report'):
             report = control_comparison.evaluate_pair(baseline, candidate, 'result-regression')
@@ -43,11 +44,13 @@ class ControlledComparisonPreflight(unittest.TestCase):
             published.append(payload)
             return 'runs/report'
         with patch.object(control_comparison, 'definition', side_effect=lambda name: definitions[name]), \
-             patch.object(control_comparison, 'frozen_suite', return_value=(suite, b'', 'suite',
-                 {'sha256': {'queries.jsonl': 'queries'}})), \
-             patch.object(control_comparison, 'frozen_judgements', return_value=(suite,
-                 [{'query_id': 'q1', 'product_id': 'p1', 'grade': 3}],
-                 {'sha256': {'judgements.jsonl': 'j'}, 'judgement_pool': {'source': 'old runs'}})), \
+             patch.object(control_comparison, 'select', return_value={
+                 'queries': suite, 'query_manifest_sha256': 'a' * 64,
+                 'query_manifest': {'content': {'sha256': 'b' * 64}},
+                 'judgements': [{'query_id': 'q1', 'product_id': 'p1', 'grade': 3}],
+                 'judgement_manifest_sha256': 'c' * 64,
+                 'judgement_manifest': {'content': {'sha256': 'd' * 64},
+                                        'producer': {'name': 'synthetic-assessor'}}}), \
              patch.object(control_comparison, 'response', return_value={'ids': ['p1'], 'total': 1}), \
              patch('evaluation_job.run', return_value=([{'query_id': 'q1',
                  'baseline': {'ids': ['p1'], 'total': 1},
@@ -61,7 +64,8 @@ class ControlledComparisonPreflight(unittest.TestCase):
         self.assertTrue(summary['complete'])
         self.assertEqual(report['judgement_coverage']['candidate']['fraction'], 0.0)
         self.assertEqual(report['queries'][0]['candidate']['unjudged_top_10_ids'], ['p2'])
-        self.assertFalse(report['judgement_provenance']['independent_of_evaluated_candidate'])
+        self.assertEqual(report['judgement_provenance']['name'], 'synthetic-assessor')
+        self.assertEqual(report['query_manifest_sha256'], 'a' * 64)
         self.assertEqual(report['queries'][0]['ndcg_delta_at_10'], -1.0)
 
 

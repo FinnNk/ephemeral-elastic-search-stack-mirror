@@ -6,9 +6,9 @@
   "status": "pass",
   "visualReview": "pending",
   "artifact": {
-    "path": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\evaluation-dataflow.html",
-    "sha256": "f15f82667603f784f25f919e0f005133258039db97b7ec121ca31fc843eb6502",
-    "bytes": 811565
+    "path": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\interactive\\evaluation-dataflow.html",
+    "sha256": "a17047e5ff731be6ac3251b860db41367e33b00c626f4865f9b93276bfe15f38",
+    "bytes": 811705
   },
   "state": {
     "detail": "read",

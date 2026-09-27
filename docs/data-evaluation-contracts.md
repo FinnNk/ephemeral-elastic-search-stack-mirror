@@ -27,11 +27,15 @@ Set `DATA_BLOB_CONNECTION_STRING` using the separately retained emulator credent
 
 `python lab/publish_tool_images.py` publishes separate amd64/arm64 producer and evaluator images to Nexus. `python data/run_job.py` runs the example producer as a finite `lab-data` Job with no Kubernetes API token. Its policy permits DNS and Floci egress only; the temporary Blob credential and Job are removed afterwards. The retained image-pull secret and namespace support subsequent runs.
 
+`lab/default_inputs.json` pins the independent 10k and 1M catalogue, query and judgement manifest hashes used by the control UI and delivery comparisons. To recreate those exact manifests from the existing synthetic source bytes, set `DATA_BLOB_CONNECTION_STRING` and run `python lab/publish_default_inputs.py`. It checks the published hashes against the pinned defaults. The source bytes and previously retained manifests are unchanged.
+
 ## Capture once, score again
 
 Functional comparisons retain a `search-observation-set` Blob independently of the comparison report. The comparison API exposes its hash and Blob reference. Older reports remain retained as evidence; new evaluations consume captured observations directly.
 
-`evaluation/capture.py` accepts a selected query file and manifest, a catalogue manifest, and the names of two frozen APIs. It verifies their catalogue hashes, sends the original requests through a finite comparison Job, and retains an observation set. A revised suite can be captured without rebuilding an environment or index. The control UI still selects queries through a combined release; independent query selection there is an [open integration gate](plans/independent-data-evaluation-contracts.md).
+The control UI source accepts a query-suite manifest SHA-256 for result preservation or relevance, and a matching judgement-set manifest SHA-256 for relevance. Blank fields use the pinned defaults shown in the UI. The controller reads manifests and content by hash from Floci, checks catalogue and query dependencies, and retains the selected hashes with each comparison. A revised suite ran against the same two frozen APIs without rebuilding them. Performance uses its separately pinned workload. The Kubernetes control image still needs to be rebuilt and rolled out after this batch is accepted.
+
+`evaluation/capture.py` is the standalone capture route for a selected query file and manifest, catalogue manifest and two frozen API names. Its observation set can be rescored independently of the control UI. The web control now exposes input selection for its integrated functional checks; catalogue-only index creation and delivery resolution remain [separate migration gates](plans/reference-clarity.md).
 
 The evaluator accepts observation, catalogue, query and judgement manifests plus a versioned specification. It rejects another catalogue/query suite, a mismatched judgement dependency, duplicate results, incomplete capture and a metric cut-off deeper than the captured list. It uses `ir-measures==0.4.3` with explicit nDCG, Judged and RR definitions. Missing labels remain unknown in the contract; the library treats them as zero for these metrics, so coverage is reported separately.
 
