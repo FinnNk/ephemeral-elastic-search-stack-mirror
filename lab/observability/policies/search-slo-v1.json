@@ -1,0 +1,11 @@
+{
+  "kind": "search-slo-policy",
+  "schema_version": 1,
+  "window_days": 7,
+  "traffic_class": "normal",
+  "minimum_sample_count": 100,
+  "objectives": [
+    {"id": "search-success", "good_field": "success_good", "target": 0.99},
+    {"id": "responsive-search", "good_field": "responsive_good", "target": 0.95, "threshold_ms": 250}
+  ]
+}
