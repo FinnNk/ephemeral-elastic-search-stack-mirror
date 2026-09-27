@@ -1,0 +1,41 @@
+# Recovering frozen indices without reindexing
+
+The lab continues to treat the immutable synthetic product release and [index recipe](../plans/historical-index-recipes.md) as its source of truth. This research tests faster recovery when a matching index copy exists. It does not change the serving architecture or introduce a paid Elasticsearch feature.
+
+## Local measurements
+
+| Path | Prerequisite | One-million-product observation | What survives |
+| --- | --- | ---: | --- |
+| Reuse live shared index | Matching verified index remains live | Existing-index verification **3.860 s**; separate API environments ready in **7.719–8.156 s** | Environment deletion; not loss of the Elasticsearch index |
+| Clone index | Write-blocked green source index remains in the same cluster | Three clones reached searchable, verified state in **1.188–1.297 s** | Neither deletion of the source before cloning nor loss of the cluster |
+| Restore regular snapshot from local filesystem repository | Compatible snapshot, mounted repository and space for the restored shard | Snapshot creation **15.875 s**; three restores reached searchable, verified state in **15.734–15.922 s** | Source-index deletion and Elasticsearch Pod restart while the repository PVC survives |
+| Rebuild from frozen Blob and recipe | Immutable release, recipe and compatible engine/indexer available | Earlier clean shared rebuild **48.750 s** on the shared cluster; isolated probe bulk load **140.953 s** through a host port forward | Loss of every index copy, provided canonical objects and recipe survive |
+
+The paths were **not measured under identical conditions**. Clone used the existing shared Elasticsearch node and index. Filesystem snapshot used a temporary single-node ECK 9.5.4 cluster on the k3d agent, with one primary shard, no replica, a 1 GiB heap, a 3 GiB Pod memory limit and a 3 GiB local-path repository PVC. Its index was initially loaded through a host port forward; that 140.953-second build is not the normal in-cluster Job. The 48.750-second rebuild comes from an earlier run on the shared cluster. Each restore figure is an index-level time to count, mapping and ordered sample checks, **excluding search API deployment**. Three observations do not establish p95 latency or performance at 40 environments. [Earlier million-product evidence](evidence/million-scale.md).
+
+ECK reported a **Basic** licence during these probes. The tests used regular snapshot/restore and clone APIs; no Enterprise-only function was introduced. After cleanup, the lab again had one ECK-managed Elasticsearch cluster with a 3 GiB configured memory limit.
+
+The filesystem repository passed Elasticsearch verification on its single node. The source index was deleted before restoration. All three 10,000-product restores were searchable in **0.265–0.281 s**. The million-product restores retained **1,000,000 documents**, the historical recipe marker, write block and ordered ten-ID sample. Their snapshot repository occupied **648,574,519 bytes** after storing both release snapshots. After the Elasticsearch Pod restarted, a further million-product restore reached the same verified state in **17.922 s**; checking the ordered IDs independently against the full compressed source took total verification to **28.610 s**. The temporary ECK cluster and both PVCs were removed after the checks. The [probe scripts](../../research/snapshot-restore/probe_fs.py) and [restart check](../../research/snapshot-restore/verify_after_restart.py) can repeat this test.
+
+The clone probe used the write-blocked million-product index, checked count, mapping, write block and ordered IDs, and deleted each disposable clone. Cloning copies the existing mapping and depends on the source index; it cannot recover a deleted source or create a new mapping. For the common API-only path, direct shared-index reuse is simpler. A clone may help where an isolated copy of an existing schema is required. Elasticsearch may hard-link segments on a supporting filesystem but still requires sufficient free disk. [Clone API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-indices-clone).
+
+## Repository choices
+
+| Repository | Lab suitability | Open gate |
+| --- | --- | --- |
+| Local shared filesystem | Demonstrates regular snapshot mechanics and fast local restore. The tested PVC was attached to one Pod on one k3d node; it is not an off-host backup. | A multi-node cluster needs a filesystem mounted on every master and data node with the required consistency and locking. `path.repo` changes require node restarts. [Elastic requirements](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/shared-file-system-repository). |
+| Floci Azure-compatible Blob | The canonical dataset Blob path works. | Floci 0.13.0 returned HTTP 501 during Elasticsearch 9.5.3 repository verification, before snapshot or restore. Do not claim snapshot compatibility. [Probe evidence](evidence/platform-spike/snapshot-compatibility.json). |
+| Real Azure Blob | Fits the intended AKS placement and can hold snapshots independently of cluster and node lifetimes. | Verify ECK workload identity, repository analysis, cross-cluster read-only registration, compatible restore and million-product timing in an Azure test tenant. [ECK repository guidance](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/cloud-on-k8s), [Azure repository](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/azure-repository). |
+| Separate S3-compatible object store | Possible local substitute when Blob emulation is insufficient; Elasticsearch's S3 repository is built in. | It adds a service and must pass repository verification and analysis. Compatibility and restore speed are unmeasured in this lab. [Elastic S3 requirements](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/s3-repository). |
+
+Source-only snapshots are not suitable for rapid comparisons because their restored indices require reindexing before normal search. Filesystem or PVC copies of a live Elasticsearch **data directory** are not supported backups. [Source-only repository](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/source-only-repository), [data-directory guidance](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/important-settings-configuration).
+
+## Recommended selection rule
+
+1. **Reuse** a live, verified index when its recipe matches the requested definition.
+2. **Restore** a compatible regular snapshot under a separate name when the index is absent. Verify repository and snapshot identity, recipe marker, count, mapping/settings, write block and a frozen ordered sample before binding an API.
+3. **Rebuild** from the immutable recipe and product release if the snapshot is missing, incompatible or fails verification. Record which path ran and its timing; do not silently substitute a newer schema.
+
+Snapshot names should identify the recipe SHA-256 and Elasticsearch/index version. Save one snapshot per immutable index definition, excluding global cluster state and unrelated indices. Keep repository retention separate from 72-hour environment leases. Only the lab control plane should have snapshot and restore privileges; environment credentials retain index-scoped read access. A repository shared between clusters should have **one writer**, with other clusters registering it read-only. [Elastic repository guidance](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/self-managed). A historical snapshot still requires [compatible snapshot, index and destination versions](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore); engine-version experiments may need their separate cluster.
+
+The selection rule is a **design recommendation**, not yet wired into the environment API. The next implementation gate is a durable repository that survives loss of the lab cluster. The local filesystem result establishes that a regular snapshot can shorten recovery under these conditions; it does not establish an Azure restore target.

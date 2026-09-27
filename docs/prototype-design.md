@@ -541,6 +541,7 @@ The first slice should be usable without a terminal after bootstrap.
 - **Warm platform:** Keep Kubernetes, ECK, the shared Elasticsearch cluster and Floci running between environment creations. Pre-pull or cache images.
 - **Fast and indexing paths:** API, query-understanding and ranking changes should create a search API deployment that points to an already indexed frozen release; mapping changes run an indexing Job.
 - **Snapshot option:** Reuse an existing index first, then bulk index from its historical recipe and canonical release when absent. Floci 0.13.0 failed Elasticsearch 9.5.3 repository verification on batch deletion; restore was not reached. Test compatible snapshot repositories separately and measure their restore time against the recipe rebuild at the target size.
+- **Measured restore research:** An isolated one-node filesystem repository restored a million-product regular snapshot in 15.734–15.922 seconds across three warm trials and 17.922 seconds after a Pod restart. Three clones of the existing million-product index became searchable in 1.188–1.297 seconds, but clones depend on the live source. The local repository PVC is not an off-host backup; Azure Blob remains an unmeasured compatibility and timing gate. Keep [the selection and limits](research/index-restoration-options.md) separate from the supported Blob-to-bulk fallback.
 
 Measure startup and removal separately:
 

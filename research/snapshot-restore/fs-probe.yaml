@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lab-fs-snapshot-repo
+  namespace: platform
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: lab-fs-probe
+  namespace: platform
+spec:
+  version: 9.5.4
+  nodeSets:
+    - name: lab
+      count: 1
+      config:
+        node.store.allow_mmap: false
+        path.repo: [/mnt/snapshots]
+      podTemplate:
+        spec:
+          nodeSelector:
+            kubernetes.io/hostname: k3d-relevance-lab-agent-0
+          securityContext:
+            fsGroup: 1000
+          containers:
+            - name: elasticsearch
+              env:
+                - name: ES_JAVA_OPTS
+                  value: -Xms1g -Xmx1g
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 2Gi
+                limits:
+                  cpu: '2'
+                  memory: 3Gi
+              volumeMounts:
+                - name: snapshots
+                  mountPath: /mnt/snapshots
+          volumes:
+            - name: snapshots
+              persistentVolumeClaim:
+                claimName: lab-fs-snapshot-repo
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes: [ReadWriteOnce]
+            resources:
+              requests:
+                storage: 3Gi
