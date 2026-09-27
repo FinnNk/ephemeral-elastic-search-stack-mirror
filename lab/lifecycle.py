@@ -71,7 +71,10 @@ class Store:
             columns = {row['name'] for row in db.execute('PRAGMA table_info(environments)')}
             for name, field_type in [('index_kind', 'TEXT'), ('index_name', 'TEXT'),
                                      ('mapping_sha256', 'TEXT'), ('release_id', 'TEXT'),
-                                     ('index_recipe_sha256', 'TEXT')]:
+                                     ('index_recipe_sha256', 'TEXT'),
+                                     ('index_materialisation', 'TEXT'),
+                                     ('index_seconds', 'REAL'),
+                                     ('index_recovery_errors', 'TEXT')]:
                 if name not in columns:
                     db.execute(f'ALTER TABLE environments ADD COLUMN {name} {field_type}')
             comparison_columns = {row['name'] for row in db.execute('PRAGMA table_info(comparisons)')}
@@ -209,8 +212,9 @@ class LabBackend:
         index = row['index_name'] or INDEX
         release_id = row.get('release_id') or DATASET
         mapping_sha = row['mapping_sha256']
+        built = None
         if row['index_kind'] == 'shared' and row.get('index_recipe_sha256'):
-            ensure_shared_index(release_id, row['dataset_sha256'], row['index_recipe_sha256'])
+            built = ensure_shared_index(release_id, row['dataset_sha256'], row['index_recipe_sha256'])
         elif row['index_kind'] != 'shared':
             built = ensure_candidate_index(row['name'], row['dataset_sha256'], release_id=release_id,
                                            recipe_sha256=row.get('index_recipe_sha256'),
@@ -224,15 +228,17 @@ class LabBackend:
             publish('Provision ' + row['name'])
         wait_healthy(row['name'])
         wait_correct_search(row['name'])
-        return definition['fingerprint']
+        return {'fingerprint': definition['fingerprint'], 'index': built}
 
     def provision_many(self, rows):
         guard()
         assert not git('status', '--porcelain'), 'Environment state checkout has local changes'
+        index_results = {}
         for release_id, dataset_sha, recipe_sha in {
                 (row['release_id'], row['dataset_sha256'], row['index_recipe_sha256']) for row in rows
                 if row.get('index_recipe_sha256')}:
-            ensure_shared_index(release_id, dataset_sha, recipe_sha)
+            index_results[(release_id, dataset_sha, recipe_sha)] = ensure_shared_index(
+                release_id, dataset_sha, recipe_sha)
         prepared = {}
         results = {}
         for row in rows:
@@ -257,7 +263,9 @@ class LabBackend:
             for future in as_completed(futures):
                 name = futures[future]
                 try:
-                    results[name] = {'fingerprint': future.result()}
+                    row = next(item for item in rows if item['name'] == name)
+                    key = (row['release_id'], row['dataset_sha256'], row['index_recipe_sha256'])
+                    results[name] = {'fingerprint': future.result(), 'index': index_results.get(key)}
                 except Exception as error:
                     results[name] = {'error': type(error).__name__ + ': ' + str(error)}
         return results
@@ -420,8 +428,14 @@ class Lifecycle:
                     updated.append(self.store.update(row['id'], state='failed', error=result['error'],
                                                      updated_at=stamp(self.clock())))
                 else:
-                    updated.append(self.store.update(row['id'], state='ready',
-                        fingerprint=result['fingerprint'], updated_at=stamp(self.clock())))
+                    fields = {'state': 'ready', 'fingerprint': result['fingerprint'],
+                              'updated_at': stamp(self.clock())}
+                    built = result.get('index')
+                    if built:
+                        fields.update(index_materialisation=built['materialisation'],
+                                      index_seconds=built.get('seconds', built.get('build_seconds', 0)),
+                                      index_recovery_errors=json.dumps(built.get('recovery_errors', [])))
+                    updated.append(self.store.update(row['id'], **fields))
             return updated
 
     def reconcile(self, instance_id):
@@ -437,12 +451,19 @@ class Lifecycle:
                 return row
             self.store.update(instance_id, state='provisioning', updated_at=stamp(self.clock()), error=None)
             try:
-                fingerprint = self.backend.provision(row)
+                result = self.backend.provision(row)
             except Exception as error:
                 return self.store.update(instance_id, state='failed', error=type(error).__name__ + ': ' + str(error),
                                          updated_at=stamp(self.clock()))
-            return self.store.update(instance_id, state='ready', fingerprint=fingerprint,
-                                     updated_at=stamp(self.clock()), error=None)
+            fingerprint = result['fingerprint'] if isinstance(result, dict) else result
+            built = result.get('index') if isinstance(result, dict) else None
+            fields = {'state': 'ready', 'fingerprint': fingerprint,
+                      'updated_at': stamp(self.clock()), 'error': None}
+            if built:
+                fields.update(index_materialisation=built['materialisation'],
+                              index_seconds=built.get('seconds', built.get('build_seconds', 0)),
+                              index_recovery_errors=json.dumps(built.get('recovery_errors', [])))
+            return self.store.update(instance_id, **fields)
 
     def activity(self, instance_id):
         with self.lock:

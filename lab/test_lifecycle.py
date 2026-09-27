@@ -1,6 +1,7 @@
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -75,6 +76,16 @@ class LifecycleContract(unittest.TestCase):
         self.assertEqual(self.backend.deletions, ['lab-demo'])
         recreated = self.service.create('lab-demo', 3)
         self.assertNotEqual(recreated['id'], row['id'])
+
+    def test_recovery_path_and_fallback_error_are_persisted(self):
+        result = {'fingerprint': 'c' * 64,
+                  'index': {'materialisation': 'snapshot', 'seconds': 1.203,
+                            'recovery_errors': ['clone: no matching source']}}
+        with patch.object(self.backend, 'provision', return_value=result):
+            row = self.service.create('lab-restored', 3, index_kind=INDEX_KIND)
+        self.assertEqual(row['index_materialisation'], 'snapshot')
+        self.assertEqual(row['index_seconds'], 1.203)
+        self.assertIn('no matching source', row['index_recovery_errors'])
 
     def test_concurrent_same_name_create_provisions_once(self):
         barrier = threading.Barrier(3)

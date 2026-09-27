@@ -1,10 +1,12 @@
 """Verify or recreate the single shared baseline index from a frozen recipe."""
 import json
+import time
 import urllib.error
 
 from data_contract import elastic
 from index_recipe import load as load_recipe, validate
 from load_release import DATA, RELEASE, index_job, publish_blobs
+from index_recovery import clone_from_live, restore_snapshot, save_snapshot, verify as verify_recovered
 
 
 def ensure_shared_index(release_id, dataset_sha256, recipe_sha256):
@@ -32,10 +34,34 @@ def ensure_shared_index(release_id, dataset_sha256, recipe_sha256):
         if settings.get('blocks', {}).get('write') != 'true' or \
                 elastic('/' + release_id + '/_count')['count'] != manifest['count']:
             raise ValueError('Shared index is not frozen with the expected document count.')
-        return {'index': release_id, 'created': False, 'count': manifest['count']}
+        if marker:
+            verify_recovered(release_id, recipe, recipe_sha256)
+        errors = []
+        try:
+            save_snapshot(release_id, recipe, recipe_sha256)
+        except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:
+            errors.append('snapshot save: ' + type(error).__name__ + ': ' + str(error))
+        return {'index': release_id, 'created': False, 'count': manifest['count'],
+                'materialisation': 'reuse', 'seconds': 0, 'recovery_errors': errors}
+    errors = []
+    for method in (clone_from_live, restore_snapshot):
+        try:
+            recovered = method(release_id, recipe, recipe_sha256)
+            if recovered:
+                if recovered['source'] == 'clone':
+                    try:
+                        save_snapshot(release_id, recipe, recipe_sha256)
+                    except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:
+                        errors.append('snapshot save: ' + type(error).__name__ + ': ' + str(error))
+                return {'index': release_id, 'created': True, 'count': manifest['count'],
+                        'materialisation': recovered['source'], 'seconds': recovered['seconds'],
+                        'recovery_errors': errors}
+        except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:
+            errors.append(type(error).__name__ + ': ' + str(error))
     blob_path = publish_blobs(manifest, data)
     definition = json.loads(json.dumps(definition))
     definition['mappings']['_meta'] = {'index_recipe_sha256': recipe_sha256}
+    started = time.monotonic()
     elastic('/' + release_id, 'PUT', definition)
     try:
         index_job(blob_path, dataset_sha256, index=release_id, role='retail-shared-indexer',
@@ -48,4 +74,10 @@ def ensure_shared_index(release_id, dataset_sha256, recipe_sha256):
     except Exception:
         elastic('/' + release_id, 'DELETE')
         raise
-    return {'index': release_id, 'created': True, 'count': manifest['count']}
+    try:
+        save_snapshot(release_id, recipe, recipe_sha256)
+    except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:
+        errors.append('snapshot save: ' + type(error).__name__ + ': ' + str(error))
+    return {'index': release_id, 'created': True, 'count': manifest['count'],
+            'materialisation': 'rebuild', 'seconds': round(time.monotonic() - started, 3),
+            'recovery_errors': errors}

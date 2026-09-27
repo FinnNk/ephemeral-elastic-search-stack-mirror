@@ -44,7 +44,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             performance = container "Gatling load job" "Measures API latency, throughput and errors under pinned load." "Kubernetes Job / Gatling OSS Java SDK" {
                 tags "Job"
             }
-            indexing = container "Index build job" "Builds a dedicated index for mapping changes." "Kubernetes Job / Elasticsearch bulk API" {
+            indexing = container "Index build job" "Rebuilds a dedicated index from its pinned recipe and frozen products." "Kubernetes Job / Elasticsearch bulk API" {
                 tags "Job"
             }
             generator = container "Dataset and workload generator" "Generates synthetic data and traces; compiles load profiles." "Versioned batch job" {
@@ -114,7 +114,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         indexing -> artifacts "Reads immutable catalogue" "Azure Blob API"
         indexing -> elastic "Creates a dedicated index" "Bulk REST API"
         generator -> artifacts "Reads inputs; freezes data, traces and workloads" "Azure Blob API"
-        api -> elastic "Manages scoped access and dedicated-index cleanup" "Elasticsearch REST"
+        api -> elastic "Verifies, clones or restores frozen indices; manages scoped access and cleanup" "Elasticsearch REST"
 
         deploymentEnvironment "Local lab" {
             deploymentNode "Developer machine" "Windows x64; Apple silicon support to validate" "Local host" {

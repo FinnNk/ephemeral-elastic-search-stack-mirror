@@ -9,6 +9,7 @@ from pathlib import Path
 from load_release import DATA, RELEASE, index_job, publish_blobs
 from data_contract import elastic
 from index_recipe import current_recipe, digest, load as load_recipe, validate
+from index_recovery import clone_from_live, restore_snapshot, save_snapshot, verify as verify_recovered
 
 KIND = 'title-keyword-v1'
 MAPPINGS = Path(__file__).with_name('mappings')
@@ -76,16 +77,42 @@ def ensure_candidate_index(environment_name, expected_dataset_sha, release_id=RE
         marker = existing_mapping.pop('_meta', {}).get('index_recipe_sha256')
         if existing_mapping != mapping['mappings']:
             raise ValueError('An existing candidate index has a different mapping.')
-        if marker and marker != recipe_sha256:
+        if recipe_sha256 and marker != recipe_sha256:
             raise ValueError('An existing candidate index has a different recipe.')
         actual_settings = existing['settings']['index']
         if any(str(actual_settings.get(key)) != str(value) for key, value in mapping['settings'].items()):
             raise ValueError('An existing candidate index has different settings.')
         frozen, count = _frozen_count(index)
         if frozen and count == manifest['count']:
+            if recipe_sha256:
+                verify_recovered(index, recipe, recipe_sha256)
+            errors = []
+            if recipe_sha256:
+                try:
+                    save_snapshot(index, recipe, recipe_sha256)
+                except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:
+                    errors.append('snapshot save: ' + type(error).__name__ + ': ' + str(error))
             return {'index': index, 'mapping_sha256': mapping_sha, 'count': count,
-                    'dataset_sha256': expected_dataset_sha, 'created': False, 'build_seconds': 0}
+                    'dataset_sha256': expected_dataset_sha, 'created': False, 'build_seconds': 0,
+                    'materialisation': 'reuse', 'recovery_errors': errors}
         elastic('/' + index, 'DELETE')
+    recovery_errors = []
+    if recipe_sha256:
+        for method in (clone_from_live, restore_snapshot):
+            try:
+                recovered = method(index, recipe, recipe_sha256)
+                if recovered:
+                    if recovered['source'] == 'clone':
+                        try:
+                            save_snapshot(index, recipe, recipe_sha256)
+                        except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:
+                            recovery_errors.append('snapshot save: ' + type(error).__name__ + ': ' + str(error))
+                    return {'index': index, 'mapping_sha256': mapping_sha,
+                            'count': manifest['count'], 'dataset_sha256': expected_dataset_sha,
+                            'created': True, 'build_seconds': recovered['seconds'],
+                            'materialisation': recovered['source'], 'recovery_errors': recovery_errors}
+            except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:
+                recovery_errors.append(type(error).__name__ + ': ' + str(error))
     blob_path = publish_blobs(manifest, data)
     started = time.monotonic()
     definition = json.loads(json.dumps(mapping))
@@ -104,9 +131,15 @@ def ensure_candidate_index(environment_name, expected_dataset_sha, release_id=RE
     except Exception:
         elastic('/' + index, 'DELETE')
         raise
+    if recipe_sha256:
+        try:
+            save_snapshot(index, recipe, recipe_sha256)
+        except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:
+            recovery_errors.append('snapshot save: ' + type(error).__name__ + ': ' + str(error))
     return {'index': index, 'mapping_sha256': mapping_sha, 'count': count,
             'dataset_sha256': expected_dataset_sha, 'created': True,
-            'build_seconds': round(time.monotonic() - started, 3)}
+            'build_seconds': round(time.monotonic() - started, 3),
+            'materialisation': 'rebuild', 'recovery_errors': recovery_errors}
 
 
 def remove_candidate_index(environment_name):

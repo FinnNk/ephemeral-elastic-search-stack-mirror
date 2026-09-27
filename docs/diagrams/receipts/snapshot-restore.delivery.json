@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\snapshot-restore.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\snapshot-restore.html",
+  "specification": {
+    "sha256": "19a611041721264b40d4c2ff1abc4615971858bec45e0f474f1095fd3ce085f7",
+    "bytes": 3076
+  },
+  "artifact": {
+    "sha256": "deadd94e6bf627f5fc1d6a933d05fbf1953b37c944bf9567d02204b151d41566",
+    "bytes": 810102
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

@@ -1,6 +1,6 @@
 # Architecture diagrams
 
-Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These thirteen views accompany the [prototype design](../prototype-design.md). They describe the proposed design; they do not establish that the lab has been built or its performance targets achieved.
+Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These sixteen views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic; snapshot restoration still needs a compatible repository in the serving cluster.
 
 ## Reading order
 
@@ -24,6 +24,14 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 | [09 · Prepare both environments](interactive/change-to-comparison.html) | Both definitions are verified before the selected check runs. | [Archify workflow](archify/change-to-comparison.json) |
 | [08 · Reuse a frozen index](interactive/shared-index-reuse.html) | Separate definitions and APIs reference one shared index. | [Archify architecture](archify/shared-index-reuse.json) |
 | [10 · Runtime lifecycle](interactive/environment-lifecycle.html) | Runtime removal retains the definition and its artifacts. | [Archify lifecycle](archify/environment-lifecycle.json) |
+
+### [Schema and index recovery](index.html#schema-and-index-recovery)
+
+| View | Contents | Editable source |
+| --- | --- | --- |
+| [Schema evolution](interactive/schema-evolution.html) | Old and new recipes drive separate indices over one frozen release. | [Archify workflow](archify/schema-evolution.json) |
+| [Live-index clone](interactive/live-index-clone.html) | An exact, write-blocked live copy becomes a dedicated index. | [Archify workflow](archify/live-index-clone.json) |
+| [Snapshot restore](interactive/snapshot-restore.html) | A regular snapshot restores a separate index; recipe rebuild handles failure. | [Archify workflow](archify/snapshot-restore.json) |
 
 ### [Compare search changes](index.html#compare-search-changes)
 
@@ -55,7 +63,7 @@ The Archify HTML files are standalone interactive viewers with theme, presentati
 - **Performance:** Gatling jobs replay one compiled workload against B and C sequentially, repeating three pairs with alternating order. Warm-up precedes normal, sustained-peak or stress/recovery phases. Normal/peak budgets produce phase verdicts; stress reports sustainable load, the first breach and recovery. Unstable or incomplete runs are inconclusive. Shared indices do not isolate performance. The [Gatling contract](../prototype-design.md#performance-check-the-search-api-with-gatling) defines resources, thresholds and artifacts.
 - **Traffic preparation:** all queries and timestamps are synthetic. A frozen trace feeds a versioned profile recipe; compilation freezes windows, transformations, phases, request bindings and arrival buckets into one artifact used by both APIs. One-second buckets are the initial approximation; exact event timing needs a validated spike. Reports retain planned and actual arrivals. The [traffic contract](../prototype-design.md#frozen-traffic-and-workload-contract) owns these definitions.
 - **Shared-index example:** the boundaries group logical environment references, not storage locations. Definitions remain in retained storage. B and C use different API images and the same pinned query assets, index, dataset and engine. Both API deployments use scoped read-only access to index i1. The dataset and index sit outside the environment boundaries. These identifiers are illustrative. A mapping change requires a separate index from the same dataset.
-- **Fast creation:** API/query/ranking changes reuse a compatible read-only frozen index. Mapping/analyser changes build dedicated indices from the same immutable catalogue. Engine-version experiments need an exceptional separate cluster, omitted from the normal deployment views. A shared cluster still requires scoped credentials and contention measurements.
+- **Fast creation:** API/query/ranking changes reuse a compatible read-only frozen index. Mapping/analyser changes use a dedicated index from the same immutable catalogue. When an exact recipe-marked live copy exists, the control plane can clone it. A configured, verified regular snapshot can restore a missing copy; otherwise the pinned recipe rebuilds it. Engine-version experiments need an exceptional separate cluster, omitted from the normal deployment views. A shared cluster still requires scoped credentials and contention measurements.
 - **Lifecycle:** the diagram shows the normal path and one representative indexing failure/retry path. It is not a complete executable state machine. Explicit deletion must also work before readiness and after failures. A ready environment has a 72-hour lease extended by genuine activity; polling does not extend it. Closing a PR does not immediately delete its environment. The same lifecycle applies independently to baseline and candidate runtimes. Active comparisons renew both leases; manual deletion cancels dependent comparison jobs. Frozen definitions, referenced images/assets, canonical datasets and reports survive removal. Recreating a runtime uses its retained definition; it may reuse or rebuild compatible index artifacts.
 - **Migration:** local Gitea services and the future enterprise services fulfil the same logical source/build contracts. CI workflows, event adapters and registry migration still require work. The Azure view is a placement proposal, not a network, identity, disaster-recovery or production sizing design. The organisation's GitHub Enterprise hosting and registry remain open choices.
 
@@ -78,7 +86,7 @@ Prerequisites: Node.js, Git, a working Docker daemon with Linux containers and, 
    node docs/diagrams/render.mjs --browser
    ```
 
-   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders six C4 SVGs and PNG inspection copies, validates and delivers seven Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
+   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders six C4 SVGs and PNG inspection copies, validates and delivers ten Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
 
    For a focused rebuild, use `--c4` or `--archify`, optionally with `--browser`. The script checks the Archify commit before use. Docker pulls the pinned Structurizr image when missing. A Docker connection failure means the daemon must be started before retrying.
 
