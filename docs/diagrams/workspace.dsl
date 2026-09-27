@@ -55,13 +55,13 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             search = container "Search API" "Understands queries, retrieves products and reranks results." "HTTP API / pinned OCI image" {
                 tags "Ephemeral"
             }
-            evaluation = container "Observation capture job" "Queries both APIs and retains ordered results; legacy comparisons also calculate scores." "Kubernetes Job / public Search API adapter" {
+            evaluation = container "Observation capture job" "Queries both APIs and retains ordered results and comparison scores." "Kubernetes Job / public Search API adapter" {
                 tags "Job"
             }
             performance = container "Gatling load job" "Measures API latency, throughput and errors under pinned load." "Kubernetes Job / Gatling OSS Java SDK" {
                 tags "Job"
             }
-            indexing = container "Index build job" "Rebuilds a dedicated index from its pinned recipe and frozen products." "Kubernetes Job / Elasticsearch bulk API" {
+            indexing = container "Index build job" "Builds a shared or dedicated index from a pinned catalogue recipe." "Kubernetes Job / Elasticsearch bulk API" {
                 tags "Job"
             }
             generator = container "Workload compiler" "Compiles frozen traffic traces into load profiles." "Versioned batch job" {
@@ -150,7 +150,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         performance -> search "Loads one pinned API at a time" "Public search API / HTTP"
         performance -> artifacts "Reads compiled workload; saves reports" "Azure Blob API"
         indexing -> artifacts "Reads immutable catalogue" "Azure Blob API"
-        indexing -> elastic "Creates a dedicated index" "Bulk REST API"
+        indexing -> elastic "Builds a recipe-marked frozen index" "Bulk REST API"
         elastic -> snapshots "Saves and restores recipe-matched index copies" "S3 locally / Azure Blob proposed"
         generator -> artifacts "Reads inputs; freezes data, traces and workloads" "Azure Blob API"
         api -> elastic "Verifies, clones or restores frozen indices; manages scoped access and cleanup" "Elasticsearch REST"

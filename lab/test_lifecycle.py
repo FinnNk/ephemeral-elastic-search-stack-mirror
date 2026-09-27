@@ -1,3 +1,4 @@
+import json
 import tempfile
 import threading
 import unittest
@@ -5,8 +6,11 @@ from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from lifecycle import ActiveComparisonError, INDEX_KIND, LEASE, Lifecycle, Store, parse_stamp, wait_correct_search
+from lifecycle import (ActiveComparisonError, INDEX_KIND, LEASE, LabBackend, Lifecycle,
+                       Store, parse_stamp, wait_correct_search)
 from index_candidate import index_name, mapping_contract
+from input_selection import DEFAULTS
+from common import STATE
 
 
 class FakeBackend:
@@ -19,9 +23,14 @@ class FakeBackend:
     def build(self, run_id):
         return {'source_sha': 'a' * 40, 'image': 'registry/repo@sha256:' + 'b' * 64}
 
-    def pin_index_recipe(self, release_id, index_kind, manifest, recipe_sha256=None):
-        return {'sha256': recipe_sha256 or 'e' * 64,
-                'mapping_sha256': mapping_contract(release_id)[1]}
+    def pin_index_recipe(self, release_id, index_kind, recipe_sha256=None):
+        manifest = json.loads((STATE / 'releases' / release_id / 'manifest.json').read_text())
+        product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
+        recipe_sha = recipe_sha256 or 'e' * 64
+        return {'sha256': recipe_sha, 'mapping_sha256': mapping_contract(release_id)[1],
+                'product_sha256': manifest['sha256'][product_name],
+                'catalogue_manifest_sha256': DEFAULTS[release_id]['catalogue'],
+                'shared_index': release_id + '-r' + recipe_sha[:24]}
 
     def provision(self, row):
         self.provisions.append(row['name'])
@@ -60,6 +69,8 @@ class LifecycleContract(unittest.TestCase):
         self.assertEqual(row['state'], 'ready')
         self.assertEqual(row['source_sha'], 'a' * 40)
         self.assertEqual(row['fingerprint'], 'c' * 64)
+        self.assertEqual(row['catalogue_manifest_sha256'], DEFAULTS['retail-gb-10k-v1']['catalogue'])
+        self.assertEqual(row['index_name'], 'retail-gb-10k-v1-r' + 'e' * 24)
         self.assertEqual(self.service.create('lab-demo', 3)['id'], row['id'])
         self.assertEqual(self.backend.provisions, ['lab-demo'])
         with self.assertRaises(ValueError):
@@ -76,6 +87,23 @@ class LifecycleContract(unittest.TestCase):
         self.assertEqual(self.backend.deletions, ['lab-demo'])
         recreated = self.service.create('lab-demo', 3)
         self.assertNotEqual(recreated['id'], row['id'])
+
+    def test_default_backend_pins_independent_catalogue_recipe(self):
+        product_sha = 'a' * 64
+        catalogue = {'kind': 'catalogue', 'schema_version': 1,
+                     'content': {'object': 'catalogue/' + product_sha + '/products.jsonl',
+                                 'sha256': product_sha, 'format': 'jsonl', 'compression': 'none'},
+                     'record_count': 10_000}
+        with tempfile.TemporaryDirectory() as empty_state, \
+             patch('lifecycle.STATE', Path(empty_state)), \
+             patch('lifecycle.fetch_manifest', return_value=catalogue), \
+             patch('lifecycle.verify_catalogue_manifest', return_value=catalogue), \
+             patch('lifecycle.elastic', return_value={'version': {'number': '9.5.4'}}), \
+             patch('lifecycle.publish_index_recipe', return_value='b' * 64) as published:
+            pinned = LabBackend().pin_index_recipe('retail-gb-10k-v1', 'shared')
+        self.assertEqual(published.call_args.args[0]['format'], 2)
+        self.assertEqual(pinned['product_sha256'], product_sha)
+        self.assertEqual(pinned['shared_index'], 'retail-gb-10k-v1-r' + 'b' * 24)
 
     def test_recovery_path_and_fallback_error_are_persisted(self):
         result = {'fingerprint': 'c' * 64,

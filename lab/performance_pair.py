@@ -7,12 +7,12 @@ from compare_search import immutable_blob
 from run_gatling_job import run
 
 
-def evaluate_performance_pair(baseline, candidate, profile):
+def evaluate_performance_pair(baseline, candidate, profile, owner='control'):
     release_id = baseline.get('release_id') or 'retail-gb-10k-v1'
     if release_id != (candidate.get('release_id') or 'retail-gb-10k-v1'):
         raise ValueError('Performance pair requires the same frozen release.')
-    first = run(profile, 'baseline', baseline['name'], release_id=release_id)
-    second = run(profile, 'candidate', candidate['name'], release_id=release_id)
+    first = run(profile, 'baseline', baseline['name'], release_id=release_id, owner=owner)
+    second = run(profile, 'candidate', candidate['name'], release_id=release_id, owner=owner)
     paired = compare(first, second)
     paired['baseline_runtime_id'] = baseline['id']
     paired['candidate_runtime_id'] = candidate['id']

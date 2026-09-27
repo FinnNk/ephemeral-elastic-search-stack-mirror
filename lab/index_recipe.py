@@ -9,6 +9,7 @@ from azure.core.exceptions import ResourceExistsError
 from blob_config import service, settings
 from load_release import BASELINE_MAPPING, INDEXER_IMAGE
 from load_million_release import MAPPING as MILLION_MAPPING
+from input_selection import fetch_manifest
 
 
 def canonical(value):
@@ -40,7 +41,7 @@ def current_recipe(release_id, index_kind, release_manifest, engine_version, map
     }
 
 
-def catalogue_recipe(release_id, index_kind, catalogue_manifest, engine_version, mapping):
+def catalogue_recipe(release_id, index_kind, catalogue_manifest, engine_version, mapping=None):
     """Build a v2 recipe pinned to catalogue bytes, independent of qrels/queries."""
     if catalogue_manifest.get('kind') != 'catalogue' or \
             catalogue_manifest.get('schema_version') != 1:
@@ -48,6 +49,8 @@ def catalogue_recipe(release_id, index_kind, catalogue_manifest, engine_version,
     content = catalogue_manifest['content']
     if content['format'] != 'jsonl' or content['compression'] not in ('gzip', 'none'):
         raise ValueError('Unsupported catalogue encoding for the indexer.')
+    if mapping is None:
+        mapping = MILLION_MAPPING if content['compression'] == 'gzip' else BASELINE_MAPPING
     worker = (Path(__file__).resolve().parent.parent / 'research/platform-spike/index_job.py').read_text(encoding='utf-8')
     recipe = {'format': 2, 'release_id': release_id, 'index_kind': index_kind,
               'catalogue_manifest_sha256': catalogue_digest(catalogue_manifest),
@@ -109,6 +112,15 @@ def blob_name(recipe_sha256):
     return f'index-recipes/{recipe_sha256}.json'
 
 
+def shared_index_name(recipe, recipe_sha256):
+    """Keep historical shared names while isolating each independent recipe."""
+    if recipe['index_kind'] != 'shared':
+        raise ValueError('A dedicated recipe has no shared index name.')
+    blob_name(recipe_sha256)
+    return (recipe['release_id'] if recipe['format'] == 1 else
+            recipe['release_id'] + '-r' + recipe_sha256[:24])
+
+
 def publish(recipe):
     validate(recipe)
     payload = canonical(recipe)
@@ -144,13 +156,15 @@ def verify_catalogue_manifest(recipe):
     """Admit a new v2 recipe only when its independent catalogue is retained."""
     if recipe.get('format') != 2:
         raise ValueError('Only a v2 catalogue recipe can introduce a new index recipe.')
-    identifier = recipe['catalogue_manifest_sha256']
+    manifest = fetch_manifest('catalogue', recipe['catalogue_manifest_sha256'])
+    validate(recipe, catalogue_manifest=manifest)
     _, container, _, _ = settings()
-    payload = service().get_blob_client(
-        container, 'manifests/catalogue/' + identifier + '.json').download_blob().readall()
-    if hashlib.sha256(payload).hexdigest() != identifier:
-        raise ValueError('Retained catalogue manifest hash differs.')
-    manifest = json.loads(payload)
-    if (json.dumps(manifest, sort_keys=True, separators=(',', ':')) + '\n').encode() != payload:
-        raise ValueError('Retained catalogue manifest encoding differs.')
-    return validate(recipe, catalogue_manifest=manifest)
+    content = manifest['content']
+    retained = service().get_blob_client(container, content['object'])
+    checksum, size = hashlib.sha256(), 0
+    for chunk in retained.download_blob().chunks():
+        checksum.update(chunk)
+        size += len(chunk)
+    if checksum.hexdigest() != content['sha256'] or size != content['bytes']:
+        raise ValueError('Retained catalogue bytes differ from the pinned manifest.')
+    return manifest

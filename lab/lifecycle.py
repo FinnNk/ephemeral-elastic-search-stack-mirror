@@ -19,11 +19,11 @@ from environments import REPO, build_record, define, git, provision_access, publ
 from measure import search
 from deploy_candidate import wait_healthy
 from index_candidate import KIND as INDEX_KIND, available_kinds, index_name, mapping_contract, ensure_candidate_index, remove_candidate_index
-from index_recipe import (current_recipe, digest as recipe_digest, load as load_index_recipe,
+from index_recipe import (catalogue_recipe, digest as recipe_digest, load as load_index_recipe,
                           publish as publish_index_recipe, validate as validate_index_recipe,
-                          verify_catalogue_manifest)
+                          verify_catalogue_manifest, shared_index_name)
 from shared_index import ensure_shared_index
-from input_selection import DEFAULTS, HASH
+from input_selection import DEFAULTS, HASH, fetch_manifest
 
 LEASE = timedelta(hours=72)
 NAME_PATTERN = re.compile(r'lab-[a-z0-9](?:[a-z0-9-]{0,42}[a-z0-9])?\Z')
@@ -75,6 +75,7 @@ class Store:
             for name, field_type in [('index_kind', 'TEXT'), ('index_name', 'TEXT'),
                                      ('mapping_sha256', 'TEXT'), ('release_id', 'TEXT'),
                                      ('index_recipe_sha256', 'TEXT'),
+                                     ('catalogue_manifest_sha256', 'TEXT'),
                                      ('index_materialisation', 'TEXT'),
                                      ('index_seconds', 'REAL'),
                                      ('index_recovery_errors', 'TEXT')]:
@@ -204,16 +205,27 @@ class LabBackend:
     def build(self, run_id):
         return build_record(run_id)
 
-    def pin_index_recipe(self, release_id, index_kind, manifest, recipe_sha256=None):
+    def pin_index_recipe(self, release_id, index_kind, recipe_sha256=None):
         engine = elastic('/')['version']['number']
-        recipe = (load_index_recipe(recipe_sha256) if recipe_sha256 else
-                  current_recipe(release_id, index_kind, manifest, engine,
-                                 None if index_kind == 'shared' else mapping_contract(release_id, index_kind)[0]))
-        validate_index_recipe(recipe, release_id, manifest, engine)
+        if recipe_sha256:
+            recipe = load_index_recipe(recipe_sha256)
+        else:
+            catalogue = fetch_manifest('catalogue', DEFAULTS[release_id]['catalogue'])
+            recipe = catalogue_recipe(release_id, index_kind, catalogue, engine,
+                None if index_kind == 'shared' else mapping_contract(release_id, index_kind)[0])
+        if recipe['format'] == 2:
+            verify_catalogue_manifest(recipe)
+            validate_index_recipe(recipe, release_id=release_id, engine_version=engine)
+        else:
+            manifest = json.loads((STATE / 'releases' / release_id / 'manifest.json').read_text(encoding='utf-8'))
+            validate_index_recipe(recipe, release_id, manifest, engine)
         if recipe['index_kind'] != index_kind:
             raise ValueError('Frozen index recipe has a different index kind.')
-        return {'sha256': recipe_sha256 or publish_index_recipe(recipe),
-                'mapping_sha256': recipe_digest(recipe['index_definition'])}
+        pinned_sha = recipe_sha256 or publish_index_recipe(recipe)
+        return {'sha256': pinned_sha, 'mapping_sha256': recipe_digest(recipe['index_definition']),
+                'product_sha256': recipe['product_sha256'],
+                'catalogue_manifest_sha256': recipe.get('catalogue_manifest_sha256'),
+                'shared_index': shared_index_name(recipe, pinned_sha) if index_kind == 'shared' else None}
 
     def provision(self, row):
         guard()
@@ -224,6 +236,8 @@ class LabBackend:
         built = None
         if row['index_kind'] == 'shared' and row.get('index_recipe_sha256'):
             built = ensure_shared_index(release_id, row['dataset_sha256'], row['index_recipe_sha256'])
+            if built['index'] != index:
+                raise ValueError('Shared index differs from the pinned environment request.')
         elif row['index_kind'] != 'shared':
             built = ensure_candidate_index(row['name'], row['dataset_sha256'], release_id=release_id,
                                            recipe_sha256=row.get('index_recipe_sha256'),
@@ -254,6 +268,9 @@ class LabBackend:
             try:
                 if row['index_kind'] != 'shared':
                     raise ValueError('Bulk provisioning is for shared-index API environments.')
+                key = (row['release_id'], row['dataset_sha256'], row['index_recipe_sha256'])
+                if index_results[key]['index'] != row['index_name']:
+                    raise ValueError('Shared index differs from the pinned environment request.')
                 provision_access(row['name'], row['index_name'])
                 prepared[row['name']] = define(row['name'], row['image'], row['index_name'],
                     row['dataset_sha256'], row['mapping_sha256'], row.get('index_recipe_sha256'))['fingerprint']
@@ -367,7 +384,6 @@ class Lifecycle:
                 raise ValueError('Historical index recipe is not pinned by a lab environment.') from None
             if selected_recipe.get('format') != 2:
                 raise ValueError('Historical index recipe is not pinned by a lab environment.')
-            verify_catalogue_manifest(selected_recipe)
         with self.lock:
             existing = self.store.active_name(name)
             if existing and self.clock() >= parse_stamp(existing['expires_at']):
@@ -383,18 +399,17 @@ class Lifecycle:
                     raise ValueError('An active environment already uses this name with different inputs.')
                 return self.reconcile(existing['id'])
             build = self.backend.build(build_run)
-            manifest = json.loads((STATE / 'releases' / release_id / 'manifest.json').read_text())
-            pinned = self.backend.pin_index_recipe(release_id, index_kind, manifest, index_recipe_sha256)
+            pinned = self.backend.pin_index_recipe(release_id, index_kind, index_recipe_sha256)
             mapping_sha = pinned['mapping_sha256']
-            target_index = index_name(name) if index_kind != 'shared' else release_id
-            product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
+            target_index = index_name(name) if index_kind != 'shared' else pinned['shared_index']
             now = self.clock()
             row = {'id': str(uuid.uuid4()), 'name': name, 'owner': owner, 'build_run': build_run,
                    'source_sha': build['source_sha'], 'image': build['image'],
-                   'dataset_sha256': manifest['sha256'][product_name], 'fingerprint': None,
+                   'dataset_sha256': pinned['product_sha256'], 'fingerprint': None,
                    'release_id': release_id,
                    'index_kind': index_kind, 'index_name': target_index, 'mapping_sha256': mapping_sha,
                    'index_recipe_sha256': pinned['sha256'],
+                   'catalogue_manifest_sha256': pinned['catalogue_manifest_sha256'],
                    'state': 'requested', 'created_at': stamp(now), 'last_activity_at': stamp(now),
                    'expires_at': stamp(now + LEASE), 'updated_at': stamp(now),
                    'error': None, 'deleted_at': None}
@@ -417,18 +432,17 @@ class Lifecycle:
             if any(self.store.active_name(name) for name in names):
                 raise ValueError('An active environment already uses a requested name.')
             build = self.backend.build(build_run)
-            manifest = json.loads((STATE / 'releases' / release_id / 'manifest.json').read_text())
-            pinned = self.backend.pin_index_recipe(release_id, 'shared', manifest)
-            product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
+            pinned = self.backend.pin_index_recipe(release_id, 'shared')
             now = self.clock()
             rows = []
             for name in names:
                 row = {'id': str(uuid.uuid4()), 'name': name, 'owner': owner, 'build_run': build_run,
                        'source_sha': build['source_sha'], 'image': build['image'],
-                       'dataset_sha256': manifest['sha256'][product_name], 'fingerprint': None,
-                       'release_id': release_id, 'index_kind': 'shared', 'index_name': release_id,
+                       'dataset_sha256': pinned['product_sha256'], 'fingerprint': None,
+                       'release_id': release_id, 'index_kind': 'shared', 'index_name': pinned['shared_index'],
                        'mapping_sha256': pinned['mapping_sha256'],
                        'index_recipe_sha256': pinned['sha256'],
+                       'catalogue_manifest_sha256': pinned['catalogue_manifest_sha256'],
                        'state': 'requested', 'created_at': stamp(now),
                        'last_activity_at': stamp(now), 'expires_at': stamp(now + LEASE),
                        'updated_at': stamp(now), 'error': None, 'deleted_at': None}

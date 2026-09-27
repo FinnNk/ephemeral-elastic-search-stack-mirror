@@ -3,15 +3,15 @@
   "ok": true,
   "command": "deliver",
   "type": "workflow",
-  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\schema-evolution.json",
-  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\schema-evolution.html",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\archify\\schema-evolution.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\interactive\\schema-evolution.html",
   "specification": {
-    "sha256": "90ff2e62949c43c804a1fee142c3fe0a36ba2fd1c7293b4f76e7d9b078ce673d",
-    "bytes": 2937
+    "sha256": "cc129d07e21fdc541e93f8dbf4be162a7574fed18569f82df10e7e30423e33e1",
+    "bytes": 2941
   },
   "artifact": {
-    "sha256": "3868b57dcad7ad580c46e22183f2f59c0db91fc56c16ff1a6a943fc617a1b7de",
-    "bytes": 808582
+    "sha256": "28174a57fb9020d69b5548c3dc2d23e942dfa5f9a648d0b368c7ea540f0b0c4d",
+    "bytes": 808813
   },
   "validation": {
     "checksPassed": 9,

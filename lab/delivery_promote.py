@@ -11,7 +11,7 @@ from gitea import api
 from delivery_provider import DESIRED, endpoint, git, pull_request, merge_demo
 from delivery_runtime import (LOCAL, TARGETS, REPO_URL, access, application, checkout, entry,
                               materialise, read_target, rendered, validate_deployment, verify, write_target)
-from delivery_gates import retain, validate_evidence
+from delivery_gates import deployment_inputs, retain, validate_evidence
 from delivery.ci.release import canonical
 from compare_search import definition
 
@@ -102,7 +102,8 @@ def propose(target, deployment, evidence, intent='preserve-results', rollback=Fa
     if deployment['fingerprint'] == current['fingerprint']:
         raise ValueError('Target already declares this deployment.')
     validate_deployment(deployment)
-    validate_evidence(evidence, current['fingerprint'], deployment['fingerprint'], intent)
+    validate_evidence(evidence, current['fingerprint'], deployment['fingerprint'], intent,
+                      deployment_inputs(deployment))
     source = None if target == 'integration' or rollback else TARGETS[TARGETS.index(target) - 1]
     if source:
         upstream = read_target(source)
@@ -180,7 +181,8 @@ def inspect_pr(number):
         raise ValueError('Proposed deployment differs from the PR files.')
     if git(DESIRED, 'show', head + ':targets/' + target + '/rendered/search.yaml') != rendered(deployment, 'lab-delivery-' + target).strip():
         raise ValueError('Rendered workloads differ from the pinned release and deployment.')
-    validate_evidence(proposal['evidence'], current['fingerprint'], deployment['fingerprint'], proposal['intent'])
+    validate_evidence(proposal['evidence'], current['fingerprint'], deployment['fingerprint'],
+                      proposal['intent'], deployment_inputs(deployment))
     if proposal['kind'] == 'rollback':
         record = RECORDS / 'verified' / target / (deployment['fingerprint'] + '.json')
         if not record.exists() or json.loads(record.read_text())['deployment'] != deployment:

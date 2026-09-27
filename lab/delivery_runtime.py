@@ -14,7 +14,10 @@ sys.path.insert(0, '.lab/python-libs')
 from common import HELM, ROOT, STATE, apply, guard, k, run
 from data_contract import elastic
 from environments import provision_access
-from index_recipe import current_recipe, digest as recipe_digest, load as load_recipe, publish as publish_recipe, validate as validate_recipe
+from index_recipe import (catalogue_recipe, digest as recipe_digest, load as load_recipe,
+                          publish as publish_recipe, shared_index_name, validate as validate_recipe,
+                          verify_catalogue_manifest)
+from input_selection import DEFAULTS, fetch_manifest, select as select_inputs
 from shared_index import ensure_shared_index
 from index_candidate import ensure_candidate_index
 from delivery_provider import SOURCE, DESIRED, api, endpoint, git
@@ -55,23 +58,35 @@ def compatible(release, recipe):
         raise ValueError('Release is incompatible with the frozen index recipe.')
 
 
-def resolve(run_id, dataset='retail-gb-10k-v1', recipe_sha=None, merged=True):
+def resolve(run_id, dataset='retail-gb-10k-v1', recipe_sha=None, merged=True,
+            query_manifest_sha=None, judgement_manifest_sha=None):
     receipt, release, _files = from_run(run_id)
     if merged and receipt['event_kind'] != 'push':
         raise ValueError('Promotion requires a successful merged-source push build.')
     if dataset not in ('retail-gb-10k-v1', 'retail-gb-1m-v1'):
         raise ValueError('Select one of the two frozen synthetic datasets.')
-    manifest = json.loads((STATE / 'releases' / dataset / 'manifest.json').read_text())
-    recipe = load_recipe(recipe_sha) if recipe_sha else current_recipe(
-        dataset, 'shared', manifest, elastic('/')['version']['number'])
-    validate_recipe(recipe, dataset, manifest, elastic('/')['version']['number'])
+    engine = elastic('/')['version']['number']
+    recipe = (load_recipe(recipe_sha) if recipe_sha else catalogue_recipe(dataset, 'shared',
+              fetch_manifest('catalogue', DEFAULTS[dataset]['catalogue']), engine))
+    if recipe['format'] == 2:
+        verify_catalogue_manifest(recipe)
+        validate_recipe(recipe, release_id=dataset, engine_version=engine)
+    else:
+        manifest = json.loads((STATE / 'releases' / dataset / 'manifest.json').read_text())
+        validate_recipe(recipe, dataset, manifest, engine)
     compatible(release, recipe)
     recipe_sha = recipe_sha or publish_recipe(recipe)
-    concrete = dataset if recipe['index_kind'] == 'shared' else 'lab-release-' + recipe_sha[:24] + '-idx'
+    concrete = (shared_index_name(recipe, recipe_sha) if recipe['index_kind'] == 'shared' else
+                'lab-release-' + recipe_sha[:24] + '-idx')
+    selected = select_inputs(dataset, recipe['product_sha256'], query_manifest_sha,
+                             judgement_manifest_sha, relevance=True)
     fields = {'image': release['image'], 'index': concrete, 'dataset_sha256': recipe['product_sha256'],
               'engine': recipe['engine_version'], 'mapping_sha256': recipe_digest(recipe['index_definition']),
               'index_recipe_sha256': recipe_sha, 'software_release_id': receipt['release_id'],
               'source_sha': release['source_sha'], 'bundle_sha256': release['bundle_sha256'],
+              'catalogue_manifest_sha256': recipe.get('catalogue_manifest_sha256'),
+              'query_manifest_sha256': selected['query_manifest_sha256'],
+              'judgement_manifest_sha256': selected['judgement_manifest_sha256'],
               'dataset_release': dataset, 'request_context': {'country': 'GB', 'currency': 'GBP'}}
     return {'fields': fields, 'fingerprint': fingerprint(fields), 'build_run': run_id}
 
@@ -87,14 +102,29 @@ def validate_deployment(deployment):
             release['source_sha'] != fields['source_sha'] or release['bundle_sha256'] != fields['bundle_sha256']):
         raise ValueError('Deployment differs from its merged-source release.')
     recipe = load_recipe(fields['index_recipe_sha256'])
-    manifest = json.loads((STATE / 'releases' / fields['dataset_release'] / 'manifest.json').read_text())
-    validate_recipe(recipe, fields['dataset_release'], manifest, elastic('/')['version']['number'])
+    if recipe['format'] == 2:
+        verify_catalogue_manifest(recipe)
+        validate_recipe(recipe, release_id=fields['dataset_release'],
+                        engine_version=elastic('/')['version']['number'])
+        if fields.get('catalogue_manifest_sha256') != recipe['catalogue_manifest_sha256']:
+            raise ValueError('Deployment catalogue manifest differs from its recipe.')
+    else:
+        manifest = json.loads((STATE / 'releases' / fields['dataset_release'] / 'manifest.json').read_text())
+        validate_recipe(recipe, fields['dataset_release'], manifest, elastic('/')['version']['number'])
+        if fields.get('catalogue_manifest_sha256'):
+            raise ValueError('Historical deployment cannot claim an independent catalogue manifest.')
+    if recipe['format'] == 2 or fields.get('query_manifest_sha256') or fields.get('judgement_manifest_sha256'):
+        select_inputs(fields['dataset_release'], recipe['product_sha256'],
+                      fields.get('query_manifest_sha256'), fields.get('judgement_manifest_sha256'),
+                      relevance=True)
+        if not fields.get('query_manifest_sha256') or not fields.get('judgement_manifest_sha256'):
+            raise ValueError('Deployment has no selected functional input manifests.')
     compatible(release, recipe)
     if (fields['dataset_sha256'] != recipe['product_sha256'] or fields['engine'] != recipe['engine_version'] or
             fields['mapping_sha256'] != recipe_digest(recipe['index_definition']) or
             fields['request_context'] != {'country': 'GB', 'currency': 'GBP'}):
         raise ValueError('Deployment dataset, schema or request context differs.')
-    expected_index = (fields['dataset_release'] if recipe['index_kind'] == 'shared' else
+    expected_index = (shared_index_name(recipe, fields['index_recipe_sha256']) if recipe['index_kind'] == 'shared' else
                       'lab-release-' + fields['index_recipe_sha256'][:24] + '-idx')
     if fields['index'] != expected_index:
         raise ValueError('Concrete index differs from the pinned recipe.')
@@ -221,7 +251,7 @@ def verify(name, deployment, revision=None):
 
 
 def preview(deployment):
-    name = 'lab-delivery-run-' + str(deployment['build_run']) + '-' + deployment['fields']['index_recipe_sha256'][:8]
+    name = 'lab-delivery-run-' + str(deployment['build_run']) + '-' + deployment['fingerprint'][:8]
     revision = checkout()
     branch = 'preview/' + name + '-' + uuid.uuid4().hex[:8]
     existing = k('get', 'application/' + name, '-n', 'argocd', '-o', 'json', check=False)

@@ -13,6 +13,15 @@ from performance_pair import evaluate_performance_pair
 from delivery.ci.release import canonical, digest
 from delivery_runtime import preview
 from promotion_policy import validate as validate_offline_policy
+from input_selection import DEFAULTS
+
+
+def deployment_inputs(deployment):
+    fields = deployment['fields']
+    defaults = DEFAULTS[fields['dataset_release']]
+    return {'catalogue_manifest_sha256': fields.get('catalogue_manifest_sha256'),
+            'query_manifest_sha256': fields.get('query_manifest_sha256') or defaults['query-suite'],
+            'judgement_manifest_sha256': fields.get('judgement_manifest_sha256') or defaults['judgement-set']}
 
 
 def retain(value, filename):
@@ -80,13 +89,16 @@ def check_report(report, mode, baseline, candidate, intent):
             raise ValueError('Frozen relevance evidence is missing.')
 
 
-def validate_evidence(reference, baseline, candidate, intent):
+def validate_evidence(reference, baseline, candidate, intent, expected_inputs=None):
     if intent not in ('preserve-results', 'ranking-change'):
         raise ValueError('Choose an explicit result-preserving or intentional ranking change.')
     evidence = read(reference)
     if (evidence.get('baseline') != baseline or evidence.get('candidate') != candidate or
             evidence.get('intent') != intent):
         raise ValueError('Evidence is stale for this deployment or intent.')
+    selected = evidence.get('selected_inputs')
+    if expected_inputs is not None and selected != expected_inputs:
+        raise ValueError('Evidence selects different catalogue, query or judgement inputs.')
     measured = datetime.fromisoformat(evidence['completed_at'])
     now = datetime.now(timezone.utc)
     if measured > now or now - measured > timedelta(days=3):
@@ -98,6 +110,11 @@ def validate_evidence(reference, baseline, candidate, intent):
     for mode, report in evidence['reports'].items():
         value = read(report)
         check_report(value, mode, baseline, candidate, intent)
+        if selected and mode != 'performance':
+            if (value.get('query_manifest_sha256') != selected['query_manifest_sha256'] or
+                    (mode == 'relevance' and value.get('judgement_manifest_sha256') !=
+                     selected['judgement_manifest_sha256'])):
+                raise ValueError('Functional report uses different selected inputs.')
         if mode == 'relevance':
             relevance = value
     if evidence.get('offline_evaluation') is not None:
@@ -122,12 +139,19 @@ def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):
         raise ValueError('Select two distinct frozen release definitions.')
     if baseline['fields']['dataset_release'] != candidate['fields']['dataset_release']:
         raise ValueError('Both environments must use the same synthetic dataset.')
+    if baseline['fields']['dataset_sha256'] != candidate['fields']['dataset_sha256']:
+        raise ValueError('Both environments must use the same frozen catalogue.')
+    selected = deployment_inputs(candidate)
     first, second = preview(baseline), preview(candidate)
     reports = {}
     for mode in ('result-regression', 'relevance', 'performance'):
         print('Evaluating ' + mode + ' through both public APIs...', flush=True)
-        summary = (evaluate_performance_pair(first, second, profile) if mode == 'performance' else
-                   evaluate_pair(first, second, mode, scope='full'))
+        summary = (evaluate_performance_pair(first, second, profile, owner='delivery')
+                   if mode == 'performance' else
+                   evaluate_pair(first, second, mode, scope='full',
+                       query_manifest_sha=selected['query_manifest_sha256'],
+                       judgement_manifest_sha=selected['judgement_manifest_sha256']
+                       if mode == 'relevance' else None))
         reports[mode] = {'sha256': summary['report_sha256'], 'blob': summary['report_blob']}
         # Retain failed evidence for inspection, but do not turn it into a passing gate.
     if definition(first['name'])['fingerprint'] != baseline['fingerprint'] or \
@@ -136,8 +160,10 @@ def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):
     value = {'format': 1, 'baseline': baseline['fingerprint'], 'candidate': candidate['fingerprint'],
              'intent': intent, 'completed_at': datetime.now(timezone.utc).isoformat(),
              'dataset_release': baseline['fields']['dataset_release'], 'profile': profile,
+             'selected_inputs': selected,
              'reports': reports, 'previews': [first['name'], second['name']]}
     reference = retain(value, 'delivery-evidence.json')
     print('Retained evaluation reference: ' + json.dumps(reference), flush=True)
-    validate_evidence(reference, baseline['fingerprint'], candidate['fingerprint'], intent)
+    validate_evidence(reference, baseline['fingerprint'], candidate['fingerprint'], intent,
+                      selected)
     return reference

@@ -12,7 +12,7 @@
     {"id": "old", "lane": "baseline", "col": 0, "type": "database", "label": "Select old recipe", "sublabel": "Mapping + indexer pinned", "width": 140},
     {"id": "oldindex", "lane": "baseline", "col": 1, "type": "backend", "label": "Resolve old index", "sublabel": "Reuse / restore / rebuild", "width": 140},
     {"id": "oldapi", "lane": "baseline", "col": 2, "type": "cloud", "label": "Baseline API", "sublabel": "Original schema", "width": 140},
-    {"id": "new", "lane": "candidate", "col": 0, "type": "database", "label": "Pin new recipe", "sublabel": "Same product release", "width": 140},
+    {"id": "new", "lane": "candidate", "col": 0, "type": "database", "label": "Pin new recipe", "sublabel": "Same catalogue hash", "width": 140},
     {"id": "newindex", "lane": "candidate", "col": 1, "type": "backend", "label": "Build new index", "sublabel": "Separate mapping", "width": 140},
     {"id": "newapi", "lane": "candidate", "col": 2, "type": "cloud", "label": "Candidate API", "sublabel": "New schema", "width": 140},
     {"id": "gate", "lane": "comparison", "col": 3, "type": "security", "label": "Check both pins", "sublabel": "Count + mapping + recipe", "width": 140},
@@ -26,12 +26,12 @@
     {"from": "new", "to": "newindex", "label": "New SHA", "role": "main"},
     {"from": "newindex", "to": "newapi", "label": "New index", "role": "main"},
     {"from": "newapi", "to": "gate", "label": "C ready", "role": "main"},
-    {"from": "gate", "to": "compare", "label": "Same release", "role": "main"},
+    {"from": "gate", "to": "compare", "label": "Same catalogue", "role": "main"},
     {"from": "compare", "to": "retain", "label": "Report", "role": "main"}
   ],
   "mainPath": ["new", "newindex", "newapi", "gate", "compare", "retain"],
   "cards": [
     {"dot": "cyan", "title": "A recipe survives mapping changes", "items": ["The old mapping is read from its recipe", "The current mapping file defines only new indices"]},
-    {"dot": "emerald", "title": "The two APIs stay separate", "items": ["Use the same frozen product release and queries", "Keep both recipe hashes in the comparison"]}
+    {"dot": "emerald", "title": "The two APIs stay separate", "items": ["Use the same frozen catalogue and selected queries", "Keep both recipe hashes in the comparison"]}
   ]
 }

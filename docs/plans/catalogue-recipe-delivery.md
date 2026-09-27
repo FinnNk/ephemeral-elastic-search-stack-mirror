@@ -1,4 +1,6 @@
-# Next batch: catalogue recipes and delivery
+# Catalogue recipes and delivery
+
+**Status:** implemented on the review branch. A live 10k delivery comparison passed; schema-changing promotion awaits a reviewed merged-source release. The [batch evidence](../research/evidence/catalogue-recipe-delivery.md) records both the passing check and its limits. The [next detailed plan](reference-runtime-consolidation.md) covers deployed control validation and the reviewed source release.
 
 ## Intent
 

@@ -3,15 +3,15 @@
   "ok": true,
   "command": "deliver",
   "type": "architecture",
-  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\shared-index-reuse.json",
-  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\shared-index-reuse.html",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\archify\\shared-index-reuse.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\interactive\\shared-index-reuse.html",
   "specification": {
-    "sha256": "dd05e1d1748947779cc2aeb8b6dee60366b10eb262330d909f7c99643ae4ee9b",
-    "bytes": 3290
+    "sha256": "fd9c8b35b1627cdb5cbb11089d8644f9f31a2140a0b504002645eb6b8e0e557f",
+    "bytes": 3285
   },
   "artifact": {
-    "sha256": "78fbb76566c021c35fea2cea46fda4139da3ee8539d07df2c5e405cbef478926",
-    "bytes": 804424
+    "sha256": "b9fa867111034eeac6b4e06bec0567d9da5b2d4e35c94ea9a542ad51442e78ee",
+    "bytes": 804458
   },
   "validation": {
     "checksPassed": 9,

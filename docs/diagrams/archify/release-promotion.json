@@ -73,7 +73,7 @@
       "col": 1,
       "type": "database",
       "label": "Frozen candidate",
-      "sublabel": "Release + index",
+      "sublabel": "Image + recipe",
       "width": 125
     },
     {
@@ -91,7 +91,7 @@
       "col": 3,
       "type": "security",
       "label": "Validate proposal",
-      "sublabel": "Current inputs",
+      "sublabel": "Selected hashes",
       "width": 125
     },
     {
@@ -239,7 +239,7 @@
       "dot": "cyan",
       "title": "Integration, staging, simulated production",
       "items": [
-        "Every target runs the same image and bundle digests",
+        "Every target runs the same image, recipe and input hashes",
         "A target must verify its deployment before onward promotion"
       ]
     },

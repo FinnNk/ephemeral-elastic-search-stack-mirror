@@ -48,6 +48,24 @@ class PromotionGateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'stale'):
                 validate_evidence({}, 'B', 'C', 'ranking-change')
 
+    def test_promotion_rejects_other_selected_inputs_and_reports(self):
+        selected = {'catalogue_manifest_sha256': 'a' * 64,
+                    'query_manifest_sha256': 'b' * 64,
+                    'judgement_manifest_sha256': 'c' * 64}
+        evidence = {'baseline': 'B', 'candidate': 'C', 'intent': 'preserve-results',
+                    'selected_inputs': selected, 'completed_at': datetime.now(timezone.utc).isoformat(),
+                    'reports': {mode: {'sha256': mode} for mode in
+                                ('result-regression', 'relevance', 'performance')}}
+        with patch('delivery_gates.read', return_value=evidence):
+            with self.assertRaisesRegex(ValueError, 'different catalogue, query or judgement'):
+                validate_evidence({}, 'B', 'C', 'preserve-results',
+                                  {**selected, 'query_manifest_sha256': 'd' * 64})
+        result = {'query_manifest_sha256': 'd' * 64}
+        with patch('delivery_gates.read', side_effect=[evidence, result]), \
+             patch('delivery_gates.check_report'):
+            with self.assertRaisesRegex(ValueError, 'different selected inputs'):
+                validate_evidence({}, 'B', 'C', 'preserve-results', selected)
+
     def test_optional_offline_report_matches_delivery_capture_and_pinned_policy(self):
         from pathlib import Path
         import json

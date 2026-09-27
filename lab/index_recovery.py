@@ -68,7 +68,8 @@ def clone_from_live(target, recipe, recipe_sha):
     """Only exact, write-blocked copies qualify; a clone keeps the source schema."""
     indices = elastic('/_cat/indices?format=json&h=index')
     names = sorted(item['index'] for item in indices if item['index'] != target and
-                   (item['index'].endswith('-idx') or item['index'] == recipe['release_id']))
+                   (item['index'].endswith('-idx') or item['index'] == recipe['release_id'] or
+                    item['index'].startswith(recipe['release_id'] + '-r')))
     for source in names:
         try:
             ordered = verify(source, recipe, recipe_sha)

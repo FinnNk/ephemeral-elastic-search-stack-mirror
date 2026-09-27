@@ -75,7 +75,7 @@
       "id": "index",
       "type": "database",
       "label": "Shared index",
-      "sublabel": "Read-only i1",
+      "sublabel": "Recipe i1 · read-only",
       "tag": "Elasticsearch e1",
       "pos": [
         790,
@@ -89,8 +89,8 @@
     {
       "id": "dataset",
       "type": "database",
-      "label": "Frozen dataset",
-      "sublabel": "Release d1",
+      "label": "Frozen catalogue",
+      "sublabel": "Manifest d1",
       "tag": "Retained blob objects",
       "pos": [
         790,
@@ -154,7 +154,7 @@
       "dot": "violet",
       "title": "B and C remain separate",
       "items": [
-        "Each definition pins API, query assets/config, index, dataset and engine",
+        "Each definition pins API, recipe, catalogue and engine",
         "Only the API image differs in this example"
       ]
     },
@@ -163,7 +163,7 @@
       "title": "Shared data stays read-only",
       "items": [
         "Each API has scoped credentials for the same frozen index",
-        "A mapping change builds a different index from the frozen dataset"
+        "A mapping change builds a different index from the same catalogue"
       ]
     }
   ]

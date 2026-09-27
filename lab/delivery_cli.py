@@ -22,13 +22,17 @@ def parser():
         cmd = commands.add_parser(name)
         cmd.add_argument('--run', type=int, required=True)
         cmd.add_argument('--dataset', default='retail-gb-10k-v1')
-        cmd.add_argument('--recipe', help='Historical index recipe SHA-256')
+        cmd.add_argument('--recipe', help='Pinned index recipe SHA-256; blank uses the current shared recipe')
+        cmd.add_argument('--query-manifest', help='Selected query-suite manifest SHA-256')
+        cmd.add_argument('--judgement-manifest', help='Matching judgement-set manifest SHA-256')
     cmd = commands.add_parser('evaluate')
     cmd.add_argument('--baseline-run', type=int, required=True)
     cmd.add_argument('--candidate-run', type=int, required=True)
     cmd.add_argument('--dataset', default='retail-gb-10k-v1')
     cmd.add_argument('--baseline-recipe')
     cmd.add_argument('--candidate-recipe')
+    cmd.add_argument('--query-manifest', help='Query-suite manifest for both public API checks')
+    cmd.add_argument('--judgement-manifest', help='Matching judgement-set manifest')
     cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
     cmd.add_argument('--profile', choices=('probe', 'smoke'), default='probe')
     cmd = commands.add_parser('promote')
@@ -36,6 +40,8 @@ def parser():
     cmd.add_argument('--run', type=int, required=True)
     cmd.add_argument('--dataset', default='retail-gb-10k-v1')
     cmd.add_argument('--recipe')
+    cmd.add_argument('--query-manifest')
+    cmd.add_argument('--judgement-manifest')
     cmd.add_argument('--evidence', type=Path, required=True)
     cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
     cmd = commands.add_parser('rollback')
@@ -58,19 +64,27 @@ def parser():
 
 def execute(args):
     if args.command == 'bootstrap':
-        return bootstrap(resolve(args.run, args.dataset, args.recipe))
+        return bootstrap(resolve(args.run, args.dataset, args.recipe,
+                                 query_manifest_sha=args.query_manifest,
+                                 judgement_manifest_sha=args.judgement_manifest))
     if args.command == 'preview':
-        return preview(resolve(args.run, args.dataset, args.recipe))
+        return preview(resolve(args.run, args.dataset, args.recipe,
+                               query_manifest_sha=args.query_manifest,
+                               judgement_manifest_sha=args.judgement_manifest))
     if args.command == 'evaluate':
         baseline = resolve(args.baseline_run, args.dataset, args.baseline_recipe)
-        candidate = resolve(args.candidate_run, args.dataset, args.candidate_recipe)
+        candidate = resolve(args.candidate_run, args.dataset, args.candidate_recipe,
+                            query_manifest_sha=args.query_manifest,
+                            judgement_manifest_sha=args.judgement_manifest)
         value = evaluate(baseline, candidate, args.intent, args.profile)
         RECORDS.mkdir(exist_ok=True)
         path = RECORDS / ('evidence-' + value['sha256'] + '.json')
         path.write_text(json.dumps(value, indent=2), encoding='utf-8')
         return {**value, 'reference_file': str(path)}
     if args.command == 'promote':
-        return propose(args.target, resolve(args.run, args.dataset, args.recipe),
+        return propose(args.target, resolve(args.run, args.dataset, args.recipe,
+                                            query_manifest_sha=args.query_manifest,
+                                            judgement_manifest_sha=args.judgement_manifest),
                        json.loads(args.evidence.read_text()), args.intent)
     if args.command == 'rollback':
         if len(args.fingerprint) != 64 or any(c not in '0123456789abcdef' for c in args.fingerprint):

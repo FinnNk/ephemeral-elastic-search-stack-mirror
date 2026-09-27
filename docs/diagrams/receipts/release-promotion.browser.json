@@ -6,9 +6,9 @@
   "status": "pass",
   "visualReview": "pending",
   "artifact": {
-    "path": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\release-promotion.html",
-    "sha256": "2521e8a0b7dd8aa8a0604f9c259d255a08d260bcbac6173e7580af89b33d62db",
-    "bytes": 816198
+    "path": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\interactive\\release-promotion.html",
+    "sha256": "79c238040f16a15bf8acdef10fd49a1873226a859e24d9379fb88245e5601680",
+    "bytes": 816204
   },
   "state": {
     "detail": "read",
