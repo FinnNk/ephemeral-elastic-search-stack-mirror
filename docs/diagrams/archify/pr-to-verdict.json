@@ -1,0 +1,54 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "From an opted-in Gitea PR to a search verdict",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {"entries": {
+      "frontend": {"label": "PR action"},
+      "backend": {"label": "Automation"},
+      "database": {"label": "Frozen or retained"},
+      "security": {"label": "Verification gate"},
+      "cloud": {"label": "Runtime"}
+    }}
+  },
+  "lanes": [
+    {"id": "source", "label": "Gitea revision"},
+    {"id": "runtime", "label": "Frozen environments"},
+    {"id": "checks", "label": "Evaluation and review"}
+  ],
+  "nodes": [
+    {"id": "pr", "lane": "source", "col": 0, "type": "frontend", "label": "Opt-in PR", "sublabel": "Label + head SHA", "width": 130},
+    {"id": "build", "lane": "source", "col": 1, "type": "backend", "label": "Resolve build", "sublabel": "Same SHA + image digest", "width": 138},
+    {"id": "base", "lane": "runtime", "col": 1, "type": "database", "label": "Baseline B", "sublabel": "Pinned frozen release", "width": 130},
+    {"id": "candidate", "lane": "runtime", "col": 2, "type": "cloud", "label": "Candidate C", "sublabel": "New API; own runtime", "width": 130},
+    {"id": "gate", "lane": "checks", "col": 3, "type": "security", "label": "Both ready", "sublabel": "Check both fingerprints", "width": 130},
+    {"id": "functional", "lane": "checks", "col": 4, "type": "backend", "label": "Functional checks", "sublabel": "Quick/full Job; coverage", "width": 145},
+    {"id": "performance", "lane": "runtime", "col": 4, "type": "backend", "label": "Gatling probe", "sublabel": "Pinned API load", "width": 130},
+    {"id": "report", "lane": "checks", "col": 5, "type": "database", "label": "Save reports", "sublabel": "Hashes + query detail", "width": 130},
+    {"id": "status", "lane": "source", "col": 5, "type": "backend", "label": "Update PR", "sublabel": "Links + check status", "width": 130}
+  ],
+  "edges": [
+    {"from": "pr", "to": "build", "label": "Exact revision", "role": "main"},
+    {"from": "build", "to": "candidate", "label": "Tested image", "role": "main"},
+    {"from": "base", "to": "gate", "label": "B ready", "role": "branch"},
+    {"from": "candidate", "to": "gate", "label": "C ready", "role": "main"},
+    {"from": "gate", "to": "functional", "label": "Same queries", "role": "main"},
+    {"from": "gate", "to": "performance", "label": "Same workload", "role": "branch"},
+    {"from": "functional", "to": "report", "label": "Results + coverage", "role": "main"},
+    {"from": "performance", "to": "report", "label": "Latency + errors", "role": "branch"},
+    {"from": "report", "to": "status", "label": "Pinned evidence", "role": "main"}
+  ],
+  "mainPath": ["pr", "build", "candidate", "gate", "functional", "report", "status"],
+  "cards": [
+    {"dot": "cyan", "title": "Each PR revision gets its own candidate", "items": [
+      "The watcher only handles labelled open PRs",
+      "A successful build must match the exact head SHA"
+    ]},
+    {"dot": "emerald", "title": "The report separates measurement from judgement", "items": [
+      "Public API results set the functional verdict",
+      "Judgement coverage and unjudged IDs qualify relevance scores"
+    ]}
+  ]
+}

@@ -36,7 +36,7 @@ This is a relevance lab, not a production commerce platform. All products, queri
 
 ## Proposed architecture
 
-The initial architecture is maintained as a [Structurizr C4 model](diagrams/workspace.dsl), with complementary Archify workflow, lifecycle and evaluation data-flow views. Open the [diagram gallery](diagrams/index.html) for all thirteen views, or use the [diagram guide](diagrams/README.md) for their scope, editable sources and rendering commands.
+The architecture is maintained as a [Structurizr C4 model](diagrams/workspace.dsl), with complementary Archify workflow, lifecycle and evaluation data-flow views. Open the [diagram gallery](diagrams/index.html) for all seventeen views, or use the [diagram guide](diagrams/README.md) for their scope, editable sources and rendering commands.
 
 ![C4 system context: people, search relevance lab and supporting platforms](diagrams/rendered/01-context.svg)
 
@@ -48,7 +48,7 @@ The initial architecture is maintained as a [Structurizr C4 model](diagrams/work
 | [Local deployment](diagrams/rendered/05-local.svg) | Persistent and ephemeral workloads |
 | [Azure migration](diagrams/rendered/06-azure.svg) | Proposed deployment on Azure |
 
-These are proposed structures for the complete lab. The [platform research](research/platform-spike.md) recommends Git-file ApplicationSets and a provisional k3d bootstrap; the lab API, UI and lease controller remain to be implemented.
+The local lab now runs Gitea, Argo CD, ECK, the control UI/API and the lease controller. The Azure deployment remains proposed. The [platform research](research/platform-spike.md) records the original component selection and local bootstrap evidence.
 
 | Need | Existing component | Lab-specific code |
 | --- | --- | --- |
@@ -327,6 +327,8 @@ Shared immutable indices may outlive one environment while another uses them. Re
 
 A comparison references **two frozen environment definitions**, baseline B and candidate C. Each pins its API image, query assets and configuration, index definition/artifact, canonical dataset and engine version. Resolve or recreate both runtimes, verify each against its own fingerprint and confirm both APIs are ready before sending evaluation requests. The fingerprints identify each side independently; they do not have to match one another.
 
+The local control UI offers a **quick** 50-query result preflight and a **full** frozen suite. An in-cluster evaluation Job sends each request through both public APIs, records the ordered responses and cleans up after a bounded run. The query inspector shows changed queries, largest relevance losses, ordered results and selected diagnostic records. The complete content-addressed report remains downloadable. A labelled Gitea PR can trigger this sequence against an exact successful build; the [PR-to-verdict workflow](diagrams/interactive/pr-to-verdict.html) shows the local polling, two environments, checks and report links. The PR status reports tooling completion, while relevance interpretation remains a review decision.
+
 Both APIs receive the same frozen original queries and request context. Relevance comparisons score their final results against the same frozen judgements; result-regression comparisons check whether those results changed; performance comparisons replay the same workload separately against each API. The comparison record retains both definition fingerprints, runtime IDs, evaluation-input hashes, responses and diagnostics. Creating a comparison must not silently substitute the latest baseline or candidate.
 
 Two definitions can share compatible immutable resources. In the [API-only example](diagrams/interactive/shared-index-reuse.html), separate baseline and candidate API deployments read one frozen index. A mapping change builds a different index from the same dataset. The [relevance comparison](diagrams/interactive/evaluation-dataflow.html) separates the two result paths; the [C4 evaluation view](diagrams/rendered/03-evaluation.svg) records their service dependencies and diagnostic interfaces.
@@ -340,6 +342,7 @@ Two definitions can share compatible immutable resources. In the [API-only examp
 Relevance evaluation follows these rules:
 
 - **Inputs:** A relevance comparison pins one dataset and query/judgement release and sends the same original request and context through the baseline and candidate **public search APIs**.
+- **Judgement limits:** The report identifies the frozen synthetic judgement source, hashes, coverage of each returned top ten and unjudged IDs. The million-product pool includes earlier candidate results, so its score is a proxy that may favour those results. Coverage below 80% on either side marks the relevance claim insufficient; this does not generate new judgements or alter the result-change verdict.
 - **Captured response:** The evaluation client records the response actually returned to the caller, including ordered product IDs, zero results, errors and client-observed duration.
 - **Scoring:** Judgements are joined to those final product IDs; an established metrics library calculates end-to-end nDCG@10, MRR, precision/recall at selected cut-offs and per-query regressions.
 - **Coverage:** Report zero-result and failure rates separately so failures cannot disappear from metric denominators. Include category, intent and head/long-tail slices.

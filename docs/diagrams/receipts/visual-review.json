@@ -152,29 +152,44 @@
       "artifact_sha256": "deadd94e6bf627f5fc1d6a933d05fbf1953b37c944bf9567d02204b151d41566",
       "validation": "9/9 showcase, 0 errors, 0 warnings",
       "browser_evidence": "passed"
+    },
+    {
+      "diagram_type": "workflow",
+      "output": "interactive/pr-to-verdict.html",
+      "specification_sha256": "06caaa29f232aa0deaa0690c9b21ad5df4f7721e3e12f3df9957eb4cd79312b1",
+      "artifact_sha256": "4a5017c523c3d93bd6fd5ec8887cd506cdba9d24c8fc1d854d467eb152807040",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed",
+      "visual_review": "passed",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark screenshot"
+      ],
+      "observations": "Reviewed exact PR head, pinned baseline and candidate, four check paths, report links and status. Labels and routes are legible in both themes."
     }
   ],
   "c4": {
     "validation": "Structurizr validate and SVG/PNG export passed",
     "visual_review": "passed",
-    "review_scope": "Regenerated and inspected the evaluation, local and Azure deployment views with the snapshot repository; checked all six C4 exports for validation and placement.",
+    "review_scope": "Regenerated and inspected the PR creation dynamic view; checked all six C4 exports for validation and placement.",
     "sources": {
-      "workspace.dsl": "6fccede1e3a5440e4c0aecfa73f0e4d99225aa6a33643c950d9a5ad089a3e0f2",
-      "layout.mjs": "81114645389420cc4fd95b1b870fb4992fee1bd15ee3e3c68a4aa79861d0ee56"
+      "workspace.dsl": "80427a3565934d2687aa1121a3465898885bc6229c8c6a93e5e8d4e943d40d58",
+      "layout.mjs": "709339e81e180a847ecc336d0514f7a33eef59142e3fe7fae527419e134e6f46"
     },
     "svg_sha256": {
       "01-context-key.svg": "7d958dfb84c6dbbc55d60e7146a0e8947f363806e736c17ed3555c21a876f5aa",
-      "01-context.svg": "d0cc7ac7c08850f7916743506586aba968f2150389bf20c34f85c76705971f54",
+      "01-context.svg": "59f146ef4ac1c669e25671c84fdf5d62b88074a2dca3dfe37a1136e8f4db4a8c",
       "02-control-key.svg": "b37e211ed58aaed3ef6cd72427088d61d7ece40dbb436554785b5319f4eebc02",
-      "02-control.svg": "12872e85bf907323b46eb8c6f933a4730918e850137a18457244d3f2e7ff0c84",
+      "02-control.svg": "77071743d1bcf5795b3b78a05a8429324e372c5b4ae8f427491184f6ffd1c63a",
       "03-evaluation-key.svg": "b567dc0262179f88c5f4175d5a14356ee630ab21d18ebe036b1c1709067909d4",
-      "03-evaluation.svg": "b23f035f3a6a379ce883fc3bb19a6db71d5eacb13d05257347acc8ba1d1d78c8",
+      "03-evaluation.svg": "98e8bf9e267bef4894dc37c0a1824cb61a048d65f81091b3c064d5bfbcc71265",
       "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
-      "04-create.svg": "c158ba3d0d0962070b35c82de4e67839cbee4b97fd8b672d7f36163a48335875",
+      "04-create.svg": "81a9a8b440e9b6e96c265b710b8276e2cf1f8baea781c40b3f6079a6df2beb40",
       "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
-      "05-local.svg": "3273bd62a0c874d04e0e1bdc54a51f84f5c5811c35db33c2a312d372d124352a",
+      "05-local.svg": "fe613a332cf6cfe6deaaedc0d471923dc490ee76bd5d51c4e66e403d4cbb6682",
       "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
-      "06-azure.svg": "bbda4fdcc997e73719c254050ea08986a848fb3b24a4b4d8c80d360dd4669926"
+      "06-azure.svg": "f23742ce3ed91b0be40030c40714fd60d71a1742adb671a7f340bd96b6e0c920"
     }
   }
 }
