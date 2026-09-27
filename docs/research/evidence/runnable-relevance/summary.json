@@ -1,0 +1,24 @@
+{
+  "aggregate": {
+    "retail-baseline": {
+      "Judged@10": 0.888,
+      "RR(rel=2)@10": 1.0,
+      "nDCG@10": 0.911474
+    },
+    "retail-price-rank": {
+      "Judged@10": 0.178,
+      "RR(rel=2)@10": 0.25869,
+      "nDCG@10": 0.170948
+    }
+  },
+  "baseline_fingerprint": "b32669b1945bbb8abd325270ded51a783e632954874fcb23f7e6dd3e0e170c34",
+  "candidate_fingerprint": "c6ceec19d5a246b7f0354445184229dd41a5178e7e9e84a6bf7b1b3d91b023d0",
+  "changed_query_count": 50,
+  "judgement_count": 1433,
+  "query_count": 50,
+  "repeat_report_sha256": "7f3897ff29ac4a4eb0371506a99946a25c5d314b50e6113cf991c0fed9e5b4bb",
+  "report_blob": "runs/7f3897ff29ac4a4eb0371506a99946a25c5d314b50e6113cf991c0fed9e5b4bb/retail-relevance-evaluation.json",
+  "report_sha256": "7f3897ff29ac4a4eb0371506a99946a25c5d314b50e6113cf991c0fed9e5b4bb",
+  "source_pr": "http://127.0.0.1:31800/elastic-agent/search-spike/pulls/3",
+  "source_sha": "86d476d1793476d4e2a6242e368dd88b7f53f250"
+}
