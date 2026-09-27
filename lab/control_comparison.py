@@ -5,6 +5,7 @@ import sys
 
 sys.path.insert(0, 'research/platform-spike')
 from compare_search import definition, frozen_suite, immutable_blob, jaccard, rbo, response
+from blob_config import settings
 from evaluate_relevance import frozen_judgements, score
 
 MODES = ('result-regression', 'relevance')
@@ -31,12 +32,12 @@ def evaluate_pair(baseline, candidate, mode):
         pooled = release_id == 'retail-gb-1m-v1'
         suite, judgements, pool_manifest = frozen_judgements(release_id, pooled=pooled)
         suite_sha = manifest['sha256']['queries.jsonl']
-        suite_blob = 'datasets/' + release_id + '/queries.jsonl'
+        suite_blob = settings()[1] + '/' + release_id + '/queries.jsonl'
     else:
         suite = full_suite
         judgements = None
         suite_sha = full_suite_sha
-        suite_blob = immutable_blob('datasets', suite_sha + '/query-suite.jsonl', suite_bytes)
+        suite_blob = immutable_blob(settings()[1], suite_sha + '/query-suite.jsonl', suite_bytes)
     results = []
     errors = []
     zero_counts = {'baseline': 0, 'candidate': 0}

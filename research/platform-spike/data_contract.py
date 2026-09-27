@@ -2,10 +2,8 @@
 import base64,hashlib,json,ssl,sys,time,urllib.request,urllib.error
 from common import *
 sys.path.insert(0,str(STATE/'python-libs'))
-from azure.storage.blob import BlobServiceClient
 from azure.core.exceptions import ResourceExistsError
-# Public emulator key from Floci 0.13.0 application.yml; never use for Azure.
-DEMO_KEY='Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=='
+from blob_config import DEMO_KEY, service, settings
 def elastic(path,method='GET',body=None,user='elastic',password=None,raw=False,cluster='shared',port=19200):
     if password is None:
         data=json.loads(k('get','secret',cluster+'-es-elastic-user','-n','platform','-o','json').stdout)
@@ -22,16 +20,16 @@ if __name__=='__main__':
     products=[{'product_id':f'p{i:06d}','title':f'{categories[i%10]} model {i%100}','brand':f'Brand {i%20}','category':categories[i%10],'price_minor':500+(i*37)%20000,'country':'GB','currency':'GBP','available':i%17!=0} for i in range(10000)]
     canonical='\n'.join(json.dumps(p,sort_keys=True,separators=(',',':')) for p in products)+'\n';digest=hashlib.sha256(canonical.encode()).hexdigest()
     manifest={'release':'spike-uk-v1','sha256':digest,'count':len(products),'generator':'research/platform-spike/data_contract.py','fixed_time':'2026-01-01T00:00:00Z','assumptions':['Ten equal-size synthetic categories','Deterministic modular price, availability and brand distributions','Deliberately simple diagnostic fixture; not the realistic retail release']}
-    account=BlobServiceClient(account_url='http://127.0.0.1:14577/devstoreaccount1',credential=DEMO_KEY)
-    try:account.create_container('datasets')
+    account=service(); _,container,_,_=settings()
+    try:account.create_container(container)
     except ResourceExistsError:pass
-    blob=account.get_blob_client('datasets',digest+'/products.jsonl')
+    blob=account.get_blob_client(container,digest+'/products.jsonl')
     try:blob.upload_blob(canonical,overwrite=False)
     except ResourceExistsError:pass
     assert hashlib.sha256(blob.download_blob().readall()).hexdigest()==digest
     try:blob.upload_blob(b'changed',overwrite=False);raise AssertionError('Immutable create was overwritten')
     except ResourceExistsError:pass
-    manifest_blob=account.get_blob_client('datasets',digest+'/manifest.json')
+    manifest_blob=account.get_blob_client(container,digest+'/manifest.json')
     manifest_bytes=json.dumps(manifest,sort_keys=True).encode()
     try:manifest_blob.upload_blob(manifest_bytes,overwrite=False)
     except ResourceExistsError:assert manifest_blob.download_blob().readall()==manifest_bytes

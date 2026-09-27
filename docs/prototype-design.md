@@ -199,7 +199,7 @@ Use Floci AZ for Blob Storage:
 | `runs/` | Evaluation results and logs |
 | `snapshots/` | Reserved until an Elasticsearch Azure repository compatibility test passes |
 
-Floci supports Blob CRUD and standard client connections. Keep service URLs and credentials in configuration so local Floci can be replaced by Azure Blob Storage.
+Floci supports Blob CRUD and standard client connections. The lab now configures the account URL, dataset container and Pod download URL; local writes and signed reads have passed. The proposed Azure client uses workload identity and user-delegation read SAS, pending an AKS tenant check. The [portability design and open gates](research/portability-azure.md) also separates GHES source from ACR images.
 
 Add emulated Key Vault, registry, queue or AKS only when a real integration needs exercising. See [Floci AZ](https://github.com/floci-io/floci-az) and its [quick start](https://floci.io/floci-az/getting-started/quick-start/).
 

@@ -1,0 +1,17 @@
+# Portability evidence and open gates
+
+Checks on 27 September 2026 used the Windows x64 host and its existing two-node k3d lab. They verify an architecture path, not native Mac or AKS operation. The [deployment design](../portability-azure.md) records the substitutions.
+
+| Check | Result |
+| --- | --- |
+| Search API multi-platform build | `docker buildx build --platform linux/amd64,linux/arm64` exported an OCI index containing both platforms. Dockerfile tests ran 4/4 on each platform; arm64 execution was emulated on the Windows host. |
+| Actual Gitea runner and registry | The running `gitea/runner:3.5.0-dind-rootless` supported Buildx for both platforms. It pushed `gitea.localhost:31800/elastic-agent/search-spike:portability-multiarch-probe`; the registry served an index with amd64 and arm64 entries, digest `sha256:5895da97b2709398d24ed2b6b7ff9a82c19a3c06f70c00951af9db7015119b79`. The source workflow now uses that publication pattern. |
+| Pinned platform images | Published manifest lists for k3s 1.35.8, Gitea 1.27.0, runner 3.5.0, Floci 0.13.0, Argo CD 3.5.3, ECK 3.5.0, Elasticsearch 9.5.4, Dex 2.45.1 and Python 3.13.7 all include linux/amd64 and linux/arm64. A manifest entry is not a native run. |
+| Configured Floci client | A live write, rejected conditional overwrite, SHA-256 read and signed read passed through `blob_config.py`; the temporary object was removed. The payload SHA-256 was `ff1595a8a3e25afa310c98e3b15b059c03032404dfce2f82d41a6d26c4e314a5`. |
+| Azure client construction | With Azure Identity 1.25.3 installed separately, `DefaultAzureCredential` and an HTTPS `BlobServiceClient` were constructed for a placeholder account without a network call. The delegation-SAS path passed a mocked unit check; no Azure service was contacted. |
+| Existing frozen release | `python lab/load_release.py` verified the four immutable 10,000-product Blob objects, 50 queries, 1,433 judgements, index count and write block on a repeat run; product SHA-256 remained `164ca27a8a12ba5231f8896ca9ac2bd44492d9d341aa0d7c3ddd0c4f61aa434e`. |
+| Million-product release | `python lab/load_million_release.py` rebuilt the deterministic local manifest, checked all four Blob objects through the new client, and verified the existing 1,000,000-document index and write block. The compressed product SHA-256 remained `a6c78afb7df078016828a8a9a93b88b2d1db6a16ef64080a37dc33c23c2cc1d6`; no reindex was needed. |
+| Saved comparison report | The reloaded control API returned an existing immutable report through the configured client and passed its stored SHA-256 check (`85a934a6b537a87d3c354a31eab01d7677fb4a3add7f2e2118fe2f998279f34c`). |
+| Python and C4 | 41 lab tests and four search API tests pass; the Structurizr model validated and exported the updated local/Azure deployment views. PNG inspection found the Azure ACR/Blob/AKS split and host-versus-cluster boundary legible; local placement was adjusted after an overlap. |
+
+Open gates: no Apple silicon machine or Azure tenant was available; native cluster/bootstrap, GHES integration, AKS workload identity, ACR pull, Azure Blob delegation SAS, deployment manifests, p95 performance and cloud costs remain unmeasured. The current API is a host process with SQLite and is not a multi-replica AKS service. The [portability plan](../../plans/portability-azure.md) and [migration design](../portability-azure.md) make these checks explicit.

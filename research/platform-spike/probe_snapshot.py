@@ -1,12 +1,13 @@
 """Exercise snapshot/restore against Floci on the separate engine-version cluster."""
 import hashlib,json,time
 from common import *
-from data_contract import elastic,BlobServiceClient,DEMO_KEY,ResourceExistsError
+from data_contract import elastic,ResourceExistsError
+from blob_config import service,settings
 guard()
-client=BlobServiceClient(account_url='http://127.0.0.1:14577/devstoreaccount1',credential=DEMO_KEY)
+client=service()
 try:client.create_container('snapshots')
 except ResourceExistsError:pass
-manifest=json.loads((EVIDENCE/'dataset.json').read_text());data=client.get_blob_client('datasets',manifest['sha256']+'/products.jsonl').download_blob().readall();assert hashlib.sha256(data).hexdigest()==manifest['sha256']
+manifest=json.loads((EVIDENCE/'dataset.json').read_text());data=client.get_blob_client(settings()[1],manifest['sha256']+'/products.jsonl').download_blob().readall();assert hashlib.sha256(data).hexdigest()==manifest['sha256']
 def es(path,method='GET',body=None,raw=False):return elastic(path,method,body,raw=raw,cluster='version-experiment',port=19201)
 index='spike-version-v1';es('/'+index,'PUT',{'settings':{'number_of_replicas':0},'mappings':{'properties':{'product_id':{'type':'keyword'},'title':{'type':'text'}}}})
 lines=[]

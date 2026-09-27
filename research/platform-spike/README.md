@@ -20,7 +20,7 @@ Run PowerShell from the repository root. `python` below means a Python 3.12+ int
 | Floci / Azure Blob Python SDK | 0.13.0 / 12.27.0 |
 | Fixture image | Python 3.13.7-alpine3.22 |
 
-The two k3d nodes have a combined 10 GiB limit. Leave additional Docker memory for its VM, image builds and existing workloads. Downloads require internet access; offline bootstrap has not been tested. The downloader below selects Windows amd64 tools; macOS needs native binaries and a separate verification run.
+The two k3d nodes have a combined 10 GiB limit. Leave additional Docker memory for its VM, image builds and existing workloads. Downloads require internet access; offline bootstrap has not been tested. The downloader below selects Windows amd64 tools. The [Apple silicon route](../../docs/research/portability-azure.md#host-portability) uses native tools from `PATH`; its bootstrap still needs a native verification run.
 
 ## Bootstrap the research cluster
 

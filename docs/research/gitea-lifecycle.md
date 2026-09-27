@@ -41,7 +41,7 @@ The domain model stores `sourceRevision` as a Git SHA and `imageDigest` as an OC
 - commit or pull-request status publication;
 - repository credentials and URL construction.
 
-Implement the Gitea provider first. A GitHub Enterprise provider should satisfy the same contract and conformance checks. CI build steps should use portable shell or scripts in the repository, with thin provider-specific workflow files. Argo CD should consume a configurable Git URL rather than a Gitea-specific path. The image registry can remain Gitea temporarily or move to the organisation's registry independently of the Git migration; environment fingerprints use the resolved digest, not a registry tag.
+Implement the Gitea provider first. A GitHub Enterprise provider should satisfy the same contract and conformance checks. CI build steps should use portable shell or scripts in the repository, with thin provider-specific workflow files. Argo CD should consume a configurable Git URL rather than a Gitea-specific path. The image registry can remain Gitea temporarily or move to the organisation's registry independently of the Git migration; environment fingerprints use the resolved digest, not a registry tag. The [Azure deployment shape](portability-azure.md) proposes ACR for the target because the GHES 3.21 container registry is documented as public preview.
 
 Migration rehearsal: mirror or push the repositories to a GitHub Enterprise test instance; configure its credentials, webhooks and build runner; build the same commit; create an environment; run the same comparison; check provenance and lease/delete behaviour. Repository migration alone does not prove that Actions workflows, PR event formats or registry credentials have migrated.
 
