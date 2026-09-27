@@ -20,7 +20,7 @@ Find a faster, reliable way to recover a historical frozen index **without rebui
 1. Inspect the available repository implementations and version requirements. Record compatibility, operational dependencies and portability to Azure and Apple silicon.
 2. Run a repository verification and snapshot/restore probe on the 10,000-product release. If compatible, repeat on the million-product index. Use a different restored index name and check recipe identity, count, write block and ordered sample results.
 3. Compare at least three paths on the same warm lab: retained-index reuse, snapshot restore and recipe rebuild. Repeat enough times to report variability and make cache state explicit.
-4. Test a missing/incompatible snapshot and prove automatic fallback to the recipe rebuild without changing the chosen historical definition.
+4. Specify how a missing or incompatible snapshot falls back to the recipe rebuild without changing the chosen historical definition. Implement and test automatic selection in the [optional integration batch](snapshot-restoration-integration.md).
 5. Record a recommended cache and retention policy: which historical index versions remain live, which receive snapshots, and when restored indices are removed.
 
 ## Acceptance criteria
@@ -29,6 +29,10 @@ Find a faster, reliable way to recover a historical frozen index **without rebui
 - A selected route restores the historical mapping without a bulk reindex and reproduces the pinned sample results, or the report states the measured blocker and retains rebuild as the only supported path.
 - The design states when to reuse, restore or rebuild, and how an incompatible engine version changes the destination cluster.
 - No feature requiring an additional Elastic licence is introduced.
+
+## Outcome and open gate
+
+The [research result](../research/index-restoration-options.md) measures a verified regular filesystem snapshot restore and a same-cluster clone at 10,000 and one million products. It recommends a reuse → restore → recipe rebuild rule. The API does **not** yet automate snapshot selection or fallback; that is the separate integration gate. Real Azure Blob and an S3-compatible local object repository were not tested in this batch.
 
 ## More information
 
