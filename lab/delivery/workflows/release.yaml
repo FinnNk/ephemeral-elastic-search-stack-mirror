@@ -1,0 +1,43 @@
+name: Reference release CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  release:
+    # This privileged lab runner accepts trusted, same-repository changes only.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: lab-delivery
+    steps:
+      - name: Fetch exact source revision
+        env:
+          SOURCE_URL: ${{ vars.SOURCE_BASE_URL || github.server_url }}/${{ github.repository }}.git
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SOURCE_USER: ${{ secrets.SOURCE_USER }}
+          SOURCE_TOKEN: ${{ secrets.SOURCE_TOKEN }}
+        run: |
+          set -eu
+          export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader
+          export GIT_CONFIG_VALUE_0="Authorization: Basic $(printf '%s:%s' "$SOURCE_USER" "$SOURCE_TOKEN" | base64 | tr -d '\n')"
+          git init source
+          cd source
+          git remote add origin "$SOURCE_URL"
+          git fetch --depth 1 origin "$SOURCE_SHA"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+      - name: Test, build and publish immutable release
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          EVENT_KIND: ${{ github.event_name }}
+          REGISTRY: ${{ vars.RELEASE_REGISTRY }}
+          ARTIFACT_URL: ${{ vars.RELEASE_ARTIFACT_URL }}
+          NEXUS_USER: ${{ secrets.NEXUS_USER }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          set -eu
+          cd source
+          sh ci/build.sh

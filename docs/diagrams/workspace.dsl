@@ -8,7 +8,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             gitea = container "Gitea" "Stores source, desired state and historical images." "Gitea; Git / OCI" {
                 tags "Platform"
             }
-            runner = container "Build runner" "Tests source and publishes a pinned image." "Gitea Actions locally; target runner TBC" {
+            runner = container "Build runner" "Tests exact source; publishes frozen releases." "Actions / shared shell and Python" {
                 tags "Platform"
             }
             nexus = container "Nexus" "Retains private images and immutable release bundles." "Nexus Community Edition" {
@@ -93,6 +93,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         expiry -> metadata "Finds expired leases and records cleanup" "SQL locally; API contract on AKS"
         gitea -> runner "Offers a build for a pinned commit" "Actions protocol"
         runner -> gitea "Pushes tested image and digest" "OCI / HTTPS"
+        runner -> nexus "Publishes image, bundle and release receipt" "OCI / REST"
         nexus -> nexusdb "Stores repository metadata" "PostgreSQL"
         runner -> registry "Pushes tested image after migration" "OCI / HTTPS" {
             tags "Future"

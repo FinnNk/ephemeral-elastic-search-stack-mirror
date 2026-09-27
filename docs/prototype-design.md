@@ -71,7 +71,7 @@ Argo CD is already used in the target production system and is a design constrai
 - **Workflow complexity:** Do not introduce another operator, workflow engine, queue or service mesh without evidence. Reconsider Argo Workflows only if the observed workflow needs retries, fan-out or auditability beyond Jobs.
 - **Elasticsearch operations:** Use existing Elasticsearch APIs for aliases, bulk indexing, security roles and snapshots rather than implementing equivalents.
 
-The [reference CI/CD plan](plans/reference-ci-cd.md) adds immutable Nexus releases and reviewed promotion through integration, staging and simulated production. Argo CD remains the deployment owner. [Nexus](nexus.md) is persistent infrastructure; historical Gitea registry images remain available. Portable CI and promotion are delivered in batches 7g–7h.
+The [reference CI/CD plan](plans/reference-ci-cd.md) adds immutable Nexus releases and reviewed promotion through integration, staging and simulated production. Argo CD remains the deployment owner. [Nexus](nexus.md) is persistent infrastructure; historical Gitea registry images remain available. The [portable Actions workflow](delivery.md) is demonstrated on Gitea. Promotion is the next batch.
 
 ### Self-contained Git and build lifecycle
 
