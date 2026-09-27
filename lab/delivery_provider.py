@@ -14,6 +14,7 @@ from gitea import api
 SOURCE = 'delivery-source'
 DESIRED = 'delivery-state'
 OWNER = 'elastic-agent'
+GITEA_GIT_URL = os.environ.get('LAB_GITEA_GIT_URL', 'http://127.0.0.1:31800').rstrip('/')
 
 
 def endpoint(repo, suffix=''):
@@ -49,7 +50,7 @@ def ensure_repo(repo, actions=False):
     if not (path / '.git').exists():
         path.mkdir(exist_ok=True)
         git(repo, 'init', '-b', 'main')
-        git(repo, 'remote', 'add', 'origin', 'http://127.0.0.1:31800/' + OWNER + '/' + repo + '.git')
+        git(repo, 'remote', 'add', 'origin', GITEA_GIT_URL + '/' + OWNER + '/' + repo + '.git')
         if not api(endpoint(repo))['empty']:
             git(repo, 'fetch', 'origin', 'main')
             git(repo, 'checkout', '-B', 'main', 'origin/main')

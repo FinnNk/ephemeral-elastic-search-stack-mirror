@@ -186,27 +186,27 @@
   ],
   "c4": {
     "validation": "Structurizr validate and SVG/PNG export passed",
-    "visual_review": "passed",
-    "review_scope": "Regenerated seven C4 views. Inspected updated context, control, evaluation and candidate views, both deployment placements and the new release-delivery view. Removed an implied relationship from the focused control view after it overlapped labels; the release view retains that relationship.",
+    "visual_review": "05-local passed; other C4 views exported but not re-inspected in this batch",
+    "review_scope": "Inspected the local deployment PNG after moving control and index Jobs to their own Kubernetes namespaces. Corrected one node overlap; final view has legible labels and separate host, platform, control, indexing and experiment placement.",
     "sources": {
-      "workspace.dsl": "1a385009c228fc5fde2c9f9e727e0b18e2bcd0047213b46373173f217bf422f8",
-      "layout.mjs": "aa51b82c15caed985ce38cdb38434939950f38bf1878e3d8498f95966201290b"
+      "workspace.dsl": "c9728157c2c67cd2fbd00e3ff8f785d11eef841a84b4e8fdf9e82b9a43839beb",
+      "layout.mjs": "9fdb008e5051b3041460c063f5b80e8257bed65fc5db4ed3ee0df2dda766991a"
     },
     "svg_sha256": {
       "01-context-key.svg": "be9439d77f1889d034468c1a41ef9d943133136dc9713d4dac82171e5de24539",
-      "01-context.svg": "2c885c5e6688ed288912d1c0ad6dcebe8d4ee9cbfe38b25394938d00fb64e90f",
+      "01-context.svg": "4ed78ac42e029087c89f13ad0f0c5c5e9f8626d3523670fb410c023012e0eb7e",
       "02-control-key.svg": "b37e211ed58aaed3ef6cd72427088d61d7ece40dbb436554785b5319f4eebc02",
-      "02-control.svg": "1fece3fd0527b01639ffe5b6459ea38007096bfda338c96161519534ce2b74a2",
+      "02-control.svg": "72436d6d5852600bbe3bfe1a8917a1c8e8f3fa29378cd46e528851d57bd44ad2",
       "03-evaluation-key.svg": "b567dc0262179f88c5f4175d5a14356ee630ab21d18ebe036b1c1709067909d4",
-      "03-evaluation.svg": "466e988e33e28f510bff245840e6649e4a79e54d4c1c158c17f6df378c52087b",
+      "03-evaluation.svg": "898dfe5790d864f937b405185f36ab9f1e48edd5e71c26291caa6e8e5cca4ab0",
       "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
-      "04-create.svg": "4c457e0b98dfc035ad3b6c49bf7291b711498c0e6396d97ccf6bb93edbe38b69",
+      "04-create.svg": "b3b8521da96637df2ae29b202863d0162b046a11fb25f9e24abd886feaa206f7",
       "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
-      "05-local.svg": "391590a3425d3ac81562776cfa9e06bcbcd07c0a53ed3017f067c481fa5ae50e",
+      "05-local.svg": "e35a2352c4911db53b04d97893eb6a995f79fb1556e36b584726b02934dda8ed",
       "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
-      "06-azure.svg": "43b041b3b547cb8a3e8c1874e3d18a8071b608120d86ca02d19815af452f397c",
+      "06-azure.svg": "e730add3f09d12e584bea5d60b5f8c83fddc6619d89153043ce614b217ba51e3",
       "18-delivery-key.svg": "21452daa1df3a7620c627c5f369c5a135c20ed1c1a77d656e05acfec268d661c",
-      "18-delivery.svg": "a4c156c7e1bd9a87e20bd3d4abaf70310b6996271a400559c6677019397277ca"
+      "18-delivery.svg": "56126b75347dd3d3252ca61f61070dcfc1df0c89a750c97e18184d812c164953"
     }
   }
 }

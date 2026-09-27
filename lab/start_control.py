@@ -43,6 +43,8 @@ def launch(script, label):
 
 
 def main():
+    if (STATE / 'control-drain').exists():
+        raise RuntimeError('Host controls are drained for Kubernetes cutover.')
     result = {'ui': 'already running' if ui_running() else launch('control_api.py', 'control-api'),
               'reconciler': 'already running' if reconciler_running() else
               launch('reconcile_leases.py', 'reconciler'),

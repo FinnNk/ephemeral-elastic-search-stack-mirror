@@ -1,11 +1,17 @@
 """Measure Git-file ApplicationSet creation and deletion against real searches."""
-import argparse,json,time,urllib.parse
+import argparse,json,time,urllib.parse,urllib.request
 from common import *
 from environments import *
 def search(name,query='running shoes',request_id=None):
     url='http://search.'+name+'.svc.cluster.local:8080/search?country=GB&currency=GBP&q='+urllib.parse.quote(query)
     if request_id is not None:
         url+='&diagnostics=1&request_id='+urllib.parse.quote(request_id)
+    if IN_CLUSTER:
+        try:
+            with urllib.request.urlopen(url,timeout=3) as response:
+                return json.load(response)
+        except (OSError,ValueError):
+            return None
     code='import urllib.request; print(urllib.request.urlopen('+repr(url)+',timeout=3).read().decode())'
     r=k('exec','search-probe','-n','platform','--','python','-c',code,check=False)
     if r.returncode:return None

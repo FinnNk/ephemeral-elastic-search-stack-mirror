@@ -6,14 +6,31 @@ import time
 import uuid
 
 sys.path.insert(0, 'research/platform-spike')
-from common import ROOT, STATE, apply, guard, k, record
+from common import IN_CLUSTER, ROOT, STATE, apply, guard, k, record
 from compare_search import definition, immutable_blob
 from gatling_report import summarise
 from run_gatling import IMAGE, SIMULATION, archive, retain_workload
 from traffic import compile_profile
 
 NAMESPACE = 'lab-evaluation'
+OWNED_LABEL = {'app.kubernetes.io/managed-by': 'lab-control-gatling'}
 TARGETS = {'baseline': 'retail-baseline', 'candidate': 'retail-candidate'}
+
+
+def cleanup_orphans():
+    """Remove only resources owned by interrupted control comparisons."""
+    if not IN_CLUSTER:
+        return False
+    from lifecycle import Store
+    store = Store(STATE / 'lifecycle.sqlite3')
+    if any(row['mode'] == 'performance' and row['state'] == 'running'
+           for row in store.all_comparisons()):
+        return False
+    selector = 'app.kubernetes.io/managed-by=lab-control-gatling'
+    for resource in ('jobs', 'pods', 'configmaps', 'pvc'):
+        k('delete', resource, '-l', selector, '-n', NAMESPACE,
+          '--ignore-not-found', '--wait=true')
+    return True
 
 
 def run(profile, target, environment=None, release_id='retail-gb-10k-v1'):
@@ -35,7 +52,7 @@ def run(profile, target, environment=None, release_id='retail-gb-10k-v1'):
     source = STATE / 'workloads' / workload['workload_sha256']
     workload_files = {path.name: path.read_text(encoding='utf-8') for path in source.glob('*.csv')}
     job = {'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': name, 'namespace': NAMESPACE,
-        'labels': {'lab': 'gatling', 'profile': profile, 'target': target}},
+        'labels': {**OWNED_LABEL, 'lab': 'gatling', 'profile': profile, 'target': target}},
         'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': workload['duration_seconds'] + 480,
             'template': {'metadata': {'labels': {'lab': 'gatling'}},
                 'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never',
@@ -60,14 +77,16 @@ def run(profile, target, environment=None, release_id='retail-gb-10k-v1'):
     started = time.monotonic()
     try:
         apply({'apiVersion': 'v1', 'kind': 'PersistentVolumeClaim',
-               'metadata': {'name': claim, 'namespace': NAMESPACE},
+               'metadata': {'name': claim, 'namespace': NAMESPACE, 'labels': OWNED_LABEL},
                'spec': {'accessModes': ['ReadWriteOnce'], 'resources': {'requests': {'storage': '1Gi'}}}})
         k('create', '-f', '-', body={'apiVersion': 'v1', 'kind': 'ConfigMap',
-            'metadata': {'name': source_name, 'namespace': NAMESPACE}, 'data': data})
+            'metadata': {'name': source_name, 'namespace': NAMESPACE,
+                         'labels': OWNED_LABEL}, 'data': data})
         # Client-side apply duplicates the CSV in last-applied-configuration and
         # exceeds Kubernetes' 256 KiB annotation limit for the peak workload.
         k('create', '-f', '-', body={'apiVersion': 'v1', 'kind': 'ConfigMap',
-            'metadata': {'name': workload_name, 'namespace': NAMESPACE}, 'data': workload_files})
+            'metadata': {'name': workload_name, 'namespace': NAMESPACE,
+                         'labels': OWNED_LABEL}, 'data': workload_files})
         apply(job)
         k('wait', '--for=condition=complete', 'job/' + name, '-n', NAMESPACE,
           '--timeout=' + str(workload['duration_seconds'] + 480) + 's')
@@ -78,17 +97,20 @@ def run(profile, target, environment=None, release_id='retail-gb-10k-v1'):
         logs = k('logs', 'pod/' + pod, '-n', NAMESPACE).stdout
         (run_dir / 'runner.log').write_text(logs, encoding='utf-8')
         reader = name + '-reader'
-        apply({'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': reader, 'namespace': NAMESPACE},
+        apply({'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': reader, 'namespace': NAMESPACE,
+               'labels': OWNED_LABEL},
                'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never',
                    'containers': [{'name': 'reader', 'image': IMAGE, 'command': ['sleep', '600'],
                                    'volumeMounts': [{'name': 'results', 'mountPath': '/results'}]}],
                    'volumes': [{'name': 'results', 'persistentVolumeClaim': {'claimName': claim}}]}})
         k('wait', '--for=condition=ready', 'pod/' + reader, '-n', NAMESPACE, '--timeout=120s')
         # kubectl cp treats a Windows drive-letter colon as a remote separator.
+        def local_target(path):
+            return str(path) if IN_CLUSTER else path.relative_to(ROOT).as_posix()
         k('cp', '-n', NAMESPACE, reader + ':/results/report',
-          (run_dir / 'report').relative_to(ROOT).as_posix())
+          local_target(run_dir / 'report'))
         k('cp', '-n', NAMESPACE, reader + ':/results/arrivals.csv',
-          (run_dir / 'arrivals.csv').relative_to(ROOT).as_posix())
+          local_target(run_dir / 'arrivals.csv'))
         reports = list((run_dir / 'report').glob('syntheticsearchsimulation-*'))
         if len(reports) != 1:
             raise RuntimeError('Expected one copied Gatling native report.')
@@ -99,7 +121,8 @@ def run(profile, target, environment=None, release_id='retail-gb-10k-v1'):
             'runner_image': IMAGE, 'gatling_version': '3.15.1', 'maven_plugin': '4.21.12',
             'simulation_sha256': hashlib.sha256(SIMULATION.read_bytes()).hexdigest(),
             'duration_wall_seconds': round(time.monotonic() - started, 3), 'runner_exit_code': 0,
-            'runner_limits': {'cpu': 2, 'memory': '2Gi'}, 'host': 'Windows 11 / local k3d',
+            'runner_limits': {'cpu': 2, 'memory': '2Gi'},
+            'host': 'Kubernetes control Pod / local k3d' if IN_CLUSTER else 'Windows 11 / local k3d',
             'execution': 'finite Kubernetes Job', 'job_name': name})
         summary.update(retain_workload(workload))
         files = {str(path.relative_to(reports[0])).replace('\\', '/'): path.read_bytes()

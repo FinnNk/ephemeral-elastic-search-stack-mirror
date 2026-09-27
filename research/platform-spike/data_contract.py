@@ -1,5 +1,5 @@
 """Freeze a deterministic synthetic catalogue and verify Blob and Elasticsearch contracts."""
-import base64,hashlib,json,ssl,sys,time,urllib.request,urllib.error
+import base64,hashlib,json,os,ssl,sys,time,urllib.request,urllib.error
 from common import *
 sys.path.insert(0,str(STATE/'python-libs'))
 from azure.core.exceptions import ResourceExistsError
@@ -11,7 +11,8 @@ def elastic(path,method='GET',body=None,user='elastic',password=None,raw=False,c
     ca=json.loads(k('get','secret',cluster+'-es-http-certs-public','-n','platform','-o','json').stdout)
     context=ssl.create_default_context(cadata=base64.b64decode(ca['data']['tls.crt']).decode());context.check_hostname=False
     data=body.encode() if raw else (None if body is None else json.dumps(body).encode())
-    req=urllib.request.Request(f'https://127.0.0.1:{port}'+path,method=method,data=data,headers={'Content-Type':'application/x-ndjson' if raw else 'application/json','Authorization':'Basic '+base64.b64encode((user+':'+password).encode()).decode()})
+    endpoint=(os.environ.get('LAB_ELASTICSEARCH_URL') if cluster=='shared' else None) or f'https://127.0.0.1:{port}'
+    req=urllib.request.Request(endpoint.rstrip('/')+path,method=method,data=data,headers={'Content-Type':'application/x-ndjson' if raw else 'application/json','Authorization':'Basic '+base64.b64encode((user+':'+password).encode()).decode()})
     with urllib.request.urlopen(req,context=context,timeout=60) as r:return json.load(r)
 if __name__=='__main__':
     import secrets

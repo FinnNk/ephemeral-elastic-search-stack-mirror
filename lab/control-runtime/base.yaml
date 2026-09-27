@@ -1,0 +1,161 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-control
+  labels:
+    app.kubernetes.io/part-of: relevance-lab
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lab-control
+  namespace: lab-control
+automountServiceAccountToken: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lab-control-state
+  namespace: lab-control
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab-control
+  namespace: lab-control
+spec:
+  selector:
+    app: lab-control
+  ports:
+    - name: http
+      port: 18082
+      targetPort: 18082
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: lab-control-ingress
+  namespace: lab-control
+spec:
+  podSelector:
+    matchLabels:
+      app: lab-control
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: lab-control
+      ports:
+        - protocol: TCP
+          port: 18082
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: lab-control-namespace-manager
+rules:
+  - apiGroups: ['']
+    resources: [namespaces]
+    verbs: [get, list, create, delete]
+  - apiGroups: [rbac.authorization.k8s.io]
+    resources: [rolebindings]
+    verbs: [get, create, patch, update]
+  - apiGroups: [rbac.authorization.k8s.io]
+    resources: [clusterroles]
+    resourceNames: [lab-control-environment]
+    verbs: [bind]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: lab-control-namespace-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: lab-control-namespace-manager
+subjects:
+  - kind: ServiceAccount
+    name: lab-control
+    namespace: lab-control
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: lab-control-environment
+rules:
+  - apiGroups: ['']
+    resources: [configmaps, secrets, pods, services, persistentvolumeclaims]
+    verbs: [get, list, watch, create, patch, update, delete]
+  - apiGroups: ['']
+    resources: [pods/log]
+    verbs: [get]
+  - apiGroups: ['']
+    resources: [pods/exec]
+    verbs: [create]
+  - apiGroups: [batch]
+    resources: [jobs]
+    verbs: [get, list, watch, create, patch, update, delete]
+  - apiGroups: [apps]
+    resources: [deployments]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: lab-control-argocd
+  namespace: argocd
+rules:
+  - apiGroups: [argoproj.io]
+    resources: [applications]
+    verbs: [get, list, watch, create, patch, update, delete]
+  - apiGroups: [argoproj.io]
+    resources: [applicationsets]
+    verbs: [get, patch, update]
+  - apiGroups: ['']
+    resources: [secrets]
+    verbs: [get, create, patch, update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: lab-control-argocd
+  namespace: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: lab-control-argocd
+subjects:
+  - kind: ServiceAccount
+    name: lab-control
+    namespace: lab-control
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: lab-control-platform
+  namespace: platform
+rules:
+  - apiGroups: ['']
+    resources: [secrets]
+    resourceNames: [shared-es-elastic-user, shared-es-http-certs-public]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: lab-control-platform
+  namespace: platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: lab-control-platform
+subjects:
+  - kind: ServiceAccount
+    name: lab-control
+    namespace: lab-control

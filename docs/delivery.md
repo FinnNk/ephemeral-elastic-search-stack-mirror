@@ -119,13 +119,15 @@ Review and merge the rollback PR in the same way. The previous complete definiti
 | Remove a preview on demand | `python lab/delivery_cli.py delete-preview <lab-delivery-run-name>` |
 | Process expired previews once | `python lab/delivery_cli.py expire-previews` |
 | Run validation, deployment verification and expiry once | `python lab/delivery_cli.py watch --once` |
-| Start the hidden watcher | `python lab/start_delivery_watch.py`; log and PID: `.lab/delivery-watch.log`, `.lab/delivery-watch.pid` |
+| Inspect the active watcher | `kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-control logs deployment/lab-control -c delivery-watcher --tail=30` |
 | Inspect a target UI/API | `kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-delivery-integration port-forward service/search 18088:8080`, then open `http://127.0.0.1:18088/` |
 | Inspect deployment | Existing Argo CD login; Applications named `lab-delivery-*` |
 
 Preview creation and evaluation renew the lease; background validation does not. Expiry removes the preview namespace, Argo application and Elasticsearch credential. Immutable source, release artifacts, reports and frozen indices remain. Stable promotion targets have no preview lease.
 
-The coordinator is one host process with a guarded local checkout. Ports 18086/18087 enforce one operation/watcher; a concurrent CLI operation may ask you to retry. The watcher polls every 30 seconds. Metadata under `.lab/delivery` and repository checkouts are local; verification reports are also retained in Blob storage. Restoring a lost local verification cache requires explicit reconciliation from those reports. [Batch 7i](plans/kubernetes-control-services.md) plans a single active Kubernetes control Pod, persistent state and recovery checks; it is not deployed yet. Multi-replica coordination and full host-loss recovery remain separate from that local move.
+The coordinator now runs in the single `lab-control` Pod with its guarded Git checkout on a retained PVC. Ports 18086/18087 still serialise operations; a concurrent operation may ask you to retry. The watcher polls every 30 seconds. Verification reports are also retained in Blob storage. Export the control PVC as described in the [runtime guide](control-runtime.md); restoration must preserve report references and the separate retained services. Multi-replica coordination is outside this local demonstration.
+
+Delivery targets rendered before the control move retain an earlier Search API NetworkPolicy. The control installer adds a scoped, additive ingress policy to the three existing targets, while the delivery renderer includes it in future proposals. This preserves old frozen release bundles and protected desired-state history. Re-run `install.py stage` after restoring those targets into a cluster with an active control Pod. Argo does not update an unchanged historical rendered target just because the chart source changes.
 
 The [measured walkthrough](research/evidence/promotion-deployment.md) covers promotion, rollback, denied unreviewed merge, stale proposals, incompatible schema and preview recreation. No artifact cleanup is enabled. Back up Nexus/PostgreSQL volumes, Git, credentials and Floci separately from project source.
 

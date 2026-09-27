@@ -5,10 +5,14 @@ import socket
 import time
 
 from lifecycle import local_lifecycle
+from common import IN_CLUSTER, STATE
 
 
 def reconcile_once():
     rows = local_lifecycle().expire()
+    if IN_CLUSTER:
+        from run_gatling_job import cleanup_orphans
+        cleanup_orphans()
     summary = [{'id': row['id'], 'name': row['name'], 'state': row['state']} for row in rows]
     print(json.dumps(summary), flush=True)
     return summary
@@ -27,6 +31,8 @@ def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as singleton:
         singleton.bind(('127.0.0.1', 18083))
         while True:
+            if (STATE / 'control-drain').exists():
+                return
             try:
                 reconcile_once()
             except Exception as error:

@@ -1,0 +1,9 @@
+.git
+.lab
+.diagram-tools
+docs
+node_modules
+__pycache__
+*.pyc
+research/evidence
+research/platform-spike/floci-source

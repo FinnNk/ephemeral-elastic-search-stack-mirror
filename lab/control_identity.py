@@ -1,6 +1,7 @@
 """Short-lived local sessions backed by distinct Gitea user accounts."""
 import base64
 import json
+import os
 import secrets
 import threading
 import time
@@ -8,7 +9,7 @@ import urllib.error
 import urllib.request
 from http.cookies import SimpleCookie
 
-GITEA_USER_URL = 'http://127.0.0.1:31800/api/v1/user'
+GITEA_USER_URL = os.environ.get('LAB_GITEA_API_URL', 'http://127.0.0.1:31800/api/v1').rstrip('/') + '/user'
 SESSION_SECONDS = 12 * 60 * 60
 COOKIE_NAME = 'lab_session'
 
