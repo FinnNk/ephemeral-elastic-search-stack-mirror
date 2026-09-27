@@ -116,8 +116,7 @@ def main():
     environment = [{'name': 'DATA_BLOB_CONNECTION_STRING',
                     'valueFrom': {'secretKeyRef': {'name': secret_name, 'key': 'connection'}}},
                    {'name': 'EVALUATION_INPUTS_JSON', 'value': json.dumps(inputs, sort_keys=True)},
-                   {'name': 'LAB_JOB_NAME', 'valueFrom': {
-                       'fieldRef': {'fieldPath': 'metadata.name'}}}]
+                   {'name': 'LAB_JOB_NAME', 'value': name}]
     if args.evaluated_at:
         environment.append({'name': 'EVALUATED_AT', 'value': args.evaluated_at})
     job = {'apiVersion': 'batch/v1', 'kind': 'Job',

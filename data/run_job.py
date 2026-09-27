@@ -92,8 +92,7 @@ def main():
                                                   {'name': 'DATA_BLOB_CONNECTION_STRING',
                                                    'valueFrom': {'secretKeyRef': {
                                                        'name': credential_name, 'key': 'connection'}}},
-                                                  {'name': 'LAB_JOB_NAME', 'valueFrom': {
-                                                      'fieldRef': {'fieldPath': 'metadata.name'}}}],
+                                                  {'name': 'LAB_JOB_NAME', 'value': name}],
                                               'volumeMounts': [{'name': 'output', 'mountPath': '/output'}],
                                               'resources': {'requests': {'cpu': '50m', 'memory': '64Mi'},
                                                             'limits': {'cpu': '500m', 'memory': '256Mi'}}}],
