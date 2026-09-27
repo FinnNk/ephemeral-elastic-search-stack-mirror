@@ -1,0 +1,18 @@
+{
+  "assumptions": [
+    "70% of searches use fifty head queries; 30% use 950 tail queries",
+    "A sinusoidal intensity varies within the ten-minute synthetic window",
+    "Ten-second bursts recur every three minutes",
+    "Requests are evenly spaced within each source second"
+  ],
+  "country": "GB",
+  "currency": "GBP",
+  "events": 4399,
+  "kind": "wholly synthetic million-release traffic source",
+  "query_sha256": "4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946",
+  "schema_version": 1,
+  "seconds": 600,
+  "seed": 20260928,
+  "start": "2026-01-01T00:00:00Z",
+  "trace_sha256": "a67e1a48cf321e1eafe5ccc4ced0f54f3ceb244a0fc3a1a458112804f9bc9157"
+}

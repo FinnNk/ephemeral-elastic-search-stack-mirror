@@ -3,7 +3,7 @@ import json
 import unittest
 from pathlib import Path
 
-from traffic import ROOT, compile_profile, generate_trace
+from traffic import ROOT, compile_profile, generate_trace, generate_million_trace, generate_million_trace_extended
 
 
 class FrozenTrafficContract(unittest.TestCase):
@@ -28,6 +28,21 @@ class FrozenTrafficContract(unittest.TestCase):
         peak = compile_profile('peak')
         self.assertEqual(peak['phase_counts']['peak'], 2400)
         self.assertGreater(peak['phase_counts']['peak'], normal['phase_counts']['normal'])
+
+    def test_million_query_trace_has_separate_frozen_identity(self):
+        self.assertEqual(generate_million_trace()['events'], 4399)
+        manifest = generate_million_trace_extended()
+        self.assertEqual(manifest['events'], 13099)
+        million = compile_profile('smoke', 'retail-gb-1m-v1')
+        original = compile_profile('smoke')
+        self.assertEqual(million['phase_counts']['normal'], 3000)
+        self.assertNotEqual(million['source_sha256'], original['source_sha256'])
+        self.assertNotEqual(million['workload_sha256'], original['workload_sha256'])
+        normal = compile_profile('normal-full', 'retail-gb-1m-v1')
+        self.assertEqual(normal['duration_seconds'], 360)
+        self.assertGreater(normal['phase_counts']['normal'], 2_000)
+        self.assertEqual(compile_profile('sustained-peak', 'retail-gb-1m-v1')['phase_counts']['peak'], 18_000)
+        self.assertEqual(compile_profile('stress-full', 'retail-gb-1m-v1')['phase_counts']['recovery'], 3_000)
 
 
 if __name__ == '__main__':

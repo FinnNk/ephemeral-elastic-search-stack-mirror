@@ -14,7 +14,7 @@ sys.path.insert(0, 'research/platform-spike')
 from common import ROOT, STATE, record
 from compare_search import definition, immutable_blob
 from gatling_report import summarise
-from traffic import RECIPES, TRACE, compile_profile
+from traffic import compile_profile
 
 IMAGE = 'maven:3.9.11-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237'
 TARGETS = {'baseline': ('retail-baseline', 18080), 'candidate': ('retail-candidate', 18081)}
@@ -35,23 +35,25 @@ def archive(files):
 def retain_workload(workload):
     directory = STATE / 'workloads' / workload['workload_sha256']
     files = {path.name: path.read_bytes() for path in directory.glob('*.csv')}
-    files['source-trace-v1.csv'] = TRACE.read_bytes()
-    recipe_bytes = RECIPES.read_bytes()
+    source_path = Path(workload['source_path'])
+    recipe_path = Path(workload['recipe_path'])
+    files[source_path.name] = source_path.read_bytes()
+    recipe_bytes = recipe_path.read_bytes()
     if hashlib.sha256(recipe_bytes).hexdigest() != workload['recipe_sha256']:
         raise ValueError('Active recipe differs from the compiled workload.')
-    files[RECIPES.name] = recipe_bytes
+    files[recipe_path.name] = recipe_bytes
     payload = archive(files)
     digest = hashlib.sha256(payload).hexdigest()
     return {'workload_archive_sha256': digest,
             'workload_archive_blob': immutable_blob('runs', digest + '/compiled-workload.zip', payload)}
 
 
-def run(profile, target):
+def run(profile, target, release_id='retail-gb-10k-v1'):
     if target not in TARGETS:
         raise ValueError('Target must be baseline or candidate.')
     environment, port = TARGETS[target]
     pinned = definition(environment)
-    workload = compile_profile(profile)
+    workload = compile_profile(profile, release_id)
     run_id = uuid.uuid4().hex[:12]
     run_dir = STATE / 'gatling-runs' / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
@@ -75,6 +77,7 @@ def run(profile, target):
     report_dir = candidates.pop()
     summary = summarise(report_dir, STATE / 'workloads' / workload['workload_sha256'], arrivals)
     summary.update({'run_id': run_id, 'target': target, 'environment': environment,
+        'release_id': release_id,
         'fingerprint': pinned['fingerprint'], 'index': pinned['index'], 'image': pinned['image'],
         'runner_image': IMAGE, 'gatling_version': '3.15.1', 'maven_plugin': '4.21.12',
         'simulation_sha256': hashlib.sha256(SIMULATION.read_bytes()).hexdigest(),
@@ -98,7 +101,9 @@ def run(profile, target):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress'))
+    parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress',
+                                            'normal-full', 'sustained-peak', 'stress-full'))
     parser.add_argument('target', choices=TARGETS)
+    parser.add_argument('--release', default='retail-gb-10k-v1')
     args = parser.parse_args()
-    print(json.dumps(run(args.profile, args.target), indent=2))
+    print(json.dumps(run(args.profile, args.target, args.release), indent=2))

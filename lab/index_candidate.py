@@ -12,8 +12,10 @@ KIND = 'title-keyword-v1'
 MAPPING = Path(__file__).with_name('mappings') / (KIND + '.json')
 
 
-def mapping_contract():
-    mapping = json.loads(MAPPING.read_text(encoding='utf-8'))
+def mapping_contract(release_id=RELEASE):
+    path = (Path(__file__).with_name('mappings') / 'title-keyword-1m-v1.json'
+            if release_id == 'retail-gb-1m-v1' else MAPPING)
+    mapping = json.loads(path.read_text(encoding='utf-8'))
     canonical = json.dumps(mapping, sort_keys=True, separators=(',', ':')).encode()
     return mapping, hashlib.sha256(canonical).hexdigest()
 
@@ -36,12 +38,14 @@ def _frozen_count(index):
     return settings.get('blocks', {}).get('write') == 'true', elastic('/' + index + '/_count')['count']
 
 
-def ensure_candidate_index(environment_name, expected_dataset_sha):
+def ensure_candidate_index(environment_name, expected_dataset_sha, release_id=RELEASE):
     index = index_name(environment_name)
-    mapping, digest = mapping_contract()
-    manifest = json.loads((DATA / 'manifest.json').read_text(encoding='utf-8'))
-    assert manifest['release'] == RELEASE and manifest['count'] == 10000
-    assert manifest['sha256']['products.jsonl'] == expected_dataset_sha
+    mapping, digest = mapping_contract(release_id)
+    data = DATA if release_id == RELEASE else DATA.parent / release_id
+    manifest = json.loads((data / 'manifest.json').read_text(encoding='utf-8'))
+    product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
+    assert manifest['release'] == release_id
+    assert manifest['sha256'][product_name] == expected_dataset_sha
     existing = _existing(index)
     if existing:
         if existing['mappings'] != mapping['mappings']:
@@ -51,11 +55,13 @@ def ensure_candidate_index(environment_name, expected_dataset_sha):
             return {'index': index, 'mapping_sha256': digest, 'count': count,
                     'dataset_sha256': expected_dataset_sha, 'created': False, 'build_seconds': 0}
         elastic('/' + index, 'DELETE')
-    blob_path = publish_blobs(manifest)
+    blob_path = publish_blobs(manifest, data)
     started = time.monotonic()
     elastic('/' + index, 'PUT', mapping)
     try:
-        index_job(blob_path, expected_dataset_sha, index=index, role=environment_name + '-indexer')
+        index_job(blob_path, expected_dataset_sha, index=index, role=environment_name + '-indexer',
+                  expected_count=manifest['count'], compression=manifest.get('compression', 'none'),
+                  deadline_seconds=1500 if manifest['count'] >= 1_000_000 else 300)
         elastic('/' + index + '/_settings', 'PUT', {'index.blocks.write': True})
         frozen, count = _frozen_count(index)
         if not frozen or count != manifest['count']:

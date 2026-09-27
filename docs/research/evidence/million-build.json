@@ -1,0 +1,28 @@
+{
+  "release": "retail-gb-1m-v1",
+  "clean_rebuild": {
+    "seconds": 48.75,
+    "identical_manifest": true,
+    "products_sha256": "a6c78afb7df078016828a8a9a93b88b2d1db6a16ef64080a37dc33c23c2cc1d6",
+    "queries_sha256": "4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946",
+    "judgements_sha256": "dbbca3894cf0e8f611fc4c9086d7d1458bbc47196c6750049b0a08c2d477347a"
+  },
+  "first_load": {
+    "created": true,
+    "count": 1000000,
+    "publish_seconds": 23.875,
+    "index_job_seconds": 103.565,
+    "bulk_batches": 1000,
+    "elasticsearch_bulk_ms": 68020,
+    "total_seconds": 135.563,
+    "first_index_store_bytes": 664180744
+  },
+  "repeat_load": {
+    "created": false,
+    "count": 1000000,
+    "publish_seconds": 3.031,
+    "index_job": null,
+    "total_seconds": 3.86,
+    "index_store_bytes_at_repeat": 647231847
+  }
+}

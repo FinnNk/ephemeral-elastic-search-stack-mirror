@@ -1,0 +1,14 @@
+{
+  "suite_sha256": "d7be779b06851ce41b6d99216b14faef6b617463a0666b85f8bc5139b2daa1e2",
+  "query_id": "q1001",
+  "totals": {
+    "lab-million-baseline": 0,
+    "lab-million-api": 0,
+    "lab-million-index": 0
+  },
+  "ids": {
+    "lab-million-baseline": [],
+    "lab-million-api": [],
+    "lab-million-index": []
+  }
+}

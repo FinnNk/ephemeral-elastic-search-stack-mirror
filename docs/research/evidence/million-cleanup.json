@@ -1,0 +1,13 @@
+{
+  "release": "retail-gb-1m-v1",
+  "baseline_count_after_cleanup": 1000000,
+  "baseline_write_block_after_cleanup": true,
+  "candidate_index_removed": true,
+  "remaining_environment_namespaces": [],
+  "remaining_gatling_jobs_pods_pvcs": [],
+  "delete_seconds": {
+    "lab-million-baseline": 51.531,
+    "lab-million-api": 51.469,
+    "lab-million-index": 51.969
+  }
+}

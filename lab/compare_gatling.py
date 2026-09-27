@@ -23,7 +23,8 @@ def measure_phase(metrics, budget):
 
 
 def compare(first, second):
-    same_workload = first['workload_sha256'] == second['workload_sha256'] and \
+    same_workload = first.get('release_id') == second.get('release_id') and \
+        first['workload_sha256'] == second['workload_sha256'] and \
         first['source_sha256'] == second['source_sha256'] and first['recipe_sha256'] == second['recipe_sha256'] and \
         first.get('workload_archive_sha256') == second.get('workload_archive_sha256')
     warmup_ok = all(run['phases'].get('warmup', {}).get('failed') == 0 for run in (first, second))
@@ -62,7 +63,7 @@ def compare(first, second):
             'measured_phases': measured, 'first_stress_budget_breach': stress_breach,
             'warmup_excluded_from_verdict': True,
             'stress_interpretation': 'No budget breach at the maximum offered rate' if
-                first['profile'] == 'stress' and stress_breach is None else None}
+                first['profile'] in ('stress', 'stress-full') and stress_breach is None else None}
 
 
 def main(profile):
@@ -83,5 +84,6 @@ def main(profile):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress'))
+    parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress',
+                                            'normal-full', 'sustained-peak', 'stress-full'))
     main(parser.parse_args().profile)

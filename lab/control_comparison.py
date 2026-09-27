@@ -23,11 +23,15 @@ def evaluate_pair(baseline, candidate, mode):
         raise ValueError('Environments use different product releases.')
     if first['engine'] != second['engine']:
         raise ValueError('Environments use different Elasticsearch versions.')
-    full_suite, suite_bytes, full_suite_sha, manifest = frozen_suite()
+    release_id = baseline.get('release_id') or 'retail-gb-10k-v1'
+    if release_id != (candidate.get('release_id') or 'retail-gb-10k-v1'):
+        raise ValueError('Environments use different frozen releases.')
+    full_suite, suite_bytes, full_suite_sha, manifest = frozen_suite(release_id)
     if mode == 'relevance':
-        suite, judgements, _manifest = frozen_judgements()
+        pooled = release_id == 'retail-gb-1m-v1'
+        suite, judgements, pool_manifest = frozen_judgements(release_id, pooled=pooled)
         suite_sha = manifest['sha256']['queries.jsonl']
-        suite_blob = 'datasets/retail-gb-10k-v1/queries.jsonl'
+        suite_blob = 'datasets/' + release_id + '/queries.jsonl'
     else:
         suite = full_suite
         judgements = None
@@ -36,7 +40,15 @@ def evaluate_pair(baseline, candidate, mode):
     results = []
     errors = []
     zero_counts = {'baseline': 0, 'candidate': 0}
-    for query in suite:
+    if suite:
+        for side, environment in (('baseline', baseline), ('candidate', candidate)):
+            try:
+                response(environment['name'], suite[0])
+            except (AssertionError, KeyError, RuntimeError, TimeoutError, TypeError, ValueError) as error:
+                errors.append({'query_id': suite[0]['query_id'], 'side': side,
+                               'kind': type(error).__name__, 'detail': str(error)[:120],
+                               'stage': 'response preflight'})
+    for query in suite if not errors else ():
         try:
             left = response(baseline['name'], query)
             right = response(candidate['name'], query)
@@ -50,7 +62,8 @@ def evaluate_pair(baseline, candidate, mode):
                             'rbo_at_10_p_0_9': round(rbo(ids_a, ids_b), 6)
                             if len(ids_a) == len(ids_b) == 10 else None})
         except (AssertionError, KeyError, RuntimeError, TimeoutError, TypeError, ValueError) as error:
-            errors.append({'query_id': query['query_id'], 'kind': type(error).__name__})
+            errors.append({'query_id': query['query_id'], 'kind': type(error).__name__,
+                           'detail': str(error)[:120]})
     complete = not errors and len(results) == len(suite)
     changed = [row['query_id'] for row in results if not row['equal_top_10']]
     if not complete:
@@ -67,8 +80,12 @@ def evaluate_pair(baseline, candidate, mode):
               'baseline': {'runtime_id': baseline['id'], 'source_sha': baseline['source_sha'], **first},
               'candidate': {'runtime_id': candidate['id'], 'source_sha': candidate['source_sha'], **second},
               'suite_sha256': suite_sha, 'suite_blob': suite_blob,
-              'judgement_sha256': manifest['sha256']['judgements.jsonl'] if mode == 'relevance' else None,
-              'judgement_usage': 'Incomplete positive-only synthetic labels; unjudged products are unknown.'
+              'judgement_sha256': pool_manifest['sha256']['judgements.jsonl'] if mode == 'relevance' else None,
+              'judgement_pool': pool_manifest.get('judgement_pool') if mode == 'relevance' else None,
+              'judgement_usage': ('Symmetric frozen synthetic E/S/C/I pool from baseline and both candidates; '
+                                  'future results may be unjudged.'
+                                  if release_id != 'retail-gb-10k-v1' else
+                                  'Incomplete positive-only synthetic labels; unjudged products are unknown.')
               if mode == 'relevance' else 'Not used for result preservation.',
               'query_count': len(suite), 'completed_query_count': len(results), 'zero_result_counts': zero_counts,
               'changed_query_ids': changed, 'metrics': metrics, 'errors': errors, 'queries': results}

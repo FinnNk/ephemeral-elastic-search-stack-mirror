@@ -22,6 +22,7 @@ LEASE = timedelta(hours=72)
 NAME_PATTERN = re.compile(r'lab-[a-z0-9](?:[a-z0-9-]{0,42}[a-z0-9])?\Z')
 DATASET = 'retail-gb-10k-v1'
 INDEX = 'retail-gb-10k-v1'
+RELEASES = (DATASET, 'retail-gb-1m-v1')
 
 
 def wait_correct_search(name, search_fn=search, timeout_seconds=60):
@@ -64,7 +65,8 @@ class Store:
                 updated_at TEXT NOT NULL, report_sha256 TEXT, report_blob TEXT,
                 verdict TEXT, summary TEXT, error TEXT)''')
             columns = {row['name'] for row in db.execute('PRAGMA table_info(environments)')}
-            for name, field_type in [('index_kind', 'TEXT'), ('index_name', 'TEXT'), ('mapping_sha256', 'TEXT')]:
+            for name, field_type in [('index_kind', 'TEXT'), ('index_name', 'TEXT'),
+                                     ('mapping_sha256', 'TEXT'), ('release_id', 'TEXT')]:
                 if name not in columns:
                     db.execute(f'ALTER TABLE environments ADD COLUMN {name} {field_type}')
             comparison_columns = {row['name'] for row in db.execute('PRAGMA table_info(comparisons)')}
@@ -155,9 +157,10 @@ class LabBackend:
         guard()
         assert not git('status', '--porcelain'), 'Environment state checkout has local changes'
         index = row['index_name'] or INDEX
+        release_id = row.get('release_id') or DATASET
         mapping_sha = row['mapping_sha256']
         if row['index_kind'] == INDEX_KIND:
-            built = ensure_candidate_index(row['name'], row['dataset_sha256'])
+            built = ensure_candidate_index(row['name'], row['dataset_sha256'], release_id=release_id)
             if built['index'] != index or built['mapping_sha256'] != mapping_sha:
                 raise ValueError('Candidate index differs from the pinned environment request.')
         provision_access(row['name'], index)
@@ -196,7 +199,7 @@ class Lifecycle:
         self.lock = threading.RLock()
         self.comparator = comparator
 
-    def create(self, name, build_run, owner='local-operator', index_kind='shared'):
+    def create(self, name, build_run, owner='local-operator', index_kind='shared', release_id=DATASET):
         if not isinstance(name, str) or not NAME_PATTERN.fullmatch(name):
             raise ValueError('Environment name must start with lab- and contain lowercase letters, digits or hyphens.')
         if type(build_run) is not int or build_run <= 0:
@@ -205,6 +208,8 @@ class Lifecycle:
             raise ValueError('A valid owner identity is required.')
         if index_kind not in ('shared', INDEX_KIND):
             raise ValueError('Choose the shared or title-keyword-v1 index kind.')
+        if release_id not in RELEASES:
+            raise ValueError('Choose a frozen release supported by this lab.')
         with self.lock:
             existing = self.store.active_name(name)
             if existing and self.clock() >= parse_stamp(existing['expires_at']):
@@ -214,17 +219,20 @@ class Lifecycle:
                 existing = None
             if existing:
                 if existing['build_run'] != build_run or existing['owner'] != owner or \
-                        (existing['index_kind'] or 'shared') != index_kind:
+                        (existing['index_kind'] or 'shared') != index_kind or \
+                        (existing.get('release_id') or DATASET) != release_id:
                     raise ValueError('An active environment already uses this name with different inputs.')
                 return self.reconcile(existing['id'])
             build = self.backend.build(build_run)
-            manifest = json.loads((STATE / 'releases' / DATASET / 'manifest.json').read_text())
-            mapping_sha = mapping_contract()[1] if index_kind == INDEX_KIND else None
-            target_index = index_name(name) if index_kind == INDEX_KIND else INDEX
+            manifest = json.loads((STATE / 'releases' / release_id / 'manifest.json').read_text())
+            mapping_sha = mapping_contract(release_id)[1] if index_kind == INDEX_KIND else None
+            target_index = index_name(name) if index_kind == INDEX_KIND else release_id
+            product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
             now = self.clock()
             row = {'id': str(uuid.uuid4()), 'name': name, 'owner': owner, 'build_run': build_run,
                    'source_sha': build['source_sha'], 'image': build['image'],
-                   'dataset_sha256': manifest['sha256']['products.jsonl'], 'fingerprint': None,
+                   'dataset_sha256': manifest['sha256'][product_name], 'fingerprint': None,
+                   'release_id': release_id,
                    'index_kind': index_kind, 'index_name': target_index, 'mapping_sha256': mapping_sha,
                    'state': 'requested', 'created_at': stamp(now), 'last_activity_at': stamp(now),
                    'expires_at': stamp(now + LEASE), 'updated_at': stamp(now),
@@ -302,11 +310,15 @@ class Lifecycle:
                 raise KeyError('Environment not found.')
             if baseline['state'] != 'ready' or candidate['state'] != 'ready':
                 raise ValueError('Both environments must be ready.')
+            if (baseline.get('release_id') or DATASET) != (candidate.get('release_id') or DATASET):
+                raise ValueError('Comparisons require the same frozen release.')
             if self.clock() >= parse_stamp(baseline['expires_at']) or self.clock() >= parse_stamp(candidate['expires_at']):
                 raise ValueError('An environment lease has expired.')
             if mode not in ('result-regression', 'relevance', 'performance'):
                 raise ValueError('Unknown comparison mode.')
-            if mode == 'performance' and profile not in ('probe', 'smoke', 'normal', 'peak', 'stress'):
+            if mode == 'performance' and profile not in (
+                    'probe', 'smoke', 'normal', 'peak', 'stress',
+                    'normal-full', 'sustained-peak', 'stress-full'):
                 raise ValueError('Unknown performance profile.')
             self.activity(baseline_id)
             self.activity(candidate_id)

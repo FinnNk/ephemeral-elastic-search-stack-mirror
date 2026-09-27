@@ -16,11 +16,11 @@ NAMESPACE = 'lab-evaluation'
 TARGETS = {'baseline': 'retail-baseline', 'candidate': 'retail-candidate'}
 
 
-def run(profile, target, environment=None):
+def run(profile, target, environment=None, release_id='retail-gb-10k-v1'):
     guard()
     environment = environment or TARGETS[target]
     pinned = definition(environment)
-    workload = compile_profile(profile)
+    workload = compile_profile(profile, release_id)
     short = uuid.uuid4().hex[:8]
     name = 'gatling-' + short
     run_dir = STATE / 'gatling-jobs' / short
@@ -32,15 +32,8 @@ def run(profile, target, environment=None):
             'run-job.sh': (project / 'run-job.sh').read_text(encoding='utf-8')}
     source_name, workload_name = name + '-source', name + '-workload'
     claim = name + '-results'
-    apply({'apiVersion': 'v1', 'kind': 'PersistentVolumeClaim',
-           'metadata': {'name': claim, 'namespace': NAMESPACE},
-           'spec': {'accessModes': ['ReadWriteOnce'], 'resources': {'requests': {'storage': '1Gi'}}}})
-    apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': source_name, 'namespace': NAMESPACE},
-           'data': data})
     source = STATE / 'workloads' / workload['workload_sha256']
     workload_files = {path.name: path.read_text(encoding='utf-8') for path in source.glob('*.csv')}
-    apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': workload_name, 'namespace': NAMESPACE},
-           'data': workload_files})
     job = {'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': name, 'namespace': NAMESPACE,
         'labels': {'lab': 'gatling', 'profile': profile, 'target': target}},
         'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': workload['duration_seconds'] + 480,
@@ -66,6 +59,15 @@ def run(profile, target, environment=None):
                             {'name': 'workload', 'configMap': {'name': workload_name}}]}}}}
     started = time.monotonic()
     try:
+        apply({'apiVersion': 'v1', 'kind': 'PersistentVolumeClaim',
+               'metadata': {'name': claim, 'namespace': NAMESPACE},
+               'spec': {'accessModes': ['ReadWriteOnce'], 'resources': {'requests': {'storage': '1Gi'}}}})
+        k('create', '-f', '-', body={'apiVersion': 'v1', 'kind': 'ConfigMap',
+            'metadata': {'name': source_name, 'namespace': NAMESPACE}, 'data': data})
+        # Client-side apply duplicates the CSV in last-applied-configuration and
+        # exceeds Kubernetes' 256 KiB annotation limit for the peak workload.
+        k('create', '-f', '-', body={'apiVersion': 'v1', 'kind': 'ConfigMap',
+            'metadata': {'name': workload_name, 'namespace': NAMESPACE}, 'data': workload_files})
         apply(job)
         k('wait', '--for=condition=complete', 'job/' + name, '-n', NAMESPACE,
           '--timeout=' + str(workload['duration_seconds'] + 480) + 's')
@@ -92,6 +94,7 @@ def run(profile, target, environment=None):
             raise RuntimeError('Expected one copied Gatling native report.')
         summary = summarise(reports[0], source, run_dir / 'arrivals.csv')
         summary.update({'run_id': short, 'target': target, 'environment': environment,
+            'release_id': release_id,
             'fingerprint': pinned['fingerprint'], 'index': pinned['index'], 'image': pinned['image'],
             'runner_image': IMAGE, 'gatling_version': '3.15.1', 'maven_plugin': '4.21.12',
             'simulation_sha256': hashlib.sha256(SIMULATION.read_bytes()).hexdigest(),
@@ -133,7 +136,9 @@ def run(profile, target, environment=None):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress'))
+    parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress',
+                                            'normal-full', 'sustained-peak', 'stress-full'))
     parser.add_argument('target', choices=TARGETS)
+    parser.add_argument('--release', default='retail-gb-10k-v1')
     args = parser.parse_args()
-    print(json.dumps(run(args.profile, args.target), indent=2))
+    print(json.dumps(run(args.profile, args.target, release_id=args.release), indent=2))

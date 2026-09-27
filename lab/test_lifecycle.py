@@ -83,6 +83,15 @@ class LifecycleContract(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.service.activity(row['id'])
 
+    def test_release_is_immutable_and_cross_release_comparison_is_rejected(self):
+        first = self.service.create('lab-first', 3)
+        second = self.service.create('lab-second', 3)
+        with self.assertRaisesRegex(ValueError, 'different inputs'):
+            self.service.create('lab-first', 3, release_id='retail-gb-1m-v1')
+        self.store.update(second['id'], release_id='retail-gb-1m-v1')
+        with self.assertRaisesRegex(ValueError, 'same frozen release'):
+            self.service.compare(first['id'], second['id'], 'result-regression')
+
     def test_failed_provision_is_cleaned_when_lease_expires(self):
         self.backend.fail_provision = True
         row = self.service.create('lab-partial', 3)

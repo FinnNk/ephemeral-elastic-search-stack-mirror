@@ -1,0 +1,17 @@
+{
+  "count": 39759,
+  "grading": "Retain original frozen grades; apply deterministic rules only to newly pooled result IDs",
+  "kind": "symmetric synthetic result-pool assessments",
+  "limitation": "Rule-based assessments selected after seeing these three result lists; future lists may contain unjudged products.",
+  "original_judgement_sha256": "dbbca3894cf0e8f611fc4c9086d7d1458bbc47196c6750049b0a08c2d477347a",
+  "pool_coverage": "Original twenty-per-query assessments plus top ten from baseline and both candidate types",
+  "query_count": 1000,
+  "query_sha256": "4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946",
+  "release": "retail-gb-1m-v1",
+  "schema_version": 2,
+  "sha256": "38f3221880d7d7359fac2a919ed9688aa85c5d6c7ee69c8c448725b1f36eeace",
+  "source_report_sha256": [
+    "4bf7707aad7a65f44721a26f9913ab1e663d9baba79f36709ed03ac91c254d99",
+    "933403122cc403c611f7c641ec2296c4cae6921504fb0f870f69a16493ee25ba"
+  ]
+}
