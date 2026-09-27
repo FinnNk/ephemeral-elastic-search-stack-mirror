@@ -18,7 +18,9 @@ from data_contract import elastic
 from environments import REPO, build_record, define, git, provision_access, publish
 from measure import search
 from deploy_candidate import wait_healthy
-from index_candidate import KIND as INDEX_KIND, index_name, mapping_contract, ensure_candidate_index, remove_candidate_index
+from index_candidate import KIND as INDEX_KIND, available_kinds, index_name, mapping_contract, ensure_candidate_index, remove_candidate_index
+from index_recipe import current_recipe, digest as recipe_digest, load as load_index_recipe, publish as publish_index_recipe, validate as validate_index_recipe
+from shared_index import ensure_shared_index
 
 LEASE = timedelta(hours=72)
 NAME_PATTERN = re.compile(r'lab-[a-z0-9](?:[a-z0-9-]{0,42}[a-z0-9])?\Z')
@@ -68,7 +70,8 @@ class Store:
                 verdict TEXT, summary TEXT, error TEXT)''')
             columns = {row['name'] for row in db.execute('PRAGMA table_info(environments)')}
             for name, field_type in [('index_kind', 'TEXT'), ('index_name', 'TEXT'),
-                                     ('mapping_sha256', 'TEXT'), ('release_id', 'TEXT')]:
+                                     ('mapping_sha256', 'TEXT'), ('release_id', 'TEXT'),
+                                     ('index_recipe_sha256', 'TEXT')]:
                 if name not in columns:
                     db.execute(f'ALTER TABLE environments ADD COLUMN {name} {field_type}')
             comparison_columns = {row['name'] for row in db.execute('PRAGMA table_info(comparisons)')}
@@ -103,6 +106,12 @@ class Store:
         with self.connection() as db:
             row = db.execute("SELECT * FROM environments WHERE name=? AND state!='deleted' ORDER BY created_at DESC LIMIT 1",
                              (name,)).fetchone()
+        return dict(row) if row else None
+
+    def recipe_record(self, recipe_sha256):
+        with self.connection() as db:
+            row = db.execute('SELECT * FROM environments WHERE index_recipe_sha256=? LIMIT 1',
+                             (recipe_sha256,)).fetchone()
         return dict(row) if row else None
 
     def all(self):
@@ -183,18 +192,34 @@ class LabBackend:
     def build(self, run_id):
         return build_record(run_id)
 
+    def pin_index_recipe(self, release_id, index_kind, manifest, recipe_sha256=None):
+        engine = elastic('/')['version']['number']
+        recipe = (load_index_recipe(recipe_sha256) if recipe_sha256 else
+                  current_recipe(release_id, index_kind, manifest, engine,
+                                 None if index_kind == 'shared' else mapping_contract(release_id, index_kind)[0]))
+        validate_index_recipe(recipe, release_id, manifest, engine)
+        if recipe['index_kind'] != index_kind:
+            raise ValueError('Frozen index recipe has a different index kind.')
+        return {'sha256': recipe_sha256 or publish_index_recipe(recipe),
+                'mapping_sha256': recipe_digest(recipe['index_definition'])}
+
     def provision(self, row):
         guard()
         assert not git('status', '--porcelain'), 'Environment state checkout has local changes'
         index = row['index_name'] or INDEX
         release_id = row.get('release_id') or DATASET
         mapping_sha = row['mapping_sha256']
-        if row['index_kind'] == INDEX_KIND:
-            built = ensure_candidate_index(row['name'], row['dataset_sha256'], release_id=release_id)
+        if row['index_kind'] == 'shared' and row.get('index_recipe_sha256'):
+            ensure_shared_index(release_id, row['dataset_sha256'], row['index_recipe_sha256'])
+        elif row['index_kind'] != 'shared':
+            built = ensure_candidate_index(row['name'], row['dataset_sha256'], release_id=release_id,
+                                           recipe_sha256=row.get('index_recipe_sha256'),
+                                           index_kind=row['index_kind'])
             if built['index'] != index or built['mapping_sha256'] != mapping_sha:
                 raise ValueError('Candidate index differs from the pinned environment request.')
         provision_access(row['name'], index)
-        definition = define(row['name'], row['image'], index, row['dataset_sha256'], mapping_sha)
+        definition = define(row['name'], row['image'], index, row['dataset_sha256'], mapping_sha,
+                            row.get('index_recipe_sha256'))
         if git('status', '--porcelain'):
             publish('Provision ' + row['name'])
         wait_healthy(row['name'])
@@ -204,6 +229,10 @@ class LabBackend:
     def provision_many(self, rows):
         guard()
         assert not git('status', '--porcelain'), 'Environment state checkout has local changes'
+        for release_id, dataset_sha, recipe_sha in {
+                (row['release_id'], row['dataset_sha256'], row['index_recipe_sha256']) for row in rows
+                if row.get('index_recipe_sha256')}:
+            ensure_shared_index(release_id, dataset_sha, recipe_sha)
         prepared = {}
         results = {}
         for row in rows:
@@ -212,7 +241,7 @@ class LabBackend:
                     raise ValueError('Bulk provisioning is for shared-index API environments.')
                 provision_access(row['name'], row['index_name'])
                 prepared[row['name']] = define(row['name'], row['image'], row['index_name'],
-                    row['dataset_sha256'], row['mapping_sha256'])['fingerprint']
+                    row['dataset_sha256'], row['mapping_sha256'], row.get('index_recipe_sha256'))['fingerprint']
             except Exception as error:
                 results[row['name']] = {'error': type(error).__name__ + ': ' + str(error)}
         if git('status', '--porcelain'):
@@ -256,7 +285,7 @@ class LabBackend:
             except urllib.error.HTTPError as error:
                 if error.code != 404:
                     raise
-        if row['index_kind'] == INDEX_KIND:
+        if row['index_kind'] != 'shared':
             remove_candidate_index(name)
         # The shared index, canonical release and immutable reports remain.
 
@@ -290,7 +319,7 @@ class LabBackend:
                 except urllib.error.HTTPError as error:
                     if error.code != 404:
                         raise
-            if row['index_kind'] == INDEX_KIND:
+            if row['index_kind'] != 'shared':
                 remove_candidate_index(row['name'])
 
 
@@ -301,17 +330,20 @@ class Lifecycle:
         self.performance_lock = threading.Lock()
         self.comparator = comparator
 
-    def create(self, name, build_run, owner='local-operator', index_kind='shared', release_id=DATASET):
+    def create(self, name, build_run, owner='local-operator', index_kind='shared', release_id=DATASET,
+               index_recipe_sha256=None):
         if not isinstance(name, str) or not NAME_PATTERN.fullmatch(name):
             raise ValueError('Environment name must start with lab- and contain lowercase letters, digits or hyphens.')
         if type(build_run) is not int or build_run <= 0:
             raise ValueError('A successful numeric Gitea build run is required.')
         if not isinstance(owner, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,64}', owner):
             raise ValueError('A valid owner identity is required.')
-        if index_kind not in ('shared', INDEX_KIND):
-            raise ValueError('Choose the shared or title-keyword-v1 index kind.')
+        if index_kind != 'shared' and index_kind not in available_kinds(release_id) and not index_recipe_sha256:
+            raise ValueError('Choose a shared index or a versioned index kind available for this release.')
         if release_id not in RELEASES:
             raise ValueError('Choose a frozen release supported by this lab.')
+        if index_recipe_sha256 and not self.store.recipe_record(index_recipe_sha256):
+            raise ValueError('Historical index recipe is not pinned by a lab environment.')
         with self.lock:
             existing = self.store.active_name(name)
             if existing and self.clock() >= parse_stamp(existing['expires_at']):
@@ -322,13 +354,15 @@ class Lifecycle:
             if existing:
                 if existing['build_run'] != build_run or existing['owner'] != owner or \
                         (existing['index_kind'] or 'shared') != index_kind or \
-                        (existing.get('release_id') or DATASET) != release_id:
+                        (existing.get('release_id') or DATASET) != release_id or \
+                        (index_recipe_sha256 and existing.get('index_recipe_sha256') != index_recipe_sha256):
                     raise ValueError('An active environment already uses this name with different inputs.')
                 return self.reconcile(existing['id'])
             build = self.backend.build(build_run)
             manifest = json.loads((STATE / 'releases' / release_id / 'manifest.json').read_text())
-            mapping_sha = mapping_contract(release_id)[1] if index_kind == INDEX_KIND else None
-            target_index = index_name(name) if index_kind == INDEX_KIND else release_id
+            pinned = self.backend.pin_index_recipe(release_id, index_kind, manifest, index_recipe_sha256)
+            mapping_sha = pinned['mapping_sha256']
+            target_index = index_name(name) if index_kind != 'shared' else release_id
             product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
             now = self.clock()
             row = {'id': str(uuid.uuid4()), 'name': name, 'owner': owner, 'build_run': build_run,
@@ -336,6 +370,7 @@ class Lifecycle:
                    'dataset_sha256': manifest['sha256'][product_name], 'fingerprint': None,
                    'release_id': release_id,
                    'index_kind': index_kind, 'index_name': target_index, 'mapping_sha256': mapping_sha,
+                   'index_recipe_sha256': pinned['sha256'],
                    'state': 'requested', 'created_at': stamp(now), 'last_activity_at': stamp(now),
                    'expires_at': stamp(now + LEASE), 'updated_at': stamp(now),
                    'error': None, 'deleted_at': None}
@@ -359,6 +394,7 @@ class Lifecycle:
                 raise ValueError('An active environment already uses a requested name.')
             build = self.backend.build(build_run)
             manifest = json.loads((STATE / 'releases' / release_id / 'manifest.json').read_text())
+            pinned = self.backend.pin_index_recipe(release_id, 'shared', manifest)
             product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
             now = self.clock()
             rows = []
@@ -367,7 +403,9 @@ class Lifecycle:
                        'source_sha': build['source_sha'], 'image': build['image'],
                        'dataset_sha256': manifest['sha256'][product_name], 'fingerprint': None,
                        'release_id': release_id, 'index_kind': 'shared', 'index_name': release_id,
-                       'mapping_sha256': None, 'state': 'requested', 'created_at': stamp(now),
+                       'mapping_sha256': pinned['mapping_sha256'],
+                       'index_recipe_sha256': pinned['sha256'],
+                       'state': 'requested', 'created_at': stamp(now),
                        'last_activity_at': stamp(now), 'expires_at': stamp(now + LEASE),
                        'updated_at': stamp(now), 'error': None, 'deleted_at': None}
                 rows.append(self.store.put(row))

@@ -126,6 +126,12 @@ A live baseline-versus-price run changed 50 ordered top tens. The relevance scor
 
 Choose **Dedicated title-keyword-v1 index** in the control UI when creating a candidate. The mapping is versioned in [`mappings/title-keyword-v1.json`](mappings/title-keyword-v1.json); it maps `title` as `keyword` instead of `text`. The lifecycle builds a separate index from the canonical Floci release with a finite indexing Job, verifies its mapping, count and write block, and then deploys the pinned API with an index-scoped read credential. The candidate fingerprint includes the mapping hash. The shared-index option remains the default.
 
+New environments retain an index recipe SHA-256 in their record. The recipe is stored by content hash in the configured Blob container under `index-recipes/`; it includes the complete mapping, settings, frozen release identity, Elasticsearch version and pinned indexer. To recreate a deleted historical definition, use its Gitea build run, release and index kind in **Create an environment**, and paste its recorded **Index recipe** SHA-256. Use a different name if the original name is active. The lab checks the stored recipe and builds a missing dedicated index from the old definition, even if the mapping file has since changed. The same recipe can be passed as `index_recipe_sha256` to `POST /api/environments`.
+
+The shared baseline is verified against its recipe before use. Its release-named index is never replaced when the schema differs: build schema variants as dedicated indices. An old recipe needs its original Elasticsearch version, or a separate compatible engine cluster. Records created before this feature have no stored recipe; their mapping hash alone does not restore the old definition. Keep the Blob container and lifecycle metadata when archiving the lab.
+
+To exercise a disposable historical rebuild and schema change against the 10,000-product release, run `python lab/verify_historical_index.py` from the repository root with the platform and Blob port forward running. It builds an old index, deletes and recreates it from its recipe while the current mapping lookup is disabled, builds a changed mapping beside it, then removes both check indices. The shared baseline is retained. [Measured result](../docs/research/evidence/historical-index-recipes.md).
+
 Two reproducible walkthroughs exercise the lifecycle directly and through the authenticated control API:
 
 ```powershell

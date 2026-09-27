@@ -18,6 +18,10 @@ class FakeBackend:
     def build(self, run_id):
         return {'source_sha': 'a' * 40, 'image': 'registry/repo@sha256:' + 'b' * 64}
 
+    def pin_index_recipe(self, release_id, index_kind, manifest, recipe_sha256=None):
+        return {'sha256': recipe_sha256 or 'e' * 64,
+                'mapping_sha256': mapping_contract(release_id)[1]}
+
     def provision(self, row):
         self.provisions.append(row['name'])
         if self.fail_provision:
@@ -154,11 +158,23 @@ class LifecycleContract(unittest.TestCase):
         persisted = Store(self.store.path).get(row['id'])
         self.assertEqual(persisted['index_name'], index_name('lab-mapped'))
         self.assertEqual(persisted['mapping_sha256'], mapping_contract()[1])
+        self.assertEqual(persisted['index_recipe_sha256'], 'e' * 64)
         self.assertEqual(self.service.create('lab-mapped', 3, index_kind=INDEX_KIND)['id'], row['id'])
         with self.assertRaises(ValueError):
             self.service.create('lab-mapped', 3, index_kind='shared')
         with self.assertRaises(ValueError):
             self.service.create('lab-other', 3, index_kind='unknown')
+
+    def test_deleted_environment_recipe_can_be_selected_again(self):
+        old = self.service.create('lab-old-schema', 3, index_kind=INDEX_KIND)
+        self.service.delete(old['id'])
+        with self.assertRaisesRegex(ValueError, 'not pinned'):
+            self.service.create('lab-forged', 3, index_kind=INDEX_KIND,
+                                index_recipe_sha256='f' * 64)
+        recreated = self.service.create('lab-recreated-schema', 3, index_kind=INDEX_KIND,
+                                        index_recipe_sha256=old['index_recipe_sha256'])
+        self.assertEqual(recreated['index_recipe_sha256'], old['index_recipe_sha256'])
+        self.assertNotEqual(recreated['id'], old['id'])
 
     def test_comparison_is_persisted_and_incomplete_cannot_pass(self):
         baseline = self.service.create('lab-baseline', 3)

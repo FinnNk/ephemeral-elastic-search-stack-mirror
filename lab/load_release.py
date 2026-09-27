@@ -17,6 +17,20 @@ from azure.core.exceptions import ResourceExistsError
 RELEASE = 'retail-gb-10k-v1'
 INDEX = RELEASE
 DATA = STATE / 'releases' / RELEASE
+BASELINE_MAPPING = {
+    'settings': {'number_of_shards': 1, 'number_of_replicas': 0},
+    'mappings': {'properties': {
+        'product_id': {'type': 'keyword'}, 'sku': {'type': 'keyword'},
+        'title': {'type': 'text'}, 'description': {'type': 'text'},
+        'brand': {'type': 'text'}, 'product_type': {'type': 'text'},
+        'category': {'type': 'keyword'}, 'colour': {'type': 'keyword'},
+        'material': {'type': 'keyword'}, 'country': {'type': 'keyword'},
+        'currency': {'type': 'keyword'}, 'price_minor': {'type': 'integer'},
+        'available': {'type': 'boolean'}, 'popularity': {'type': 'float'},
+    }},
+}
+INDEXER_IMAGE = ('python:3.13.7-alpine3.22@sha256:'
+                 '9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844')
 
 
 def publish_blobs(manifest, data_dir=DATA):
@@ -56,18 +70,7 @@ def publish_blobs(manifest, data_dir=DATA):
 
 
 def create_index():
-    mapping = {
-        'settings': {'number_of_shards': 1, 'number_of_replicas': 0},
-        'mappings': {'properties': {
-            'product_id': {'type': 'keyword'}, 'sku': {'type': 'keyword'},
-            'title': {'type': 'text'}, 'description': {'type': 'text'},
-            'brand': {'type': 'text'}, 'product_type': {'type': 'text'},
-            'category': {'type': 'keyword'}, 'colour': {'type': 'keyword'},
-            'material': {'type': 'keyword'}, 'country': {'type': 'keyword'},
-            'currency': {'type': 'keyword'}, 'price_minor': {'type': 'integer'},
-            'available': {'type': 'boolean'}, 'popularity': {'type': 'float'},
-        }},
-    }
+    mapping = BASELINE_MAPPING
     try:
         elastic('/' + INDEX, 'PUT', mapping)
         return True
@@ -80,7 +83,8 @@ def create_index():
 
 
 def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer',
-              expected_count=10_000, compression='none', deadline_seconds=300):
+              expected_count=10_000, compression='none', deadline_seconds=300,
+              worker_source=None, worker_image=INDEXER_IMAGE):
     password = secrets.token_urlsafe(24)
     dataset_url = signed_read_url(blob_path,
         datetime.now(timezone.utc) + timedelta(seconds=deadline_seconds + 300))
@@ -94,11 +98,12 @@ def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer',
         cert = json.loads(k('get', 'secret/shared-es-http-certs-public', '-n', 'platform', '-o', 'json').stdout)['data']
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role + '-ca', 'namespace': 'platform'}, 'data': cert})
         apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': role, 'namespace': 'platform'},
-            'data': {'index_job.py': (ROOT / 'research/platform-spike/index_job.py').read_text()}})
+            'data': {'index_job.py': worker_source if worker_source is not None else
+                     (ROOT / 'research/platform-spike/index_job.py').read_text(encoding='utf-8')}})
         apply({'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': role, 'namespace': 'platform'},
             'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': deadline_seconds, 'template': {'spec': {
                 'automountServiceAccountToken': False, 'restartPolicy': 'Never',
-                'containers': [{'name': 'index', 'image': 'python:3.13.7-alpine3.22',
+                'containers': [{'name': 'index', 'image': worker_image,
                     'command': ['python', '/source/index_job.py'],
                     'envFrom': [{'secretRef': {'name': role}}],
                     'resources': {'requests': {'cpu': '100m', 'memory': '64Mi'},
