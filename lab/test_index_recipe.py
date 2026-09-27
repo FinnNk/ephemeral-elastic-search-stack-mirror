@@ -9,11 +9,32 @@ from unittest.mock import patch
 sys.path.insert(0, 'research/platform-spike')
 from common import STATE
 from index_candidate import KIND, mapping_contract
-from index_recipe import current_recipe, digest, validate
+from index_recipe import catalogue_recipe, current_recipe, digest, validate
 from environments import define
 
 
 class FrozenRecipeContract(unittest.TestCase):
+    def test_catalogue_recipe_ignores_query_and_judgement_revision(self):
+        manifest = json.loads((STATE / 'releases/retail-gb-10k-v1/manifest.json').read_text())
+        product_hash = manifest['sha256']['products.jsonl']
+        catalogue = {'kind': 'catalogue', 'schema_version': 1,
+                     'content': {'sha256': product_hash,
+                                 'object': 'catalogue/' + product_hash + '/products.jsonl',
+                                 'format': 'jsonl', 'compression': 'none'},
+                     'record_count': manifest['count']}
+        recipe = catalogue_recipe('retail-gb-10k-v1', KIND, catalogue,
+                                  '9.5.4', mapping_contract()[0])
+        self.assertEqual(recipe['format'], 2)
+        self.assertNotIn('release_manifest_sha256', recipe)
+        changed_evaluation_inputs = copy.deepcopy(manifest)
+        changed_evaluation_inputs['sha256']['queries.jsonl'] = 'a' * 64
+        changed_evaluation_inputs['sha256']['judgements.jsonl'] = 'b' * 64
+        validate(recipe, 'retail-gb-10k-v1', changed_evaluation_inputs, '9.5.4', catalogue)
+        altered_catalogue = copy.deepcopy(catalogue)
+        altered_catalogue['record_count'] += 1
+        with self.assertRaisesRegex(ValueError, 'Catalogue artifact differs'):
+            validate(recipe, catalogue_manifest=altered_catalogue)
+
     def test_recipe_change_changes_environment_fingerprint(self):
         with tempfile.TemporaryDirectory() as directory, patch('environments.REPO', Path(directory)):
             first = define('lab-recipe-fingerprint', 'registry/image@sha256:' + 'a' * 64,

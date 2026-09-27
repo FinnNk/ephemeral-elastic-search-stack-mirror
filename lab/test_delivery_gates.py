@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import unittest
 from unittest.mock import patch
 
-from delivery_gates import check_report, validate_evidence
+from delivery_gates import check_report, validate_evidence, validate_offline_addendum
 from delivery_runtime import compatible
 from delivery_promote import validate_pr
 
@@ -47,6 +47,34 @@ class PromotionGateTests(unittest.TestCase):
                 validate_evidence({}, 'B', 'C', 'preserve-results')
             with self.assertRaisesRegex(ValueError, 'stale'):
                 validate_evidence({}, 'B', 'C', 'ranking-change')
+
+    def test_optional_offline_report_matches_delivery_capture_and_pinned_policy(self):
+        from pathlib import Path
+        import json
+        policy = (Path(__file__).parent / 'delivery/policies/observation-evidence-v1.json').read_bytes()
+        expected = {key: key for key in ('catalogue_sha256', 'query_suite_sha256',
+                    'observation_sha256', 'judgement_sha256', 'judgement_manifest_sha256',
+                    'specification_sha256', 'evaluator_sha256')}
+        expected.update(baseline_fingerprint='B', candidate_fingerprint='C')
+        now = datetime.now(timezone.utc).isoformat()
+        report = {'kind': 'offline-evaluation-report', 'schema_version': 1, 'complete': True,
+                  **expected, 'query_count': 2, 'observation_captured_at': now,
+                  'evaluated_at': now, 'metrics': {'baseline': {'nDCG@10': 0.3, 'Judged@10': 0.2},
+                                                  'candidate': {'nDCG@10': 0.4, 'Judged@10': 0.2}},
+                  'coverage': {'baseline': {'fraction': 0.2}, 'candidate': {'fraction': 0.2}}}
+        relevance = {'baseline': {'dataset_sha256': 'catalogue_sha256'},
+                     'candidate': {'dataset_sha256': 'catalogue_sha256'},
+                     'suite_sha256': 'query_suite_sha256',
+                     'observation_sha256': 'observation_sha256'}
+        addendum = {'expected': expected, 'report': {}, 'policy': {}}
+        with patch('delivery_gates.read_offline', side_effect=[json.dumps(report).encode(), policy]):
+            self.assertTrue(validate_offline_addendum(addendum, relevance, 'B', 'C')['review_required'])
+        changed = {**relevance, 'observation_sha256': 'another-capture'}
+        with self.assertRaisesRegex(ValueError, 'another delivery execution'):
+            validate_offline_addendum(addendum, changed, 'B', 'C')
+        with patch('delivery_gates.read_offline', side_effect=[json.dumps(report).encode(), b'{}']):
+            with self.assertRaisesRegex(ValueError, 'pinned delivery policy'):
+                validate_offline_addendum(addendum, relevance, 'B', 'C')
 
     def test_schema_engine_or_indexer_drift_rejected(self):
         recipe = {'engine_version': '9.5.4', 'index_definition': {'settings': {}, 'mappings': {}},

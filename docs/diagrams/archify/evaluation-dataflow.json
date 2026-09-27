@@ -18,7 +18,7 @@
       "label": "Search APIs"
     },
     {
-      "label": "Final results"
+      "label": "Observations"
     },
     {
       "label": "Evaluation"
@@ -46,8 +46,8 @@
     },
     {
       "id": "queries",
-      "label": "Query set",
-      "sublabel": "Same requests + context",
+      "label": "Query suite",
+      "sublabel": "Frozen requests",
       "stage": 0,
       "row": 1,
       "type": "database"
@@ -73,7 +73,7 @@
     {
       "id": "baselineresults",
       "label": "B results",
-      "sublabel": "Ordered product IDs",
+      "sublabel": "IDs + errors",
       "stage": 2,
       "row": 0,
       "type": "frontend"
@@ -81,7 +81,7 @@
     {
       "id": "candidateresults",
       "label": "C results",
-      "sublabel": "Ordered product IDs",
+      "sublabel": "IDs + errors",
       "stage": 2,
       "row": 2,
       "type": "frontend"
@@ -89,7 +89,7 @@
     {
       "id": "judgements",
       "label": "Judgements",
-      "sublabel": "Same frozen ratings",
+      "sublabel": "Versioned grades",
       "stage": 3,
       "row": 0,
       "type": "database"
@@ -97,15 +97,15 @@
     {
       "id": "evaluator",
       "label": "Evaluator",
-      "sublabel": "Judged relevance",
+      "sublabel": "Pinned metrics",
       "stage": 3,
       "row": 1,
       "type": "backend"
     },
     {
       "id": "report",
-      "label": "Comparison",
-      "sublabel": "B + C fingerprints",
+      "label": "Report",
+      "sublabel": "Input hashes",
       "stage": 4,
       "row": 1,
       "type": "database"
@@ -175,19 +175,19 @@
     {
       "from": "baselineresults",
       "to": "evaluator",
-      "label": "Baseline IDs",
+      "label": "B results",
       "variant": "emphasis"
     },
     {
       "from": "candidateresults",
       "to": "evaluator",
-      "label": "Candidate IDs",
+      "label": "C results",
       "variant": "emphasis"
     },
     {
       "from": "judgements",
       "to": "evaluator",
-      "label": "Ratings",
+      "label": "Grades",
       "labelDy": 35
     },
     {
@@ -200,17 +200,17 @@
   "cards": [
     {
       "dot": "violet",
-      "title": "Each definition pins its inputs",
+      "title": "Each environment pins its index",
       "items": [
-        "API image, query assets/config, index, dataset and engine version"
+        "API image, query config, catalogue, recipe and engine"
       ]
     },
     {
       "dot": "emerald",
-      "title": "Resources may be shared",
+      "title": "Score again without another search",
       "items": [
-        "Compatible definitions can reference one read-only index",
-        "Both result sets retain their own fingerprint and diagnostics"
+        "Observations keep both ordered result sets and fingerprints",
+        "New judgements or metrics produce another retained report"
       ]
     }
   ]

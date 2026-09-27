@@ -19,7 +19,9 @@ from environments import REPO, build_record, define, git, provision_access, publ
 from measure import search
 from deploy_candidate import wait_healthy
 from index_candidate import KIND as INDEX_KIND, available_kinds, index_name, mapping_contract, ensure_candidate_index, remove_candidate_index
-from index_recipe import current_recipe, digest as recipe_digest, load as load_index_recipe, publish as publish_index_recipe, validate as validate_index_recipe
+from index_recipe import (current_recipe, digest as recipe_digest, load as load_index_recipe,
+                          publish as publish_index_recipe, validate as validate_index_recipe,
+                          verify_catalogue_manifest)
 from shared_index import ensure_shared_index
 
 LEASE = timedelta(hours=72)
@@ -82,6 +84,9 @@ class Store:
                 db.execute('ALTER TABLE comparisons ADD COLUMN profile TEXT')
             if 'scope' not in comparison_columns:
                 db.execute('ALTER TABLE comparisons ADD COLUMN scope TEXT')
+            for name in ('observation_sha256', 'observation_blob'):
+                if name not in comparison_columns:
+                    db.execute(f'ALTER TABLE comparisons ADD COLUMN {name} TEXT')
             db.execute("CREATE UNIQUE INDEX IF NOT EXISTS active_environment_name "
                        "ON environments(name) WHERE state!='deleted'")
 
@@ -353,7 +358,14 @@ class Lifecycle:
         if release_id not in RELEASES:
             raise ValueError('Choose a frozen release supported by this lab.')
         if index_recipe_sha256 and not self.store.recipe_record(index_recipe_sha256):
-            raise ValueError('Historical index recipe is not pinned by a lab environment.')
+            from azure.core.exceptions import ResourceNotFoundError
+            try:
+                selected_recipe = load_index_recipe(index_recipe_sha256)
+            except ResourceNotFoundError:
+                raise ValueError('Historical index recipe is not pinned by a lab environment.') from None
+            if selected_recipe.get('format') != 2:
+                raise ValueError('Historical index recipe is not pinned by a lab environment.')
+            verify_catalogue_manifest(selected_recipe)
         with self.lock:
             existing = self.store.active_name(name)
             if existing and self.clock() >= parse_stamp(existing['expires_at']):
@@ -591,7 +603,9 @@ class Lifecycle:
         return self.store.update_comparison(comparison_id,
             state='complete' if summary['complete'] else 'incomplete',
             updated_at=stamp(self.clock()), report_sha256=summary['report_sha256'],
-            report_blob=summary['report_blob'], verdict=summary['verdict'],
+            report_blob=summary['report_blob'],
+            observation_sha256=summary.get('observation_sha256'),
+            observation_blob=summary.get('observation_blob'), verdict=summary['verdict'],
             summary=json.dumps(summary, sort_keys=True))
 
 

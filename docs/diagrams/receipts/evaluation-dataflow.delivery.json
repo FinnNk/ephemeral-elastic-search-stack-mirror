@@ -6,12 +6,12 @@
   "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\evaluation-dataflow.json",
   "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\evaluation-dataflow.html",
   "specification": {
-    "sha256": "4a9e5a3ada159da494ae6a332192b8784ffb3f6b8695f4421094045b3bc9d284",
-    "bytes": 4512
+    "sha256": "76be568b81a7cbcd5cd78bb444559281587a60bade8df14529e37e96c5ba8b71",
+    "bytes": 4466
   },
   "artifact": {
-    "sha256": "5590f69c13c360b7690db6a7049fc6d2216c00f6acbc7f1ab00b1421dfa66dc1",
-    "bytes": 811738
+    "sha256": "f15f82667603f784f25f919e0f005133258039db97b7ec121ca31fc843eb6502",
+    "bytes": 811565
   },
   "validation": {
     "checksPassed": 9,

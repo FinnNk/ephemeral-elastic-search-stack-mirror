@@ -43,8 +43,10 @@ Object.assign(styles.find(s => s.tag === 'Person'), {height:380});
 Object.assign(styles.find(s => s.tag === 'Deployment Node'), {background:'#f4f7fa',color:'#25364b'});
 
 const context = workspace.views.systemContextViews[0];
-position(context, {'Lab user':[100,100],'Platform engineer':[100,850],
-  'Search relevance lab':[900,450],'Source and build platform':[1700,100],'Deployment platform':[1700,950]});
+position(context, {'Lab user':[100,100],'Platform engineer':[100,1050],
+  'Synthetic input production':[950,100],'Search relevance lab':[950,650],
+  'Offline evaluation':[1900,1850],'Source and build platform':[1900,100],
+  'Deployment platform':[1900,1250]});
 // The context focuses on explicit system contracts; detailed ECK control is in the model.
 context.relationships = context.relationships.filter(r => {
   const m=relationships.get(r.id); return !(name(m.sourceId)==='Deployment platform' && name(m.destinationId)==='Search relevance lab');
@@ -68,12 +70,11 @@ route(control,'Lab API','Source and build platform',[[820,500],[820,230]],55);
 route(control,'Source and build platform','Lab API',[[1430,230],[1430,500]],55);
 
 const evaluation = workspace.views.containerViews.find(v=>v.key==='03-evaluation');
-position(evaluation, {'Dataset and workload generator':[100,100],'Artifact store':[900,100],'Index build job':[1700,100],
-  'Evaluation job':[100,800],'Search API':[900,800],'Shared search engine':[1700,800],
+position(evaluation, {'Workload compiler':[100,100],'Artifact store':[900,100],
+  'Index build job':[1700,100],'Observation capture job':[100,800],
+  'Search API':[900,800],'Shared search engine':[1700,800],
   'Gatling load job':[900,1500],'Index snapshot repository':[1700,1500]});
-route(evaluation,'Evaluation job','Shared search engine',[[310,1260],[1910,1260]],80);
 route(evaluation,'Gatling load job','Artifact store',[[1360,1630],[1360,500],[1250,500]],35);
-
 route(evaluation,'Gatling load job','Search API',[],75);
 
 const create = workspace.views.dynamicViews[0];
@@ -122,7 +123,8 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Experiment namespaces':{x:160,y:3650,cols:3},
   'Indexing namespace':{x:1480,y:3650,cols:1},
   'Shared search namespace':{x:2080,y:3650,cols:1},
-  'Comparison jobs':{x:160,y:4350,cols:2}
+  'Comparison jobs':{x:160,y:4350,cols:2},
+  'Independent input and scoring jobs':{x:1480,y:4350,cols:2}
 });
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Organisation delivery services':{x:160,y:160,cols:2},
@@ -132,9 +134,10 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Managed control plane':{x:2080,y:1450,cols:1},
   'Experiment worker nodes':{x:160,y:2950,cols:3},
   'Shared Elasticsearch nodes':{x:2080,y:2950,cols:1},
-  'Comparison workers':{x:160,y:3530,cols:2}
+  'Comparison workers':{x:160,y:3530,cols:2},
+  'Independent input and scoring jobs':{x:1480,y:3530,cols:2}
 });
-const canvases = {'01-context':[2380,1500], '02-control':[2380,2250],
+const canvases = {'01-context':[2900,2300], '02-control':[2380,2250],
   '03-evaluation':[2380,2110], '04-create':[2850,1450],
   '05-local':[2800,5250], '06-azure':[2800,4310], '18-delivery':[3250,2150]};
 for (const collection of ['systemContextViews','containerViews','dynamicViews','deploymentViews']) {
