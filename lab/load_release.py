@@ -10,9 +10,9 @@ from pathlib import Path
 
 sys.path.insert(0, 'research/platform-spike')
 from common import ROOT, STATE, apply, guard, k, record
-from data_contract import DEMO_KEY, elastic
+from data_contract import elastic
+from blob_config import service, settings, signed_read_url
 from azure.core.exceptions import ResourceExistsError
-from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
 
 RELEASE = 'retail-gb-10k-v1'
 INDEX = RELEASE
@@ -23,9 +23,10 @@ def publish_blobs(manifest, data_dir=DATA):
     data_dir = Path(data_dir)
     release = manifest['release']
     product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
-    account = BlobServiceClient(account_url='http://127.0.0.1:14577/devstoreaccount1', credential=DEMO_KEY)
+    account = service()
+    _, container, _, _ = settings()
     try:
-        account.create_container('datasets')
+        account.create_container(container)
     except ResourceExistsError:
         pass
     for name in (product_name, 'queries.jsonl', 'judgements.jsonl', 'manifest.json'):
@@ -39,7 +40,7 @@ def publish_blobs(manifest, data_dir=DATA):
         if expected:
             assert local_hash == expected
         path = f'{release}/{name}'
-        blob = account.get_blob_client('datasets', path)
+        blob = account.get_blob_client(container, path)
         try:
             with source.open('rb') as local:
                 blob.upload_blob(local, overwrite=False, length=source.stat().st_size)
@@ -81,15 +82,14 @@ def create_index():
 def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer',
               expected_count=10_000, compression='none', deadline_seconds=300):
     password = secrets.token_urlsafe(24)
-    sas = generate_blob_sas('devstoreaccount1', 'datasets', blob_path, account_key=DEMO_KEY,
-        permission=BlobSasPermissions(read=True),
-        expiry=datetime.now(timezone.utc) + timedelta(seconds=deadline_seconds + 300))
+    dataset_url = signed_read_url(blob_path,
+        datetime.now(timezone.utc) + timedelta(seconds=deadline_seconds + 300))
     elastic('/_security/role/' + role, 'PUT', {'indices': [{'names': [index], 'privileges': ['write', 'maintenance']} ]})
     elastic('/_security/user/' + role, 'PUT', {'password': password, 'roles': [role]})
     try:
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role, 'namespace': 'platform'},
             'stringData': {'ES_USER': role, 'ES_PASSWORD': password, 'ES_INDEX': index,
-                'DATASET_URL': 'http://floci.platform.svc:4577/devstoreaccount1/datasets/' + blob_path + '?' + sas,
+                'DATASET_URL': dataset_url,
                 'DATASET_SHA256': digest, 'DATASET_COMPRESSION': compression}})
         cert = json.loads(k('get', 'secret/shared-es-http-certs-public', '-n', 'platform', '-o', 'json').stdout)['data']
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role + '-ca', 'namespace': 'platform'}, 'data': cert})

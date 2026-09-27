@@ -11,7 +11,10 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             runner = container "Build runner" "Tests source and publishes a pinned image." "Gitea Actions locally; target runner TBC" {
                 tags "Platform"
             }
-            enterprise = container "Enterprise source and registry" "Hosts source and images after migration." "GitHub Enterprise / OCI" {
+            enterprise = container "GitHub Enterprise Server" "Hosts source, pull requests and build events after migration." "GitHub Enterprise Server" {
+                tags "Future"
+            }
+            registry = container "Azure Container Registry" "Retains tested image digests for AKS." "OCI registry" {
                 tags "Future"
             }
         }
@@ -27,9 +30,9 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             }
         }
         lab = softwareSystem "Search relevance lab" "Creates environments; checks relevance, results and performance." {
-            ui = container "Lab web UI" "Creates environments and displays comparisons." "Web application; implementation TBC"
-            api = container "Lab API" "Manages experiments, leases and comparisons." "HTTP API; implementation TBC"
-            metadata = container "Lab metadata" "Retains environment records, leases and report links." "SQLite locally; scale store TBC" {
+            ui = container "Lab web UI" "Creates environments and displays comparisons." "Host-served HTML / JavaScript locally"
+            api = container "Lab API" "Manages experiments, leases and comparisons." "Python HTTP API locally"
+            metadata = container "Lab metadata" "Retains environment records, leases and report links." "SQLite locally; shared store for AKS" {
                 tags "Store"
             }
             search = container "Search API" "Understands queries, retrieves products and reranks results." "HTTP API / pinned OCI image" {
@@ -53,7 +56,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             elastic = container "Shared search engine" "Serves shared frozen indices and dedicated experiment indices." "Self-managed Elasticsearch" {
                 tags "Store"
             }
-            expiry = container "Lease cleanup job" "Requests deletion when leases expire." "Kubernetes CronJob" {
+            expiry = container "Lease cleanup job" "Reconciles expired leases and partial deletion." "Host process locally; Kubernetes CronJob target" {
                 tags "Job"
             }
         }
@@ -75,9 +78,15 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         api -> enterprise "Future provider adapter" "Git / REST" {
             tags "Future"
         }
-        expiry -> api "Requests deletion for expired leases" "Internal HTTP"
+        api -> registry "Resolves candidate image digests after migration" "OCI API" {
+            tags "Future"
+        }
+        expiry -> metadata "Finds expired leases and records cleanup" "SQL locally; API contract on AKS"
         gitea -> runner "Offers a build for a pinned commit" "Actions protocol"
         runner -> gitea "Pushes tested image and digest" "OCI / HTTPS"
+        runner -> registry "Pushes tested image after migration" "OCI / HTTPS" {
+            tags "Future"
+        }
         runner -> api "Reports verified build digest" "Authenticated callback"
         gitea -> api "Sends source and PR events" "Signed webhook"
         enterprise -> api "Future source and PR events" "Signed webhook" {
@@ -87,6 +96,9 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         eck -> kube "Reconciles Elasticsearch resources" "Kubernetes API"
         eck -> elastic "Manages cluster configuration" "Kubernetes resources"
         kube -> search "Runs pinned environment deployment" "OCI image"
+        kube -> registry "Pulls pinned images on AKS" "OCI / HTTPS" {
+            tags "Future"
+        }
         kube -> evaluation "Runs comparison" "Job"
         kube -> performance "Runs scheduled load test" "Job"
         kube -> indexing "Runs mapping build" "Job"
@@ -106,7 +118,13 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
 
         deploymentEnvironment "Local lab" {
             deploymentNode "Developer machine" "Windows x64; Apple silicon support to validate" "Local host" {
-                deploymentNode "Local Kubernetes" "kind or k3d: research decision" "Kubernetes" {
+                deploymentNode "Local control process" "Loopback UI/API and SQLite state" "Host process" {
+                    containerInstance ui
+                    containerInstance api
+                    containerInstance metadata
+                    containerInstance expiry
+                }
+                deploymentNode "Local Kubernetes" "Measured two-node k3d cluster" "Kubernetes" {
                     deploymentNode "Local control plane" "Cluster control services" "Kubernetes control plane" {
                         containerInstance kube
                     }
@@ -116,12 +134,8 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                         containerInstance argo
                         containerInstance eck
                     }
-                    deploymentNode "Persistent lab services" "State and reports survive environment deletion" "Namespace / persistent volumes" {
-                        containerInstance ui
-                        containerInstance api
-                        containerInstance metadata
+                    deploymentNode "Persistent lab services" "Floci survives environment deletion" "Namespace / persistent volume" {
                         containerInstance artifacts
-                        containerInstance expiry
                     }
                     deploymentNode "Shared search namespace" "One shared engine; scoped index credentials" "Namespace / persistent volume" {
                         containerInstance elastic
@@ -145,6 +159,9 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             deploymentNode "Azure subscription" "Hosts lab workloads and retained artifacts" "Azure" {
                 deploymentNode "Azure Blob Storage" "Frozen releases and reports" "Azure managed service" {
                     containerInstance artifacts
+                }
+                deploymentNode "Azure Container Registry" "Pinned multi-architecture API images" "Azure managed service" {
+                    containerInstance registry
                 }
                 deploymentNode "AKS cluster" "Hosts 40+ environments; capacity to validate" "Azure Kubernetes Service" {
                     deploymentNode "Managed control plane" "AKS-managed cluster control services" "Kubernetes control plane" {

@@ -6,7 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, 'research/platform-spike')
 from common import ROOT, STATE, guard, k, record
-from data_contract import BlobServiceClient, DEMO_KEY, ResourceExistsError
+from data_contract import ResourceExistsError
+from blob_config import service, settings
 from environments import REPO
 from measure import search
 
@@ -70,7 +71,7 @@ def frozen_suite(release_id='retail-gb-10k-v1'):
 
 
 def immutable_blob(container, name, payload):
-    account = BlobServiceClient(account_url='http://127.0.0.1:14577/devstoreaccount1', credential=DEMO_KEY)
+    account = service()
     try:
         account.create_container(container)
     except ResourceExistsError:
@@ -104,7 +105,7 @@ def compare():
     assert baseline['engine'] == candidate['engine']
     assert baseline['image'] != candidate['image']
     rows, suite_bytes, suite_sha, manifest = frozen_suite()
-    suite_blob = immutable_blob('datasets', suite_sha + '/query-suite.jsonl', suite_bytes)
+    suite_blob = immutable_blob(settings()[1], suite_sha + '/query-suite.jsonl', suite_bytes)
     results = []
     for row in rows:
         left = response(BASELINE, row)

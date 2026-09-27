@@ -96,15 +96,17 @@ function placeDeployment(view, groups) {
   }
 }
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
-  'Persistent platform namespace':{x:160,y:160,cols:2},
-  'Local control plane':{x:160,y:1100,cols:1},
-  'Persistent lab services':{x:1480,y:160,cols:2},
-  'Experiment namespaces':{x:160,y:1620,cols:3},
-  'Shared search namespace':{x:2080,y:1620,cols:1},
-  'Comparison jobs':{x:160,y:2200,cols:2}
+  'Local control process':{x:160,y:160,cols:2},
+  'Persistent platform namespace':{x:160,y:1100,cols:2},
+  'Local control plane':{x:160,y:2050,cols:1},
+  'Persistent lab services':{x:1480,y:1100,cols:2},
+  'Experiment namespaces':{x:160,y:2650,cols:3},
+  'Shared search namespace':{x:2080,y:2650,cols:1},
+  'Comparison jobs':{x:160,y:3250,cols:2}
 });
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Organisation delivery services':{x:160,y:160,cols:2},
+  'Azure Container Registry':{x:2080,y:160,cols:1},
   'Azure Blob Storage':{x:2080,y:760,cols:1},
   'Platform and lab services':{x:160,y:1450,cols:3},
   'Managed control plane':{x:2080,y:1450,cols:1},
@@ -114,7 +116,7 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
 });
 const canvases = {'01-context':[2380,1500], '02-control':[2380,2250],
   '03-evaluation':[2380,2110], '04-create':[2850,1450],
-  '05-local':[2800,2960], '06-azure':[2800,3860]};
+  '05-local':[2800,4100], '06-azure':[2800,3860]};
 for (const collection of ['systemContextViews','containerViews','dynamicViews','deploymentViews']) {
   for (const view of workspace.views[collection] || []) {
     const [width,height]=canvases[view.key];

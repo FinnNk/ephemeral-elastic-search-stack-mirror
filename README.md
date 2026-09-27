@@ -1,12 +1,12 @@
 # Ephemeral search relevance lab
 
-This project is a home lab for comparing ecommerce search changes against a reproducible baseline. It uses synthetic UK retail data, a self-managed Elasticsearch cluster and short-lived Kubernetes workloads. The first frozen dataset contains 10,000 products and 50 judged queries. A separate frozen release contains 1,000,000 products and 1,000 queries; performance, concurrency and portability gates still need evidence.
+This project is a home lab for comparing ecommerce search changes against a reproducible baseline. It uses synthetic UK retail data, a self-managed Elasticsearch cluster and short-lived Kubernetes workloads. The first frozen dataset contains 10,000 products and 50 judged queries. A separate frozen release contains 1,000,000 products and 1,000 queries. Scale, load and 40-environment checks have local evidence; native Apple silicon and cloud validation remain open.
 
 The [prototype design](docs/prototype-design.md) defines the architecture, quantitative targets, frozen datasets, environment lifecycle and three comparison modes: relevance, result preservation and Gatling performance. The design keeps a provider boundary for a later move from Gitea to GitHub Enterprise.
 
 Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram guide](docs/diagrams/README.md) for six Structurizr C4 views and seven interactive Archify views, with editable sources and rendering instructions.
 
-The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches and links the [current scale evidence](docs/research/evidence/million-scale.md) and [next detailed plan](docs/plans/concurrency-isolation.md).
+The [delivery roadmap](docs/plans/roadmap.md) tracks reviewable batches, the [scale evidence](docs/research/evidence/million-scale.md), [concurrency evidence](docs/research/evidence/concurrency-isolation.md) and [native/cloud validation plan](docs/plans/native-cloud-validation.md).
 
 ## Current state
 
@@ -19,7 +19,8 @@ The design is merged. An [experimental research harness](research/platform-spike
 - [Index-change evidence](docs/research/evidence/index-change.md): separate frozen index, authenticated API comparison, access isolation and cleanup.
 - [Synthetic traffic and Gatling](docs/research/synthetic-traffic.md): frozen query/timestamp pairs, finite Kubernetes Jobs and public-API performance comparisons, including long-duration million-release schedules.
 - [Million-product scale evidence](docs/research/evidence/million-scale.md): deterministic release, shared and mapping-change indices, full 1,000-query result comparisons and measured capacity limits.
-- Next: concurrency and isolation. Apple silicon remains untested.
+- [Concurrency and isolation evidence](docs/research/evidence/concurrency-isolation.md): three complete environments, two 40-API fleets, access boundaries, cleanup and controlled contention.
+- [Portability and Azure shape](docs/research/portability-azure.md): multi-platform image and Blob checks, C4 deployment updates, GHES/ACR migration route and remaining native/cloud gates.
 
 ## Repository workflow
 

@@ -2,8 +2,8 @@
 import json, secrets, time
 from datetime import datetime, timedelta, timezone
 from common import *
-from data_contract import elastic, DEMO_KEY
-from azure.storage.blob import generate_blob_sas, BlobSasPermissions
+from data_contract import elastic
+from blob_config import signed_read_url
 
 guard()
 index = 'spike-analyser-v2'
@@ -17,11 +17,10 @@ elastic('/' + index, 'PUT', {
 elastic('/_security/role/spike-indexer', 'PUT', {'indices': [{'names': [index], 'privileges': ['write']} ]})
 elastic('/_security/user/spike-indexer', 'PUT', {'password': password, 'roles': ['spike-indexer']})
 blob = manifest['sha256'] + '/products.jsonl'
-sas = generate_blob_sas('devstoreaccount1', 'datasets', blob, account_key=DEMO_KEY,
-    permission=BlobSasPermissions(read=True), expiry=datetime.now(timezone.utc) + timedelta(minutes=15))
+dataset_url = signed_read_url(blob, datetime.now(timezone.utc) + timedelta(minutes=15))
 apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': 'index-job', 'namespace': 'platform'}, 'stringData': {
     'ES_USER': 'spike-indexer', 'ES_PASSWORD': password, 'ES_INDEX': index,
-    'DATASET_URL': 'http://floci.platform.svc:4577/devstoreaccount1/datasets/' + blob + '?' + sas,
+    'DATASET_URL': dataset_url,
     'DATASET_SHA256': manifest['sha256'],
 }})
 cert = json.loads(k('get', 'secret/shared-es-http-certs-public', '-n', 'platform', '-o', 'json').stdout)['data']

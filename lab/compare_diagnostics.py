@@ -8,6 +8,7 @@ from common import STATE, guard, record
 from data_contract import elastic
 from measure import search
 from compare_search import definition, frozen_suite, immutable_blob, jaccard, rbo
+from blob_config import settings
 
 BASELINE = 'retail-baseline'
 DIAGNOSTIC = 'retail-diagnostics'
@@ -66,7 +67,7 @@ def compare():
     assert len({entry['engine'] for entry in definitions.values()}) == 1
     assert len({entry['image'] for entry in definitions.values()}) == 3
     suite, suite_bytes, suite_sha, manifest = frozen_suite()
-    suite_blob = immutable_blob('datasets', suite_sha + '/query-suite.jsonl', suite_bytes)
+    suite_blob = immutable_blob(settings()[1], suite_sha + '/query-suite.jsonl', suite_bytes)
     rows, timings, errors = [], [], []
     for row in suite:
         qid = row['query_id']

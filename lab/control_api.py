@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, 'research/platform-spike')
 from common import STATE
-from data_contract import BlobServiceClient, DEMO_KEY
+from blob_config import service
 from measure import search
 from lifecycle import ActiveComparisonError, DATASET, RELEASES, local_lifecycle, parse_stamp, utcnow
 from control_identity import GiteaIdentity, Sessions, expired_cookie, session_cookie
@@ -114,8 +114,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not row['report_blob']:
                     return self.send_json(409, {'error': 'Comparison has no saved report.'})
                 container, blob_name = row['report_blob'].split('/', 1)
-                account = BlobServiceClient(account_url='http://127.0.0.1:14577/devstoreaccount1',
-                                            credential=DEMO_KEY)
+                account = service()
                 payload = account.get_blob_client(container, blob_name).download_blob().readall()
                 if hashlib.sha256(payload).hexdigest() != row['report_sha256']:
                     return self.send_json(502, {'error': 'Saved report hash differs from its record.'})

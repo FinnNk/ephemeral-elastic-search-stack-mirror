@@ -3,7 +3,8 @@ import argparse, hashlib, json, time
 from common import *
 from environments import *
 from measure import search, wait_search, remove
-from data_contract import BlobServiceClient, DEMO_KEY, ResourceExistsError
+from data_contract import ResourceExistsError
+from blob_config import service
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--run', type=int, required=True, help='Successful Gitea candidate Actions run ID')
@@ -39,7 +40,7 @@ assert all(search(name,row['query'])['ids']==row['candidate'] for row in rows)
 result={'baseline_build':json.loads((EVIDENCE/'baseline-build.json').read_text()),'candidate_build':build,
         'candidate_definition':definition,'queries':rows,'same_fingerprint_and_results_after_recreation':True,
         'create_seconds':create_seconds,'delete_seconds':delete_seconds,'recreate_seconds':recreate_seconds,'sample_size':1}
-client=BlobServiceClient(account_url='http://127.0.0.1:14577/devstoreaccount1',credential=DEMO_KEY)
+client=service()
 try:client.create_container('runs')
 except ResourceExistsError:pass
 payload=json.dumps(result,sort_keys=True).encode();digest=hashlib.sha256(payload).hexdigest()

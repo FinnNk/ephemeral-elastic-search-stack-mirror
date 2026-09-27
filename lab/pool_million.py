@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, 'research/platform-spike')
 from common import STATE, record
 from compare_search import immutable_blob
-from data_contract import BlobServiceClient, DEMO_KEY
+from blob_config import service, settings
 from release_million import RELEASE, category_ranges, product_at
 
 DATA = STATE / 'releases' / RELEASE
@@ -29,7 +29,7 @@ def grade_result(plan, product):
 def downloaded_report(reference):
     path = reference['report_blob']
     container, name = path.split('/', 1)
-    account = BlobServiceClient(account_url='http://127.0.0.1:14577/devstoreaccount1', credential=DEMO_KEY)
+    account = service()
     payload = account.get_blob_client(container, name).download_blob().readall()
     if hashlib.sha256(payload).hexdigest() != reference['report_sha256']:
         raise ValueError('Source comparison report hash differs.')
@@ -100,8 +100,8 @@ def generate():
         raise ValueError('Frozen pooled assessment manifest differs.')
     if not MANIFEST.exists():
         MANIFEST.write_bytes(manifest_bytes)
-    location = immutable_blob('datasets', RELEASE + '/judgement-pools/v2/judgements.jsonl', payload)
-    manifest_location = immutable_blob('datasets', RELEASE + '/judgement-pools/v2/manifest.json', manifest_bytes)
+    location = immutable_blob(settings()[1], RELEASE + '/judgement-pools/v2/judgements.jsonl', payload)
+    manifest_location = immutable_blob(settings()[1], RELEASE + '/judgement-pools/v2/manifest.json', manifest_bytes)
     evidence = {**manifest, 'blob': location, 'manifest_blob': manifest_location}
     record('million-judgement-pool', evidence)
     return evidence

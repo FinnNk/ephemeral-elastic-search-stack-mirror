@@ -13,7 +13,7 @@ This slice runs a browser page and black-box search API against a frozen UK reta
 
 ## Run on the current lab
 
-Use PowerShell from the repository root. The [platform research bootstrap](../research/platform-spike/README.md) must have created the named k3d cluster, Gitea runner, Argo CD, Floci, shared Elasticsearch and the two loopback forwards for Floci (`14577`) and Elasticsearch (`19200`). Python needs the Azure Blob SDK installed under `.lab/python-libs`. The scripts use the dedicated `.lab/kubeconfig.yaml` and generated credentials under ignored `.lab` files.
+Use PowerShell from the repository root. The [platform research bootstrap](../research/platform-spike/README.md) must have created the named k3d cluster, Gitea runner, Argo CD, Floci, shared Elasticsearch and the two loopback forwards for Floci (`14577`) and Elasticsearch (`19200`). Python needs the Azure Blob SDK installed under `.lab/python-libs`. The scripts use the dedicated `.lab/kubeconfig.yaml` and generated credentials under ignored `.lab` files. Blob settings default to Floci; `LAB_BLOB_ACCOUNT_URL`, `LAB_BLOB_CONTAINER` and `LAB_BLOB_POD_URL` select a different account, dataset container and Pod download endpoint. The [Azure package pins](requirements-azure.txt) and [identity design](../docs/research/portability-azure.md#azure-component-mapping) cover the cloud path.
 
 ```powershell
 python lab/release.py
@@ -34,7 +34,7 @@ python lab/verify_baseline.py
 
 The product generator uses unequal category shares, rotating product types and brands, seeded colour/material/availability, bounded category-specific prices and synthetic popularity. The 50 queries span type, colour, brand and material intents. Judgements come from rules applied to available products; they are useful as a repeatable seed, but they are not human relevance labels or exhaustive negatives. No production product or traffic data is used.
 
-The local control service implements 72-hour leases and automatic teardown. The Gatling runner measures public API latency; its short peak and stress phases calibrate the runner. Apple silicon verification remains a later batch.
+The local control service implements 72-hour leases and automatic teardown. The Gatling runner measures public API latency; its short peak and stress phases calibrate the runner. The [portability design](../docs/research/portability-azure.md) gives Apple silicon and Azure steps, with native runs still open.
 
 The separate [million-product release](../docs/research/million-synthetic-release.md) uses a [versioned ESCI-informed aggregate profile](profiles/esci-informed-uk-v1.json). Its [modelling note](../docs/research/esci-synthetic-calibration.md) separates reference observations from synthetic UK assumptions. It does not change this frozen 10,000-product release.
 

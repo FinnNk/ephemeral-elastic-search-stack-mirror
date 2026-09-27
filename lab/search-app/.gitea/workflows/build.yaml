@@ -27,6 +27,9 @@ jobs:
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           printf '%s' "$BUILD_TOKEN" | docker login gitea.localhost:31800 -u elastic-agent --password-stdin
           IMAGE="gitea.localhost:31800/elastic-agent/search-spike:$SOURCE_SHA-$RUN_ID-$RUN_ATTEMPT"
-          docker build --label "org.opencontainers.image.revision=$SOURCE_SHA" -t "$IMAGE" .
-          docker push "$IMAGE"
-          docker inspect "$IMAGE" --format '{{index .RepoDigests 0}}'
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            --label "org.opencontainers.image.revision=$SOURCE_SHA" \
+            --metadata-file image-metadata.json -t "$IMAGE" --push .
+          DIGEST="$(sed -n 's/.*"containerimage.digest": "\(sha256:[a-f0-9]*\)".*/\1/p' image-metadata.json)"
+          test -n "$DIGEST"
+          printf '%s@%s\n' "$IMAGE" "$DIGEST"

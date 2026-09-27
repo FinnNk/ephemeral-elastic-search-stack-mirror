@@ -13,8 +13,8 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 | [01 · C4 system context](rendered/01-context.svg) | Lab users, platform engineers and supporting systems. | [Structurizr DSL](workspace.dsl) |
 | [02 · C4 containers: control](rendered/02-control.svg) | Environment state, leases and deployment. | [Structurizr DSL](workspace.dsl) |
 | [03 · C4 containers: evaluation](rendered/03-evaluation.svg) | Frozen data, search APIs and diagnostics. | [Structurizr DSL](workspace.dsl) |
-| [05 · C4 local deployment](rendered/05-local.svg) | Persistent services and experiment workloads. | [Structurizr DSL](workspace.dsl) |
-| [06 · C4 Azure deployment](rendered/06-azure.svg) | AKS, Blob Storage and GitHub Enterprise. | [Structurizr DSL](workspace.dsl) |
+| [05 · C4 local deployment](rendered/05-local.svg) | Host control process, k3d services and experiment workloads. | [Structurizr DSL](workspace.dsl) |
+| [06 · C4 Azure deployment](rendered/06-azure.svg) | GHES, ACR, Blob Storage and AKS. | [Structurizr DSL](workspace.dsl) |
 
 ### [Environment lifecycle](index.html#environment-lifecycle)
 
