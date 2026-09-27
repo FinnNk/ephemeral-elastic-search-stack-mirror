@@ -36,7 +36,11 @@ def rbo(first, second, persistence=RBO_P, depth=DEPTH):
 
 
 def definition(name):
-    entry = json.loads((REPO / 'environments' / (name + '.json')).read_text())
+    if name.startswith('lab-delivery-'):
+        resource = json.loads(k('get', 'configmap/frozen-definition', '-n', name, '-o', 'json').stdout)
+        entry = json.loads(resource['data']['definition.json'])
+    else:
+        entry = json.loads((REPO / 'environments' / (name + '.json')).read_text())
     fields = {key: value for key, value in entry.items() if key not in ('fingerprint', 'environment')}
     digest = hashlib.sha256(json.dumps(fields, sort_keys=True).encode()).hexdigest()
     assert entry['fingerprint'] == digest and entry['environment'] == name

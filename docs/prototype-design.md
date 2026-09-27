@@ -27,16 +27,17 @@ Provisional first-slice targets on a warm local cluster:
 - Create an index-changing environment, including reindexing all 10,000 products, in **p95 ≤ 5 minutes**.
 - Go from an accepted Gitea pull-request update through tests, image build and deployment to the first correct candidate search in **p95 ≤ 8 minutes**.
 - Remove an environment on demand, including its dedicated index where applicable, in **p95 ≤ 5 minutes**.
+- Publish a cached CI release in **under 5 minutes**, and verify an approved promotion or rollback in **under 2 minutes** with retained artifacts and a warm compatible index. Promotion performs **zero rebuilds**.
 - Preserve identical ordered top-10 product IDs for every frozen query after a behaviour-preserving change.
 - Sustain **10 search requests/second** for five measured minutes per side with **p95 ≤ 250 ms**, **p99 ≤ 500 ms** and **< 1% failed requests**, under the constant-rate Gatling smoke profile below. Trace-derived normal, peak and stress profiles have separate durations and budgets.
 
-These remain provisional acceptance targets. The [platform research](research/platform-spike.md) measured warm creation at p50 7.54 seconds / p95 8.16 seconds over 20 diagnostic trials. The realistic dataset, lab API and complete build-to-preview path still need acceptance measurements. The detailed target table defines their conditions.
+These remain provisional acceptance targets. The [platform research](research/platform-spike.md) measured warm creation at p50 7.54 seconds / p95 8.16 seconds over 20 diagnostic trials. The [roadmap](plans/roadmap.md) links later million-product, lifecycle, 40-environment and delivery measurements; a single successful run does not establish p95. The detailed target table defines their conditions.
 
 This is a relevance lab, not a production commerce platform. All products, queries, judgements and behavioural events are synthetic. Their modelling assumptions must travel with each dataset release.
 
 ## Proposed architecture
 
-The architecture is maintained as a [Structurizr C4 model](diagrams/workspace.dsl), with complementary Archify workflow, lifecycle and evaluation data-flow views. Open the [diagram gallery](diagrams/index.html) for all seventeen views, or use the [diagram guide](diagrams/README.md) for their scope, editable sources and rendering commands.
+The architecture is maintained as a [Structurizr C4 model](diagrams/workspace.dsl), with complementary Archify workflow, lifecycle and evaluation data-flow views. Open the [diagram gallery](diagrams/index.html) for all nineteen views, or use the [diagram guide](diagrams/README.md) for their scope, editable sources and rendering commands.
 
 ![C4 system context: people, search relevance lab and supporting platforms](diagrams/rendered/01-context.svg)
 
@@ -47,6 +48,7 @@ The architecture is maintained as a [Structurizr C4 model](diagrams/workspace.ds
 | [Candidate creation](diagrams/rendered/04-create.svg) | Ordered interactions |
 | [Local deployment](diagrams/rendered/05-local.svg) | Persistent and ephemeral workloads |
 | [Azure migration](diagrams/rendered/06-azure.svg) | Proposed deployment on Azure |
+| [Immutable release delivery](diagrams/rendered/18-delivery.svg) | Nexus, promotion coordinator, Argo CD and verification |
 
 The local lab now runs Gitea, Argo CD, ECK, the control UI/API and the lease controller. The Azure deployment remains proposed. The [platform research](research/platform-spike.md) records the original component selection and local bootstrap evidence.
 
@@ -71,18 +73,20 @@ Argo CD is already used in the target production system and is a design constrai
 - **Workflow complexity:** Do not introduce another operator, workflow engine, queue or service mesh without evidence. Reconsider Argo Workflows only if the observed workflow needs retries, fan-out or auditability beyond Jobs.
 - **Elasticsearch operations:** Use existing Elasticsearch APIs for aliases, bulk indexing, security roles and snapshots rather than implementing equivalents.
 
-The [reference CI/CD plan](plans/reference-ci-cd.md) adds immutable Nexus releases and reviewed promotion through integration, staging and simulated production. Argo CD remains the deployment owner. [Nexus](nexus.md) is persistent infrastructure; historical Gitea registry images remain available. The [portable Actions workflow](delivery.md) is demonstrated on Gitea. Promotion is the next batch.
+The [reference CI/CD](delivery.md) publishes immutable Nexus releases and promotes the same digests through integration, staging and simulated production. All three targets are local namespaces. Protected desired-state PRs require current evaluation evidence and review; Argo CD deploys the approved state, then the coordinator verifies the serving API. Rollback selects the prior image, configuration and index recipe together. [Measured promotion and rollback](research/evidence/promotion-deployment.md) passed with the million-product release and full 1,000-query checks. The [Archify workflow](diagrams/interactive/release-promotion.html) shows both frozen environments and the delivery gates.
+
+[Nexus](nexus.md) stores private images, deployment bundles and release descriptors. Floci retains datasets, recipes and evaluation reports; SeaweedFS retains index snapshots. Historical Gitea registry images remain available. The [detailed batches](plans/reference-ci-cd.md) and [operating guide](delivery.md) record the common Actions subset and provider-specific migration boundary.
 
 ### Self-contained Git and build lifecycle
 
 Gitea produces the tested candidate image. The [comparison workflow](diagrams/interactive/change-to-comparison.html) then resolves and verifies both baseline and candidate environments.
 
-- **Platform services:** Install the upstream Gitea Helm chart in a persistent platform namespace, then run a Gitea Actions runner and use Gitea's OCI container registry.
+- **Platform services:** Install the upstream Gitea Helm chart in a persistent platform namespace, then run a Gitea Actions runner and publish reference releases to Nexus. The original `search-spike` path retains its Gitea registry images.
 - **Repositories and data:** Bootstrap two repositories: application source (search API, query assets, UI, indexing code and tests) and environment desired state. The canonical dataset remains in Floci AZ, not Git or the registry.
 - **Warm-start boundary:** Keep Gitea, its runner and registry available between environment requests; their bootstrap time is separate from warm environment creation.
 - **Portability:** Pin Gitea, runner and chart versions and verify their images on Windows x64 and Apple silicon.
 
-The first end-to-end walkthrough is:
+The source-to-comparison walkthrough is:
 
 1. **Change source.**
 
@@ -91,14 +95,14 @@ The first end-to-end walkthrough is:
 
 2. **Build an immutable image.**
 
-   - A local runner tests the change, builds a multi-architecture capable image and pushes it to Gitea's OCI registry.
+   - A local runner tests the change, builds a multi-architecture capable image and pushes it to Nexus for the reference delivery path (Gitea registry in the original spike).
    - Capture the source commit SHA and pushed image digest. A digest, rather than a mutable branch name or tag, is the version an environment executes.
    - Retain each build under a unique source-SHA/run/attempt tag and verify digest availability. The spike demonstrated that replacing a SHA tag could leave the older digest unavailable.
    - Document where the runner obtains base images and build dependencies; mirror or cache them if the lab must also work offline after bootstrap.
 
 3. **Register the candidate.**
 
-   - A signed Gitea webhook, or a verified build-completion event, tells the lab API that a candidate is available.
+   - The local watcher polls opted-in Gitea PRs and verifies the exact revision and successful build. The delivery CLI resolves successful merged-source releases for promotion. Signed webhooks remain a migration option.
    - The API validates repository, revision and digest, then combines them with a frozen dataset release, query assets and index design into an environment fingerprint.
    - A user can also create a candidate directly in the UI from a previously built digest, without opening a pull request.
 
@@ -112,7 +116,7 @@ The first end-to-end walkthrough is:
    - Choose relevance, result preservation or performance. The comparison uses the same frozen inputs for both public APIs; performance runs use the pinned Gatling workload.
    - Save each verdict and report to Floci AZ and link them to the source revision, image digest and dataset manifest.
    - Users may extend the three-day lease through genuine use or delete the environment explicitly.
-   - Expiry and deletion remove namespaced workloads and dedicated indices while retaining immutable datasets and reports.
+   - The original leased environment workflow removes namespaced workloads and owned dedicated indices. Delivery previews remove runtime and credentials while retaining recipe-addressed release indices for comparisons and rollback. Both retain immutable datasets and reports.
 
 6. **Close or recreate.**
 
@@ -131,7 +135,7 @@ The [Gitea lifecycle and migration note](research/gitea-lifecycle.md) records in
 
 ## Research before implementation
 
-The [platform research report](research/platform-spike.md) records the executed probes, tool comparison and proposed decision. It recommends the Argo CD-native path and retains the provisional targets. Native Apple silicon execution, full controller recovery and scale tests remain explicit gates. The original research scope below explains what was assessed.
+The [platform research report](research/platform-spike.md) records the executed probes, tool comparison and proposed decision. It recommends the Argo CD-native path and retains the provisional targets. Native Apple silicon execution, cloud capacity and full controller recovery remain explicit gates; local million-product and 40-API evidence is recorded in the roadmap. The original research scope below explains what was assessed.
 
 | Pattern to assess | What it provides | Why it might or might not fit |
 | --- | --- | --- |

@@ -38,6 +38,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         lab = softwareSystem "Search relevance lab" "Creates environments; checks relevance, results and performance." {
             ui = container "Lab web UI" "Creates environments and displays comparisons." "Host-served HTML / JavaScript locally"
             api = container "Lab API" "Manages experiments, leases and comparisons." "Python HTTP API locally"
+            coordinator = container "Delivery coordinator" "Validates promotion PRs and verifies deployments." "Python host process / provider adapter"
             metadata = container "Lab metadata" "Retains environment records, leases and report links." "SQLite locally; shared store for AKS" {
                 tags "Store"
             }
@@ -75,13 +76,13 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         operator -> platform "Operates cluster and reconciliation" "HTTPS"
         lab -> delivery "Resolves revisions and digests; publishes status" "Git / HTTPS"
         lab -> platform "Supplies desired state and observes readiness" "Git / HTTPS"
-        delivery -> lab "Notifies candidate build completion" "Signed webhook"
+        delivery -> lab "Provides source revisions and build records" "Git / REST"
         engineer -> ui "Manages experiments" "HTTPS"
         ui -> api "Creates experiments, searches and compares" "JSON / HTTPS"
         api -> metadata "Records fingerprints, leases and state" "SQL"
         api -> artifacts "Pins and reads frozen manifests, index recipes and reports" "Azure Blob API"
         api -> search "Proxies interactive search" "JSON / HTTP"
-        api -> argo "Publishes environment and job desired state" "Git files or plugin; TBC"
+        api -> argo "Publishes environment desired state" "Desired-state Git"
         api -> kube "Observes readiness and job completion" "Kubernetes API"
         api -> gitea "Polls labelled PR revisions, resolves exact builds and posts check status" "Gitea REST"
         api -> enterprise "Future provider adapter" "Git / REST" {
@@ -95,6 +96,16 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         runner -> gitea "Pushes tested image and digest" "OCI / HTTPS"
         runner -> nexus "Publishes image, bundle and release receipt" "OCI / REST"
         nexus -> nexusdb "Stores repository metadata" "PostgreSQL"
+        engineer -> gitea "Reviews source and promotion PRs" "Browser / Git"
+        coordinator -> gitea "Proposes and validates exact promotion revisions" "Git / REST"
+        coordinator -> nexus "Verifies release and bundle hashes" "REST"
+        coordinator -> artifacts "Retains frozen check and deployment evidence" "Blob API"
+        coordinator -> evaluation "Runs full result and relevance checks" "Kubernetes Job"
+        coordinator -> performance "Runs paired API load checks" "Kubernetes Job"
+        coordinator -> argo "Observes deployment health and revision" "Kubernetes API"
+        coordinator -> search "Verifies the declared API deployment" "Public search API"
+        argo -> gitea "Reads approved deployment state" "Git"
+        kube -> nexus "Pulls private images by digest" "OCI"
         runner -> registry "Pushes tested image after migration" "OCI / HTTPS" {
             tags "Future"
         }
@@ -139,6 +150,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                     containerInstance api
                     containerInstance metadata
                     containerInstance expiry
+                    containerInstance coordinator
                 }
                 deploymentNode "Snapshot storage" "Docker volume survives Elasticsearch Pod and data-PVC replacement" "Host Docker service" {
                     containerInstance snapshots
@@ -178,13 +190,15 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             deploymentNode "Organisation delivery services" "Migration destination; hosting details to be agreed" "Enterprise services" {
                 containerInstance enterprise
                 containerInstance runner
+                containerInstance nexus
+                containerInstance nexusdb
             }
             deploymentNode "Azure subscription" "Hosts lab workloads and retained artifacts" "Azure" {
                 deploymentNode "Azure Blob Storage" "Frozen releases, reports and proposed snapshot container" "Azure managed service" {
                     containerInstance artifacts
                     containerInstance snapshots
                 }
-                deploymentNode "Azure Container Registry" "Pinned multi-architecture API images" "Azure managed service" {
+                deploymentNode "Azure Container Registry" "Optional image distribution; retain Nexus for releases" "Azure managed service" {
                     containerInstance registry
                 }
                 deploymentNode "AKS cluster" "Hosts 40+ environments; capacity to validate" "Azure Kubernetes Service" {
@@ -198,6 +212,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
                         containerInstance api
                         containerInstance metadata
                         containerInstance expiry
+                        containerInstance coordinator
                     }
                     deploymentNode "Shared Elasticsearch nodes" "Self-managed under ECK; contention measured separately" "Stateful workloads / persistent disks" {
                         containerInstance elastic
@@ -216,7 +231,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
     }
     views {
         systemContext lab "01-context" {
-            title "C4 System context — proposed search relevance lab"
+            title "C4 System context — search relevance lab"
             include engineer operator lab delivery platform
             autolayout lr
         }
@@ -228,6 +243,11 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
         container lab "03-evaluation" {
             title "C4 Containers — frozen data and end-to-end evaluation"
             include generator artifacts indexing elastic snapshots search evaluation performance
+            autolayout lr
+        }
+        container delivery "18-delivery" {
+            title "C4 Containers — immutable release delivery"
+            include engineer gitea runner nexus coordinator argo kube search artifacts
             autolayout lr
         }
         dynamic lab "04-create" {
@@ -242,7 +262,7 @@ workspace "Ephemeral search relevance lab" "Proposed architecture • September 
             autolayout lr
         }
         deployment * "Local lab" "05-local" {
-            title "C4 Deployment — self-contained local lab (proposed)"
+            title "C4 Deployment — self-contained local lab"
             include *
             autolayout lr
         }

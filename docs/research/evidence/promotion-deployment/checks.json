@@ -1,0 +1,360 @@
+{
+  "forward": {
+    "reference": {
+      "sha256": "a7828198e265ab67ed6ed40ab62894a8560136093e5726a5057ad51810fcb559",
+      "blob": "runs/a7828198e265ab67ed6ed40ab62894a8560136093e5726a5057ad51810fcb559/delivery-evidence.json"
+    },
+    "evidence": {
+      "baseline": "00cd57233b8a30a6e452a82e7237e97892553c1408af21fc9aa1deb7e2845dea",
+      "candidate": "df2e057cc9d889b9c08b96721cc2fc370579841d9f118b87777186212b4fe595",
+      "completed_at": "2026-09-27T10:50:11.556098+00:00",
+      "dataset_release": "retail-gb-1m-v1",
+      "format": 1,
+      "intent": "preserve-results",
+      "previews": [
+        "lab-delivery-run-15-6ff8e47b",
+        "lab-delivery-run-17-6ff8e47b"
+      ],
+      "profile": "probe",
+      "reports": {
+        "performance": {
+          "blob": "runs/05642037bd626104225cd0c610cce96198924ca1c257c7bc1257e797fbd73d73/performance-comparison.json",
+          "sha256": "05642037bd626104225cd0c610cce96198924ca1c257c7bc1257e797fbd73d73"
+        },
+        "relevance": {
+          "blob": "runs/0e2ec808b7fb5e07c01230b9c34df169ef4a11f267bb123d0134196e9492e20b/controlled-comparison.json",
+          "sha256": "0e2ec808b7fb5e07c01230b9c34df169ef4a11f267bb123d0134196e9492e20b"
+        },
+        "result-regression": {
+          "blob": "runs/783e37aacd09b491ea4951e51f13979ac51dafadd547b78bc882588987aae477/controlled-comparison.json",
+          "sha256": "783e37aacd09b491ea4951e51f13979ac51dafadd547b78bc882588987aae477"
+        }
+      }
+    },
+    "reports": {
+      "performance": {
+        "baseline_runtime_id": "lab-delivery-run-15-6ff8e47b",
+        "candidate_runtime_id": "lab-delivery-run-17-6ff8e47b",
+        "first_stress_budget_breach": null,
+        "kind": "paired-api-performance",
+        "measured_phases": {
+          "normal": {
+            "baseline": {
+              "failed_percent": 0.0,
+              "offered_rps": 2.0,
+              "p95_ms": 44,
+              "p99_ms": 44,
+              "request_count": 20,
+              "within_budget": true
+            },
+            "budget": {
+              "failed_percent": 1.0,
+              "p95_ms": 250,
+              "p99_ms": 500
+            },
+            "candidate": {
+              "failed_percent": 0.0,
+              "offered_rps": 2.0,
+              "p95_ms": 48,
+              "p99_ms": 48,
+              "request_count": 20,
+              "within_budget": true
+            },
+            "candidate_p95_increase_percent": 9.091
+          }
+        },
+        "profile": "probe",
+        "recipe_sha256": "a0ceb9c429f987b87dd8bafbbc60b19c14796515378ec602ae55aa97472f2ba7",
+        "same_workload": true,
+        "source_sha256": "db1ae9665204f9ce66164d85a86f7de976790e86ef4ff067ac4db19ce6f09576",
+        "stress_interpretation": null,
+        "valid": true,
+        "verdict": "within-budget",
+        "warmup_excluded_from_verdict": true,
+        "warmup_ready": true,
+        "workload_sha256": "da3801551026bc2b75f9e6ab21c18def8be7692bdae80922c059e12e41bf5866"
+      },
+      "relevance": {
+        "changed_query_ids": [],
+        "complete": true,
+        "completed_query_count": 1000,
+        "errors": [],
+        "execution": {
+          "execution": "in-cluster evaluator Job",
+          "worker_count": 8,
+          "worker_image": "python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844",
+          "worker_sha256": "745108e6a7aebe97baf5069456cae71c4a4fb3e52cfe56df483f651071bbfcbb"
+        },
+        "judgement_coverage": {
+          "baseline": {
+            "fraction": 1.0,
+            "judged": 10000,
+            "returned": 10000
+          },
+          "candidate": {
+            "fraction": 1.0,
+            "judged": 10000,
+            "returned": 10000
+          }
+        },
+        "judgement_coverage_status": "reported",
+        "judgement_pool": {
+          "count": 39759,
+          "grading": "Retain original frozen grades; apply deterministic rules only to newly pooled result IDs",
+          "kind": "symmetric synthetic result-pool assessments",
+          "limitation": "Rule-based assessments selected after seeing these three result lists; future lists may contain unjudged products.",
+          "original_judgement_sha256": "dbbca3894cf0e8f611fc4c9086d7d1458bbc47196c6750049b0a08c2d477347a",
+          "pool_coverage": "Original twenty-per-query assessments plus top ten from baseline and both candidate types",
+          "query_count": 1000,
+          "query_sha256": "4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946",
+          "release": "retail-gb-1m-v1",
+          "schema_version": 2,
+          "sha256": "38f3221880d7d7359fac2a919ed9688aa85c5d6c7ee69c8c448725b1f36eeace",
+          "source_report_sha256": [
+            "4bf7707aad7a65f44721a26f9913ab1e663d9baba79f36709ed03ac91c254d99",
+            "933403122cc403c611f7c641ec2296c4cae6921504fb0f870f69a16493ee25ba"
+          ]
+        },
+        "judgement_provenance": {
+          "candidate_derived_pool_is_proxy": true,
+          "independent_of_evaluated_candidate": false,
+          "source": "candidate-derived-synthetic-pool"
+        },
+        "judgement_sha256": "38f3221880d7d7359fac2a919ed9688aa85c5d6c7ee69c8c448725b1f36eeace",
+        "judgement_usage": "Symmetric frozen synthetic E/S/C/I pool from baseline and both candidates; future results may be unjudged.",
+        "kind": "controlled-api-comparison",
+        "metrics": {
+          "baseline": {
+            "Judged@10": 1.0,
+            "RR(rel=2)@10": 0.98,
+            "nDCG@10": 0.979894
+          },
+          "candidate": {
+            "Judged@10": 1.0,
+            "RR(rel=2)@10": 0.98,
+            "nDCG@10": 0.979894
+          }
+        },
+        "mode": "relevance",
+        "query_count": 1000,
+        "scope": "full",
+        "suite_blob": "datasets/4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946/query-suite.jsonl",
+        "suite_sha256": "4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946",
+        "verdict": "measured",
+        "zero_result_counts": {
+          "baseline": 0,
+          "candidate": 0
+        }
+      },
+      "result-regression": {
+        "changed_query_ids": [],
+        "complete": true,
+        "completed_query_count": 1000,
+        "errors": [],
+        "execution": {
+          "execution": "in-cluster evaluator Job",
+          "worker_count": 8,
+          "worker_image": "python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844",
+          "worker_sha256": "745108e6a7aebe97baf5069456cae71c4a4fb3e52cfe56df483f651071bbfcbb"
+        },
+        "judgement_coverage": null,
+        "judgement_coverage_status": null,
+        "judgement_pool": null,
+        "judgement_provenance": null,
+        "judgement_sha256": null,
+        "judgement_usage": "Not used for result preservation.",
+        "kind": "controlled-api-comparison",
+        "metrics": null,
+        "mode": "result-regression",
+        "query_count": 1000,
+        "scope": "full",
+        "suite_blob": "datasets/4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946/query-suite.jsonl",
+        "suite_sha256": "4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946",
+        "verdict": "unchanged",
+        "zero_result_counts": {
+          "baseline": 0,
+          "candidate": 0
+        }
+      }
+    }
+  },
+  "rollback": {
+    "reference": {
+      "sha256": "7a22568eaff960cd4e62bf01e0f16e8def5d7799c161b5200390efd035a3b5f1",
+      "blob": "runs/7a22568eaff960cd4e62bf01e0f16e8def5d7799c161b5200390efd035a3b5f1/delivery-evidence.json"
+    },
+    "evidence": {
+      "baseline": "df2e057cc9d889b9c08b96721cc2fc370579841d9f118b87777186212b4fe595",
+      "candidate": "00cd57233b8a30a6e452a82e7237e97892553c1408af21fc9aa1deb7e2845dea",
+      "completed_at": "2026-09-27T10:57:30.016784+00:00",
+      "dataset_release": "retail-gb-1m-v1",
+      "format": 1,
+      "intent": "preserve-results",
+      "previews": [
+        "lab-delivery-run-17-6ff8e47b",
+        "lab-delivery-run-15-6ff8e47b"
+      ],
+      "profile": "probe",
+      "reports": {
+        "performance": {
+          "blob": "runs/7a9e9fce0d80094219d40c24f0f9128e89c7366cb78edb48a4e51d2eb8cce74d/performance-comparison.json",
+          "sha256": "7a9e9fce0d80094219d40c24f0f9128e89c7366cb78edb48a4e51d2eb8cce74d"
+        },
+        "relevance": {
+          "blob": "runs/e5c4c4d3d5c40b89233dd2d31d1e9eb19f4bc1ec1f84344d1b5bfebd1c76ff63/controlled-comparison.json",
+          "sha256": "e5c4c4d3d5c40b89233dd2d31d1e9eb19f4bc1ec1f84344d1b5bfebd1c76ff63"
+        },
+        "result-regression": {
+          "blob": "runs/2c680e3e5b62f648a477832cb02423c455640f0bad1b30f224030b7285cb1ba3/controlled-comparison.json",
+          "sha256": "2c680e3e5b62f648a477832cb02423c455640f0bad1b30f224030b7285cb1ba3"
+        }
+      }
+    },
+    "reports": {
+      "performance": {
+        "baseline_runtime_id": "lab-delivery-run-17-6ff8e47b",
+        "candidate_runtime_id": "lab-delivery-run-15-6ff8e47b",
+        "first_stress_budget_breach": null,
+        "kind": "paired-api-performance",
+        "measured_phases": {
+          "normal": {
+            "baseline": {
+              "failed_percent": 0.0,
+              "offered_rps": 2.0,
+              "p95_ms": 38,
+              "p99_ms": 38,
+              "request_count": 20,
+              "within_budget": true
+            },
+            "budget": {
+              "failed_percent": 1.0,
+              "p95_ms": 250,
+              "p99_ms": 500
+            },
+            "candidate": {
+              "failed_percent": 0.0,
+              "offered_rps": 2.0,
+              "p95_ms": 36,
+              "p99_ms": 36,
+              "request_count": 20,
+              "within_budget": true
+            },
+            "candidate_p95_increase_percent": -5.263
+          }
+        },
+        "profile": "probe",
+        "recipe_sha256": "a0ceb9c429f987b87dd8bafbbc60b19c14796515378ec602ae55aa97472f2ba7",
+        "same_workload": true,
+        "source_sha256": "db1ae9665204f9ce66164d85a86f7de976790e86ef4ff067ac4db19ce6f09576",
+        "stress_interpretation": null,
+        "valid": true,
+        "verdict": "within-budget",
+        "warmup_excluded_from_verdict": true,
+        "warmup_ready": true,
+        "workload_sha256": "da3801551026bc2b75f9e6ab21c18def8be7692bdae80922c059e12e41bf5866"
+      },
+      "relevance": {
+        "changed_query_ids": [],
+        "complete": true,
+        "completed_query_count": 1000,
+        "errors": [],
+        "execution": {
+          "execution": "in-cluster evaluator Job",
+          "worker_count": 8,
+          "worker_image": "python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844",
+          "worker_sha256": "745108e6a7aebe97baf5069456cae71c4a4fb3e52cfe56df483f651071bbfcbb"
+        },
+        "judgement_coverage": {
+          "baseline": {
+            "fraction": 1.0,
+            "judged": 10000,
+            "returned": 10000
+          },
+          "candidate": {
+            "fraction": 1.0,
+            "judged": 10000,
+            "returned": 10000
+          }
+        },
+        "judgement_coverage_status": "reported",
+        "judgement_pool": {
+          "count": 39759,
+          "grading": "Retain original frozen grades; apply deterministic rules only to newly pooled result IDs",
+          "kind": "symmetric synthetic result-pool assessments",
+          "limitation": "Rule-based assessments selected after seeing these three result lists; future lists may contain unjudged products.",
+          "original_judgement_sha256": "dbbca3894cf0e8f611fc4c9086d7d1458bbc47196c6750049b0a08c2d477347a",
+          "pool_coverage": "Original twenty-per-query assessments plus top ten from baseline and both candidate types",
+          "query_count": 1000,
+          "query_sha256": "4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946",
+          "release": "retail-gb-1m-v1",
+          "schema_version": 2,
+          "sha256": "38f3221880d7d7359fac2a919ed9688aa85c5d6c7ee69c8c448725b1f36eeace",
+          "source_report_sha256": [
+            "4bf7707aad7a65f44721a26f9913ab1e663d9baba79f36709ed03ac91c254d99",
+            "933403122cc403c611f7c641ec2296c4cae6921504fb0f870f69a16493ee25ba"
+          ]
+        },
+        "judgement_provenance": {
+          "candidate_derived_pool_is_proxy": true,
+          "independent_of_evaluated_candidate": false,
+          "source": "candidate-derived-synthetic-pool"
+        },
+        "judgement_sha256": "38f3221880d7d7359fac2a919ed9688aa85c5d6c7ee69c8c448725b1f36eeace",
+        "judgement_usage": "Symmetric frozen synthetic E/S/C/I pool from baseline and both candidates; future results may be unjudged.",
+        "kind": "controlled-api-comparison",
+        "metrics": {
+          "baseline": {
+            "Judged@10": 1.0,
+            "RR(rel=2)@10": 0.98,
+            "nDCG@10": 0.979894
+          },
+          "candidate": {
+            "Judged@10": 1.0,
+            "RR(rel=2)@10": 0.98,
+            "nDCG@10": 0.979894
+          }
+        },
+        "mode": "relevance",
+        "query_count": 1000,
+        "scope": "full",
+        "suite_blob": "datasets/4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946/query-suite.jsonl",
+        "suite_sha256": "4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946",
+        "verdict": "measured",
+        "zero_result_counts": {
+          "baseline": 0,
+          "candidate": 0
+        }
+      },
+      "result-regression": {
+        "changed_query_ids": [],
+        "complete": true,
+        "completed_query_count": 1000,
+        "errors": [],
+        "execution": {
+          "execution": "in-cluster evaluator Job",
+          "worker_count": 8,
+          "worker_image": "python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844",
+          "worker_sha256": "745108e6a7aebe97baf5069456cae71c4a4fb3e52cfe56df483f651071bbfcbb"
+        },
+        "judgement_coverage": null,
+        "judgement_coverage_status": null,
+        "judgement_pool": null,
+        "judgement_provenance": null,
+        "judgement_sha256": null,
+        "judgement_usage": "Not used for result preservation.",
+        "kind": "controlled-api-comparison",
+        "metrics": null,
+        "mode": "result-regression",
+        "query_count": 1000,
+        "scope": "full",
+        "suite_blob": "datasets/4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946/query-suite.jsonl",
+        "suite_sha256": "4ab64cfbb3a3a581593ec380f1eae2a5c33ecbce791578ed7f814be06eb05946",
+        "verdict": "unchanged",
+        "zero_result_counts": {
+          "baseline": 0,
+          "candidate": 0
+        }
+      }
+    }
+  }
+}

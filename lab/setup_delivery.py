@@ -46,7 +46,7 @@ def configure_ci():
 
 
 def seed_source(path):
-    if git(SOURCE, 'log', '-1', '--format=%H') if (path / '.git/refs/heads/main').exists() else False:
+    if not api(endpoint(SOURCE))['empty']:
         print('Source already seeded; publish further changes through a branch and PR.')
         return
     for name in ('app.py', 'index.html', 'test_app.py', 'Dockerfile'):

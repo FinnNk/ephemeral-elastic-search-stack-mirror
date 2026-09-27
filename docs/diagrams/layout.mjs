@@ -56,7 +56,10 @@ const control = workspace.views.containerViews.find(v=>v.key==='02-control');
 control.elements = control.elements.filter(e=>name(e.id)!=='Lab user');
 const visible = new Set(control.elements.map(e=>e.id));
 control.relationships = control.relationships.filter(r=>{
-  const m=relationships.get(r.id);return visible.has(m.sourceId)&&visible.has(m.destinationId);
+  const m=relationships.get(r.id);
+  // Git approval and reconciliation are expanded in the release-delivery view.
+  return visible.has(m.sourceId)&&visible.has(m.destinationId) &&
+    !(name(m.sourceId)==='Deployment platform' && name(m.destinationId)==='Source and build platform');
 });
 position(control, {'Lab web UI':[100,700],'Lab API':[900,700],'Lab metadata':[1700,700],
   'Search API':[1700,1200],'Lease cleanup job':[100,1200],'Source and build platform':[900,100],
@@ -81,6 +84,19 @@ route(create,'Lab API','Gitea',[[1710,85],[310,85]],62);
 
 route(create,'Lab API','Argo CD',[[1400,650],[310,650]],60);
 
+const releaseDelivery = workspace.views.containerViews.find(v=>v.key==='18-delivery');
+position(releaseDelivery, {'Lab user':[100,100],'Gitea':[900,100],'Build runner':[1700,100],
+  'Nexus':[2500,100],'Delivery coordinator':[900,850],'Artifact store':[100,850],
+  'Argo CD':[1700,850],'Kubernetes API':[2500,850],'Search API':[900,1600]});
+releaseDelivery.relationships = releaseDelivery.relationships.filter(r=>{
+  const m=relationships.get(r.id);
+  return !((name(m.sourceId)==='Build runner' && name(m.destinationId)==='Gitea') ||
+           (name(m.sourceId)==='Search API' && name(m.destinationId)==='Artifact store'));
+});
+route(releaseDelivery,'Delivery coordinator','Nexus',[[1350,690],[2710,690]],60);
+route(releaseDelivery,'Kubernetes API','Nexus',[],50);
+route(releaseDelivery,'Argo CD','Gitea',[[1610,680],[1350,430]],65);
+
 function placeDeployment(view, groups) {
   delete view.automaticLayout;
   // Placement view only. Container views carry the directed interactions.
@@ -100,12 +116,12 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Local control process':{x:160,y:160,cols:2},
   'Snapshot storage':{x:1480,y:160,cols:1},
   'Release storage':{x:2080,y:160,cols:1},
-  'Persistent platform namespace':{x:160,y:1100,cols:2},
-  'Local control plane':{x:160,y:2050,cols:1},
-  'Persistent lab services':{x:1480,y:1100,cols:2},
-  'Experiment namespaces':{x:160,y:2650,cols:3},
-  'Shared search namespace':{x:2080,y:2650,cols:1},
-  'Comparison jobs':{x:160,y:3250,cols:2}
+  'Persistent platform namespace':{x:160,y:1550,cols:2},
+  'Local control plane':{x:160,y:2500,cols:1},
+  'Persistent lab services':{x:1480,y:1550,cols:2},
+  'Experiment namespaces':{x:160,y:3100,cols:3},
+  'Shared search namespace':{x:2080,y:3100,cols:1},
+  'Comparison jobs':{x:160,y:3700,cols:2}
 });
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Organisation delivery services':{x:160,y:160,cols:2},
@@ -113,13 +129,13 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Azure Blob Storage':{x:1280,y:160,cols:1},
   'Platform and lab services':{x:160,y:1450,cols:3},
   'Managed control plane':{x:2080,y:1450,cols:1},
-  'Experiment worker nodes':{x:160,y:2500,cols:3},
-  'Shared Elasticsearch nodes':{x:2080,y:2500,cols:1},
-  'Comparison workers':{x:160,y:3080,cols:2}
+  'Experiment worker nodes':{x:160,y:2950,cols:3},
+  'Shared Elasticsearch nodes':{x:2080,y:2950,cols:1},
+  'Comparison workers':{x:160,y:3530,cols:2}
 });
 const canvases = {'01-context':[2380,1500], '02-control':[2380,2250],
   '03-evaluation':[2380,2110], '04-create':[2850,1450],
-  '05-local':[2800,4100], '06-azure':[2800,3860]};
+  '05-local':[2800,4550], '06-azure':[2800,4310], '18-delivery':[3250,2150]};
 for (const collection of ['systemContextViews','containerViews','dynamicViews','deploymentViews']) {
   for (const view of workspace.views[collection] || []) {
     const [width,height]=canvases[view.key];
@@ -127,4 +143,4 @@ for (const collection of ['systemContextViews','containerViews','dynamicViews','
   }
 }
 fs.writeFileSync(path.join(dir,'.structurizr/workspace-layout.json'),JSON.stringify(workspace,null,2)+'\n');
-console.log('Applied presentation layout to six C4 views.');
+console.log('Applied presentation layout to seven C4 views.');

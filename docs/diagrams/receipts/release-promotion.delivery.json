@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\release-promotion.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\release-promotion.html",
+  "specification": {
+    "sha256": "1994a531b8ac7d4e5a832497730adbb0d5a7d33470c3b5babdc485bd2ad22108",
+    "bytes": 5393
+  },
+  "artifact": {
+    "sha256": "2521e8a0b7dd8aa8a0604f9c259d255a08d260bcbac6173e7580af89b33d62db",
+    "bytes": 816198
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

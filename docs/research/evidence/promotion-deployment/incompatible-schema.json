@@ -1,0 +1,6 @@
+{
+  "rejected": true,
+  "run": 17,
+  "recipe": "0549ac74364ec41dc1421ceebbd29047ee4589fa8b61d1fcc6c0f2ae98815a70",
+  "reason": "Release is incompatible with the frozen index recipe."
+}
