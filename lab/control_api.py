@@ -10,11 +10,16 @@ sys.path.insert(0, 'research/platform-spike')
 from common import STATE
 from data_contract import BlobServiceClient, DEMO_KEY
 from measure import search
-from lifecycle import DATASET, RELEASES, local_lifecycle, parse_stamp, utcnow
+from lifecycle import ActiveComparisonError, DATASET, RELEASES, local_lifecycle, parse_stamp, utcnow
 from control_identity import GiteaIdentity, Sessions, expired_cookie, session_cookie
 
 PORT = 18082
 UI = Path(__file__).with_name('control-ui.html')
+
+
+class ControlServer(ThreadingHTTPServer):
+    request_queue_size = 64
+    daemon_threads = True
 
 
 def route(path):
@@ -173,6 +178,10 @@ class Handler(BaseHTTPRequestHandler):
             if parts == ['api', 'logout']:
                 self.sessions.discard(self.headers.get('Cookie'))
                 return self.send_json(200, {'signed_out': True}, {'Set-Cookie': expired_cookie()})
+            if parts == ['api', 'environments', 'batch']:
+                rows = self.controller.create_many(payload['names'], payload['build_run'],
+                    owner=identity['username'], release_id=payload.get('release_id', DATASET))
+                return self.send_json(201 if all(row['state'] == 'ready' for row in rows) else 202, rows)
             if parts == ['api', 'environments']:
                 row = self.controller.create(payload['name'], payload['build_run'], owner=identity['username'],
                                              index_kind=payload.get('index_kind', 'shared'),
@@ -206,28 +215,37 @@ class Handler(BaseHTTPRequestHandler):
             return
         parts = self.path_parts()
         try:
-            self.body()
+            payload = self.body()
             identity = self.identity()
             if identity is None:
                 return self.send_json(401, {'error': 'Sign in with Gitea.'})
+            if parts == ['api', 'environments', 'batch']:
+                instance_ids = payload['ids']
+                if not isinstance(instance_ids, list) or any(
+                        not self.visible(self.controller.store.get(instance_id), identity)
+                        for instance_id in instance_ids):
+                    return self.send_json(403, {'error': 'An environment belongs to another owner.'})
+                return self.send_json(200, self.controller.delete_many(instance_ids))
             if len(parts) == 3 and parts[:2] == ['api', 'environments']:
                 if not self.visible(self.controller.store.get(parts[2]), identity):
                     return self.send_json(403, {'error': 'Environment belongs to another owner.'})
                 return self.send_json(200, self.controller.delete(parts[2]))
         except KeyError:
             return self.send_json(404, {'error': 'Environment not found.'})
+        except ActiveComparisonError as error:
+            return self.send_json(409, {'error': str(error)})
         except (ValueError, json.JSONDecodeError) as error:
             return self.send_json(400, {'error': str(error)})
         return self.send_json(404, {'error': 'Not found.'})
 
 
 def serve():
-    controller = local_lifecycle()
+    controller = local_lifecycle(recover_comparisons=True)
     Handler.controller = controller
     Handler.sessions = Sessions()
     Handler.identity_provider = GiteaIdentity()
     Handler.canonical_host = f'localhost:{PORT}'
-    with ThreadingHTTPServer(('127.0.0.1', PORT), Handler) as server:
+    with ControlServer(('127.0.0.1', PORT), Handler) as server:
         print(f'Local lifecycle UI: http://localhost:{PORT}/', flush=True)
         server.serve_forever()
 

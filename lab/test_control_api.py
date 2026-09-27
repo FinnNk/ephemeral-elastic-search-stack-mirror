@@ -26,6 +26,13 @@ class EmptyStore:
 class EmptyController:
     store = EmptyStore()
 
+    def create_many(self, names, build_run, owner, release_id):
+        return [{'id': name, 'name': name, 'owner': owner, 'build_run': build_run,
+                 'release_id': release_id, 'state': 'ready'} for name in names]
+
+    def delete_many(self, ids):
+        return [self.store.get(instance_id) for instance_id in ids]
+
 
 class FakeIdentity:
     def verify(self, username, password):
@@ -104,6 +111,22 @@ class LocalControlApi(unittest.TestCase):
             self.assertEqual(error.exception.code, 421)
         finally:
             Handler.canonical_host = None
+
+    def test_bulk_routes_keep_owner_boundary(self):
+        cookie = self.login()
+        headers = {'Cookie': cookie, 'Content-Type': 'application/json', 'X-Lab-Intent': '1'}
+        create = urllib.request.Request(self.base + '/api/environments/batch', method='POST',
+            data=json.dumps({'names': ['lab-one', 'lab-two'], 'build_run': 3}).encode(),
+            headers=headers)
+        with urllib.request.urlopen(create) as response:
+            rows = json.load(response)
+            self.assertEqual(response.status, 201)
+            self.assertEqual([row['owner'] for row in rows], ['alice', 'alice'])
+        delete = urllib.request.Request(self.base + '/api/environments/batch', method='DELETE',
+            data=json.dumps({'ids': ['known', 'other']}).encode(), headers=headers)
+        with self.assertRaises(urllib.error.HTTPError) as error:
+            urllib.request.urlopen(delete)
+        self.assertEqual(error.exception.code, 403)
 
     def login(self, username='alice'):
         request = urllib.request.Request(self.base + '/api/login', method='POST',

@@ -6,6 +6,8 @@ import sys
 import threading
 import time
 import uuid
+import urllib.error
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -72,6 +74,8 @@ class Store:
             comparison_columns = {row['name'] for row in db.execute('PRAGMA table_info(comparisons)')}
             if 'profile' not in comparison_columns:
                 db.execute('ALTER TABLE comparisons ADD COLUMN profile TEXT')
+            db.execute("CREATE UNIQUE INDEX IF NOT EXISTS active_environment_name "
+                       "ON environments(name) WHERE state!='deleted'")
 
     @contextmanager
     def connection(self):
@@ -122,6 +126,14 @@ class Store:
                 (stamp(now), instance_id, stale))
         return result.rowcount == 1
 
+    def heartbeat_deleting(self, instance_ids, now):
+        if not instance_ids:
+            return
+        placeholders = ','.join('?' for _ in instance_ids)
+        with self.connection() as db:
+            db.execute("UPDATE environments SET updated_at=? WHERE state='deleting' AND id IN (" +
+                       placeholders + ')', [stamp(now), *instance_ids])
+
     def put_comparison(self, row):
         columns = list(row)
         with self.connection() as db:
@@ -148,6 +160,24 @@ class Store:
                        [*fields.values(), comparison_id])
         return self.get_comparison(comparison_id)
 
+    def running_comparison_for(self, instance_id):
+        with self.connection() as db:
+            row = db.execute("SELECT id FROM comparisons WHERE state='running' AND "
+                             '(baseline_id=? OR candidate_id=?) LIMIT 1',
+                             (instance_id, instance_id)).fetchone()
+        return row['id'] if row else None
+
+    def interrupt_running_comparisons(self, now):
+        with self.connection() as db:
+            result = db.execute("UPDATE comparisons SET state='failed', updated_at=?, "
+                                "error='Controller restarted before the comparison completed.' "
+                                "WHERE state='running'", (stamp(now),))
+        return result.rowcount
+
+
+class ActiveComparisonError(ValueError):
+    """An environment is pinned by a running comparison."""
+
 
 class LabBackend:
     def build(self, run_id):
@@ -171,7 +201,39 @@ class LabBackend:
         wait_correct_search(row['name'])
         return definition['fingerprint']
 
-    def delete(self, row):
+    def provision_many(self, rows):
+        guard()
+        assert not git('status', '--porcelain'), 'Environment state checkout has local changes'
+        prepared = {}
+        results = {}
+        for row in rows:
+            try:
+                if row['index_kind'] != 'shared':
+                    raise ValueError('Bulk provisioning is for shared-index API environments.')
+                provision_access(row['name'], row['index_name'])
+                prepared[row['name']] = define(row['name'], row['image'], row['index_name'],
+                    row['dataset_sha256'], row['mapping_sha256'])['fingerprint']
+            except Exception as error:
+                results[row['name']] = {'error': type(error).__name__ + ': ' + str(error)}
+        if git('status', '--porcelain'):
+            publish('Provision ' + str(len(prepared)) + ' shared search environments')
+
+        def ready(name):
+            wait_healthy(name)
+            wait_correct_search(name)
+            return prepared[name]
+
+        with ThreadPoolExecutor(max_workers=min(8, len(prepared)) or 1) as workers:
+            futures = {workers.submit(ready, name): name for name in prepared}
+            for future in as_completed(futures):
+                name = futures[future]
+                try:
+                    results[name] = {'fingerprint': future.result()}
+                except Exception as error:
+                    results[name] = {'error': type(error).__name__ + ': ' + str(error)}
+        return results
+
+    def delete(self, row, heartbeat=None):
         guard()
         assert not git('status', '--porcelain'), 'Environment state checkout has local changes'
         name = row['name']
@@ -181,22 +243,62 @@ class LabBackend:
             publish('Delete ' + name)
         deadline = time.monotonic() + 180
         while time.monotonic() < deadline:
+            if heartbeat:
+                heartbeat()
             if not k('get', 'namespace', name, '--ignore-not-found', '-o', 'name').stdout.strip():
                 break
             time.sleep(2)
         else:
             raise TimeoutError('Namespace deletion did not finish')
         for path in ('/_security/user/' + name, '/_security/role/' + name):
-            elastic(path, 'DELETE')
+            try:
+                elastic(path, 'DELETE')
+            except urllib.error.HTTPError as error:
+                if error.code != 404:
+                    raise
         if row['index_kind'] == INDEX_KIND:
             remove_candidate_index(name)
         # The shared index, canonical release and immutable reports remain.
+
+    def delete_many(self, rows, heartbeat=None):
+        guard()
+        assert not git('status', '--porcelain'), 'Environment state checkout has local changes'
+        for row in rows:
+            definition = REPO / 'environments' / (row['name'] + '.json')
+            if definition.exists():
+                definition.unlink()
+        if git('status', '--porcelain'):
+            publish('Delete ' + str(len(rows)) + ' search environments')
+        pending = {row['name'] for row in rows}
+        deadline = time.monotonic() + 180
+        while pending and time.monotonic() < deadline:
+            if heartbeat:
+                heartbeat()
+            namespaces = json.loads(k('get', 'namespaces', '-o', 'json').stdout)['items']
+            present = {item['metadata']['name'] for item in namespaces}
+            pending &= present
+            if pending:
+                time.sleep(2)
+        if pending:
+            raise TimeoutError('Namespace deletion did not finish: ' + ', '.join(sorted(pending)))
+        for row in rows:
+            if heartbeat:
+                heartbeat()
+            for path in ('/_security/user/' + row['name'], '/_security/role/' + row['name']):
+                try:
+                    elastic(path, 'DELETE')
+                except urllib.error.HTTPError as error:
+                    if error.code != 404:
+                        raise
+            if row['index_kind'] == INDEX_KIND:
+                remove_candidate_index(row['name'])
 
 
 class Lifecycle:
     def __init__(self, store, backend, clock=utcnow, comparator=None):
         self.store, self.backend, self.clock = store, backend, clock
         self.lock = threading.RLock()
+        self.performance_lock = threading.Lock()
         self.comparator = comparator
 
     def create(self, name, build_run, owner='local-operator', index_kind='shared', release_id=DATASET):
@@ -240,6 +342,50 @@ class Lifecycle:
             self.store.put(row)
             return self.reconcile(row['id'])
 
+    def create_many(self, names, build_run, owner='local-operator', release_id=DATASET):
+        if not isinstance(names, list) or not 1 <= len(names) <= 40 or \
+                any(not isinstance(name, str) for name in names) or len(set(names)) != len(names):
+            raise ValueError('Provide 1–40 distinct environment names.')
+        if any(not isinstance(name, str) or not NAME_PATTERN.fullmatch(name) for name in names):
+            raise ValueError('Environment names must use the lab- lowercase format.')
+        if type(build_run) is not int or build_run <= 0:
+            raise ValueError('A successful numeric Gitea build run is required.')
+        if not isinstance(owner, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,64}', owner):
+            raise ValueError('A valid owner identity is required.')
+        if release_id not in RELEASES:
+            raise ValueError('Choose a frozen release supported by this lab.')
+        with self.lock:
+            if any(self.store.active_name(name) for name in names):
+                raise ValueError('An active environment already uses a requested name.')
+            build = self.backend.build(build_run)
+            manifest = json.loads((STATE / 'releases' / release_id / 'manifest.json').read_text())
+            product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
+            now = self.clock()
+            rows = []
+            for name in names:
+                row = {'id': str(uuid.uuid4()), 'name': name, 'owner': owner, 'build_run': build_run,
+                       'source_sha': build['source_sha'], 'image': build['image'],
+                       'dataset_sha256': manifest['sha256'][product_name], 'fingerprint': None,
+                       'release_id': release_id, 'index_kind': 'shared', 'index_name': release_id,
+                       'mapping_sha256': None, 'state': 'requested', 'created_at': stamp(now),
+                       'last_activity_at': stamp(now), 'expires_at': stamp(now + LEASE),
+                       'updated_at': stamp(now), 'error': None, 'deleted_at': None}
+                rows.append(self.store.put(row))
+            try:
+                results = self.backend.provision_many(rows)
+            except Exception as error:
+                results = {row['name']: {'error': type(error).__name__ + ': ' + str(error)} for row in rows}
+            updated = []
+            for row in rows:
+                result = results[row['name']]
+                if 'error' in result:
+                    updated.append(self.store.update(row['id'], state='failed', error=result['error'],
+                                                     updated_at=stamp(self.clock())))
+                else:
+                    updated.append(self.store.update(row['id'], state='ready',
+                        fingerprint=result['fingerprint'], updated_at=stamp(self.clock())))
+            return updated
+
     def reconcile(self, instance_id):
         with self.lock:
             row = self.store.get(instance_id)
@@ -278,15 +424,51 @@ class Lifecycle:
                 raise KeyError(instance_id)
             if row['state'] == 'deleted':
                 return row
+            if self.store.running_comparison_for(instance_id):
+                raise ActiveComparisonError('A running comparison uses this environment.')
             if not self.store.claim_delete(instance_id, self.clock()):
                 return self.store.get(instance_id)
             try:
-                self.backend.delete(row)
+                self.backend.delete(row, heartbeat=lambda: self.store.heartbeat_deleting(
+                    [instance_id], self.clock()))
             except Exception as error:
                 return self.store.update(instance_id, error=type(error).__name__ + ': ' + str(error),
                                          updated_at=stamp(self.clock()))
             now = stamp(self.clock())
             return self.store.update(instance_id, state='deleted', deleted_at=now, updated_at=now, error=None)
+
+    def delete_many(self, instance_ids):
+        if not isinstance(instance_ids, list) or not 1 <= len(instance_ids) <= 40 or \
+                any(not isinstance(value, str) for value in instance_ids) or \
+                len(set(instance_ids)) != len(instance_ids):
+            raise ValueError('Provide 1–40 distinct environment IDs.')
+        with self.lock:
+            rows = []
+            for instance_id in instance_ids:
+                row = self.store.get(instance_id)
+                if row is None:
+                    raise KeyError(instance_id)
+                if self.store.running_comparison_for(instance_id):
+                    raise ActiveComparisonError('A running comparison uses this environment.')
+                rows.append(row)
+            active = [row for row in rows if row['state'] != 'deleted']
+            claimed = [row for row in active if self.store.claim_delete(row['id'], self.clock())]
+            if claimed:
+                try:
+                    self.backend.delete_many(claimed, heartbeat=lambda: self.store.heartbeat_deleting(
+                        [row['id'] for row in claimed], self.clock()))
+                except Exception as error:
+                    for row in claimed:
+                        if self.store.get(row['id'])['state'] != 'deleted':
+                            self.store.update(row['id'], error=type(error).__name__ + ': ' + str(error),
+                                              updated_at=stamp(self.clock()))
+                else:
+                    now = stamp(self.clock())
+                    for row in claimed:
+                        if self.store.get(row['id'])['state'] != 'deleted':
+                            self.store.update(row['id'], state='deleted', deleted_at=now,
+                                              updated_at=now, error=None)
+            return [self.store.get(instance_id) for instance_id in instance_ids]
 
     def expire(self):
         expired = []
@@ -329,24 +511,28 @@ class Lifecycle:
                 'state': 'running',
                 'created_at': now, 'updated_at': now, 'report_sha256': None,
                 'report_blob': None, 'verdict': None, 'summary': None, 'error': None})
-            try:
-                if mode == 'performance' and self.comparator is None:
+        try:
+            if mode == 'performance' and self.comparator is None:
+                with self.performance_lock:
                     from performance_pair import evaluate_performance_pair
                     summary = evaluate_performance_pair(baseline, candidate, profile)
-                elif self.comparator is None:
-                    from control_comparison import evaluate_pair
-                    summary = evaluate_pair(baseline, candidate, mode)
-                else:
-                    summary = self.comparator(baseline, candidate, mode)
-            except Exception as error:
-                return self.store.update_comparison(comparison_id, state='failed',
-                    updated_at=stamp(self.clock()), error=type(error).__name__ + ': ' + str(error))
-            return self.store.update_comparison(comparison_id,
-                state='complete' if summary['complete'] else 'incomplete',
-                updated_at=stamp(self.clock()), report_sha256=summary['report_sha256'],
-                report_blob=summary['report_blob'], verdict=summary['verdict'],
-                summary=json.dumps(summary, sort_keys=True))
+            elif self.comparator is None:
+                from control_comparison import evaluate_pair
+                summary = evaluate_pair(baseline, candidate, mode)
+            else:
+                summary = self.comparator(baseline, candidate, mode)
+        except Exception as error:
+            return self.store.update_comparison(comparison_id, state='failed',
+                updated_at=stamp(self.clock()), error=type(error).__name__ + ': ' + str(error))
+        return self.store.update_comparison(comparison_id,
+            state='complete' if summary['complete'] else 'incomplete',
+            updated_at=stamp(self.clock()), report_sha256=summary['report_sha256'],
+            report_blob=summary['report_blob'], verdict=summary['verdict'],
+            summary=json.dumps(summary, sort_keys=True))
 
 
-def local_lifecycle():
-    return Lifecycle(Store(STATE / 'lifecycle.sqlite3'), LabBackend())
+def local_lifecycle(recover_comparisons=False):
+    store = Store(STATE / 'lifecycle.sqlite3')
+    if recover_comparisons:
+        store.interrupt_running_comparisons(utcnow())
+    return Lifecycle(store, LabBackend())
