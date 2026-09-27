@@ -10,7 +10,7 @@ sys.path.insert(0, 'research/platform-spike')
 from common import STATE
 from data_contract import BlobServiceClient, DEMO_KEY
 from measure import search
-from lifecycle import DATASET, local_lifecycle, parse_stamp, utcnow
+from lifecycle import DATASET, RELEASES, local_lifecycle, parse_stamp, utcnow
 from control_identity import GiteaIdentity, Sessions, expired_cookie, session_cookie
 
 PORT = 18082
@@ -85,8 +85,13 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['api', 'me']:
             return self.send_json(200, {'username': identity['username'], 'is_admin': identity['is_admin']})
         if parts == ['api', 'datasets']:
-            manifest = json.loads((STATE / 'releases' / DATASET / 'manifest.json').read_text())
-            return self.send_json(200, [{'release': DATASET, 'manifest': manifest}])
+            releases = []
+            for release_id in RELEASES:
+                path = STATE / 'releases' / release_id / 'manifest.json'
+                if path.exists():
+                    releases.append({'release': release_id,
+                                     'manifest': json.loads(path.read_text(encoding='utf-8'))})
+            return self.send_json(200, releases)
         if parts == ['api', 'environments']:
             return self.send_json(200, [row for row in self.controller.store.all() if self.visible(row, identity)])
         if parts == ['api', 'comparisons']:
@@ -170,7 +175,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, {'signed_out': True}, {'Set-Cookie': expired_cookie()})
             if parts == ['api', 'environments']:
                 row = self.controller.create(payload['name'], payload['build_run'], owner=identity['username'],
-                                             index_kind=payload.get('index_kind', 'shared'))
+                                             index_kind=payload.get('index_kind', 'shared'),
+                                             release_id=payload.get('release_id', DATASET))
                 return self.send_json(201 if row['state'] == 'ready' else 202, row)
             if parts == ['api', 'comparisons']:
                 first = self.controller.store.get(payload['baseline_id'])

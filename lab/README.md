@@ -34,9 +34,9 @@ python lab/verify_baseline.py
 
 The product generator uses unequal category shares, rotating product types and brands, seeded colour/material/availability, bounded category-specific prices and synthetic popularity. The 50 queries span type, colour, brand and material intents. Judgements come from rules applied to available products; they are useful as a repeatable seed, but they are not human relevance labels or exhaustive negatives. No production product or traffic data is used.
 
-The local control service implements 72-hour leases and automatic teardown. The Gatling runner measures public API latency on this 10,000-product release; its short peak and stress phases calibrate the runner rather than establishing endurance. Apple silicon verification and the 1,000,000-product/1,000-query gate remain later batches.
+The local control service implements 72-hour leases and automatic teardown. The Gatling runner measures public API latency; its short peak and stress phases calibrate the runner. Apple silicon verification remains a later batch.
 
-The later million-product release will use a [versioned ESCI-informed aggregate profile](profiles/esci-informed-uk-v1.json). Its [modelling note](../docs/research/esci-synthetic-calibration.md) separates reference observations from synthetic UK assumptions. It does not change this frozen 10,000-product release.
+The separate [million-product release](../docs/research/million-synthetic-release.md) uses a [versioned ESCI-informed aggregate profile](profiles/esci-informed-uk-v1.json). Its [modelling note](../docs/research/esci-synthetic-calibration.md) separates reference observations from synthetic UK assumptions. It does not change this frozen 10,000-product release.
 
 ## Compare a pinned API candidate
 
@@ -149,3 +149,16 @@ python lab/compare_gatling_jobs.py probe <baseline-run-id> <candidate-run-id>
 ```
 
 Copy each `run_id` from its Job output into the final command. The runner needs the k3d cluster, pinned API deployments, Floci forward on `14577` and the ignored `.lab` credentials. It uses namespace `lab-evaluation`, a 2 CPU/2 GiB cap, a temporary PVC, and a search NetworkPolicy allowance limited to labelled Gatling pods. It removes the Job, ConfigMaps and PVC after retaining the reports. See the [runner guide](gatling/README.md), [traffic assumptions](../docs/research/synthetic-traffic.md) and [measured evidence](../docs/research/evidence/gatling.md).
+
+## Exercise the million-product release
+
+Generate the deterministic release, then publish and build its write-blocked shared index:
+
+```powershell
+python lab/release_million.py
+python lab/load_million_release.py
+```
+
+The generator streams a gzip product object. Its manifest pins the seed, profile and generator hashes, object hashes, byte counts, 1,000 queries and 20,000 original synthetic assessments. Re-running the loader checks the existing Blob objects and index without replacing them. The control UI can then create API-only environments on the shared index or a dedicated `title-keyword-1m-v1` mapping candidate. Use the **release** selector to choose `retail-gb-1m-v1` for both sides of a comparison. After creating `lab-million-index`, run `python lab/verify_million_access.py` to check counts, write blocks and cross-index access.
+
+The frozen 30-minute synthetic trace supports `normal-full`, `sustained-peak` and `stress-full` as well as the five-minute `smoke` profile. Compile a schedule with `python lab/traffic.py compile --profile sustained-peak --release retail-gb-1m-v1`; the control UI runs the paired finite Jobs. The [scale evidence](../docs/research/evidence/million-scale.md) records measured results and limits.

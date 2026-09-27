@@ -49,18 +49,23 @@ def definition(name):
     return entry
 
 
-def frozen_suite():
-    release = STATE / 'releases/retail-gb-10k-v1'
+def frozen_suite(release_id='retail-gb-10k-v1'):
+    release = STATE / 'releases' / release_id
     original = (release / 'queries.jsonl').read_bytes()
-    extra_rows = [json.loads(line) for line in (ROOT / 'lab/comparison-extra.jsonl').read_text().splitlines()]
-    extra = ''.join(json.dumps(row, sort_keys=True, separators=(',', ':')) + '\n'
-                    for row in extra_rows).encode()
     manifest = json.loads((release / 'manifest.json').read_text())
     assert hashlib.sha256(original).hexdigest() == manifest['sha256']['queries.jsonl']
+    if release_id == 'retail-gb-10k-v1':
+        extra_rows = [json.loads(line) for line in (ROOT / 'lab/comparison-extra.jsonl').read_text().splitlines()]
+        extra = ''.join(json.dumps(row, sort_keys=True, separators=(',', ':')) + '\n'
+                        for row in extra_rows).encode()
+    else:
+        extra = b''
     payload = original + extra
     rows = [json.loads(line) for line in payload.splitlines()]
-    assert len(rows) == 51 and len({row['query_id'] for row in rows}) == 51
-    assert rows[-1]['query_id'] == 'q051'
+    assert len(rows) == manifest['query_count'] + (1 if extra else 0)
+    assert len({row['query_id'] for row in rows}) == len(rows)
+    if extra:
+        assert rows[-1]['query_id'] == 'q051'
     return rows, payload, hashlib.sha256(payload).hexdigest(), manifest
 
 

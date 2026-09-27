@@ -1,0 +1,168 @@
+{
+  "schema_version": 2,
+  "source": "source-trace-million-v2.csv",
+  "seed": 20260929,
+  "profiles": {
+    "probe": [
+      {
+        "name": "warmup",
+        "seconds": 5,
+        "source_start": 0,
+        "rate": 2
+      },
+      {
+        "name": "normal",
+        "seconds": 10,
+        "source_start": 5,
+        "rate": 2
+      }
+    ],
+    "smoke": [
+      {
+        "name": "ramp",
+        "seconds": 30,
+        "source_start": 0,
+        "rate_start": 1,
+        "rate_end": 10
+      },
+      {
+        "name": "warmup",
+        "seconds": 60,
+        "source_start": 30,
+        "rate": 10
+      },
+      {
+        "name": "normal",
+        "seconds": 300,
+        "source_start": 90,
+        "rate": 10
+      }
+    ],
+    "normal": [
+      {
+        "name": "warmup",
+        "seconds": 30,
+        "source_start": 0,
+        "rate": 8
+      },
+      {
+        "name": "normal",
+        "seconds": 120,
+        "source_start": 30,
+        "source_multiplier": 1
+      }
+    ],
+    "peak": [
+      {
+        "name": "warmup",
+        "seconds": 30,
+        "source_start": 150,
+        "rate": 10
+      },
+      {
+        "name": "peak",
+        "seconds": 120,
+        "source_start": 180,
+        "rate": 20
+      }
+    ],
+    "stress": [
+      {
+        "name": "warmup",
+        "seconds": 30,
+        "source_start": 300,
+        "rate": 10
+      },
+      {
+        "name": "stress-15",
+        "seconds": 30,
+        "source_start": 330,
+        "rate": 15
+      },
+      {
+        "name": "stress-25",
+        "seconds": 30,
+        "source_start": 360,
+        "rate": 25
+      },
+      {
+        "name": "stress-35",
+        "seconds": 30,
+        "source_start": 390,
+        "rate": 35
+      },
+      {
+        "name": "recovery",
+        "seconds": 60,
+        "source_start": 420,
+        "rate": 10
+      }
+    ],
+    "normal-full": [
+      {
+        "name": "warmup",
+        "seconds": 60,
+        "source_start": 0,
+        "rate": 10
+      },
+      {
+        "name": "normal",
+        "seconds": 300,
+        "source_start": 60,
+        "source_multiplier": 1
+      }
+    ],
+    "sustained-peak": [
+      {
+        "name": "warmup",
+        "seconds": 60,
+        "source_start": 600,
+        "rate": 10
+      },
+      {
+        "name": "peak",
+        "seconds": 900,
+        "source_start": 660,
+        "rate": 20
+      }
+    ],
+    "stress-full": [
+      {
+        "name": "warmup",
+        "seconds": 60,
+        "source_start": 0,
+        "rate": 10
+      },
+      {
+        "name": "stress-10",
+        "seconds": 120,
+        "source_start": 60,
+        "rate": 10
+      },
+      {
+        "name": "stress-15",
+        "seconds": 120,
+        "source_start": 180,
+        "rate": 15
+      },
+      {
+        "name": "stress-20",
+        "seconds": 120,
+        "source_start": 300,
+        "rate": 20
+      },
+      {
+        "name": "stress-30",
+        "seconds": 120,
+        "source_start": 420,
+        "rate": 30
+      },
+      {
+        "name": "recovery",
+        "seconds": 300,
+        "source_start": 540,
+        "rate": 10
+      }
+    ]
+  }
+}

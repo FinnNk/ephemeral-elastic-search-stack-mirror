@@ -1,0 +1,11 @@
+{
+  "state": "incomplete",
+  "verdict": "incomplete",
+  "seconds": 638.406,
+  "report_sha256": "bb01afed96de09b479c428194110476916b6ab07cd2a05a335cc3e80d641670d",
+  "report_blob": "runs/bb01afed96de09b479c428194110476916b6ab07cd2a05a335cc3e80d641670d/controlled-comparison.json",
+  "query_count": 1000,
+  "completed_query_count": 0,
+  "error_count": 1000,
+  "cause": "Candidate build 5 used an older public response shape without country, currency and total; build 11 selected for retry."
+}

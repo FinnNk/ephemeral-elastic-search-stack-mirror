@@ -18,21 +18,31 @@ CANDIDATE = 'retail-price-rank'
 MEASURES = (ir_measures.nDCG @ 10, ir_measures.Judged @ 10, ir_measures.RR(rel=2) @ 10)
 
 
-def frozen_judgements():
-    release = STATE / 'releases/retail-gb-10k-v1'
+def frozen_judgements(release_id='retail-gb-10k-v1', pooled=False):
+    release = STATE / 'releases' / release_id
     manifest = json.loads((release / 'manifest.json').read_text())
     payloads = {}
     for name in ('queries.jsonl', 'judgements.jsonl'):
-        payload = (release / name).read_bytes()
-        assert hashlib.sha256(payload).hexdigest() == manifest['sha256'][name]
+        if name == 'judgements.jsonl' and pooled:
+            pool_manifest = json.loads((release / 'judgement-pool-v2-manifest.json').read_text(encoding='utf-8'))
+            assert pool_manifest['query_sha256'] == manifest['sha256']['queries.jsonl']
+            assert pool_manifest['original_judgement_sha256'] == manifest['sha256']['judgements.jsonl']
+            payload = (release / 'judgements-pool-v2.jsonl').read_bytes()
+            assert hashlib.sha256(payload).hexdigest() == pool_manifest['sha256']
+            manifest['sha256'][name] = pool_manifest['sha256']
+            manifest['judgement_count'] = pool_manifest['count']
+            manifest['judgement_pool'] = pool_manifest
+        else:
+            payload = (release / name).read_bytes()
+            assert hashlib.sha256(payload).hexdigest() == manifest['sha256'][name]
         payloads[name] = [json.loads(line) for line in payload.splitlines()]
     queries = payloads['queries.jsonl']
     judgements = payloads['judgements.jsonl']
-    assert len(queries) == manifest['query_count'] == 50
+    assert len(queries) == manifest['query_count']
     assert len(judgements) == manifest['judgement_count']
     qids = {row['query_id'] for row in queries}
-    assert len(qids) == 50 and {row['query_id'] for row in judgements} == qids
-    assert all(1 <= row['grade'] <= 3 for row in judgements)
+    assert len(qids) == manifest['query_count'] and {row['query_id'] for row in judgements} == qids
+    assert all(0 <= row['grade'] <= 3 for row in judgements)
     return queries, judgements, manifest
 
 

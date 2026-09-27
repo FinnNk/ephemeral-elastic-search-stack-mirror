@@ -6,6 +6,7 @@ import sys
 import time
 import urllib.error
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 sys.path.insert(0, 'research/platform-spike')
 from common import ROOT, STATE, apply, guard, k, record
@@ -18,24 +19,39 @@ INDEX = RELEASE
 DATA = STATE / 'releases' / RELEASE
 
 
-def publish_blobs(manifest):
+def publish_blobs(manifest, data_dir=DATA):
+    data_dir = Path(data_dir)
+    release = manifest['release']
+    product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
     account = BlobServiceClient(account_url='http://127.0.0.1:14577/devstoreaccount1', credential=DEMO_KEY)
     try:
         account.create_container('datasets')
     except ResourceExistsError:
         pass
-    for name in ('products.jsonl', 'queries.jsonl', 'judgements.jsonl', 'manifest.json'):
-        payload = (DATA / name).read_bytes()
-        if name != 'manifest.json':
-            assert hashlib.sha256(payload).hexdigest() == manifest['sha256'][name]
-        path = f'{RELEASE}/{name}'
+    for name in (product_name, 'queries.jsonl', 'judgements.jsonl', 'manifest.json'):
+        source = data_dir / name
+        expected = manifest['sha256'].get(name)
+        digest = hashlib.sha256()
+        with source.open('rb') as local:
+            for block in iter(lambda: local.read(1024 * 1024), b''):
+                digest.update(block)
+        local_hash = digest.hexdigest()
+        if expected:
+            assert local_hash == expected
+        path = f'{release}/{name}'
         blob = account.get_blob_client('datasets', path)
         try:
-            blob.upload_blob(payload, overwrite=False)
+            with source.open('rb') as local:
+                blob.upload_blob(local, overwrite=False, length=source.stat().st_size)
         except ResourceExistsError:
             pass
-        assert blob.download_blob().readall() == payload, f'Blob differs: {path}'
-    return f'{RELEASE}/products.jsonl'
+        remote_hash = hashlib.sha256()
+        remote_bytes = 0
+        for chunk in blob.download_blob().chunks():
+            remote_hash.update(chunk)
+            remote_bytes += len(chunk)
+        assert remote_bytes == source.stat().st_size and remote_hash.hexdigest() == local_hash, f'Blob differs: {path}'
+    return f'{release}/{product_name}'
 
 
 def create_index():
@@ -62,23 +78,25 @@ def create_index():
         return False
 
 
-def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer'):
+def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer',
+              expected_count=10_000, compression='none', deadline_seconds=300):
     password = secrets.token_urlsafe(24)
     sas = generate_blob_sas('devstoreaccount1', 'datasets', blob_path, account_key=DEMO_KEY,
-        permission=BlobSasPermissions(read=True), expiry=datetime.now(timezone.utc) + timedelta(minutes=15))
-    elastic('/_security/role/' + role, 'PUT', {'indices': [{'names': [index], 'privileges': ['write']} ]})
+        permission=BlobSasPermissions(read=True),
+        expiry=datetime.now(timezone.utc) + timedelta(seconds=deadline_seconds + 300))
+    elastic('/_security/role/' + role, 'PUT', {'indices': [{'names': [index], 'privileges': ['write', 'maintenance']} ]})
     elastic('/_security/user/' + role, 'PUT', {'password': password, 'roles': [role]})
     try:
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role, 'namespace': 'platform'},
             'stringData': {'ES_USER': role, 'ES_PASSWORD': password, 'ES_INDEX': index,
                 'DATASET_URL': 'http://floci.platform.svc:4577/devstoreaccount1/datasets/' + blob_path + '?' + sas,
-                'DATASET_SHA256': digest}})
+                'DATASET_SHA256': digest, 'DATASET_COMPRESSION': compression}})
         cert = json.loads(k('get', 'secret/shared-es-http-certs-public', '-n', 'platform', '-o', 'json').stdout)['data']
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': role + '-ca', 'namespace': 'platform'}, 'data': cert})
         apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': role, 'namespace': 'platform'},
             'data': {'index_job.py': (ROOT / 'research/platform-spike/index_job.py').read_text()}})
         apply({'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': role, 'namespace': 'platform'},
-            'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': 300, 'template': {'spec': {
+            'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': deadline_seconds, 'template': {'spec': {
                 'automountServiceAccountToken': False, 'restartPolicy': 'Never',
                 'containers': [{'name': 'index', 'image': 'python:3.13.7-alpine3.22',
                     'command': ['python', '/source/index_job.py'],
@@ -92,9 +110,11 @@ def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer'):
                 'volumes': [{'name': 'source', 'configMap': {'name': role}},
                             {'name': 'ca', 'secret': {'secretName': role + '-ca'}}],
             }}}})
-        k('wait', '--for=condition=complete', 'job/' + role, '-n', 'platform', '--timeout=315s')
+        k('wait', '--for=condition=complete', 'job/' + role, '-n', 'platform',
+          '--timeout=' + str(deadline_seconds + 15) + 's')
         result = json.loads(k('logs', 'job/' + role, '-n', 'platform').stdout)
-        assert result == {'indexed': 10000, 'dataset_sha256': digest}, result
+        assert result['indexed'] == expected_count and result['dataset_sha256'] == digest, result
+        return result
     finally:
         k('delete', 'job/' + role, '-n', 'platform', '--ignore-not-found', '--wait=true')
         elastic('/_security/user/' + role, 'DELETE')
