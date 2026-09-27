@@ -196,7 +196,7 @@
         "rendered light preview",
         "automated light/dark browser containment"
       ],
-      "observations": "SLO signal, operation, trace, related log and retained report are readable. Stored traces and logs now share a trace ID; live SigNoz navigation remains unverified."
+      "observations": "SLO signal, operation, trace, related log and retained report are readable. The source-controlled SigNoz dashboard is provisioned and its synthetic interval queries return values; live browser drill-through remains unverified."
     }
   ],
   "c4": {

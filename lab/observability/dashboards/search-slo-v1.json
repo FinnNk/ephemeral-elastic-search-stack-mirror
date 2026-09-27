@@ -1,0 +1,1059 @@
+{
+  "schemaVersion": "v6",
+  "name": "relevance-lab-search-slo",
+  "tags": [
+    {
+      "key": "lab",
+      "value": "relevance"
+    },
+    {
+      "key": "contract",
+      "value": "search-slo-v1"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Search and operation SLOs",
+      "description": "Normal search cohort and accepted operations. No data means unknown; check sample count and collection coverage."
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/guidance"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/eligible"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/success_good"
+              }
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/responsive_good"
+              }
+            },
+            {
+              "x": 6,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/success_ratio"
+              }
+            },
+            {
+              "x": 0,
+              "y": 15,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/responsive_ratio"
+              }
+            },
+            {
+              "x": 6,
+              "y": 15,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/success_remaining"
+              }
+            },
+            {
+              "x": 0,
+              "y": 21,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/responsive_remaining"
+              }
+            },
+            {
+              "x": 6,
+              "y": 21,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/success_burn"
+              }
+            },
+            {
+              "x": 0,
+              "y": 27,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/responsive_burn"
+              }
+            },
+            {
+              "x": 6,
+              "y": 27,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/operation_deadline"
+              }
+            },
+            {
+              "x": 0,
+              "y": 33,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/operation_good"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "panels": {
+      "guidance": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Read this dashboard"
+          },
+          "plugin": {
+            "kind": "signoz/TextPanel",
+            "spec": {
+              "mode": "markdown",
+              "text": "**No data is unknown, not healthy.** Check the eligible count and at least 100 normal requests before interpreting search percentages. The current time picker sets the calculation window; the policy window is 7 days, with 99% success and 95% responsiveness targets. A missing or partial collection interval cannot be treated as good.\n\nThe charts show per-interval increases. Negative remaining budget means the interval exceeded its allowance. Inspect the same service, cohort and time in Traces and Logs, then open the immutable run report for the promotion decision.",
+              "presentation": {
+                "textAlign": "left",
+                "verticalAlign": "top"
+              },
+              "headerOptions": {
+                "hide": false
+              }
+            }
+          },
+          "queries": []
+        }
+      },
+      "eligible": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Normal search requests"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "success_good": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Successful searches"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.success_good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "responsive_good": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Successful within 250 ms"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.responsive_good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "success_ratio": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Search success / eligible"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.success_good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(B/A)*100",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "responsive_ratio": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Responsive / eligible"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.responsive_good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(B/A)*100",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "success_remaining": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Search success budget remaining"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.success_good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A*0.01-(A-B)",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "responsive_remaining": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Responsiveness budget remaining"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.responsive_good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A*0.05-(A-B)",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "success_burn": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Search success budget burn"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.success_good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(A-B)/(A*0.01)",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "responsive_burn": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Responsiveness budget burn"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'normal'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.responsive_good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(A-B)/(A*0.05)",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "operation_deadline": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Accepted operations within deadline"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.operation.kind IN ['delivery.verify', 'environment.delete', 'environment.delete_many', 'environment.expire']"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.operation.eligible",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.operation.kind"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.operation.kind IN ['delivery.verify', 'environment.delete', 'environment.delete_many', 'environment.expire']"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.operation.deadline_good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.operation.kind"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(B/A)*100",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "operation_good": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Accepted operations successful"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.operation.eligible",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.operation.kind"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.operation.good",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.operation.kind"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(B/A)*100",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "variables": []
+  }
+}

@@ -8,7 +8,7 @@ Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram 
 
 The [delivery roadmap](docs/plans/roadmap.md) summarises demonstrated behaviour and remaining gates. See the [scale evidence](docs/research/evidence/million-scale.md), [concurrency evidence](docs/research/evidence/concurrency-isolation.md) and [native/cloud validation plan](docs/plans/native-cloud-validation.md).
 
-The control services run in Kubernetes, and synthetic inputs and offline evaluation have separate contracts. The Search API has an OpenTelemetry signal contract, and the control services send signals to a local gateway. SigNoz stores synthetic search traces and metrics plus correlated delivery traces and logs; the [connected investigation](docs/plans/signoz-connected-investigation.md) will check dashboard arithmetic and navigation. The [roadmap](docs/plans/roadmap.md) lists the remaining validation gates.
+The control services run in Kubernetes, and synthetic inputs and offline evaluation have separate contracts. The Search API has an OpenTelemetry signal contract, and the control services send signals to a local gateway. SigNoz stores synthetic search traces and metrics plus correlated delivery traces and logs; its [source-controlled dashboard](docs/observability-backend.md#search-slo-dashboard) shows measured local intervals. The [connected runtime investigation](docs/plans/signoz-connected-runtime.md) covers rolling windows, coverage and navigation. The [roadmap](docs/plans/roadmap.md) lists the remaining validation gates.
 
 ## Current state
 
