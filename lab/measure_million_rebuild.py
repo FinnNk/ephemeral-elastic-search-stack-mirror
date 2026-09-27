@@ -1,9 +1,7 @@
 """Measure a clean local rebuild of the frozen synthetic release."""
 import json
-import sys
 import time
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, record
 from release_million import RELEASE, build
 

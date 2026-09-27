@@ -1,10 +1,8 @@
 """Measure no-reindex cloning of the existing frozen million-product index."""
 import json
-import sys
 import time
 import urllib.error
 
-sys.path.insert(0, 'research/platform-spike')
 from common import guard, record
 from data_contract import elastic
 

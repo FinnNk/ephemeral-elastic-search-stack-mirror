@@ -1,11 +1,9 @@
 """Exercise distinct Gitea owners and administrator cleanup through the local API."""
 import http.cookiejar
 import json
-import sys
 import urllib.error
 import urllib.request
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, record
 
 BASE = 'http://localhost:18082/api'

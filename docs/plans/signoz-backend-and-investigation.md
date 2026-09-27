@@ -4,7 +4,7 @@
 
 Install a self-hosted SigNoz backend and a stable OTel Collector endpoint for the lab. Turn the [Search API foundation](../observability-foundation.md) into a single investigation path from an SLO breach through affected operations, traces and related logs. Add lifecycle, delivery and finite-job telemetry without changing frozen evidence contracts.
 
-**Status: planned after the 7k1 foundation branch.** The initial host measurement found about 3.4 GiB spare inside k3d node limits, below SigNoz's published 8 GB minimum. Recheck live headroom before installation and record the allocation chosen. Do not remove Elasticsearch, Nexus, Gitea or the control services to fit the dashboard.
+**Status: next batch after runtime consolidation and delivery rehearsal.** The earlier host measurement found about 3.4 GiB spare inside k3d node limits, below SigNoz's published 8 GB minimum. Recheck live headroom before installation and record the allocation chosen. Do not remove Elasticsearch, Nexus, Gitea or the control services to fit the dashboard.
 
 ## Constraints
 
@@ -13,6 +13,7 @@ Install a self-hosted SigNoz backend and a stable OTel Collector endpoint for th
 - Use one log ingestion route per source. Preserve trace/span IDs, operation IDs and immutable report references; never emit credentials, raw customer-like queries or product bodies.
 - Keep SLI counters unsampled. Record data gaps, low counts and Collector failures separately from good events. A slow successful response spends the responsiveness budget.
 - Keep human review and immutable Blob reports authoritative. Telemetry is time-bounded operational evidence and cannot approve a promotion or replace a frozen comparison.
+- Observe the installed `lab-control` Pod and all three local delivery targets; retain the separate reviewer and exact-head validation path. Trace a schema-changing promotion and rollback without treating the dashboard as release evidence.
 - Use the platform's native dashboard and correlation features, with documented parameterised links only where navigation falls short. Do not build a second dashboard application.
 
 ## Acceptance criteria

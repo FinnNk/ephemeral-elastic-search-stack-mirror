@@ -1,10 +1,8 @@
 """Check index-scoped read access and write blocks for million-scale instances."""
 import base64
 import json
-import sys
 import urllib.error
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, k, record
 from data_contract import elastic
 

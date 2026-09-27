@@ -189,7 +189,7 @@
     "visual_review": "03-evaluation inspected; other C4 views exported but not re-inspected in this batch",
     "review_scope": "Inspected the catalogue-pinned index build and API capture relationships. Labels and placement are legible.",
     "sources": {
-      "workspace.dsl": "9ad030b0cff7699cfeb38263c7e42bfd5c08aeef1c8003d0c55a89fff0881f73",
+      "workspace.dsl": "b15fa5746470c0984f8a7b4bc5fd645774d0cf7f38790476c7a96b1c0b821fe6",
       "layout.mjs": "64274da15be1c587aed9aaf101adee60fdcf0ae040f9fcf1e7cc432cfcb9c825"
     },
     "svg_sha256": {

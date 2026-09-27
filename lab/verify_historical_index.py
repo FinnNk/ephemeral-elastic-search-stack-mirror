@@ -1,11 +1,9 @@
 """Rebuild an old index after its mapping source has changed, then compare schemas."""
 import copy
 import json
-import sys
 import time
 from unittest.mock import patch
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, guard, record
 from data_contract import elastic
 from index_candidate import KIND, _existing, ensure_candidate_index, index_name, mapping_contract, remove_candidate_index

@@ -2,13 +2,11 @@
 import hashlib
 import json
 import secrets
-import sys
 import time
 import urllib.error
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-sys.path.insert(0, 'research/platform-spike')
 from common import IN_CLUSTER, ROOT, STATE, apply, guard, k, record
 from data_contract import elastic
 from blob_config import service, settings, signed_read_url
@@ -111,7 +109,7 @@ def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer',
         apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': role, 'namespace': namespace,
             'labels': labels},
             'data': {'index_job.py': worker_source if worker_source is not None else
-                     (ROOT / 'research/platform-spike/index_job.py').read_text(encoding='utf-8')}})
+                     (ROOT / 'lab/index_job.py').read_text(encoding='utf-8')}})
         apply({'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': role, 'namespace': namespace,
             'labels': labels},
             'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': deadline_seconds, 'template': {'spec': {

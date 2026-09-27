@@ -1,11 +1,8 @@
 """Frozen public-API evidence gates; provider approvals are a separate step."""
 from datetime import datetime, timedelta, timezone
 import json
-import sys
 from pathlib import Path
 
-sys.path.insert(0, '.lab/python-libs')
-sys.path.insert(0, 'research/platform-spike')
 from blob_config import service
 from compare_search import definition, immutable_blob
 from control_comparison import evaluate_pair

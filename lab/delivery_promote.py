@@ -1,11 +1,9 @@
 """Protected desired-state PRs, exact-input gates and deployment verification."""
 from datetime import datetime, timezone
 import json
-import sys
 import time
 import uuid
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, apply, k
 from gitea import api
 from delivery_provider import DESIRED, endpoint, git, pull_request, merge_demo
@@ -219,15 +217,22 @@ def validate_pr(number):
     return {**result, 'head_sha': pr['head']['sha'], 'pr': number}
 
 
-def demonstrate_merge(number):
-    """Explicit lab simulation: separate existing lab administrator approves fixture PRs."""
+def approved_head(reviews, head_sha):
+    return any(review.get('state') == 'APPROVED' and
+               review.get('commit_id') == head_sha and
+               review.get('user', {}).get('login') not in (None, 'elastic-agent')
+               for review in reviews)
+
+
+def merge_reviewed(number, approval_kind='separate reviewer'):
+    """Merge a validated fixture PR only after a distinct reviewer approved its exact head."""
     checked = validate_pr(number)
     if not checked['passed']:
         raise ValueError(checked['detail'])
     pr, proposal = inspect_pr(number)
-    api(endpoint(DESIRED, '/pulls/' + str(number) + '/reviews'), 'POST', {
-        'event': 'APPROVED', 'commit_id': pr['head']['sha'],
-        'body': 'Automated lab demonstration approval by the simulated reviewer. This is not human acceptance of relevance quality or a project implementation PR.'}, identity='admin')
+    reviews = api(endpoint(DESIRED, '/pulls/' + str(number) + '/reviews'))
+    if not approved_head(reviews, pr['head']['sha']):
+        raise ValueError('A separate reviewer must approve the exact PR head.')
     # Recheck immediately before merge; strict branch protection also blocks a moved main.
     inspect_pr(number)
     started = time.monotonic()
@@ -236,12 +241,24 @@ def demonstrate_merge(number):
     result = verify_target(proposal['target'], proposal['deployment'], merged['merge_commit_sha'])
     result['merge_to_verified_seconds'] = round(time.monotonic() - started, 3)
     result['pr'] = number
-    result['approval_kind'] = 'automated demonstration by separate lab administrator'
+    result['approval_kind'] = approval_kind
     reference = retain(result, 'promotion-completion.json')
     api(endpoint(DESIRED, '/issues/' + str(number) + '/comments'), 'POST', {'body':
         'Argo CD and the public API verified the declared deployment in ' + str(result['merge_to_verified_seconds']) +
         ' s after merge. Verification SHA-256 `' + reference['sha256'] + '`. Artifact digests were reused without rebuilding.'})
     return result
+
+
+def demonstrate_merge(number):
+    """Host-only fixture shortcut: approve as lab-admin, then merge the reviewed head."""
+    checked = validate_pr(number)
+    if not checked['passed']:
+        raise ValueError(checked['detail'])
+    pr, _proposal = inspect_pr(number)
+    api(endpoint(DESIRED, '/pulls/' + str(number) + '/reviews'), 'POST', {
+        'event': 'APPROVED', 'commit_id': pr['head']['sha'],
+        'body': 'Automated lab demonstration approval by the simulated reviewer. This is not human acceptance of relevance quality or a project implementation PR.'}, identity='admin')
+    return merge_reviewed(number, 'automated demonstration by separate lab administrator')
 
 
 def watch_once():

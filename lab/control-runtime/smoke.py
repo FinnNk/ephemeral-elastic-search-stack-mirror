@@ -3,7 +3,7 @@
 import json
 import sys
 
-sys.path[:0] = ['lab', 'research/platform-spike']
+sys.path[:0] = ['lab']
 
 from common import STATE, guard
 from data_contract import elastic

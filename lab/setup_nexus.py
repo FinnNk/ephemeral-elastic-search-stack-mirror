@@ -3,11 +3,9 @@ import base64
 import json
 import secrets
 import subprocess
-import sys
 import time
 import urllib.error
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, apply, guard, k, record
 from nexus import CREDENTIALS, REGISTRY, api, request
 

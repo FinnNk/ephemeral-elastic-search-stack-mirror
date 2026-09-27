@@ -2,11 +2,9 @@
 import argparse
 import math
 import json
-import sys
 import time
 import urllib.parse
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, record
 from lifecycle import parse_stamp
 from verify_million_control import client

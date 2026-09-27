@@ -1,10 +1,8 @@
 """Compare one frozen API workload with 40 idle and then 40 busy API neighbours."""
 import hashlib
 import json
-import sys
 import time
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, apply, k, record
 from run_gatling_job import run
 

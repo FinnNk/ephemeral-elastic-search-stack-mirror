@@ -4,13 +4,11 @@ import hashlib
 import io
 import json
 import subprocess
-import sys
 import time
 import uuid
 import zipfile
 from pathlib import Path
 
-sys.path.insert(0, 'research/platform-spike')
 from common import ROOT, STATE, record
 from compare_search import definition, immutable_blob
 from gatling_report import summarise

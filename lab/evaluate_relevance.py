@@ -1,15 +1,9 @@
 """Score two pinned public APIs against the frozen synthetic judgements."""
 import hashlib
 import json
-import sys
 from collections import defaultdict
-
-from pathlib import Path
-
-sys.path.insert(0, str(Path('.lab/python-libs').resolve()))
 import ir_measures
 
-sys.path.insert(0, 'research/platform-spike')
 from common import guard, record
 from compare_search import definition, immutable_blob, response
 from input_selection import select

@@ -1,11 +1,9 @@
 """Exercise a dedicated mapping change beside a shared-index baseline."""
 import base64
 import json
-import sys
 import time
 import urllib.error
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, k, record
 from data_contract import elastic
 from index_candidate import _existing, index_name, mapping_contract

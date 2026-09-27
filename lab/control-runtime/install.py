@@ -16,7 +16,6 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'lab'))
-sys.path.insert(0, str(ROOT / 'research/platform-spike'))
 from common import KUBE, STATE, guard, k
 
 HERE = Path(__file__).resolve().parent

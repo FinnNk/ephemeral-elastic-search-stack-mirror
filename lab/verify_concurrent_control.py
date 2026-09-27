@@ -1,12 +1,10 @@
 """Exercise unrelated control requests while one real Gatling comparison runs."""
 import json
-import sys
 import threading
 import time
 import urllib.error
 import urllib.parse
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, record
 from lifecycle import Store
 from verify_million_control import client

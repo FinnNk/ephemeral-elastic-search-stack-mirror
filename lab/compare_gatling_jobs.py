@@ -2,9 +2,7 @@
 import argparse
 import hashlib
 import json
-import sys
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, record
 from compare_gatling import compare
 from compare_search import immutable_blob

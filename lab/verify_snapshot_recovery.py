@@ -3,9 +3,7 @@ import gzip
 import heapq
 import json
 import os
-import sys
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, guard, record
 from data_contract import elastic
 from index_candidate import _existing, ensure_candidate_index, index_name, mapping_contract, remove_candidate_index

@@ -29,7 +29,7 @@ def current_recipe(release_id, index_kind, release_manifest, engine_version, map
     if mapping is None:
         mapping = MILLION_MAPPING if release_manifest.get('compression') == 'gzip' else BASELINE_MAPPING
     product_name = 'products.jsonl.gz' if release_manifest.get('compression') == 'gzip' else 'products.jsonl'
-    worker = (Path(__file__).resolve().parent.parent / 'research/platform-spike/index_job.py').read_text(encoding='utf-8')
+    worker = (Path(__file__).resolve().parent.parent / 'lab/index_job.py').read_text(encoding='utf-8')
     return {
         'format': 1, 'release_id': release_id, 'index_kind': index_kind,
         'release_manifest_sha256': digest(release_manifest),
@@ -51,7 +51,7 @@ def catalogue_recipe(release_id, index_kind, catalogue_manifest, engine_version,
         raise ValueError('Unsupported catalogue encoding for the indexer.')
     if mapping is None:
         mapping = MILLION_MAPPING if content['compression'] == 'gzip' else BASELINE_MAPPING
-    worker = (Path(__file__).resolve().parent.parent / 'research/platform-spike/index_job.py').read_text(encoding='utf-8')
+    worker = (Path(__file__).resolve().parent.parent / 'lab/index_job.py').read_text(encoding='utf-8')
     recipe = {'format': 2, 'release_id': release_id, 'index_kind': index_kind,
               'catalogue_manifest_sha256': catalogue_digest(catalogue_manifest),
               'product_object': Path(content['object']).name,

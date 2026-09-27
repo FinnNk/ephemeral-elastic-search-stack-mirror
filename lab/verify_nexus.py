@@ -1,10 +1,8 @@
 """Live artifact permissions, persistence and private Kubernetes image-pull checks."""
 import json
-import sys
 import time
 import urllib.error
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, apply, guard, k, record, run
 from nexus import REGISTRY, api, credentials, publish, request
 from setup_nexus import docker, image_secret, wait_ready

@@ -4,10 +4,8 @@ import json
 import os
 from pathlib import Path
 import subprocess
-import sys
 import time
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE
 from gitea import api
 
@@ -44,7 +42,8 @@ def ensure_repo(repo, actions=False):
     if not any(row['name'] == repo for row in existing):
         api('/user/repos', 'POST', {'name': repo, 'private': True,
                                    'default_branch': 'main', 'auto_init': False})
-    api(endpoint(repo), 'PATCH', {'has_actions': actions, 'allow_merge_commits': True})
+    api(endpoint(repo), 'PATCH', {'has_actions': actions, 'allow_merge_commits': False,
+                                  'allow_squash_merge': True, 'default_merge_style': 'squash'})
     api(endpoint(repo, '/collaborators/finnnk'), 'PUT', {'permission': 'admin'})
     path = STATE / repo
     if not (path / '.git').exists():
@@ -87,5 +86,5 @@ def merge_demo(repo, number, sha):
     if pr['head']['sha'] != sha:
         raise ValueError('Demo PR head changed before merge.')
     api(endpoint(repo, '/pulls/' + str(number) + '/merge'), 'POST',
-        {'Do': 'merge', 'head_commit_id': sha, 'delete_branch_after_merge': False})
+        {'Do': 'squash', 'head_commit_id': sha, 'delete_branch_after_merge': False})
     return api(endpoint(repo, '/pulls/' + str(number)))

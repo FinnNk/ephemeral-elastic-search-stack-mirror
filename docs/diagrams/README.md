@@ -4,7 +4,7 @@ Open the [diagram gallery](index.html) in a browser, or start with the [system c
 
 ## Reading order
 
-The local deployment view places the control API and workers in `lab-control`. Independent synthetic input production and offline evaluation run as finite Jobs under separate images and artifact contracts; [their batch](../plans/independent-data-evaluation-contracts.md) still has delivery integration checks. The Search API now has an [OTel signal contract](../observability-foundation.md); the Collector, SigNoz placement and investigation views remain [planned](../plans/signoz-backend-and-investigation.md).
+The local deployment view places the deployed control API and workers in `lab-control`. The control Pod has created shared, dedicated and historical environments, compared revised independent inputs through their public APIs, and verified schema-changing promotion and rollback through the three local targets. Independent synthetic input production and offline evaluation run as finite Jobs under separate images and artifact contracts; an addendum-backed promotion remains to be exercised. The Search API has an [OTel signal contract](../observability-foundation.md); the Collector, SigNoz placement and investigation views remain [planned](../plans/signoz-backend-and-investigation.md).
 
 The gallery groups diagrams by task. The identifiers below remain stable.
 

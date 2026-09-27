@@ -5,12 +5,9 @@ import hashlib
 import json
 from pathlib import Path
 import socket
-import sys
 import time
 import uuid
 
-sys.path.insert(0, 'research/platform-spike')
-sys.path.insert(0, '.lab/python-libs')
 from common import HELM, ROOT, STATE, apply, guard, k, run
 from data_contract import elastic
 from environments import provision_access

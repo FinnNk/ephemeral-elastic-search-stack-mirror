@@ -1,10 +1,8 @@
 """Run three paired million-release smoke checks with alternating order."""
 import hashlib
 import json
-import sys
 import time
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, record
 from aggregate_smoke import aggregate
 from compare_search import immutable_blob

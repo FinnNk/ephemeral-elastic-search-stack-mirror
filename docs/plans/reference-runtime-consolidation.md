@@ -1,4 +1,6 @@
-# Next batch: runtime consolidation and delivery rehearsal
+# Batch: runtime consolidation and delivery rehearsal
+
+**Status:** implemented locally on the review branch. The [live evidence](../research/evidence/runtime-consolidation-delivery.md) records the exact checks and any remaining limits. Project-main merge awaits batch acceptance.
 
 ## Intent
 
@@ -7,8 +9,8 @@ Put the new catalogue and comparison contracts into the running control Pod, com
 ## Constraints
 
 - Keep frozen 10k/1M source bytes, format-1 recipes, snapshots, reports, approved deployment records and prior PRs immutable.
-- Merge the separate [delivery-source schema contract PR](http://127.0.0.1:31800/elastic-agent/delivery-source/pulls/4) only after review. Use its successful merged-source push build for promotion; a PR-head build cannot enter a stable target.
-- Keep the project implementation branch and delivery-source change reviewable as separate PRs. Do not merge either on behalf of the reviewer.
+- Use the reviewed and merged [delivery-source schema contract PR #4](http://127.0.0.1:31800/elastic-agent/delivery-source/pulls/4) and [1M compatibility PR #5](http://127.0.0.1:31800/elastic-agent/delivery-source/pulls/5). Their successful merged-source push build supplies the promoted release; a PR-head build cannot enter a stable target.
+- Keep the project implementation branch and delivery-source changes reviewable as separate PRs. The local delivery-state fixture exercise uses a distinct simulated reviewer. Do not merge the project PR on behalf of the reviewer.
 - Preserve API, index and evidence fingerprints during module moves. Source paths used in immutable recipes stay embedded in their old objects.
 - Avoid a broad platform redesign. Gitea, Nexus, Argo CD, Floci and the shared Elasticsearch cluster remain the local topology.
 

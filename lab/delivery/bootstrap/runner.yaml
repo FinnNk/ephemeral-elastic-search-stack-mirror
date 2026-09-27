@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: delivery-runner-data
+  namespace: platform
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: delivery-runner-docker
+  namespace: platform
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delivery-runner-config
+  namespace: platform
+data:
+  config.yaml: |
+    runner:
+      capacity: 1
+      timeout: 15m
+      shutdown_timeout: 30s
+    cache:
+      enabled: false
+  daemon.json: |
+    {"insecure-registries":["gitea.localhost:31800","nexus.localhost:18185"],"dns":["10.43.0.10"]}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-runner
+  namespace: platform
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: delivery-runner
+  template:
+    metadata:
+      labels:
+        app: delivery-runner
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        - name: volume-owner
+          image: busybox:1.37.0
+          command: [sh, -c, 'chown 1000:1000 /delivery-runner-data /docker-data']
+          volumeMounts:
+            - name: data
+              mountPath: /delivery-runner-data
+            - name: docker
+              mountPath: /docker-data
+      containers:
+        - name: runner
+          image: gitea/runner:3.5.0-dind-rootless
+          securityContext:
+            privileged: true
+          env:
+            - name: GITEA_INSTANCE_URL
+              value: http://gitea.localhost:31800
+            - name: GITEA_RUNNER_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: delivery-registration
+                  key: token
+            - name: GITEA_RUNNER_NAME
+              value: delivery-rootless
+            - name: GITEA_RUNNER_LABELS
+              value: lab-delivery:host
+            - name: CONFIG_FILE
+              value: /config/config.yaml
+            - name: DOCKER_HOST
+              value: tcp://localhost:2376
+            - name: DOCKER_CERT_PATH
+              value: /certs/client
+            - name: DOCKER_TLS_VERIFY
+              value: '1'
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: '2'
+              memory: 2Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: docker
+              mountPath: /home/rootless/.local/share/docker
+            - name: config
+              mountPath: /config
+            - name: config
+              mountPath: /home/rootless/.config/docker/daemon.json
+              subPath: daemon.json
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: delivery-runner-data
+        - name: docker
+          persistentVolumeClaim:
+            claimName: delivery-runner-docker
+        - name: config
+          configMap:
+            name: delivery-runner-config

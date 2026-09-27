@@ -4,10 +4,8 @@ import os
 import secrets
 import socket
 import subprocess
-import sys
 import time
 
-sys.path.insert(0, 'research/platform-spike')
 from common import KUBE, STATE, guard, k
 from data_contract import elastic
 

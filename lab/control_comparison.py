@@ -1,14 +1,12 @@
 """Compare two ready control-plane instances through their public search APIs."""
 import hashlib
 import json
-import sys
 from datetime import datetime, timezone
 
-sys.path.insert(0, 'research/platform-spike')
 from compare_search import definition, immutable_blob, jaccard, rbo, response
 from blob_config import settings
 from evaluate_relevance import query_ndcg, score
-from measure import search
+from search_probe import search
 from input_selection import select
 
 MODES = ('result-regression', 'relevance')

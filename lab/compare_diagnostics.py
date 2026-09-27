@@ -1,12 +1,10 @@
 """Join final API results with opt-in stage and selected Elasticsearch evidence."""
 import hashlib
 import json
-import sys
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, guard, record
 from data_contract import elastic
-from measure import search
+from search_probe import search
 from compare_search import definition, frozen_suite, immutable_blob, jaccard, rbo
 from blob_config import settings
 

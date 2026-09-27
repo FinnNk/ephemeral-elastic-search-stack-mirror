@@ -1,4 +1,4 @@
-workspace "Ephemeral search relevance lab" "Proposed architecture • September 2026 • research choices remain open" {
+workspace "Ephemeral search relevance lab" "Local reference topology • September 2026 • Azure placement proposed" {
     !impliedRelationships true
     model {
         engineer = person "Lab user" "Changes search code, models and data."

@@ -6,12 +6,10 @@ import io
 import json
 import math
 import random
-import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE
 
 ROOT = Path(__file__).with_name('traffic')

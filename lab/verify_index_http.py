@@ -1,11 +1,9 @@
 """Exercise dedicated-index create, compare and delete through the local control API."""
 import http.cookiejar
 import json
-import sys
 import time
 import urllib.request
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, record
 from lifecycle import INDEX_KIND
 

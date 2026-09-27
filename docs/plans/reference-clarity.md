@@ -14,11 +14,11 @@ The audit separates immutable evidence from executable defaults. Old reports, in
 | Retention inventory | Read-only inventory depended on the same combined manifest. | **This batch:** read source identity and content hashes from the independent manifests. |
 | Offline evaluation | A one-time complete-report importer lived in the current evaluator package. | **This batch:** remove that conversion path. Previously retained reports and observations remain unchanged; new observations come from API capture. |
 | Current documentation | README and roadmap described merged Gitea batches as pending; design text called the Kubernetes control placement future work. | **This batch:** make the roadmap a current-state entry point and label older detailed plans as historical records. |
-| Environment creation | The earlier default constructed format-1 recipes from a combined release. | **Current review branch:** new environments pin a retained independent catalogue and format-2 recipe; explicit historical format-1 replay remains. [Evidence](../research/evidence/catalogue-recipe-delivery.md) records both paths. The control Pod rollout is the next batch. |
-| Comparison selection | The prior control UI derived queries and judgements from a combined release. | **Implemented in this batch:** the UI selects pinned independent query and judgement manifest hashes; the controller verifies their bytes and dependencies. The [local check](../research/evidence/independent-comparison-inputs.md) used default and revised suites against unchanged frozen APIs. Control image rollout remains. |
-| Delivery | Normal release resolution previously created a format-1 recipe when no hash was supplied. | **Current review branch:** new resolution pins an independent catalogue recipe and selected query/judgement hashes. Live promotion and schema-changing rollback await a reviewed merged-source release and the [next batch](reference-runtime-consolidation.md). Existing approved deployment records remain readable. |
-| Source layout | Live indexing and platform helpers still reside in `research/platform-spike` and are imported by `lab/`. | **Later cleanup:** move runtime modules to an owned package after the contract migration, then update imports and entry points in one batch. Preserve research measurements as evidence. |
-| Diagrams | C4 and interactive views already show separate input/evaluation contracts and historical index recovery. | Review the rendered views when the default control/delivery path changes; do not imply independent UI selection is live before it is. |
+| Environment creation | The earlier default constructed format-1 recipes from a combined release. | **Deployed:** new environments pin a retained independent catalogue and format-2 recipe; explicit historical format-1 replay remains. [Evidence](../research/evidence/runtime-consolidation-delivery.md) records the control-Pod check. |
+| Comparison selection | The prior control UI derived queries and judgements from a combined release. | **Deployed:** the UI selects pinned independent query and judgement manifest hashes; the controller verifies their bytes and dependencies. The [local check](../research/evidence/runtime-consolidation-delivery.md) used revised inputs against unchanged frozen APIs. |
+| Delivery | Normal release resolution previously created a format-1 recipe when no hash was supplied. | **Deployed:** new resolution pins an independent catalogue recipe and selected query/judgement hashes. The [runtime delivery evidence](../research/evidence/runtime-consolidation-delivery.md) records the merged-source schema release and local target exercise. Existing approved deployment records remain readable. |
+| Source layout | Live indexing and platform helpers were imported from `research/platform-spike` by `lab/`. | **Consolidated:** active control and delivery modules own their runtime helpers; historical research measurements and embedded recipe source remain as evidence. |
+| Diagrams | C4 and interactive views show separate input/evaluation contracts and historical index recovery. | Their sources and rendered views were validated against the deployed contract; the accompanying guide identifies the current control runtime. |
 
 ## Constraints
 
@@ -36,9 +36,9 @@ The audit separates immutable evidence from executable defaults. Old reports, in
 4. The current evaluator has no one-time old-report importer; focused input and evaluator tests pass.
 5. README, design, contract guide and roadmap agree on what is implemented and what remains.
 
-## Next batch: default contract migration
+## Follow-on batch: runtime consolidation
 
-**Intent:** consolidate the runtime and exercise reviewed delivery after the catalogue/input contract changes. See the [next detailed plan](reference-runtime-consolidation.md).
+**Intent:** consolidate the runtime and exercise reviewed delivery after the catalogue/input contract changes. See the [detailed plan](reference-runtime-consolidation.md) and [live evidence](../research/evidence/runtime-consolidation-delivery.md).
 
 **Acceptance criteria:** the deployed control Pod creates format-2 environments; a reviewed merged-source release supports schema-changing promotion and rollback; active runtime helpers move out of the research tree. See the [detailed next-batch plan](reference-runtime-consolidation.md).
 

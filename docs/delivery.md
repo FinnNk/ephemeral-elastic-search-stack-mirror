@@ -57,40 +57,48 @@ The three stable targets are `lab-delivery-integration`, `lab-delivery-staging` 
 | Deploying | Merged desired state differs from the serving deployment; Argo CD reconciles it |
 | Verified | Argo is Synced/Healthy, the rollout has completed, the image/index fingerprint matches and a public API query succeeds |
 
-For a fresh demonstration, seed all targets from a successful merged-source run. Repeating bootstrap is allowed only while every target still declares that same baseline. Once promotion changes state, use promotion or rollback PRs.
+Run these commands from the repository root in PowerShell after installing `lab-control`. The Pod owns the delivery checkout and evidence-reference files; its watcher runs automatically. For a fresh demonstration, seed all targets from a successful merged-source run. Repeating bootstrap is allowed only while every target still declares that same baseline. Once promotion changes state, use promotion or rollback PRs.
 
 ```powershell
-python lab/delivery_cli.py bootstrap --run 15 --dataset retail-gb-1m-v1
-python lab/start_delivery_watch.py
+$kube = '.lab/kubeconfig.yaml'
+kubectl --kubeconfig $kube -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py bootstrap --run 15 --dataset retail-gb-1m-v1
 ```
 
 Run IDs below are retained examples from this host. On a new installation, choose the successful **push** builds for your baseline and candidate. A PR-head build is not a substitute for the merged-source release.
 
 ```powershell
-python lab/delivery_cli.py evaluate --baseline-run 15 --candidate-run 17 --dataset retail-gb-1m-v1
-# Use the reference_file printed by evaluate:
-python lab/delivery_cli.py promote integration --run 17 --dataset retail-gb-1m-v1 --evidence .lab/delivery/evidence-<sha256>.json
+kubectl --kubeconfig $kube -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py evaluate-target integration --run 21 --dataset retail-gb-1m-v1 --recipe 83877e5435059716539493991aad365104f9251d80c545b1f02f5ce6e2021c6e --intent ranking-change
+# Use the reference_file printed by evaluate-target:
+kubectl --kubeconfig $kube -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py promote integration --run 21 --dataset retail-gb-1m-v1 --recipe 83877e5435059716539493991aad365104f9251d80c545b1f02f5ce6e2021c6e --evidence /state/delivery/evidence-<sha256>.json --intent ranking-change
 ```
+
+`evaluate-target` reads the exact current desired definition for its baseline. With `--run`, it resolves a new candidate; with `--fingerprint`, it reads a retained prior definition for rollback. Use the latter when an older target has fields or an index name that a new run-derived definition would not reproduce. The general `evaluate` command remains available for two explicitly selected run-derived environments.
 
 Evaluation prepares **two frozen API environments**. New deployment definitions pin a catalogue manifest and format-2 index recipe; each check receives the selected independent query suite and, for relevance, its compatible judgement set. The same compiled Gatling workload runs against each API in sequence. Reports remain in Floci under content hashes. The default `probe` profile measures ten seconds at 2 rps after warmup; it exercises the delivery check, not capacity. Use `--profile smoke` for the longer existing smoke profile. Failed evaluations retain and print their report reference but cannot pass promotion validation.
 
-To evaluate a revised synthetic suite, pass `--query-manifest <sha256>` and `--judgement-manifest <sha256>` to `evaluate`. Pass the same options to `promote`; the candidate definition, reports and promotion evidence must agree. A new preview name includes the complete deployment fingerprint, so different selected inputs cannot reuse an earlier preview by accident.
+To evaluate a revised synthetic suite, pass `--query-manifest <sha256>` and `--judgement-manifest <sha256>` to `evaluate-target --run` or `evaluate`. Pass the same options to `promote`; the candidate definition, reports and promotion evidence must agree. A retained rollback definition already pins its selected inputs. A new preview name includes the complete deployment fingerprint, so different selected inputs cannot reuse an earlier preview by accident.
 
 - **Preserve results:** the full suite must complete with identical ordered results. RBO/Jaccard remain diagnostics in the retained query reports.
 - **Intentional ranking change:** add `--intent ranking-change` to both evaluation and promotion. Changed results are allowed, but review must assess relevance, changed queries and judgement coverage. Synthetic judgements are a proxy, even at 100% coverage.
 - **Fresh evidence:** reports must match both deployment fingerprints, the candidate's catalogue, query and judgement manifest hashes, and the declared intent; contain all three complete checks; and be no more than three days old. A moved desired-state main invalidates the proposal; recreate it. Re-evaluation is needed when the baseline, candidate, selected inputs, intent or evidence window changes.
 
-Open the returned PR using your `finnnk` account, inspect its diff and evidence, approve and merge. The watcher validates open proposals and verifies merged deployments. It does not approve or merge them. Once integration is verified, repeat `promote staging`, then `promote production`, using the **same run, dataset and recipe**. Evidence can be reused only if each target has the same evaluated baseline and the reports remain fresh.
+Open the returned PR using your `finnnk` account, inspect its diff and evidence, and approve its exact head. The Kubernetes coordinator can then run `merge-reviewed <pr-number>` to revalidate, squash merge and verify the deployment. The watcher validates open proposals and verifies merged deployments; it does not approve or merge them. Once integration is verified, repeat `promote staging`, then `promote production`, using the **same run, dataset and recipe**. Evidence can be reused only if each target has the same evaluated baseline and the reports remain fresh.
 
 ```powershell
-python lab/delivery_cli.py status
-python lab/delivery_cli.py validate <pr-number>
-python lab/delivery_cli.py verify integration
+kubectl --kubeconfig $kube -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py status
+kubectl --kubeconfig $kube -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py validate <pr-number>
+kubectl --kubeconfig $kube -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py verify integration
+```
+
+On the installed Kubernetes runtime, run the reviewed merge in the authoritative control Pod:
+
+```powershell
+kubectl --kubeconfig $kube -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py merge-reviewed <approved-pr-number>
 ```
 
 Validation failures return a non-zero exit code. The target's current verification must match its serving fingerprint before onward promotion. A failed deployment is recorded separately and is retried by the watcher; it never becomes a successful source stage merely because its PR merged.
 
-For an **explicit automated demonstration only**, `python lab/delivery_cli.py demonstrate-merge <pr-number>` uses the separate `lab-admin` identity to approve, labels the approval as simulated, merges the fixture PR and verifies deployment. The adapter only accepts `delivery-source` and `delivery-state`; project implementation PRs are excluded. The demonstration identities are local administrators, so this is a workflow reference, not a hostile-user security boundary.
+For an **explicit automated demonstration only**, run `python lab/delivery_cli.py demonstrate-merge <pr-number>` from a host with the separate `lab-admin` fixture credential. It labels that approval as simulated, then performs the same reviewed merge and verification. The control Pod has no reviewer credential. The adapter only accepts `delivery-source` and `delivery-state`; project implementation PRs are excluded. The demonstration identities are local administrators, so this is a workflow reference, not a hostile-user security boundary.
 
 ## Schema changes and rollback
 
@@ -104,11 +112,11 @@ For an **explicit automated demonstration only**, `python lab/delivery_cli.py de
 
 The coordinator uses existing exact reuse, clone, snapshot and rebuild selection. It never substitutes the latest mapping for a historical recipe. Frozen release indices outlive previews and are retained for comparisons and rollback.
 
-Rollback needs fresh evidence **from the current target to the previous deployment**. Reversing the direction of an old report is not sufficient. For the measured example:
+Rollback needs fresh evidence **from the current target to the previous deployment**. Reversing the direction of an old report is not sufficient. The old fingerprint comes from that target's retained desired-state history. For the measured example:
 
 ```powershell
-python lab/delivery_cli.py evaluate --baseline-run 17 --candidate-run 15 --dataset retail-gb-1m-v1
-python lab/delivery_cli.py rollback production --fingerprint <previous-deployment-sha256> --evidence .lab/delivery/evidence-<reverse-report-sha256>.json
+kubectl --kubeconfig $kube -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py evaluate-target production --fingerprint 00cd57233b8a30a6e452a82e7237e97892553c1408af21fc9aa1deb7e2845dea --intent ranking-change
+kubectl --kubeconfig $kube -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py rollback production --fingerprint 00cd57233b8a30a6e452a82e7237e97892553c1408af21fc9aa1deb7e2845dea --evidence /state/delivery/evidence-<reverse-sha256>.json --intent ranking-change
 ```
 
 Review and merge the rollback PR in the same way. The previous complete definition comes from Git history and must have a retained verification record for that target. Schema-changing rollbacks select the old recipe and materialise its index before deployment.

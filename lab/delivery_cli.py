@@ -9,7 +9,7 @@ import time
 from delivery_runtime import (TARGETS, checkout, expire_previews, preview, read_target,
                               remove_preview, resolve, writer)
 from delivery_gates import evaluate
-from delivery_promote import (RECORDS, bootstrap, demonstrate_merge, propose, validate_pr,
+from delivery_promote import (RECORDS, bootstrap, demonstrate_merge, merge_reviewed, propose, validate_pr,
                               verify_target, watch_once)
 from delivery_provider import DESIRED, git
 from common import STATE
@@ -35,6 +35,17 @@ def parser():
     cmd.add_argument('--judgement-manifest', help='Matching judgement-set manifest')
     cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
     cmd.add_argument('--profile', choices=('probe', 'smoke'), default='probe')
+    cmd = commands.add_parser('evaluate-target', help='Compare a target with a new release or a retained deployment')
+    cmd.add_argument('target', choices=TARGETS)
+    candidate = cmd.add_mutually_exclusive_group(required=True)
+    candidate.add_argument('--run', type=int, help='Candidate merged-source release run')
+    candidate.add_argument('--fingerprint', help='Prior verified deployment fingerprint for rollback')
+    cmd.add_argument('--dataset')
+    cmd.add_argument('--recipe', help='Candidate pinned index recipe SHA-256 when using --run')
+    cmd.add_argument('--query-manifest')
+    cmd.add_argument('--judgement-manifest')
+    cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
+    cmd.add_argument('--profile', choices=('probe', 'smoke'), default='probe')
     cmd = commands.add_parser('promote')
     cmd.add_argument('target', choices=TARGETS)
     cmd.add_argument('--run', type=int, required=True)
@@ -48,7 +59,8 @@ def parser():
     cmd.add_argument('target', choices=TARGETS)
     cmd.add_argument('--fingerprint', required=True)
     cmd.add_argument('--evidence', type=Path, required=True)
-    for name in ('validate', 'demonstrate-merge'):
+    cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
+    for name in ('validate', 'demonstrate-merge', 'merge-reviewed'):
         cmd = commands.add_parser(name)
         cmd.add_argument('pr', type=int)
     cmd = commands.add_parser('verify')
@@ -60,6 +72,22 @@ def parser():
     cmd = commands.add_parser('watch')
     cmd.add_argument('--once', action='store_true')
     return root
+
+
+def historical(target, fingerprint):
+    if len(fingerprint) != 64 or any(c not in '0123456789abcdef' for c in fingerprint):
+        raise ValueError('Invalid rollback fingerprint.')
+    checkout()
+    return json.loads(git(DESIRED, 'show',
+        'HEAD:history/' + target + '/' + fingerprint + '.json'))
+
+
+def recorded_evaluation(baseline, candidate, intent, profile):
+    value = evaluate(baseline, candidate, intent, profile)
+    RECORDS.mkdir(exist_ok=True)
+    path = RECORDS / ('evidence-' + value['sha256'] + '.json')
+    path.write_text(json.dumps(value, indent=2), encoding='utf-8')
+    return {**value, 'reference_file': str(path)}
 
 
 def execute(args):
@@ -76,27 +104,34 @@ def execute(args):
         candidate = resolve(args.candidate_run, args.dataset, args.candidate_recipe,
                             query_manifest_sha=args.query_manifest,
                             judgement_manifest_sha=args.judgement_manifest)
-        value = evaluate(baseline, candidate, args.intent, args.profile)
-        RECORDS.mkdir(exist_ok=True)
-        path = RECORDS / ('evidence-' + value['sha256'] + '.json')
-        path.write_text(json.dumps(value, indent=2), encoding='utf-8')
-        return {**value, 'reference_file': str(path)}
+        return recorded_evaluation(baseline, candidate, args.intent, args.profile)
+    if args.command == 'evaluate-target':
+        checkout()
+        baseline = read_target(args.target)
+        if args.fingerprint:
+            if args.dataset or args.recipe or args.query_manifest or args.judgement_manifest:
+                raise ValueError('A retained deployment already pins its dataset, recipe and evaluation inputs.')
+            candidate = historical(args.target, args.fingerprint)
+        else:
+            candidate = resolve(args.run, args.dataset or 'retail-gb-10k-v1', args.recipe,
+                                query_manifest_sha=args.query_manifest,
+                                judgement_manifest_sha=args.judgement_manifest)
+        return recorded_evaluation(baseline, candidate, args.intent, args.profile)
     if args.command == 'promote':
         return propose(args.target, resolve(args.run, args.dataset, args.recipe,
                                             query_manifest_sha=args.query_manifest,
                                             judgement_manifest_sha=args.judgement_manifest),
                        json.loads(args.evidence.read_text()), args.intent)
     if args.command == 'rollback':
-        if len(args.fingerprint) != 64 or any(c not in '0123456789abcdef' for c in args.fingerprint):
-            raise ValueError('Invalid rollback fingerprint.')
-        checkout()
-        deployment = json.loads(git(DESIRED, 'show',
-            'HEAD:history/' + args.target + '/' + args.fingerprint + '.json'))
-        return propose(args.target, deployment, json.loads(args.evidence.read_text()), rollback=True)
+        deployment = historical(args.target, args.fingerprint)
+        return propose(args.target, deployment, json.loads(args.evidence.read_text()),
+                       args.intent, rollback=True)
     if args.command == 'validate':
         return validate_pr(args.pr)
     if args.command == 'demonstrate-merge':
         return demonstrate_merge(args.pr)
+    if args.command == 'merge-reviewed':
+        return merge_reviewed(args.pr)
     if args.command == 'verify':
         checkout()
         return verify_target(args.target)

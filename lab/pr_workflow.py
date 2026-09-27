@@ -3,10 +3,8 @@ import argparse
 import json
 import os
 import socket
-import sys
 import time
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, guard, record
 from environments import build_record
 from gitea import api

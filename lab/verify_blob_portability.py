@@ -1,10 +1,8 @@
 """Live local Floci read/write and immutable-hash check for the configured Blob client."""
 import hashlib
 import json
-import sys
 import uuid
 
-sys.path.insert(0, 'research/platform-spike')
 from blob_config import service, settings, signed_read_url
 from azure.core.exceptions import ResourceExistsError
 from common import record

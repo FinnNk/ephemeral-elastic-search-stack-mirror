@@ -1,10 +1,6 @@
 """Seed isolated delivery demo repositories and a repository-scoped Actions runner."""
 import json
 import shutil
-import sys
-
-sys.path.insert(0, 'research/platform-spike')
-sys.path.insert(0, '.lab/python-libs')
 from common import ROOT, STATE, apply, guard, k
 from gitea import api
 from delivery_provider import SOURCE, DESIRED, endpoint, ensure_repo, git
@@ -33,12 +29,7 @@ def configure_ci():
     apply({'apiVersion': 'v1', 'kind': 'Secret',
            'metadata': {'name': 'delivery-registration', 'namespace': 'platform'},
            'stringData': {'token': token}})
-    runner = (ROOT / 'research/platform-spike/runner.yaml').read_text(encoding='utf-8')
-    for before, after in [('build-runner', 'delivery-runner'), ('runner-data', 'delivery-runner-data'),
-                           ('runner-docker', 'delivery-runner-docker'), ('runner-config', 'delivery-runner-config'),
-                           ('runner-registration', 'delivery-registration'), ('lab-rootless', 'delivery-rootless'),
-                           ('lab:host', 'lab-delivery:host')]:
-        runner = runner.replace(before, after)
+    runner = (ROOT / 'lab/delivery/bootstrap/runner.yaml').read_text(encoding='utf-8')
     path = STATE / 'delivery-runner.yaml'
     path.write_text(runner, encoding='utf-8', newline='\n')
     k('apply', '-f', str(path))
@@ -57,14 +48,14 @@ def seed_source(path):
     dockerfile.write_text(dockerfile.read_text().replace('python:3.13.7-alpine3.22', INDEXER_IMAGE),
                           encoding='utf-8', newline='\n')
     shutil.copytree(ROOT / 'lab/delivery/ci', path / 'ci', ignore=shutil.ignore_patterns('__pycache__'), dirs_exist_ok=True)
-    shutil.copytree(ROOT / 'research/platform-spike/chart', path / 'chart', dirs_exist_ok=True)
+    shutil.copytree(ROOT / 'lab/delivery/bootstrap/chart', path / 'chart', dirs_exist_ok=True)
     chart = path / 'chart/templates/environment.yaml'
     chart.write_text(chart.read_text().replace('name: registry-read', 'name: nexus-read'),
                      encoding='utf-8', newline='\n')
     (path / '.github/workflows').mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/workflows/release.yaml', path / '.github/workflows/release.yaml')
     (path / 'contracts').mkdir(exist_ok=True)
-    worker = (ROOT / 'research/platform-spike/index_job.py').read_text(encoding='utf-8').encode()
+    worker = (ROOT / 'lab/index_job.py').read_text(encoding='utf-8').encode()
     contract = {'engine_version': '9.5.4', 'definitions': [BASELINE_MAPPING, MILLION_MAPPING],
                 'indexer_image': INDEXER_IMAGE, 'indexer_source_sha256': digest(worker)}
     (path / 'contracts/index.json').write_bytes(canonical(contract))

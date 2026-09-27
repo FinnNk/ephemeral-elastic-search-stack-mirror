@@ -1,9 +1,7 @@
 import json
-import sys
 import unittest
 from unittest.mock import patch
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE
 from index_candidate import KIND, ensure_candidate_index, mapping_contract
 from index_recipe import current_recipe, digest

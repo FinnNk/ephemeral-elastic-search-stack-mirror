@@ -3,11 +3,9 @@ import base64
 import hashlib
 import json
 import os
-import sys
 import urllib.error
 import urllib.request
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE
 
 BASE = os.environ.get('LAB_NEXUS_API_URL', 'http://127.0.0.1:18183').rstrip('/')

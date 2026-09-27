@@ -3,11 +3,10 @@ import json
 import subprocess
 import sys
 
-sys.path.insert(0, 'research/platform-spike')
 from common import ROOT, STATE, guard, record
 from environments import REPO, define, git, provision_access, publish
 from gitea import api
-from measure import search
+from search_probe import search
 from deploy_baseline import successful_run
 from deploy_candidate import wait_healthy
 

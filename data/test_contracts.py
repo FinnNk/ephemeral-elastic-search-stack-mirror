@@ -1,6 +1,7 @@
 """Focused integrity checks for producer-owned input contracts."""
 
 import json
+import hashlib
 from pathlib import Path
 import sys
 import tempfile
@@ -9,7 +10,8 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from contracts import input_files, validate_envelope, validate_records
 from generate_example import build
-from publish import publish
+from publish import publish, upload
+from azure.core.exceptions import ResourceExistsError
 
 
 class InputContractTests(unittest.TestCase):
@@ -37,6 +39,35 @@ class InputContractTests(unittest.TestCase):
                          catalogue['content']['sha256'])
         with self.assertRaisesRegex(ValueError, 'Existing artifact manifest differs'):
             publish(self.release, output, 'another-producer', 'example-source')
+
+    def test_existing_content_address_without_metadata_is_verified(self):
+        class ExistingBlob:
+            def __init__(self, payload):
+                self.payload = payload
+
+            def upload_blob(self, *_args, **_kwargs):
+                raise ResourceExistsError('Already exists')
+
+            def get_blob_properties(self):
+                return type('Properties', (), {'size': len(self.payload), 'metadata': {}})()
+
+            def download_blob(self):
+                return type('Download', (), {'chunks': lambda _self: iter([self.payload])})()
+
+        class Client:
+            def __init__(self, blob):
+                self.blob = blob
+
+            def get_blob_client(self, _container, _name):
+                return self.blob
+
+        payload = b'original synthetic input\n'
+        digest = hashlib.sha256(payload).hexdigest()
+        upload(Client(ExistingBlob(payload)), 'datasets', 'catalogue/' + digest,
+               payload, digest, len(payload))
+        with self.assertRaisesRegex(ValueError, 'different content hash'):
+            upload(Client(ExistingBlob(b'forged!! synthetic input\n')), 'datasets',
+                   'catalogue/' + digest, payload, digest, len(payload))
 
     def test_country_cannot_switch_currency_within_catalogue(self):
         files = input_files(self.release)

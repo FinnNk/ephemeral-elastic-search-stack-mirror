@@ -1,10 +1,8 @@
 import os
-import sys
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 
-sys.path.insert(0, 'research/platform-spike')
 from blob_config import DEFAULT_POD_URL, DEFAULT_URL, settings, signed_read_url
 import blob_config
 

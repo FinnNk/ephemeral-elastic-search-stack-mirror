@@ -1,5 +1,6 @@
 """Keep the browser-only control port forward attached after Pod replacement."""
 
+import os
 import signal
 import subprocess
 import time
@@ -8,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-KUBE = ['kubectl', '--kubeconfig', str(ROOT / '.lab/kubeconfig.yaml')]
+KUBE = ['kubectl', '--kubeconfig', str(Path(os.environ.get('LAB_STATE_DIR', str(ROOT / '.lab'))) / 'kubeconfig.yaml')]
 running = True
 child = None
 

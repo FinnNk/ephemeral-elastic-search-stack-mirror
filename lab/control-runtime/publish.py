@@ -9,7 +9,7 @@ import uuid
 
 
 ROOT = Path(__file__).resolve().parents[2]
-STATE = ROOT / '.lab'
+STATE = Path(os.environ.get('LAB_STATE_DIR', str(ROOT / '.lab')))
 
 
 def call(args, *, env=None, input_text=None):
@@ -28,7 +28,7 @@ def main():
     call(['docker', 'login', '127.0.0.1:18185', '--username',
           credentials['username'], '--password-stdin'], env=environment,
          input_text=credentials['password'] + '\n')
-    tag = '127.0.0.1:18185/lab-control:7i-' + uuid.uuid4().hex[:16]
+    tag = '127.0.0.1:18185/lab-control:runtime-' + uuid.uuid4().hex[:16]
     variants = []
     for architecture in ('amd64', 'arm64'):
         local = 'lab-control:' + architecture + '-local'

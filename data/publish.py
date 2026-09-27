@@ -1,6 +1,7 @@
 """Validate and publish synthetic input artifacts without the control runtime."""
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -17,8 +18,14 @@ def upload(client, container, object_name, payload, digest, size):
         if not isinstance(error, ResourceExistsError):
             raise
         existing = blob.get_blob_properties()
-        if existing.metadata.get('sha256') != digest or existing.size != size:
+        if existing.size != size:
             raise ValueError('Existing Blob object has a different content hash.') from None
+        if existing.metadata.get('sha256') != digest:
+            checksum = hashlib.sha256()
+            for chunk in blob.download_blob().chunks():
+                checksum.update(chunk)
+            if checksum.hexdigest() != digest:
+                raise ValueError('Existing Blob object has a different content hash.') from None
 
 
 def blob_client(url):

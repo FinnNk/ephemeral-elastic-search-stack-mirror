@@ -1,11 +1,9 @@
 """Build the lab API in Gitea and reconcile the frozen baseline through Argo CD."""
 import json
 import shutil
-import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, 'research/platform-spike')
 from common import ROOT, STATE, guard, k, record
 from environments import build_record, define, git, provision_access, publish
 from gitea import api

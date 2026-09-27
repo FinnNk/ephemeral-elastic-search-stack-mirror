@@ -7,9 +7,9 @@ All earlier Gitea implementation batches through 7k1 have been merged to `main`.
 | Area | Demonstrated locally | Remaining gate |
 | --- | --- | --- |
 | Search and scale | 1M synthetic products, 1,000 queries, shared and dedicated indices, API relevance and result-preservation comparisons, Gatling profiles | Repeat timing samples and capacity checks where a percentile or target claim requires them; native and cloud verification |
-| Lifecycle and recovery | Kubernetes `lab-control`, durable leases, expiry, deletion, interrupted-operation recovery, index reuse/clone/snapshot/rebuild | Complete disposable activation and recovery rehearsal; validate delivery and rollback with the Kubernetes control runtime |
-| Input and evaluation contracts | Independent manifests, producer/evaluator Jobs, retained observations and offline rescoring; review-branch code selects hash-checked inputs and makes catalogue-only recipes the default for new environments and delivery. New 10k/1M indices, historical replay and a complete 10k delivery comparison have live checks. | Roll out the updated control image; rehearse addendum-backed promotion and schema-changing rollback after reviewed source merge |
-| Delivery | Gitea Actions, Nexus images and release bundles, protected promotion PRs, three local targets and rollback | Re-run end-to-end with the final control/data contracts; validate GHES portability |
+| Lifecycle and recovery | Kubernetes `lab-control`, durable leases, expiry, deletion, interrupted-operation recovery, index reuse/clone/snapshot/rebuild; updated Pod created shared, dedicated and historical environments | Complete disposable activation and recovery rehearsal; repeat timing samples where a target claim requires them |
+| Input and evaluation contracts | Independent manifests, producer/evaluator Jobs, retained observations and offline rescoring; deployed control selects hash-checked inputs and catalogue-only recipes by default. New 10k/1M indices, historical replay and deployed comparison have live checks. | Exercise an addendum-backed promotion through the same installed control path; validate external producer/evaluator boundaries on Azure |
+| Delivery | Gitea Actions, Nexus images and release bundles, protected promotion PRs; merged-source 1M schema release promoted and rolled back through all three local targets with fresh direction-specific evidence | Validate GHES portability and repeat timing samples where a target claim requires them |
 | Observability | Search API traces, SLI counters and correlated logs; synthetic SLO arithmetic | Deploy SigNoz/Collector, connect dashboard-to-trace-to-log investigation, measure overhead and map to New Relic |
 | Platform | Gitea, Argo CD, Floci, SeaweedFS and Elasticsearch on the local host | Apple silicon, AKS, Azure Blob/identity and New Relic validation |
 
@@ -17,8 +17,8 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
-1. [Runtime consolidation and delivery rehearsal](reference-runtime-consolidation.md): roll out the reviewed control image, exercise schema-changing promotion and rollback after source review, and move active helpers out of the research tree. The [catalogue recipe evidence](../research/evidence/catalogue-recipe-delivery.md) records the preceding batch.
-2. [SigNoz backend and investigation](signoz-backend-and-investigation.md): deploy the observability backend and prove connected investigation.
+1. [Runtime consolidation and delivery rehearsal](reference-runtime-consolidation.md) is the current review batch. The [live evidence](../research/evidence/runtime-consolidation-delivery.md) records deployed control, frozen replay, three-target promotion and direction-specific rollback.
+2. [SigNoz backend and investigation](signoz-backend-and-investigation.md) is the next batch: deploy the observability backend and prove connected investigation.
 3. [Native and cloud validation](native-cloud-validation.md): run the full lifecycle on Apple silicon and Azure/GHES, including New Relic ingestion.
 
 Each batch ends with evidence, an updated roadmap and the next detailed plan. Commit it to a branch and submit a PR; merge to `main` only after acceptance. A passing functional check does not establish relevance validity or performance capacity.

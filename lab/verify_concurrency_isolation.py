@@ -1,8 +1,6 @@
 """Probe live API namespace, RBAC and Elasticsearch index boundaries."""
 import json
-import sys
 
-sys.path.insert(0, 'research/platform-spike')
 from common import k, record
 from data_contract import elastic
 from verify_million_access import denied, password

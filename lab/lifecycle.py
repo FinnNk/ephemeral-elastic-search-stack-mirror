@@ -2,7 +2,6 @@
 import json
 import re
 import sqlite3
-import sys
 import threading
 import time
 import uuid
@@ -12,11 +11,10 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, guard, k
 from data_contract import elastic
 from environments import REPO, build_record, define, git, provision_access, publish
-from measure import search
+from search_probe import search
 from deploy_candidate import wait_healthy
 from index_candidate import KIND as INDEX_KIND, available_kinds, index_name, mapping_contract, ensure_candidate_index, remove_candidate_index
 from index_recipe import (catalogue_recipe, digest as recipe_digest, load as load_index_recipe,

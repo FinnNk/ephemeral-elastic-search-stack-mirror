@@ -2,11 +2,9 @@
 import argparse
 import http.cookiejar
 import json
-import sys
 import time
 import urllib.request
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, record
 
 URL = 'http://localhost:18082'

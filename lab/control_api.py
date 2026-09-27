@@ -2,15 +2,13 @@
 import hashlib
 import json
 import os
-import sys
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE
 from blob_config import service
-from measure import search
+from search_probe import search
 from lifecycle import ActiveComparisonError, DATASET, RELEASES, local_lifecycle, parse_stamp, utcnow
 from index_candidate import available_kinds
 from input_selection import DEFAULTS

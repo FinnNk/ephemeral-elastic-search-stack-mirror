@@ -7,7 +7,6 @@ import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'data'))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'research/platform-spike'))
 from contracts import validate_envelope
 from blob_config import service, settings
 

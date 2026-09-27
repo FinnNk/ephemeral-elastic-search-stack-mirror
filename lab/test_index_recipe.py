@@ -1,12 +1,10 @@
 import copy
 import json
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE
 from index_candidate import KIND, mapping_contract
 from index_recipe import catalogue_recipe, current_recipe, digest, validate

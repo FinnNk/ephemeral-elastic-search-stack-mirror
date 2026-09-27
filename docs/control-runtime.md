@@ -1,6 +1,6 @@
 # Local Kubernetes control runtime
 
-The lab UI/API, lease reconciler, PR watcher and delivery watcher run as four containers in one `lab-control` Pod. A 2 GiB PVC holds SQLite, frozen releases, Git checkouts and local reports. Gitea, Argo CD, Floci and Elasticsearch use cluster service addresses; Nexus remains on its retained Docker volume and is reached through the `platform` Service. The browser uses a supervised localhost port forward at `http://localhost:18082/`.
+The lab UI/API, lease reconciler, PR watcher and delivery watcher run as four containers in one `lab-control` Pod. Its image contains the owned `lab/` and `data/` runtime code; research spike scripts are not needed by the Pod. A 2 GiB PVC holds SQLite, frozen releases, Git checkouts and local reports. Gitea, Argo CD, Floci and Elasticsearch use cluster service addresses; Nexus remains on its retained Docker volume and is reached through the `platform` Service. The browser uses a supervised localhost port forward at `http://localhost:18082/`.
 
 The control Pod has one replica and a `Recreate` update strategy. Do not run the host control starters while it is active. The ignored `.lab/control-drain` flag keeps host processes from restarting during the cutover. A failed initial activation restores host processes. Ordinary cluster loss also removes the control UI until the cluster returns.
 
@@ -28,7 +28,20 @@ kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-control logs deployment/lab-con
 kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-control logs deployment/lab-control -c leases --tail=30
 ```
 
-An update uses the same pinned digest in `deployment.yaml` and `kubectl apply`. `Recreate` removes the previous Pod before admitting the next one. Check readiness and the smoke command after each update. Background workers wait for API health using the canonical Host header. The browser route is a local convenience; the Pod uses internal Services directly.
+For an existing installation, publish the new digest, restage its configuration, render the Deployment's image placeholder and apply it:
+
+```powershell
+python lab/control-runtime/publish.py
+$labState = if ($env:LAB_STATE_DIR) { $env:LAB_STATE_DIR } else { (Resolve-Path .lab).Path }
+$controlImage = (Get-Content (Join-Path $labState control-image.json) -Raw | ConvertFrom-Json).image
+python lab/control-runtime/install.py stage --image $controlImage --baseline-run 6
+(Get-Content lab/control-runtime/deployment.yaml -Raw).Replace('__CONTROL_IMAGE__', $controlImage) |
+    kubectl --kubeconfig (Join-Path $labState kubeconfig.yaml) apply -f -
+kubectl --kubeconfig (Join-Path $labState kubeconfig.yaml) -n lab-control rollout status deployment/lab-control --timeout=180s
+kubectl --kubeconfig (Join-Path $labState kubeconfig.yaml) -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
+```
+
+Set `LAB_STATE_DIR` to the retained `.lab` directory when running these commands from an isolated worktree. `Recreate` removes the previous Pod before admitting the next one. Wait for active comparisons before updating; a replacement interrupts their in-memory execution. The browser forward reconnects after replacement. Background workers wait for API health using the canonical Host header.
 
 ## Retain and restore state
 

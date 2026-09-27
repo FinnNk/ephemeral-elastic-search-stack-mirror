@@ -1,10 +1,8 @@
 """Publish the frozen million-product release and build its shared index."""
 import json
-import sys
 import time
 import urllib.error
 
-sys.path.insert(0, 'research/platform-spike')
 from common import STATE, guard, record
 from data_contract import elastic
 from load_release import index_job, publish_blobs
