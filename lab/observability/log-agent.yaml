@@ -44,6 +44,8 @@ data:
       resource/lab:
         attributes:
           - {key: service.name, from_attribute: service, action: upsert}
+          - {key: service.version, from_attribute: service_version, action: upsert}
+          - {key: deployment.environment.name, from_attribute: deployment_tier, action: upsert}
       batch: {timeout: 1s, send_batch_size: 256}
     exporters:
       otlp/gateway:

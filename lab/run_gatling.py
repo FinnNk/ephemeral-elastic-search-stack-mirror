@@ -63,6 +63,7 @@ def run(profile, target, release_id='retail-gb-10k-v1'):
         '-Dgatling.simulationClass=lab.relevance.SyntheticSearchSimulation',
         '-Dlab.workload=/workspace/.lab/workloads/' + workload['workload_sha256'],
         '-Dlab.arrivals=/workspace/.lab/gatling-runs/' + run_id + '/arrivals.csv',
+        '-Dlab.profile=' + profile,
         '-Dlab.baseUrl=http://host.docker.internal:' + str(port)]
     started = time.monotonic()
     result = subprocess.run(command, cwd=ROOT, text=True, encoding='utf-8', errors='replace',

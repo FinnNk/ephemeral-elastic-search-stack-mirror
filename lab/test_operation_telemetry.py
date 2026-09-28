@@ -1,5 +1,6 @@
 import io
 import json
+import os
 import unittest
 from contextlib import redirect_stdout
 from unittest.mock import patch
@@ -59,6 +60,21 @@ class OperationTelemetryContract(unittest.TestCase):
         self.assertEqual(event['id'], 'comparison-1')
         self.assertEqual(event['report_sha256'], 'a' * 64)
         self.assertNotIn('query', event)
+
+    def test_operation_log_retains_deployment_identity(self):
+        @operation('delivery.verify')
+        def verify():
+            return {'state': 'verified', 'fingerprint': 'a' * 64}
+
+        output = io.StringIO()
+        with patch.dict(os.environ, {'LAB_RELEASE_SHA': 'sha256:' + 'b' * 64,
+                                      'LAB_DEPLOYMENT_TIER': 'lab-control'}), \
+                redirect_stdout(output):
+            verify()
+        event = json.loads(output.getvalue())
+        self.assertEqual(event['service_version'], 'sha256:' + 'b' * 64)
+        self.assertEqual(event['deployment_tier'], 'lab-control')
+        self.assertEqual(event['fingerprint'], 'a' * 64)
 
     def test_exception_type_without_message(self):
         @operation('environment.create')

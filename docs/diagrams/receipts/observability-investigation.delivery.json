@@ -6,12 +6,12 @@
   "input": "archify/observability-investigation.json",
   "output": "interactive/observability-investigation.html",
   "specification": {
-    "sha256": "ed79a619af0b3eb3a70681c6b3d2fa4534c2eafa8f8076b243116b619b35b735",
-    "bytes": 3470
+    "sha256": "55e67712877914553bb1aa3039b9a068d2c7c799c2df8e88baadbfad4291c093",
+    "bytes": 4275
   },
   "artifact": {
-    "sha256": "f735e9cee6728a7b2e03684c264271f0b89baae584d459e93352eb373e8aa612",
-    "bytes": 811123
+    "sha256": "7f2cf4b542134a9a85b92abc014cf977d749992fa2f5a24f14ce8b9dc79645de",
+    "bytes": 817489
   },
   "validation": {
     "checksPassed": 9,

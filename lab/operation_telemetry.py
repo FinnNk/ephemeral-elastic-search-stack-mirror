@@ -144,6 +144,8 @@ def operation(name, deadline_seconds=None):
                             _duration.record(duration_ms, attributes)
                         event = {'event': 'lab.operation.completed', 'service': _service_name,
                                  'operation': name, 'state': state,
+                                 'service_version': os.environ.get('LAB_RELEASE_SHA', 'local')[:200],
+                                 'deployment_tier': os.environ.get('LAB_DEPLOYMENT_TIER', 'lab')[:80],
                                  'duration_ms': round(duration_ms, 3),
                                  'observed_at': datetime.now(timezone.utc).isoformat(), **fields}
                         if error_kind:

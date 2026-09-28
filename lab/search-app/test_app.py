@@ -1,12 +1,13 @@
 import unittest
 import app
-from telemetry import classify, traffic_class
+from telemetry import Telemetry, classify, traffic_class
 from http.server import ThreadingHTTPServer
 import http.client
 import io
 import json
 import os
 import threading
+from contextlib import redirect_stdout
 from unittest.mock import patch
 
 
@@ -62,6 +63,18 @@ class SearchContract(unittest.TestCase):
             classify(200, -1)
         self.assertEqual(traffic_class('peak'), 'peak')
         self.assertEqual(traffic_class('query-id-with-unbounded-values'), 'unspecified')
+
+    def test_completion_log_retains_release_and_tier_without_query(self):
+        output = io.StringIO()
+        with patch.dict(os.environ, {'LAB_RELEASE_SHA': 'sha256:' + 'a' * 64,
+                                      'LAB_DEPLOYMENT_TIER': 'integration'}), \
+                redirect_stdout(output):
+            Telemetry().record(200, 360, 'normal', request_id='synthetic-1')
+        event = json.loads(output.getvalue())
+        self.assertEqual(event['service_version'], 'sha256:' + 'a' * 64)
+        self.assertEqual(event['deployment_tier'], 'integration')
+        self.assertFalse(event['responsive_good'])
+        self.assertNotIn('query', event)
 
     def test_public_http_result_stays_valid_with_telemetry_disabled(self):
         hit = {'_source': {'product_id': 'gb-1', 'title': 'Blue shirt', 'brand': 'Alder',

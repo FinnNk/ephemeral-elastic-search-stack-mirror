@@ -1,5 +1,7 @@
 # Batch 7k2e: connected investigation and overhead
 
+**Status:** Finite live source join, gateway failure isolation, real trace/log correlation and a retained four-run overhead attempt are implemented. The live seven-day verdict, three-target promotion, browser drill-through and valid overhead comparison remain open. See the [measured evidence](../research/evidence/signoz-investigation-2026-09-28.md) and [follow-on rehearsal](signoz-merged-release-rehearsal.md).
+
 ## Intent
 
 Complete the local path from a seven-day search or operation SLO breach to the exact request, dependency and immutable report. Use the [seven-day companion](signoz-window-coverage.md) and installed SigNoz dashboard, then measure telemetry failure isolation and search latency overhead.

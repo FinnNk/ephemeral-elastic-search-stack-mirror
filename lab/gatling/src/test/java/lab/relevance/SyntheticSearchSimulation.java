@@ -22,6 +22,14 @@ public class SyntheticSearchSimulation extends Simulation {
   private static final Path WORKLOAD = Path.of(System.getProperty("lab.workload", "/workload"));
   private static final Path ARRIVALS = Path.of(System.getProperty("lab.arrivals", "/results/arrivals.csv"));
   private static final String BASE_URL = System.getProperty("lab.baseUrl", "http://search.retail-baseline.svc.cluster.local:8080");
+  private static final String PROFILE = System.getProperty("lab.profile", "probe");
+
+  private static String trafficClass(String phase) {
+    if (PROFILE.equals("probe") || PROFILE.equals("smoke")) return "probe";
+    if (phase.equals("ramp")) return "warmup";
+    if (phase.startsWith("stress")) return "stress";
+    return phase;
+  }
 
   private static synchronized void arrival(String phase, String queryId, String plannedMs) {
     try {
@@ -51,6 +59,7 @@ public class SyntheticSearchSimulation extends Simulation {
             return session;
           })
           .exec(http(name).get("/search")
+              .header("X-Lab-Traffic-Class", trafficClass(name))
               .queryParam("q", "#{query}").queryParam("country", "GB").queryParam("currency", "GBP")
               .check(status().is(200), jsonPath("$.ids").exists()));
       List<OpenInjectionStep> steps = new ArrayList<>();

@@ -111,6 +111,8 @@ class Telemetry:
                 trace_id, span_id = format(context.trace_id, '032x'), format(context.span_id, '016x')
         event = {'event': 'search.completed', 'observed_at': datetime.now(timezone.utc).isoformat(),
                  'service': 'search-api', 'status': status,
+                 'service_version': os.environ.get('LAB_RELEASE_SHA', 'local')[:200],
+                 'deployment_tier': os.environ.get('LAB_DEPLOYMENT_TIER', 'preview')[:80],
                  'duration_ms': round(duration_ms, 3), 'traffic_class': cohort,
                  'success_good': bool(counts['success_good']),
                  'responsive_good': bool(counts['responsive_good'])}

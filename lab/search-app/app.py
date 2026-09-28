@@ -124,7 +124,9 @@ class Handler(BaseHTTPRequestHandler):
                 os.environ['ES_URL'] + '/' + os.environ['ES_INDEX'] + '/_search',
                 data=json.dumps(body).encode(), headers=headers)
             try:
-                with telemetry.span('search.elasticsearch'):
+                with telemetry.span('search.elasticsearch') as dependency_span:
+                    if dependency_span is not None:
+                        dependency_span.set_attribute('db.collection.name', os.environ['ES_INDEX'])
                     context = ssl.create_default_context(cafile='/es-ca/tls.crt')
                     es_start = time.monotonic()
                     with urllib.request.urlopen(request, context=context, timeout=10) as response:
