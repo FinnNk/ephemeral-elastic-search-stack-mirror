@@ -19,6 +19,10 @@ function visit(value) {
 }
 visit(workspace.model);
 const name = id => elements.get(id)?.name;
+const edgeDescriptions = new Set(['Opens lab web services', 'Routes source and review pages',
+  'Routes deployment UI', 'Routes lab UI and API', 'Routes observability UI',
+  'Routes artifact UI']);
+const edgeRoute = relationship => edgeDescriptions.has(relationships.get(relationship.id)?.description);
 function position(view, locations) {
   delete view.automaticLayout;
   for (const el of view.elements) {
@@ -49,7 +53,8 @@ position(context, {'Lab user':[100,100],'Platform engineer':[100,1050],
   'Deployment platform':[1900,1250]});
 // The context focuses on explicit system contracts; detailed ECK control is in the model.
 context.relationships = context.relationships.filter(r => {
-  const m=relationships.get(r.id); return !(name(m.sourceId)==='Deployment platform' && name(m.destinationId)==='Search relevance lab');
+  const m=relationships.get(r.id); return !edgeRoute(r) &&
+    !(name(m.sourceId)==='Deployment platform' && name(m.destinationId)==='Search relevance lab');
 });
 route(context,'Lab user','Source and build platform',[[650,80],[1910,80]],70);
 route(context,'Source and build platform','Search relevance lab',[[1630,650]],50);
@@ -61,6 +66,7 @@ control.relationships = control.relationships.filter(r=>{
   const m=relationships.get(r.id);
   // Git approval and reconciliation are expanded in the release-delivery view.
   return visible.has(m.sourceId)&&visible.has(m.destinationId) &&
+    !edgeRoute(r) &&
     !(name(m.sourceId)==='Deployment platform' && name(m.destinationId)==='Source and build platform');
 });
 position(control, {'Lab web UI':[100,700],'Lab API':[900,700],'Lab metadata':[1700,700],
@@ -116,6 +122,7 @@ function placeDeployment(view, groups) {
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Snapshot storage':{x:160,y:160,cols:1},
   'Release storage':{x:1480,y:160,cols:1},
+  'HTTPS ingress':{x:2080,y:160,cols:1},
   'Lab control namespace':{x:160,y:1500,cols:2},
   'Persistent platform namespace':{x:1480,y:1500,cols:2},
   'Local control plane':{x:160,y:2950,cols:1},

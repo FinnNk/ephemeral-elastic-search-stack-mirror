@@ -153,8 +153,8 @@ The script uses the local Git identity for the email address and creates `finnnk
 
 | Endpoint | Local address | Login |
 | --- | --- | --- |
-| Gitea and its private pull requests | `http://127.0.0.1:31800` | `finnnk` and `gitea_password` in `.lab/user-credentials.json` |
-| Argo CD applications | `http://127.0.0.1:31801` | `finnnk` and `argocd_password` in the same file initially |
+| Gitea and its private pull requests | `https://gitea.localhost:34443` ([local HTTPS setup](../../docs/https-ingress.md)) | `finnnk` and `gitea_password` in `.lab/user-credentials.json` |
+| Argo CD applications | `https://argocd.localhost:34443` | `finnnk` and `argocd_password` in the same file initially |
 
 Argo CD uses HTTP only for this loopback port forward. Kubernetes keeps the service inside the local cluster; the browser address binds to `127.0.0.1`. The hidden port-forward process may stop after a cluster or pod restart; rerun `enable_user_access.py` to restore it. The bootstrap `lab-admin` Gitea account remains for recovery. Gitea repositories remain under the agent's namespace, while the personal account has site administration and explicit repository administration.
 

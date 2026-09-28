@@ -25,6 +25,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             }
         }
         platform = softwareSystem "Deployment platform" "Runs workloads through Argo CD, Kubernetes, ECK and ESO." {
+            edge = container "HTTPS ingress" "Routes browser requests to lab web services over TLS." "Traefik locally / ingress on AKS" {
+                tags "Platform"
+            }
             argo = container "Argo CD" "Reconciles environment resources." "Argo CD / Helm" {
                 tags "Platform"
             }
@@ -110,6 +113,12 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         operator -> lab "Validates lifecycle and isolation"
         engineer -> delivery "Pushes code and opens pull requests" "Git / HTTPS"
         operator -> platform "Operates cluster and reconciliation" "HTTPS"
+        engineer -> edge "Opens lab web services" "HTTPS"
+        edge -> gitea "Routes source and review pages" "HTTP in cluster"
+        edge -> argo "Routes deployment UI" "HTTP in cluster"
+        edge -> ui "Routes lab UI and API" "HTTP in cluster"
+        edge -> signoz "Routes observability UI" "HTTP in cluster"
+        edge -> nexus "Routes artifact UI" "HTTP in cluster"
         engineer -> observability "Investigates lab operations" "Browser"
         operator -> observability "Checks telemetry coverage and capacity" "Browser"
         lab -> delivery "Resolves revisions and digests; publishes status" "Git / HTTPS"
@@ -201,6 +210,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     containerInstance nexusdb
                 }
                 deploymentNode "Local Kubernetes" "Three-node k3d cluster, including a dedicated observability worker" "Kubernetes" {
+                    deploymentNode "HTTPS ingress" "One loopback TLS port for retained web services" "lab-ingress namespace / Traefik" {
+                        containerInstance edge
+                    }
                     deploymentNode "Local control plane" "Cluster control services" "Kubernetes control plane" {
                         containerInstance kube
                     }
@@ -276,6 +288,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance kube
                     }
                     deploymentNode "Platform and lab services" "Persistent services; metadata topology remains open" "Namespaces" {
+                        containerInstance edge
                         containerInstance argo
                         containerInstance eck
                         containerInstance eso

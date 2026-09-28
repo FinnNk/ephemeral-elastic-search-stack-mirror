@@ -10,7 +10,7 @@ From the repository root in PowerShell, after the [platform bootstrap](../resear
 python lab/setup_nexus.py
 ```
 
-Open [Nexus](http://127.0.0.1:18183). Your administrator login is `finnnk`; its generated password is the `personal.password` entry in ignored `.lab/nexus.json`. Automation uses `elastic-agent`. These are separate from your Gitea credentials.
+Open [Nexus](https://nexus.localhost:34443/) through the [local HTTPS ingress](https-ingress.md). Your administrator login is `finnnk`; its generated password is the `personal.password` entry in ignored `.lab/nexus.json`. Automation uses `elastic-agent`. These are separate from your Gitea credentials.
 
 | Identity | Access |
 | --- | --- |

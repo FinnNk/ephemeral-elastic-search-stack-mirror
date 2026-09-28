@@ -9,6 +9,8 @@ postgresql:
 persistence:
   enabled: true
   size: 5Gi
+strategy:
+  type: Recreate
 service:
   http:
     type: NodePort

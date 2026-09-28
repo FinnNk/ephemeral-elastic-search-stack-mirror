@@ -1,0 +1,20 @@
+service:
+  type: NodePort
+ports:
+  web:
+    expose:
+      default: false
+  websecure:
+    nodePort: 30443
+ingressClass:
+  enabled: true
+  isDefaultClass: false
+  name: traefik
+gateway:
+  enabled: false
+resources:
+  requests:
+    cpu: 25m
+    memory: 64Mi
+  limits:
+    memory: 256Mi

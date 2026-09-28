@@ -216,6 +216,8 @@ Floci supports Blob CRUD and standard client connections. The lab now configures
 
 ESO now reads retained lab credentials from Floci Key Vault and reconciles them into Kubernetes Secrets. The [secret operating guide](keyvault-secrets.md) records the selected credentials, bootstrap exceptions and local validation. The Azure target uses the same `ExternalSecret` targets with ESO's Azure Key Vault provider and Workload Identity; real Azure identity and policy remain to be validated. See [Floci AZ](https://github.com/floci-io/floci-az) and its [quick start](https://floci.io/floci-az/getting-started/quick-start/).
 
+Traefik exposes Gitea, Argo CD, the lab control UI, SigNoz and the Nexus UI through a single local HTTPS port. The [HTTPS guide](https-ingress.md) records the CA, routes and remaining HTTP client paths. The AKS ingress and certificate issuer remain proposed and require cloud validation.
+
 ## Frozen dataset contract
 
 **Independent inputs:** Catalogues, query suites, judgements and traffic have separate manifests. Environments pin software, catalogue and index inputs; executions pin requests and workloads; evaluations pin observations, judgements and the evaluator specification. A producer Job publishes synthetic inputs; a separate evaluator Job rescores observations without another search or index build. New environments and delivery definitions pin format-2 catalogue recipes. Functional comparisons select hash-checked query and judgement manifests. Historical format-1 recipes remain available through an explicit recipe hash. The Kubernetes control Pod has exercised both paths; see the [runtime evidence](research/evidence/runtime-consolidation-delivery.md).
