@@ -1,28 +1,33 @@
-# Next batch: HTTPS clients and transport
+# Batch: HTTPS Git clients
+
+Status: implemented locally; awaiting review. The [Git client guide](../https-git-transport.md) records the current paths and live checks. OCI and host bootstrap transport move to the [next batch](https-oci-transport.md).
 
 ## Intent
 
-Move the lab's Git, webhook and OCI clients onto stable HTTPS names after the browser-facing ingress has been proven. Keep the source, build and deployment contracts compatible with GitHub Enterprise Server and AKS.
+Use the lab CA and a stable in-cluster HTTPS name for the control runtime, Argo CD and both Gitea Actions runners. Keep the reference workflow's source URL configurable for a later GHES migration.
 
 ## Constraints
 
-- Keep local CA material outside Git. Validate Windows and native Apple silicon trust separately.
-- Change one client family at a time; preserve pinned images, existing PRs and deployed environments.
-- Do not disable TLS verification to make a client pass.
-- Measure any extra image-pull or build latency before changing lifecycle targets.
+- Keep CA private material outside Git, and leave TLS verification enabled.
+- Preserve existing runner registrations, vault-backed Argo CD credentials, frozen environments and image digests.
+- Change only Git and API clients in this batch. OCI transport has a separate node and Docker-in-Docker trust path.
+- Retain the HTTP NodePort for host bootstrap until a reliable workstation DNS path is installed.
 
-## Acceptance criteria
+## Acceptance evidence
 
-1. Gitea Actions runner, control runtime and Argo CD use HTTPS Git or API endpoints with verified CA trust.
-2. Gitea and Nexus OCI push/pull work under TLS from the runner and Kubernetes nodes without insecure-registry settings.
-3. Webhooks and public Gitea links use the intended HTTPS address; all three delivery targets still promote and roll back.
-4. A clean workstation can bootstrap DNS and CA trust through documented, repeatable steps on Windows and Apple silicon.
-5. A protocol inventory records any remaining HTTP paths and the reason for each.
+| Criterion | Local result |
+| --- | --- |
+| Control API and three retained Git checkouts use HTTPS | Authenticated smoke check and three `ls-remote` calls passed from the 4/4 Ready control Pod |
+| Argo CD verifies Gitea's CA and loads both repositories | Vault URLs reconciled; 28 Applications returned to Synced and Healthy |
+| Both runners register through HTTPS | Saved registrations show the internal HTTPS address; both runners report online |
+| CI fetches over HTTPS | Temporary delivery-source PR passed and was closed; search-spike fixture PR #6 passed and remains open for review |
+| Certificate chain works with the runtime | CA and leaf key identifiers added; Python 3.13 authenticated Gitea request passed |
+
+The search-spike default-branch workflow remains on HTTP until fixture PR #6 is accepted and merged. The [protocol inventory](../https-git-transport.md#current-protocol-inventory) names the other remaining HTTP paths.
 
 ## Starting points
 
 - [Local HTTPS ingress](../https-ingress.md)
 - [Reference CI/CD](../delivery.md)
-- [Local platform guide](../../research/platform-spike/README.md)
-- [Gitea reverse proxy](https://docs.gitea.com/administration/reverse-proxies/)
-- [Nexus reverse proxy](https://help.sonatype.com/en/run-behind-a-reverse-proxy.html)
+- [Argo CD private repository certificates](https://argo-cd.readthedocs.io/en/stable/user-guide/private-repositories/)
+- [Gitea runner installation](https://docs.gitea.com/1.26/usage/actions/act-runner/)

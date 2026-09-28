@@ -8,6 +8,7 @@ import time
 import urllib.error
 import urllib.request
 from http.cookies import SimpleCookie
+from gitea_tls import open_url
 
 GITEA_USER_URL = os.environ.get('LAB_GITEA_API_URL', 'http://127.0.0.1:31800/api/v1').rstrip('/') + '/user'
 SESSION_SECONDS = 12 * 60 * 60
@@ -22,7 +23,7 @@ class GiteaIdentity:
         request = urllib.request.Request(GITEA_USER_URL, headers={
             'Authorization': 'Basic ' + credential, 'Accept': 'application/json'})
         try:
-            with urllib.request.urlopen(request, timeout=8) as response:
+            with open_url(request, timeout=8) as response:
                 profile = json.load(response)
         except urllib.error.HTTPError as error:
             if error.code in (401, 403):

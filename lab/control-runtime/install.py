@@ -23,7 +23,7 @@ sys.path.insert(0, str(HERE))
 from identity import digest as identity_digest
 NAMESPACE = 'lab-control'
 TRANSFER = 'control-state-transfer'
-GITEA_INTERNAL = 'http://gitea-http.platform.svc.cluster.local:31800'
+GITEA_INTERNAL = 'https://gitea-internal.lab-ingress.svc.cluster.local'
 COPIED = ('releases', 'state-source', 'delivery-state', 'delivery-source',
           'delivery', 'evidence', 'workloads')
 
@@ -58,6 +58,8 @@ def prepare_config(image, baseline_run):
         'LAB_CONTROL_PUBLIC_URL': 'http://localhost:18082',
         'LAB_GITEA_API_URL': GITEA_INTERNAL + '/api/v1',
         'LAB_GITEA_GIT_URL': GITEA_INTERNAL,
+        'LAB_GITEA_CA_FILE': '/etc/lab-ca/root.pem',
+        'GIT_SSL_CAINFO': '/etc/lab-ca/root.pem',
         'LAB_ELASTICSEARCH_URL': 'https://shared-es-http.platform.svc.cluster.local:9200',
         'LAB_BLOB_ACCOUNT_URL': 'http://floci.platform.svc.cluster.local:4577/devstoreaccount1',
         'LAB_BLOB_POD_URL': 'http://floci.platform.svc.cluster.local:4577/devstoreaccount1',
@@ -174,6 +176,30 @@ def transfer(image):
             k('exec', '-n', NAMESPACE, TRANSFER, '--', 'git', '-C', '/state/' + repo,
               'config', '--local', 'core.autocrlf', 'input')
     return checksum
+
+
+def migrate_git_remotes():
+    """Move the three retained control checkouts to the verified ingress name."""
+    guard()
+    if k('get', 'deployment/lab-control', '-n', NAMESPACE, check=False).returncode:
+        raise ValueError('The Kubernetes control deployment is not active.')
+    migrated = {}
+    for repo, remote_name in (('state-source', 'environment-state'),
+                              ('delivery-state', 'delivery-state'),
+                              ('delivery-source', 'delivery-source')):
+        path = '/state/' + repo
+        target = GITEA_INTERNAL + '/elastic-agent/' + remote_name + '.git'
+        current = k('exec', 'deployment/lab-control', '-n', NAMESPACE, '-c', 'api',
+                    '--', 'git', '-C', path, 'remote', 'get-url', 'origin').stdout.strip()
+        allowed = {'http://gitea-http.platform.svc.cluster.local:31800/elastic-agent/'
+                   + remote_name + '.git', target}
+        if current not in allowed:
+            raise ValueError('Unexpected control Git remote for ' + repo)
+        if current != target:
+            k('exec', 'deployment/lab-control', '-n', NAMESPACE, '-c', 'api', '--',
+              'git', '-C', path, 'remote', 'set-url', 'origin', target)
+        migrated[repo] = target
+    return migrated
 
 
 def release_transfer_pod():
@@ -406,12 +432,15 @@ def activate(image, baseline_run):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=('stage', 'activate', 'export', 'import'))
+    parser.add_argument('command', choices=('stage', 'activate', 'export', 'import',
+                                             'migrate-git-remotes'))
     parser.add_argument('--image')
     parser.add_argument('--baseline-run', type=int)
     parser.add_argument('--bundle', type=Path)
     args = parser.parse_args()
-    if args.command == 'import':
+    if args.command == 'migrate-git-remotes':
+        result = migrate_git_remotes()
+    elif args.command == 'import':
         if not args.bundle:
             parser.error('import requires --bundle')
         result = {'state_bundle_sha256': import_bundle(args.bundle)}

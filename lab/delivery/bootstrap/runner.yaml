@@ -72,7 +72,11 @@ spec:
             privileged: true
           env:
             - name: GITEA_INSTANCE_URL
-              value: http://gitea.localhost:31800
+              value: https://gitea-internal.lab-ingress.svc.cluster.local
+            - name: SSL_CERT_FILE
+              value: /etc/lab-ca/root.pem
+            - name: GIT_SSL_CAINFO
+              value: /etc/lab-ca/root.pem
             - name: GITEA_RUNNER_REGISTRATION_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -104,6 +108,9 @@ spec:
               mountPath: /home/rootless/.local/share/docker
             - name: config
               mountPath: /config
+            - name: lab-internal-ca
+              mountPath: /etc/lab-ca
+              readOnly: true
             - name: config
               mountPath: /home/rootless/.config/docker/daemon.json
               subPath: daemon.json
@@ -117,3 +124,6 @@ spec:
         - name: config
           configMap:
             name: delivery-runner-config
+        - name: lab-internal-ca
+          configMap:
+            name: lab-internal-ca

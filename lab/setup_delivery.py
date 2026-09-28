@@ -21,7 +21,7 @@ def configure_ci():
                        'NEXUS_USER': publisher['username'], 'NEXUS_PASSWORD': publisher['password']}.items():
         api(endpoint(SOURCE, '/actions/secrets/' + name), 'PUT', {'data': data})
     existing = {row['name'] for row in api(endpoint(SOURCE, '/actions/variables'))}
-    for name, data in {'SOURCE_BASE_URL': 'http://gitea-http.platform.svc.cluster.local:31800',
+    for name, data in {'SOURCE_BASE_URL': 'https://gitea-internal.lab-ingress.svc.cluster.local',
                        'RELEASE_REGISTRY': REGISTRY,
                        'RELEASE_ARTIFACT_URL': 'http://nexus.platform.svc.cluster.local:8081/repository/lab-releases'}.items():
         api(endpoint(SOURCE, '/actions/variables/' + name), 'PUT' if name in existing else 'POST', {'value': data})

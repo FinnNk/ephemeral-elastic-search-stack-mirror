@@ -50,6 +50,7 @@ spec:
             - {name: state, mountPath: /state}
             - {name: runtime-gitea, mountPath: /state/credentials.json, subPath: credentials.json, readOnly: true}
             - {name: runtime-nexus, mountPath: /state/nexus.json, subPath: nexus.json, readOnly: true}
+            - {name: lab-internal-ca, mountPath: /etc/lab-ca, readOnly: true}
             - {name: scratch, mountPath: /tmp}
         - name: leases
           image: __CONTROL_IMAGE__
@@ -96,5 +97,8 @@ spec:
           secret:
             secretName: lab-control-nexus
             defaultMode: 288
+        - name: lab-internal-ca
+          configMap:
+            name: lab-internal-ca
         - name: scratch
           emptyDir: {}

@@ -20,6 +20,7 @@ CHART_VERSION = '41.6.0'
 HOST_PORT = 34443
 NODE_PORT = 30443
 TLS = STATE / 'https-ingress'
+INTERNAL_GITEA = 'gitea-internal.lab-ingress.svc.cluster.local'
 ENDPOINTS = {
     'gitea': ('platform', 'gitea-http', 31800),
     'argocd': ('argocd', 'argocd-server', 80),
@@ -33,14 +34,30 @@ def certificate():
     TLS.mkdir(parents=True, exist_ok=True)
     ca_key_path, ca_path = TLS / 'root-key.pem', TLS / 'root.pem'
     key_path, cert_path = TLS / 'edge-key.pem', TLS / 'edge.pem'
+    ca_ready = False
+    if ca_key_path.exists() and ca_path.exists():
+        ca = x509.load_pem_x509_certificate(ca_path.read_bytes())
+        try:
+            ca.extensions.get_extension_for_class(x509.SubjectKeyIdentifier)
+            ca_ready = ca.not_valid_after_utc > datetime.now(timezone.utc) + timedelta(days=7)
+        except x509.ExtensionNotFound:
+            pass
     if all(path.exists() for path in (ca_key_path, ca_path, key_path, cert_path)):
         existing = x509.load_pem_x509_certificate(cert_path.read_bytes())
-        if existing.not_valid_after_utc > datetime.now(timezone.utc) + timedelta(days=7):
+        san = existing.extensions.get_extension_for_class(x509.SubjectAlternativeName).value
+        expected = {name + '.localhost' for name in ENDPOINTS} | {INTERNAL_GITEA}
+        try:
+            existing.extensions.get_extension_for_class(x509.AuthorityKeyIdentifier)
+            has_authority_key = True
+        except x509.ExtensionNotFound:
+            has_authority_key = False
+        if (ca_ready and existing.not_valid_after_utc > datetime.now(timezone.utc) + timedelta(days=7)
+                and expected <= set(san.get_values_for_type(x509.DNSName))
+                and has_authority_key):
             return cert_path, key_path, ca_path
     now = datetime.now(timezone.utc)
-    if ca_key_path.exists() and ca_path.exists():
+    if ca_ready:
         ca_key = serialization.load_pem_private_key(ca_key_path.read_bytes(), password=None)
-        ca = x509.load_pem_x509_certificate(ca_path.read_bytes())
     else:
         ca_key = ec.generate_private_key(ec.SECP256R1())
         name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, 'Relevance lab local CA')])
@@ -48,6 +65,8 @@ def certificate():
               .public_key(ca_key.public_key()).serial_number(x509.random_serial_number())
               .not_valid_before(now - timedelta(minutes=5)).not_valid_after(now + timedelta(days=730))
               .add_extension(x509.BasicConstraints(ca=True, path_length=0), critical=True)
+              .add_extension(x509.SubjectKeyIdentifier.from_public_key(ca_key.public_key()),
+                             critical=False)
               .add_extension(x509.KeyUsage(digital_signature=True, content_commitment=False,
                   key_encipherment=False, data_encipherment=False, key_agreement=False,
                   key_cert_sign=True, crl_sign=True, encipher_only=False, decipher_only=False),
@@ -57,12 +76,15 @@ def certificate():
         ca_path.write_bytes(ca.public_bytes(serialization.Encoding.PEM))
     key = ec.generate_private_key(ec.SECP256R1())
     names = [x509.DNSName(name + '.localhost') for name in ENDPOINTS]
+    names.append(x509.DNSName(INTERNAL_GITEA))
     leaf = (x509.CertificateBuilder().subject_name(x509.Name([
                 x509.NameAttribute(NameOID.COMMON_NAME, 'gitea.localhost')]))
             .issuer_name(ca.subject).public_key(key.public_key())
             .serial_number(x509.random_serial_number())
             .not_valid_before(now - timedelta(minutes=5)).not_valid_after(now + timedelta(days=90))
             .add_extension(x509.SubjectAlternativeName(names), critical=False)
+            .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(ca.public_key()),
+                           critical=False)
             .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
             .add_extension(x509.ExtendedKeyUsage([x509.oid.ExtendedKeyUsageOID.SERVER_AUTH]),
                            critical=False).sign(ca_key, hashes.SHA256()))
@@ -84,11 +106,13 @@ def install_ingress():
     k('rollout', 'status', 'deployment/lab-traefik', '-n', 'lab-ingress', '--timeout=180s')
 
 
-def route(cert_path, key_path):
+def route(cert_path, key_path, browser_names=None):
     import base64
     cert = base64.b64encode(cert_path.read_bytes()).decode()
     key = base64.b64encode(key_path.read_bytes()).decode()
-    for name, (namespace, service, port) in ENDPOINTS.items():
+    browser_names = tuple(browser_names or ENDPOINTS)
+    for name in browser_names:
+        namespace, service, port = ENDPOINTS[name]
         host = name + '.localhost'
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'type': 'kubernetes.io/tls',
                'metadata': {'name': 'lab-edge-tls', 'namespace': namespace},
@@ -102,13 +126,42 @@ def route(cert_path, key_path):
                         'rules': [{'host': host, 'http': {'paths': [{'path': '/',
                             'pathType': 'Prefix', 'backend': {'service': {'name': service,
                                 'port': {'number': port}}}}]}}]}})
-    apply({'apiVersion': 'networking.k8s.io/v1', 'kind': 'NetworkPolicy',
-           'metadata': {'name': 'lab-https-control', 'namespace': 'lab-control'},
-           'spec': {'podSelector': {'matchLabels': {'app': 'lab-control'}},
-                    'policyTypes': ['Ingress'],
-                    'ingress': [{'from': [{'namespaceSelector': {'matchLabels': {
-                        'kubernetes.io/metadata.name': 'lab-ingress'}}}],
-                        'ports': [{'protocol': 'TCP', 'port': 18082}]}]}})
+    apply({'apiVersion': 'v1', 'kind': 'Service',
+           'metadata': {'name': 'gitea-internal', 'namespace': 'lab-ingress'},
+           'spec': {'selector': {'app.kubernetes.io/instance': 'lab-traefik-lab-ingress',
+                                 'app.kubernetes.io/name': 'traefik'},
+                    'ports': [{'name': 'https', 'port': 443, 'targetPort': 8443}]}})
+    apply({'apiVersion': 'networking.k8s.io/v1', 'kind': 'Ingress',
+           'metadata': {'name': 'lab-https-gitea-internal', 'namespace': 'platform',
+                        'annotations': {'traefik.ingress.kubernetes.io/router.entrypoints':
+                                        'websecure'}},
+           'spec': {'ingressClassName': 'traefik',
+                    'tls': [{'hosts': [INTERNAL_GITEA], 'secretName': 'lab-edge-tls'}],
+                    'rules': [{'host': INTERNAL_GITEA, 'http': {'paths': [{'path': '/',
+                        'pathType': 'Prefix', 'backend': {'service': {'name': 'gitea-http',
+                            'port': {'number': 31800}}}}]}}]}})
+    for namespace in ('lab-control', 'argocd', 'platform'):
+        if k('get', 'namespace', namespace, check=False).returncode:
+            continue
+        apply({'apiVersion': 'v1', 'kind': 'ConfigMap',
+               'metadata': {'name': 'lab-internal-ca', 'namespace': namespace},
+               'data': {'root.pem': (TLS / 'root.pem').read_text(encoding='ascii')}})
+    existing_certs = k('get', 'configmap/argocd-tls-certs-cm', '-n', 'argocd',
+                       '-o', 'json', check=False)
+    argo_certs = json.loads(existing_certs.stdout).get('data', {}) if existing_certs.returncode == 0 else {}
+    argo_certs[INTERNAL_GITEA] = (TLS / 'root.pem').read_text(encoding='ascii')
+    apply({'apiVersion': 'v1', 'kind': 'ConfigMap',
+           'metadata': {'name': 'argocd-tls-certs-cm', 'namespace': 'argocd',
+                        'labels': {'app.kubernetes.io/part-of': 'argocd'}},
+           'data': argo_certs})
+    if k('get', 'namespace', 'lab-control', check=False).returncode == 0:
+        apply({'apiVersion': 'networking.k8s.io/v1', 'kind': 'NetworkPolicy',
+               'metadata': {'name': 'lab-https-control', 'namespace': 'lab-control'},
+               'spec': {'podSelector': {'matchLabels': {'app': 'lab-control'}},
+                        'policyTypes': ['Ingress'],
+                        'ingress': [{'from': [{'namespaceSelector': {'matchLabels': {
+                            'kubernetes.io/metadata.name': 'lab-ingress'}}}],
+                            'ports': [{'protocol': 'TCP', 'port': 18082}]}]}})
 
 
 def expose():
@@ -134,10 +187,10 @@ def configure_gitea():
          '--kubeconfig', str(STATE / 'kubeconfig.yaml')])
 
 
-def verify(ca_path):
+def verify(ca_path, names=None):
     import ssl
     context = ssl.create_default_context(cafile=str(ca_path))
-    for name in ENDPOINTS:
+    for name in (names or ENDPOINTS):
         host = name + '.localhost'
         # Some host DNS resolvers do not implement the browser's .localhost rule.
         # Connect to loopback while still validating the real SNI hostname.
@@ -153,7 +206,7 @@ def verify(ca_path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('install', 'verify', 'trust'))
+    parser.add_argument('action', choices=('install', 'bootstrap-gitea', 'verify', 'trust'))
     args = parser.parse_args()
     cert_path, key_path, ca_path = certificate()
     if args.action == 'trust':
@@ -165,14 +218,15 @@ def main():
         else:
             raise RuntimeError('Import root.pem into the workstation trust store manually.')
         print('Trusted local CA:', ca_path)
-    elif args.action == 'install':
+    elif args.action in ('install', 'bootstrap-gitea'):
         guard()
         install_ingress()
-        route(cert_path, key_path)
+        names = ('gitea',) if args.action == 'bootstrap-gitea' else None
+        route(cert_path, key_path, names)
         expose()
-        verify(ca_path)
+        verify(ca_path, names)
         configure_gitea()
-        verify(ca_path)
+        verify(ca_path, names)
     else:
         verify(ca_path)
 

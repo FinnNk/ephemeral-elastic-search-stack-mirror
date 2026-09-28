@@ -1,5 +1,5 @@
 {
-  "reviewed_on": "2026-09-27",
+  "reviewed_on": "2026-09-28",
   "reviewer": "Codex image review",
   "claim_scope": "Diagram validation and visual inspection only; runtime evidence is recorded separately.",
   "archify": [
@@ -201,27 +201,27 @@
   ],
   "c4": {
     "validation": "Structurizr validate and SVG/PNG export passed",
-    "visual_review": "05-local and 06-azure inspected after HTTPS ingress addition; context and control views checked for unchanged focus",
-    "review_scope": "Traefik sits inside local Kubernetes, ingress sits with AKS platform services, and neither overlaps other deployment nodes.",
+    "visual_review": "05-local and 18-delivery inspected after HTTPS Git changes; other C4 outputs exported and validated",
+    "review_scope": "Internal Git/TLS ingress placement and release-delivery labels are legible; OCI remains shown separately.",
     "sources": {
-      "workspace.dsl": "374cde378b8ad447cc51bbd43500931ae6364ee308364021c8130c1393e7d0b5",
+      "workspace.dsl": "d32a6a454647a66bc8e26790f215f576baec414663decb5cf639e1b3d0ec7e93",
       "layout.mjs": "1d4fd2c8f767dd9573488eb9d3b3567d5fbce7d1c14a42b6d9ff6b9d082c7d4b"
     },
     "svg_sha256": {
       "01-context-key.svg": "be9439d77f1889d034468c1a41ef9d943133136dc9713d4dac82171e5de24539",
-      "01-context.svg": "1855880c84cf38eef7d84e19cb3f64e803d348cb12093b89ca91a5c3119fca3e",
+      "01-context.svg": "a67c8de3c35a61af7e99e9b04e33b247ab4f04c9fcf26bfa3a331db879130fed",
       "02-control-key.svg": "b37e211ed58aaed3ef6cd72427088d61d7ece40dbb436554785b5319f4eebc02",
-      "02-control.svg": "39b3b836535873954d22a75c420c26221bb98a25280c9f57ca569ffe0116550b",
+      "02-control.svg": "f93e9e8782bb058f9e8c1571089ed2e82d64c991edd9abe44a816e8dcddb3d51",
       "03-evaluation-key.svg": "d4a76293dd70b3caefaec9f5b4f6917b344ef15ad5748e9a65b965ef22b72a53",
-      "03-evaluation.svg": "a5d290a37eacbe230530c88f290463b92b0df8a5556998b333079daf4c134450",
+      "03-evaluation.svg": "6d4973c1d1f03fd146879b3091fddafdcd3ceac3253fbeacc35b6b9818eec4ef",
       "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
-      "04-create.svg": "173a212fe96dbb0f70b7b53014c20397c0d88f60e0ee12875e094ca1dad4638c",
+      "04-create.svg": "c987cbc3d997686226570b281af7155ae95ee9fd64b47492a6431e9e1dffae99",
       "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
-      "05-local.svg": "803ecfafe0a549e2cd0361e8c410c332d4fb869620c3ce2464de72c413d87f33",
+      "05-local.svg": "545cf8e210df5ad825a4b1d743d6392a1daa8edb33b528ef7278c8dc50990f0e",
       "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
-      "06-azure.svg": "fae8f81e645528d0344ed6ddb3ec34fdc1742d0849ccf7d775ba09e3d3641ed9",
+      "06-azure.svg": "42db4e314c8a0f3bf5f7690eca4eb59386e1ae797dd25e3c115939cf9e23b829",
       "18-delivery-key.svg": "21452daa1df3a7620c627c5f369c5a135c20ed1c1a77d656e05acfec268d661c",
-      "18-delivery.svg": "3b9ac21f6a0edaae78b5554f443eb8ae20e61b31d3b9b5a9b830d2171fa9c3e5"
+      "18-delivery.svg": "24b901e73ec097e24f703368754e68d2401f91339cdff028371dd11c97ea33c0"
     }
   }
 }

@@ -10,6 +10,7 @@ import urllib.request
 
 from common import EVIDENCE, STATE, apply, k
 from gitea import BASE as GITEA_API_URL, api
+from gitea_tls import open_url
 from data_contract import elastic
 from keyvault import image_secret as vault_image_secret
 REPO=STATE/'state-source'
@@ -30,7 +31,7 @@ def build_record(run_id):
     job=api(f'/repos/elastic-agent/search-spike/actions/runs/{run_id}/jobs')['jobs'][0]
     c=json.loads((STATE/'credentials.json').read_text())['agent'];auth=base64.b64encode((c['username']+':'+c['password']).encode()).decode()
     req=urllib.request.Request(f'{GITEA_API_URL}/repos/elastic-agent/search-spike/actions/jobs/{job["id"]}/logs',headers={'Authorization':'Basic '+auth})
-    with urllib.request.urlopen(req) as r:log=r.read().decode()
+    with open_url(req) as r:log=r.read().decode()
     image=re.findall(r'gitea.localhost:31800/elastic-agent/search-spike@sha256:[a-f0-9]{64}',log)[-1]
     return {'run':run_id,'source_sha':runinfo['head_sha'],'image':image,'started_at':job['started_at'],'completed_at':job['completed_at']}
 def provision_access(name,index,read_indices=None,registry=True):

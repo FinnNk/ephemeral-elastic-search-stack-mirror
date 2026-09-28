@@ -21,7 +21,7 @@ jobs:
           export GIT_CONFIG_VALUE_0="Authorization: Basic $(printf 'elastic-agent:%s' "$BUILD_TOKEN" | base64 | tr -d '\n')"
           git init source
           cd source
-          git remote add origin http://gitea-http.platform.svc.cluster.local:31800/elastic-agent/search-spike.git
+          git remote add origin https://gitea-internal.lab-ingress.svc.cluster.local/elastic-agent/search-spike.git
           git fetch --depth 1 origin "$SOURCE_SHA"
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"

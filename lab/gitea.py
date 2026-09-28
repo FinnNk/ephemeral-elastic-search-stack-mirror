@@ -7,6 +7,7 @@ import urllib.error
 import urllib.request
 
 from common import STATE
+from gitea_tls import open_url
 
 BASE = os.environ.get('LAB_GITEA_API_URL', 'http://127.0.0.1:31800/api/v1').rstrip('/')
 
@@ -21,7 +22,7 @@ def api(path, method='GET', body=None, identity='agent'):
         headers={'Authorization': 'Basic ' + auth, 'Content-Type': 'application/json'},
     )
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
+        with open_url(request, timeout=30) as response:
             payload = response.read()
             return json.loads(payload) if payload else None
     except urllib.error.HTTPError as error:

@@ -25,7 +25,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             }
         }
         platform = softwareSystem "Deployment platform" "Runs workloads through Argo CD, Kubernetes, ECK and ESO." {
-            edge = container "HTTPS ingress" "Routes browser requests to lab web services over TLS." "Traefik locally / ingress on AKS" {
+            edge = container "HTTPS ingress" "Routes browser and in-cluster Git requests over TLS." "Traefik locally / ingress on AKS" {
                 tags "Platform"
             }
             argo = container "Argo CD" "Reconciles environment resources." "Argo CD / Helm" {
@@ -114,7 +114,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         engineer -> delivery "Pushes code and opens pull requests" "Git / HTTPS"
         operator -> platform "Operates cluster and reconciliation" "HTTPS"
         engineer -> edge "Opens lab web services" "HTTPS"
-        edge -> gitea "Routes source and review pages" "HTTP in cluster"
+        edge -> gitea "Routes pages, Git and API requests" "HTTP in cluster"
         edge -> argo "Routes deployment UI" "HTTP in cluster"
         edge -> ui "Routes lab UI and API" "HTTP in cluster"
         edge -> signoz "Routes observability UI" "HTTP in cluster"
@@ -131,7 +131,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         api -> search "Proxies interactive search" "JSON / HTTP"
         api -> argo "Publishes environment desired state" "Desired-state Git"
         api -> kube "Observes readiness and job completion" "Kubernetes API"
-        api -> gitea "Polls labelled PR revisions, resolves exact builds and posts check status" "Gitea REST"
+        api -> gitea "Polls labelled PR revisions, resolves exact builds and posts check status" "Gitea REST / HTTPS"
         api -> enterprise "Future provider adapter" "Git / REST" {
             tags "Future"
         }
@@ -140,18 +140,18 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         }
         expiry -> metadata "Finds expired leases and records cleanup" "SQLite"
         gitea -> runner "Offers a build for a pinned commit" "Actions protocol"
-        runner -> gitea "Pushes tested image and digest" "OCI / HTTPS"
+        runner -> gitea "Fetches source and pushes tested images" "Git / HTTPS; OCI / HTTP"
         runner -> nexus "Publishes image, bundle and release receipt" "OCI / REST"
         nexus -> nexusdb "Stores repository metadata" "PostgreSQL"
         engineer -> gitea "Reviews source and promotion PRs" "Browser / Git"
-        coordinator -> gitea "Proposes and validates exact promotion revisions" "Git / REST"
+        coordinator -> gitea "Proposes and validates exact promotion revisions" "Git / REST over HTTPS"
         coordinator -> nexus "Verifies release and bundle hashes" "REST"
         coordinator -> artifacts "Retains frozen check and deployment evidence" "Blob API"
         coordinator -> evaluation "Runs full result and relevance checks" "Kubernetes Job"
         coordinator -> performance "Runs paired API load checks" "Kubernetes Job"
         coordinator -> argo "Observes deployment health and revision" "Kubernetes API"
         coordinator -> search "Verifies the declared API deployment" "Public search API"
-        argo -> gitea "Reads approved deployment state" "Git"
+        argo -> gitea "Reads approved deployment state" "Git / HTTPS"
         kube -> nexus "Pulls private images by digest" "OCI"
         runner -> registry "Pushes tested image after migration" "OCI / HTTPS" {
             tags "Future"
@@ -210,7 +210,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     containerInstance nexusdb
                 }
                 deploymentNode "Local Kubernetes" "Three-node k3d cluster, including a dedicated observability worker" "Kubernetes" {
-                    deploymentNode "HTTPS ingress" "One loopback TLS port for retained web services" "lab-ingress namespace / Traefik" {
+                    deploymentNode "HTTPS ingress" "Loopback browser port and in-cluster Git TLS" "lab-ingress namespace / Traefik" {
                         containerInstance edge
                     }
                     deploymentNode "Local control plane" "Cluster control services" "Kubernetes control plane" {

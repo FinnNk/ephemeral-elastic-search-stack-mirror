@@ -26,7 +26,7 @@ gitea:
       DB_TYPE: sqlite3
     server:
       DOMAIN: gitea.localhost
-      ROOT_URL: http://gitea.localhost:31800/
+      ROOT_URL: https://gitea.localhost:34443/
       HTTP_PORT: 3000
       DISABLE_SSH: true
     service:

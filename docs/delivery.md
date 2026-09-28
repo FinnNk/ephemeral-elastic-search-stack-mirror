@@ -6,16 +6,16 @@ The reference workflow builds an exact source revision, publishes an immutable N
 
 | Resource | Purpose |
 | --- | --- |
-| [delivery-source](http://127.0.0.1:31800/elastic-agent/delivery-source) | Search API/UI, tests, chart, schema contract and shared Actions workflow |
-| [delivery-state](http://127.0.0.1:31800/elastic-agent/delivery-state) | Reviewed deployment and promotion state |
-| [Nexus](http://127.0.0.1:18183) | Private image digests, bundles and release descriptors |
+| [delivery-source](https://gitea.localhost:34443/elastic-agent/delivery-source) | Search API/UI, tests, chart, schema contract and shared Actions workflow |
+| [delivery-state](https://gitea.localhost:34443/elastic-agent/delivery-state) | Reviewed deployment and promotion state |
+| [Nexus](https://nexus.localhost:34443/) | Private image digests, bundles and release descriptors |
 | Existing `search-spike` / `environment-state` | Historical builds and the existing leased comparison UI |
 
 These are demonstration repositories. Their test PRs may be merged by the demonstration harness; project implementation PRs remain for your review. All source templates and setup code are retained in this project.
 
 ## Bootstrap and build
 
-From the repository root in PowerShell, with the existing k3d platform, Python dependencies and frozen data available:
+From the repository root in PowerShell, with the existing k3d platform, [HTTPS ingress](https-ingress.md), Python dependencies and frozen data available:
 
 ```powershell
 python lab/setup_nexus.py

@@ -8,7 +8,7 @@ spec:
   goTemplateOptions: [missingkey=error]
   generators:
     - git:
-        repoURL: http://gitea-http.platform.svc.cluster.local:31800/elastic-agent/environment-state.git
+        repoURL: https://gitea-internal.lab-ingress.svc.cluster.local/elastic-agent/environment-state.git
         revision: main
         requeueAfterSeconds: 5
         files:
@@ -19,7 +19,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: http://gitea-http.platform.svc.cluster.local:31800/elastic-agent/environment-state.git
+        repoURL: https://gitea-internal.lab-ingress.svc.cluster.local/elastic-agent/environment-state.git
         targetRevision: main
         path: chart
         helm:

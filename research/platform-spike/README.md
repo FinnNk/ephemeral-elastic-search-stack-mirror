@@ -55,6 +55,14 @@ The two k3d nodes have a combined 10 GiB limit. Leave additional Docker memory f
 
    Wait for shared Elasticsearch to report green and the Argo pods to be ready. Gitea uses SQLite and its own PVC for this small lab. Credentials are generated in `.lab/credentials.json`; do not commit or paste that file.
 
+   Install the Gitea HTTPS route and the CA bundle before starting its runner. This research bootstrap has not yet installed the other four web backends, so use the Gitea-only action:
+
+   ```powershell
+   python -m pip install -r lab/requirements-https.txt
+   python lab/https_ingress.py bootstrap-gitea
+   python lab/https_ingress.py trust
+   ```
+
 4. Register the repository-scoped runner:
 
    ```powershell
@@ -75,7 +83,7 @@ Run these steps sequentially. They share one working copy of the environment-sta
    python research/platform-spike/start_fixture.py
    ```
 
-   Open [Gitea Actions](http://127.0.0.1:31800/elastic-agent/search-spike/actions). Sign in using the local agent account in `.lab/credentials.json`. Wait for a successful run and note its run ID. Run IDs vary between installations.
+   Open [Gitea Actions](https://gitea.localhost:34443/elastic-agent/search-spike/actions). Sign in using the local agent account in `.lab/credentials.json`. Wait for a successful run and note its run ID. Run IDs vary between installations.
 
 2. Freeze the catalogue and create the baseline. Replace `BASELINE_RUN_ID` with that successful ID:
 

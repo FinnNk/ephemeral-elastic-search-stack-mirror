@@ -25,7 +25,7 @@ from compare_search import definition
 from lifecycle import wait_correct_search
 
 TARGETS = ('integration', 'staging', 'production')
-REPO_URL = 'http://gitea-http.platform.svc.cluster.local:31800/elastic-agent/delivery-state.git'
+REPO_URL = 'https://gitea-internal.lab-ingress.svc.cluster.local/elastic-agent/delivery-state.git'
 LOCAL = STATE / DESIRED
 
 
