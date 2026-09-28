@@ -1,0 +1,18 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: missing-source
+  namespace: keyvault-eso-spike
+spec:
+  refreshInterval: 10s
+  secretStoreRef:
+    name: floci-keyvault
+    kind: SecretStore
+  target:
+    name: missing-source
+    creationPolicy: Owner
+    deletionPolicy: Retain
+  data:
+    - secretKey: value
+      remoteRef:
+        key: eso-spike-deliberately-absent
