@@ -70,11 +70,14 @@ def prepare_config(image, baseline_run):
     }
     apply({'apiVersion': 'v1', 'kind': 'ConfigMap',
            'metadata': {'name': 'lab-control-config', 'namespace': NAMESPACE}, 'data': data})
-    source = json.loads((STATE / 'credentials.json').read_text(encoding='utf-8'))
-    runtime = {key: source[key] for key in ('agent', 'build_token', 'read_token', 'delivery_read_token')}
-    set_secret('lab-control-gitea', 'credentials.json', runtime)
-    nexus = json.loads((STATE / 'nexus.json').read_text(encoding='utf-8'))
-    set_secret('lab-control-nexus', 'nexus.json', {'reader': nexus['reader']})
+    from keyvault import managed
+    if not managed(NAMESPACE, 'lab-control-gitea'):
+        source = json.loads((STATE / 'credentials.json').read_text(encoding='utf-8'))
+        runtime = {key: source[key] for key in ('agent', 'build_token', 'read_token', 'delivery_read_token')}
+        set_secret('lab-control-gitea', 'credentials.json', runtime)
+    if not managed(NAMESPACE, 'lab-control-nexus'):
+        nexus = json.loads((STATE / 'nexus.json').read_text(encoding='utf-8'))
+        set_secret('lab-control-nexus', 'nexus.json', {'reader': nexus['reader']})
     from setup_nexus import image_secret
     image_secret(NAMESPACE)
     return cluster_uid

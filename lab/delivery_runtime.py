@@ -198,7 +198,7 @@ def access(name, deployment):
         previous = json.loads(json.loads(old.stdout)['data']['definition.json'])['index']
         if previous not in indices:
             indices.append(previous)
-    provision_access(name, deployment['fields']['index'], read_indices=indices)
+    provision_access(name, deployment['fields']['index'], read_indices=indices, registry=False)
     image_secret(name)
     k('delete', 'secret/registry-read', '-n', name, '--ignore-not-found')
 

@@ -2,11 +2,14 @@ import json,secrets,sys,time
 from common import *
 from environments import provision_access,elastic
 from measure import wait_search
+from keyvault import managed
 guard()
 existing=k('get','secret/spike-plugin-token','-n','argocd','-o','json',check=False)
 token=__import__('base64').b64decode(json.loads(existing.stdout)['data']['token']).decode() if existing.returncode==0 else secrets.token_urlsafe(32)
-apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'spike-plugin-token','namespace':'argocd','labels':{'app.kubernetes.io/part-of':'argocd'}},'stringData':{'token':token}})
-apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'spike-plugin-token','namespace':'platform'},'stringData':{'token':token}})
+if not managed('argocd', 'spike-plugin-token'):
+    apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'spike-plugin-token','namespace':'argocd','labels':{'app.kubernetes.io/part-of':'argocd'}},'stringData':{'token':token}})
+if not managed('platform', 'spike-plugin-token'):
+    apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'spike-plugin-token','namespace':'platform'},'stringData':{'token':token}})
 apply({'apiVersion':'v1','kind':'ConfigMap','metadata':{'name':'spike-plugin-source','namespace':'platform'},'data':{'plugin.py':(ROOT/'research/platform-spike/plugin.py').read_text(encoding='utf-8-sig')}})
 apply({'apiVersion':'v1','kind':'ConfigMap','metadata':{'name':'spike-plugin','namespace':'argocd'},'data':{'token':'$spike-plugin-token:token','baseUrl':'http://spike-plugin.platform.svc:8080','requestTimeout':'5'}})
 apply({'apiVersion':'apps/v1','kind':'Deployment','metadata':{'name':'spike-plugin','namespace':'platform'},'spec':{'selector':{'matchLabels':{'app':'spike-plugin'}},'template':{'metadata':{'labels':{'app':'spike-plugin'}},'spec':{'automountServiceAccountToken':False,'containers':[{'name':'plugin','image':'python:3.13.7-alpine3.22','command':['python','/source/plugin.py'],'env':[{'name':'TOKEN','valueFrom':{'secretKeyRef':{'name':'spike-plugin-token','key':'token'}}}],'volumeMounts':[{'name':'source','mountPath':'/source'},{'name':'state','mountPath':'/state'}],'resources':{'requests':{'cpu':'10m','memory':'24Mi'},'limits':{'memory':'96Mi'}}}],'volumes':[{'name':'source','configMap':{'name':'spike-plugin-source'}},{'name':'state','emptyDir':{}}]}}}})

@@ -14,6 +14,8 @@ The control services run in Kubernetes, and synthetic inputs and offline evaluat
 
 The [platform guide](research/platform-spike/README.md) runs local Gitea, Argo CD, Elasticsearch and Floci. The [lab guide](lab/README.md) covers browser pages and search APIs over frozen synthetic UK retail inputs. It compares query-understanding and ranking changes through the public APIs, with correlated diagnostics. Kubernetes-hosted control services create, search, compare and remove pinned API environments with durable leases, using either a shared index or a dedicated mapping-change index.
 
+The [secret operating guide](docs/keyvault-secrets.md) covers ESO-backed retained lab credentials and the boundary with bootstrap and short-lived environment Secrets.
+
 - [Research results](docs/research/platform-spike.md): 20 warm lifecycle trials, API and analyser comparisons, isolation and failure recovery.
 - [Proposed decision](docs/adr/ADR-0001-reconcile-environments-from-git.md): reconcile environments from Git-file ApplicationSets; use k3d provisionally.
 - [Local access](research/platform-spike/README.md#personal-access): named Gitea and Argo CD administrator logins and browser URLs.

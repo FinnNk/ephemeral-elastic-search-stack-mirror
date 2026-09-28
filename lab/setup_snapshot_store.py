@@ -59,11 +59,13 @@ def ensure_store(value):
 
 
 def configure_eck(value):
+    from keyvault import managed
     secret = {'apiVersion': 'v1', 'kind': 'Secret',
               'metadata': {'name': SECRET, 'namespace': 'platform'},
               'stringData': {'s3.client.lab.access_key': value['access_key'],
                              's3.client.lab.secret_key': value['secret_key']}}
-    k('apply', '-f', '-', body=secret)
+    if not managed('platform', SECRET):
+        k('apply', '-f', '-', body=secret)
     resource = json.loads(k('get', 'elasticsearch/shared', '-n', 'platform', '-o', 'json').stdout)
     spec = resource['spec']
     node_sets = spec['nodeSets']

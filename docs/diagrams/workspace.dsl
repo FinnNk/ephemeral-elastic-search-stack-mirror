@@ -24,7 +24,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 tags "Future"
             }
         }
-        platform = softwareSystem "Deployment platform" "Runs workloads through Argo CD, Kubernetes and ECK." {
+        platform = softwareSystem "Deployment platform" "Runs workloads through Argo CD, Kubernetes, ECK and ESO." {
             argo = container "Argo CD" "Reconciles environment resources." "Argo CD / Helm" {
                 tags "Platform"
             }
@@ -32,6 +32,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 tags "Platform"
             }
             eck = container "ECK operator" "Manages shared and version-test clusters." "Elastic Cloud on Kubernetes" {
+                tags "Platform"
+            }
+            eso = container "External Secrets Operator" "Refreshes retained credentials into Kubernetes Secrets." "ESO / SecretStore / ExternalSecret" {
                 tags "Platform"
             }
         }
@@ -85,6 +88,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 tags "Job"
             }
             artifacts = container "Artifact store" "Retains frozen data, index recipes, workloads, query assets and reports." "Floci AZ locally / Azure Blob Storage later" {
+                tags "Store"
+            }
+            keyvault = container "Key Vault" "Retains lab service credentials for ESO." "Floci Key Vault locally / Azure Key Vault later" {
                 tags "Store"
             }
             snapshots = container "Index snapshot repository" "Retains index snapshots after environment deletion." "SeaweedFS S3 locally / Azure Blob proposed" {
@@ -152,6 +158,8 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         }
         argo -> kube "Applies desired workloads and pruning" "Kubernetes API"
         eck -> kube "Reconciles Elasticsearch resources" "Kubernetes API"
+        eso -> keyvault "Reads retained service credentials" "Key Vault API"
+        eso -> kube "Creates and refreshes namespace Secrets" "Kubernetes API"
         eck -> elastic "Manages cluster configuration" "Kubernetes resources"
         kube -> search "Runs pinned environment deployment" "OCI image"
         kube -> registry "Pulls pinned images on AKS" "OCI / HTTPS" {
@@ -202,6 +210,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance argo
                         containerInstance eck
                     }
+                    deploymentNode "Secret synchronisation" "ESO runs outside experiment namespaces" "lab-secrets namespace" {
+                        containerInstance eso
+                    }
                     deploymentNode "Lab control namespace" "One active Pod and retained SQLite/Git state" "Namespace / persistent volume" {
                         containerInstance ui
                         containerInstance api
@@ -211,6 +222,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     }
                     deploymentNode "Persistent lab services" "Floci survives environment deletion" "Namespace / persistent volume" {
                         containerInstance artifacts
+                        containerInstance keyvault
                     }
                     deploymentNode "Observability worker" "Pinned SigNoz backend and retained telemetry" "lab-observability / 12 GiB worker" {
                         containerInstance gateway
@@ -253,6 +265,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     containerInstance artifacts
                     containerInstance snapshots
                 }
+                deploymentNode "Azure Key Vault" "Retained service credentials; Workload Identity access to validate" "Azure managed service" {
+                    containerInstance keyvault
+                }
                 deploymentNode "Azure Container Registry" "Optional image distribution; retain Nexus for releases" "Azure managed service" {
                     containerInstance registry
                 }
@@ -263,6 +278,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     deploymentNode "Platform and lab services" "Persistent services; metadata topology remains open" "Namespaces" {
                         containerInstance argo
                         containerInstance eck
+                        containerInstance eso
                         containerInstance ui
                         containerInstance api
                         containerInstance metadata

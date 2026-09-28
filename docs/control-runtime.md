@@ -20,6 +20,8 @@ Select a successful Gitea baseline run ID for this installation. `stage` applies
 
 The publisher produces one Nexus manifest containing `linux/amd64` and `linux/arm64`. Arm64 construction and its native relevance imports were checked under emulation; a native Apple silicon run remains to be done. Repeating `stage` is safe for an existing installation and reconciles installer-owned control ingress on historical delivery targets.
 
+After initial service bootstrap, run `python lab/keyvault.py migrate` as described in the [secret operating guide](keyvault-secrets.md). ESO then owns the retained control Gitea/Nexus Secrets and image-pull Secret. Repeating `stage` leaves these ESO-owned values intact.
+
 The local browser forward reconnects after Pod replacement. To inspect the runtime:
 
 ```powershell

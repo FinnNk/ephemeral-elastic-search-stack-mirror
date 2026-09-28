@@ -11,6 +11,7 @@ import urllib.request
 from common import EVIDENCE, STATE, apply, k
 from gitea import BASE as GITEA_API_URL, api
 from data_contract import elastic
+from keyvault import image_secret as vault_image_secret
 REPO=STATE/'state-source'
 GITEA_GIT_URL=os.environ.get('LAB_GITEA_GIT_URL','http://127.0.0.1:31800').rstrip('/')
 def git(*args,cwd=REPO):
@@ -32,7 +33,7 @@ def build_record(run_id):
     with urllib.request.urlopen(req) as r:log=r.read().decode()
     image=re.findall(r'gitea.localhost:31800/elastic-agent/search-spike@sha256:[a-f0-9]{64}',log)[-1]
     return {'run':run_id,'source_sha':runinfo['head_sha'],'image':image,'started_at':job['started_at'],'completed_at':job['completed_at']}
-def provision_access(name,index,read_indices=None):
+def provision_access(name,index,read_indices=None,registry=True):
     apply({'apiVersion':'v1','kind':'Namespace','metadata':{'name':name,'labels':{'lab':'search-spike'}}})
     existing=k('get','secret/search-access','-n',name,'-o','json',check=False)
     password=(base64.b64decode(json.loads(existing.stdout)['data']['ES_PASSWORD']).decode()
@@ -42,12 +43,13 @@ def provision_access(name,index,read_indices=None):
     apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'search-access','namespace':name},'stringData':{'ES_USER':name,'ES_PASSWORD':password}})
     cert=json.loads(k('get','secret','shared-es-http-certs-public','-n','platform','-o','json').stdout)['data']
     apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'es-ca','namespace':name},'data':cert})
-    c=json.loads((STATE/'credentials.json').read_text())
-    if 'read_token' not in c:
-        c['read_token']=api('/users/elastic-agent/tokens','POST',{'name':'spike-image-read','scopes':['read:package']})['sha1']
-        (STATE/'credentials.json').write_text(json.dumps(c),encoding='utf-8')
-    docker={'auths':{'gitea.localhost:31800':{'auth':base64.b64encode(('elastic-agent:'+c['read_token']).encode()).decode()}}}
-    apply({'apiVersion':'v1','kind':'Secret','type':'kubernetes.io/dockerconfigjson','metadata':{'name':'registry-read','namespace':name},'stringData':{'.dockerconfigjson':json.dumps(docker)}})
+    if registry and not vault_image_secret(name, 'registry-read'):
+        c=json.loads((STATE/'credentials.json').read_text())
+        if 'read_token' not in c:
+            c['read_token']=api('/users/elastic-agent/tokens','POST',{'name':'spike-image-read','scopes':['read:package']})['sha1']
+            (STATE/'credentials.json').write_text(json.dumps(c),encoding='utf-8')
+        docker={'auths':{'gitea.localhost:31800':{'auth':base64.b64encode(('elastic-agent:'+c['read_token']).encode()).decode()}}}
+        apply({'apiVersion':'v1','kind':'Secret','type':'kubernetes.io/dockerconfigjson','metadata':{'name':'registry-read','namespace':name},'stringData':{'.dockerconfigjson':json.dumps(docker)}})
 def define(name,image,index='spike-frozen-v1',dataset_sha256=None,mapping_sha256=None,
            index_recipe_sha256=None):
     if dataset_sha256 is None:

@@ -61,8 +61,10 @@ if __name__=='__main__':
     if not (REPO/'.git').exists():
         REPO.mkdir(exist_ok=True);shutil.copytree(ROOT/'research/platform-spike/chart',REPO/'chart',dirs_exist_ok=True)
         git('init','-b','main');git('remote','add','origin',GITEA_GIT_URL+'/elastic-agent/environment-state.git')
-    c=json.loads((STATE/'credentials.json').read_text())
-    apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'gitea-state-repo','namespace':'argocd','labels':{'argocd.argoproj.io/secret-type':'repository'}},'stringData':{'type':'git','url':'http://gitea-http.platform.svc.cluster.local:31800/elastic-agent/environment-state.git','username':'elastic-agent','password':c['build_token']}})
+    from keyvault import managed
+    if not managed('argocd', 'gitea-state-repo'):
+        c=json.loads((STATE/'credentials.json').read_text())
+        apply({'apiVersion':'v1','kind':'Secret','metadata':{'name':'gitea-state-repo','namespace':'argocd','labels':{'argocd.argoproj.io/secret-type':'repository'}},'stringData':{'type':'git','url':'http://gitea-http.platform.svc.cluster.local:31800/elastic-agent/environment-state.git','username':'elastic-agent','password':c['build_token']}})
     apply({'apiVersion':'v1','kind':'Pod','metadata':{'name':'search-probe','namespace':'platform'},'spec':{'automountServiceAccountToken':False,'containers':[{'name':'probe','image':'python:3.13.7-alpine3.22','command':['sleep','86400'],'resources':{'requests':{'cpu':'10m','memory':'24Mi'},'limits':{'cpu':'250m','memory':'96Mi'}}}]}})
     baseline=build_record(args.run);record('baseline-build',baseline)
     provision_access('spike-baseline','spike-frozen-v1');define('spike-baseline',baseline['image']);publish('Create frozen baseline')

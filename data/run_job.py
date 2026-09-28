@@ -5,12 +5,15 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE = Path(os.environ.get('LAB_STATE_DIR', ROOT / '.lab'))
 NAMESPACE = 'lab-data'
 KUBE = ['kubectl', '--kubeconfig', str(STATE / 'kubeconfig.yaml')]
+sys.path.insert(0, str(ROOT / 'lab'))
+from keyvault import image_secret as vault_image_secret
 
 
 def kubectl(*args, payload=None, check=True):
@@ -41,18 +44,19 @@ def main():
     image = json.loads((STATE / 'tool-images-7j.json').read_text())['lab-data-producer']['image']
     if not image.startswith('nexus.localhost:18185/lab-data-producer@sha256:'):
         raise ValueError('Use a digest-pinned data producer image.')
-    reader = json.loads((STATE / 'nexus.json').read_text())['reader']
-    auth = base64.b64encode((reader['username'] + ':' + reader['password']).encode()).decode()
     suffix = uuid.uuid4().hex[:8]
     name = 'lab-data-example-' + suffix
     credential_name = 'blob-publisher-' + suffix
     apply({'apiVersion': 'v1', 'kind': 'Namespace',
            'metadata': {'name': NAMESPACE, 'labels': {'lab/owner': 'synthetic-data'}}})
-    apply({'apiVersion': 'v1', 'kind': 'Secret',
-           'metadata': {'name': 'nexus-read', 'namespace': NAMESPACE},
-           'type': 'kubernetes.io/dockerconfigjson',
-           'stringData': {'.dockerconfigjson': json.dumps({'auths': {'nexus.localhost:18185': {
-               'username': reader['username'], 'password': reader['password'], 'auth': auth}}})}})
+    if not vault_image_secret(NAMESPACE, 'nexus-read'):
+        reader = json.loads((STATE / 'nexus.json').read_text())['reader']
+        auth = base64.b64encode((reader['username'] + ':' + reader['password']).encode()).decode()
+        apply({'apiVersion': 'v1', 'kind': 'Secret',
+               'metadata': {'name': 'nexus-read', 'namespace': NAMESPACE},
+               'type': 'kubernetes.io/dockerconfigjson',
+               'stringData': {'.dockerconfigjson': json.dumps({'auths': {'nexus.localhost:18185': {
+                   'username': reader['username'], 'password': reader['password'], 'auth': auth}}})}})
     apply({'apiVersion': 'networking.k8s.io/v1', 'kind': 'NetworkPolicy',
            'metadata': {'name': 'producer-egress', 'namespace': NAMESPACE},
            'spec': {'podSelector': {'matchLabels': {'app': 'lab-data-producer'}},

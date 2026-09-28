@@ -81,11 +81,13 @@ def bootstrap(deployment):
         git(DESIRED, 'commit', '-m', 'Seed known frozen baseline for three delivery targets')
         git(DESIRED, 'push', '-u', 'origin', 'main')
         revision = git(DESIRED, 'rev-parse', 'HEAD')
-    c = json.loads((STATE / 'credentials.json').read_text())
-    apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': 'delivery-state-repo',
-        'namespace': 'argocd', 'labels': {'argocd.argoproj.io/secret-type': 'repository'}},
-        'stringData': {'type': 'git', 'url': REPO_URL, 'username': 'elastic-agent',
-                       'password': c['delivery_read_token']}})
+    from keyvault import managed
+    if not managed('argocd', 'delivery-state-repo'):
+        c = json.loads((STATE / 'credentials.json').read_text())
+        apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': 'delivery-state-repo',
+            'namespace': 'argocd', 'labels': {'argocd.argoproj.io/secret-type': 'repository'}},
+            'stringData': {'type': 'git', 'url': REPO_URL, 'username': 'elastic-agent',
+                           'password': c['delivery_read_token']}})
     protect()
     records = {}
     for target in TARGETS:

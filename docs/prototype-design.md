@@ -214,7 +214,7 @@ Use Floci AZ for Blob Storage:
 
 Floci supports Blob CRUD and standard client connections. The lab now configures the account URL, dataset container and Pod download URL; local writes and signed reads have passed. The proposed Azure client uses workload identity and user-delegation read SAS, pending an AKS tenant check. The [portability design and open gates](research/portability-azure.md) also separates GHES source from ACR images.
 
-Add emulated Key Vault, registry, queue or AKS only when a real integration needs exercising. See [Floci AZ](https://github.com/floci-io/floci-az) and its [quick start](https://floci.io/floci-az/getting-started/quick-start/).
+ESO now reads retained lab credentials from Floci Key Vault and reconciles them into Kubernetes Secrets. The [secret operating guide](keyvault-secrets.md) records the selected credentials, bootstrap exceptions and local validation. The Azure target uses the same `ExternalSecret` targets with ESO's Azure Key Vault provider and Workload Identity; real Azure identity and policy remain to be validated. See [Floci AZ](https://github.com/floci-io/floci-az) and its [quick start](https://floci.io/floci-az/getting-started/quick-start/).
 
 ## Frozen dataset contract
 

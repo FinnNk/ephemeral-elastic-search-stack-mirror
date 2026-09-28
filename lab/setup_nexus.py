@@ -155,6 +155,9 @@ def configure_network():
 
 
 def image_secret(namespace):
+    from keyvault import image_secret as vault_image_secret
+    if vault_image_secret(namespace, 'nexus-read'):
+        return
     value = json.loads(CREDENTIALS.read_text(encoding='utf-8'))['reader']
     auth = base64.b64encode((value['username'] + ':' + value['password']).encode()).decode()
     apply({'apiVersion': 'v1', 'kind': 'Secret', 'type': 'kubernetes.io/dockerconfigjson',
