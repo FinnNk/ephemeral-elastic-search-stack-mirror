@@ -17,6 +17,8 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
+The [MLflow and KServe judgement coverage plan](mlflow-kserve-judgement-coverage.md) adds a two-stage relevance evaluation: capture both recall sets, resolve their union, freeze one judgement snapshot and score both sides. Its first model abstains on every pair. The five batches are being implemented on a separate branch; this does not change the status of the existing gates below.
+
 1. [SigNoz backend and signal transport](signoz-backend-and-investigation.md) is ready for review. The backend, gateway and log agent are deployed; the agent organisation is bootstrapped and all three signal types have stored records.
 2. [SigNoz account and SLO dashboard](signoz-connected-investigation.md) is ready for review. The owner invitation is pending activation; the dashboard and synthetic interval checks are live.
 3. [Finite Job telemetry](signoz-connected-runtime.md) is ready for review; the producer and evaluator run as digest-pinned Jobs and their safe outcome logs reach SigNoz.
