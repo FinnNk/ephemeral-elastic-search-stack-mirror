@@ -37,6 +37,7 @@ def capture(variant_set_path, query_path, query_manifest_path, catalogue_manifes
             variant_set.get('baseline_variant') not in variants:
         raise ValueError('Select at least two frozen variants and one default and baseline.')
     engines = set()
+    images = {}
     for name, target in variants.items():
         if target.get('selection') not in ('default', 'explicit') or \
                 not isinstance(target.get('configuration_sha256'), str) or \
@@ -48,6 +49,7 @@ def capture(variant_set_path, query_path, query_manifest_path, catalogue_manifes
         if environment['dataset_sha256'] != catalogue_manifest['content']['sha256']:
             raise ValueError('Selected catalogue differs from a frozen environment.')
         engines.add(environment['engine'])
+        images[name] = environment['image']
     if len(engines) != 1:
         raise ValueError('Frozen environments use different Elasticsearch versions.')
     observations, execution = run_variants(query_bytes, variants)
@@ -65,8 +67,9 @@ def capture(variant_set_path, query_path, query_manifest_path, catalogue_manifes
     output = {'kind': 'search-variant-observation-set', 'schema_version': 1,
               'default_variant': variant_set['default_variant'],
               'baseline_variant': variant_set['baseline_variant'],
-              'variants': {name: {key: target[key] for key in
-                            ('environment_fingerprint', 'configuration_sha256')}
+              'variants': {name: {**{key: target[key] for key in
+                            ('environment_fingerprint', 'configuration_sha256')},
+                            'image': images[name]}
                            for name, target in variants.items()},
               'variant_set_sha256': hashlib.sha256(variant_set_bytes).hexdigest(),
               'catalogue_sha256': catalogue_manifest['content']['sha256'],

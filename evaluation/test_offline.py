@@ -23,8 +23,10 @@ class OfflineContractTests(unittest.TestCase):
                    'default_variant': 'ranker-a', 'baseline_variant': 'ranker-b',
                    'variants': {
                        'ranker-a': {'environment_fingerprint': 'c' * 64,
+                                    'image': 'nexus.localhost:18185/search-api@sha256:' + '1' * 64,
                                     'configuration_sha256': 'e' * 64},
                        'ranker-b': {'environment_fingerprint': 'd' * 64,
+                                    'image': 'nexus.localhost:18185/search-api@sha256:' + '2' * 64,
                                     'configuration_sha256': 'f' * 64}},
                    'catalogue_sha256': catalogue_sha, 'query_suite_sha256': query_sha,
                    'request_adapter': 'search-api-variant-v1', 'captured_depth': 10, 'errors': [],
@@ -71,6 +73,7 @@ class OfflineContractTests(unittest.TestCase):
     def test_three_variants_share_one_judgement_set(self):
         value = json.loads((self.root / 'observations.json').read_bytes())
         value['variants']['ranker-c'] = {'environment_fingerprint': '1' * 64,
+                                         'image': 'nexus.localhost:18185/search-api@sha256:' + '3' * 64,
                                          'configuration_sha256': '2' * 64}
         value['observations'][0]['results']['ranker-c'] = {
             'variant_id': 'ranker-c', 'configuration_sha256': '2' * 64,

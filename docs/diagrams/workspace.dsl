@@ -8,10 +8,10 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             gitea = container "Gitea" "Stores source, desired state and historical images." "Gitea; Git / OCI" {
                 tags "Platform"
             }
-            runner = container "Build runner" "Tests exact source; publishes frozen releases." "Actions / shared shell and Python" {
+            runner = container "Build runner" "Tests exact source, publishes a release and checks selected variants against signed evidence and a build receipt." "Actions / shared shell and Python" {
                 tags "Platform"
             }
-            nexus = container "Nexus" "Retains private images and immutable release bundles." "Nexus Community Edition" {
+            nexus = container "Nexus" "Retains private images, immutable build receipts, release bundles and source-bound evaluation evidence." "Nexus Community Edition" {
                 tags "Store"
             }
             nexusdb = container "Nexus metadata" "Retains artifact metadata and repository configuration." "PostgreSQL 17" {
@@ -25,7 +25,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             }
         }
         platform = softwareSystem "Deployment platform" "Runs workloads through Argo CD, Kubernetes, ECK and ESO." {
-            edge = container "HTTPS ingress" "Routes browser and in-cluster Git requests over TLS." "Traefik locally / ingress on AKS" {
+            edge = container "HTTPS ingress" "Routes browser requests to lab web services over TLS." "Traefik locally / ingress on AKS" {
                 tags "Platform"
             }
             argo = container "Argo CD" "Reconciles environment resources." "Argo CD / Helm" {
@@ -46,8 +46,8 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 tags "Job"
             }
         }
-        assessment = softwareSystem "Offline evaluation" "Scores retained observations under a pinned specification and judgement set." {
-            offline = container "Offline evaluator" "Validates input dependencies and publishes a complete report." "Pinned OCI image / finite invocation" {
+        assessment = softwareSystem "Offline evaluation" "Scores named Search API variants under one pinned specification and judgement set." {
+            offline = container "Offline evaluator" "Scores every named variant against the selected baseline and publishes a pinned report." "Pinned OCI image / finite invocation" {
                 tags "Job"
             }
         }
@@ -92,7 +92,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             search = container "Search API" "Understands queries, retrieves products and reranks results." "HTTP API / pinned OCI image" {
                 tags "Ephemeral"
             }
-            evaluation = container "Observation capture job" "Queries both APIs and retains ordered results and comparison scores." "Kubernetes Job / public Search API adapter" {
+            evaluation = container "Observation capture job" "Queries every frozen variant and retains ordered public API results." "Kubernetes Job / public Search API adapter" {
                 tags "Job"
             }
             performance = container "Gatling load job" "Measures API latency, throughput and errors under pinned load." "Kubernetes Job / Gatling OSS Java SDK" {
@@ -124,12 +124,12 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         engineer -> inputProduction "Revises synthetic inputs"
         inputProduction -> lab "Publishes frozen synthetic inputs" "Manifest and Blob API"
         lab -> assessment "Submits retained observations for scoring" "Artifact references"
-        assessment -> judgementSupply "Resolves pooled gaps before scoring both result lists" "Versioned JSON API"
+        assessment -> judgementSupply "Resolves pooled gaps from every variant before scoring" "Versioned JSON API"
         operator -> lab "Validates lifecycle and isolation"
         engineer -> delivery "Pushes code and opens pull requests" "Git / HTTPS"
         operator -> platform "Operates cluster and reconciliation" "HTTPS"
         engineer -> edge "Opens lab web services" "HTTPS"
-        edge -> gitea "Routes pages, Git and API requests" "HTTP in cluster"
+        edge -> gitea "Routes source and review pages" "HTTP in cluster"
         edge -> argo "Routes deployment UI" "HTTP in cluster"
         edge -> ui "Routes lab UI and API" "HTTP in cluster"
         edge -> signoz "Routes observability UI" "HTTP in cluster"
@@ -146,7 +146,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         api -> search "Proxies interactive search" "JSON / HTTP"
         api -> argo "Publishes environment desired state" "Desired-state Git"
         api -> kube "Observes readiness and job completion" "Kubernetes API"
-        api -> gitea "Polls labelled PR revisions, resolves exact builds and posts check status" "Gitea REST / HTTPS"
+        api -> gitea "Polls labelled PR revisions, resolves exact builds and posts check status" "Gitea REST"
         api -> enterprise "Future provider adapter" "Git / REST" {
             tags "Future"
         }
@@ -157,7 +157,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         gitea -> runner "Offers a build for a pinned commit" "Actions protocol"
         runner -> gitea "Fetches source and pushes tested images" "Git / HTTPS; OCI / HTTP"
         runner -> nexus "Publishes image, bundle and release receipt" "OCI / REST"
-        nexus -> runner "Supplies source-bound variant evidence for the merge gate" "REST"
+        nexus -> runner "Supplies signed variant evidence and its pinned source build receipt" "REST"
         nexus -> nexusdb "Stores repository metadata" "PostgreSQL"
         engineer -> gitea "Reviews source and promotion PRs" "Browser / Git"
         coordinator -> gitea "Proposes and validates exact promotion revisions" "Git / REST over HTTPS"
@@ -167,7 +167,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         coordinator -> performance "Runs paired API load checks" "Kubernetes Job"
         coordinator -> argo "Observes deployment health and revision" "Kubernetes API"
         coordinator -> search "Verifies the declared API deployment" "Public search API"
-        argo -> gitea "Reads approved deployment state" "Git / HTTPS"
+        argo -> gitea "Reads approved deployment state" "Git"
         kube -> nexus "Pulls private images by digest" "OCI"
         runner -> registry "Pushes tested image after migration" "OCI / HTTPS" {
             tags "Future"
@@ -204,7 +204,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         signoz -> telemetrydb "Queries operational signals" "ClickHouse protocol"
         engineer -> signoz "Follows operational evidence" "Browser"
         search -> artifacts "Loads pinned query assets" "Azure Blob API"
-        evaluation -> search "Queries baseline and candidate APIs" "Public search API"
+        evaluation -> search "Queries two or more named variants across frozen APIs" "Public search API"
         evaluation -> artifacts "Reads inputs and load reports; saves verdicts" "Azure Blob API"
         producer -> artifacts "Publishes immutable synthetic inputs and manifests" "Blob API"
         offline -> artifacts "Reads observations and judgements; retains reports" "Blob API"
@@ -235,7 +235,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     containerInstance nexusdb
                 }
                 deploymentNode "Local Kubernetes" "Three-node k3d cluster, including a dedicated observability worker" "Kubernetes" {
-                    deploymentNode "HTTPS ingress" "Loopback browser port and in-cluster Git TLS" "lab-ingress namespace / Traefik" {
+                    deploymentNode "HTTPS ingress" "One loopback TLS port for retained web services" "lab-ingress namespace / Traefik" {
                         containerInstance edge
                     }
                     deploymentNode "Local control plane" "Cluster control services" "Kubernetes control plane" {

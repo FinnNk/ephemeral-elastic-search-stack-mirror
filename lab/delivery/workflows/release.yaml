@@ -45,6 +45,7 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
           ARTIFACT_URL: ${{ vars.RELEASE_ARTIFACT_URL }}
           NEXUS_USER: ${{ secrets.NEXUS_USER }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
@@ -57,10 +58,16 @@ jobs:
           cd source
           if test -f gate/selection.json; then
             test "$(sha256sum ci/variant_gate.py | cut -d ' ' -f 1)" = "$LAB_VARIANT_GATE_CODE_SHA256"
-            python ci/variant_gate_store.py fetch --source-sha "$SOURCE_SHA" --directory gate/evidence
-            python ci/variant_gate.py --report gate/evidence/report.json \
-              --policy gate/policy.json --selection gate/selection.json \
-              --attestation gate/evidence/attestation.json \
-              --approvals-file gate/evidence/approvals.json \
-              --source-sha "$SOURCE_SHA" --output gate/evidence/verdict.json
+            PYTHON_IMAGE='python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844'
+            docker run --rm -v "$PWD:/work" -w /work \
+              -e SOURCE_SHA -e SOURCE_REPOSITORY -e ARTIFACT_URL -e NEXUS_USER -e NEXUS_PASSWORD \
+              -e LAB_VARIANT_EVIDENCE_KEY -e LAB_VARIANT_APPROVAL_KEY \
+              -e LAB_VARIANT_POLICY_SHA256 "$PYTHON_IMAGE" sh -ec '
+                python ci/variant_gate_store.py fetch --source-sha "$SOURCE_SHA" --directory gate/evidence
+                python ci/variant_gate.py --report gate/evidence/report.json \
+                  --policy gate/policy.json --selection gate/selection.json \
+                  --attestation gate/evidence/attestation.json \
+                  --approvals-file gate/evidence/approvals.json \
+                  --source-sha "$SOURCE_SHA" --build-receipt gate/evidence/build-receipt.json \
+                  --source-repository "$SOURCE_REPOSITORY" --output gate/evidence/verdict.json'
           fi

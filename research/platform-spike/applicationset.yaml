@@ -32,6 +32,10 @@ spec:
               value: '{{.index}}'
             - name: fingerprint
               value: '{{.fingerprint}}'
+            - name: variant_config_b64
+              value: '{{if hasKey . "variant_config_b64"}}{{.variant_config_b64}}{{end}}'
+            - name: image_pull_secret
+              value: '{{if hasKey . "image_pull_secret"}}{{.image_pull_secret}}{{else}}registry-read{{end}}'
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{.environment}}'

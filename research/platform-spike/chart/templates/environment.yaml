@@ -24,7 +24,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       imagePullSecrets:
-        - name: registry-read
+        - name: {{ .Values.image_pull_secret | default "registry-read" }}
       containers:
         - name: api
           image: {{ .Values.image | quote }}
@@ -34,6 +34,10 @@ spec:
               value: https://shared-es-http.platform.svc:9200
             - name: ES_INDEX
               value: {{ .Values.index | quote }}
+            {{- if .Values.variant_config_b64 }}
+            - name: SEARCH_VARIANTS_JSON
+              value: {{ .Values.variant_config_b64 | b64dec | quote }}
+            {{- end }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://lab-otel-gateway.lab-observability.svc.cluster.local:4318
             - name: LAB_RELEASE_SHA

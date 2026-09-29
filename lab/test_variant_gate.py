@@ -27,6 +27,7 @@ class VariantGateTests(unittest.TestCase):
             'complete': True, 'query_count': 100, 'default_variant': 'ranker-a',
             'baseline_variant': 'ranker-b', 'variants': {name: {
                 'configuration_sha256': 'c' * 64,
+                'image': 'nexus.localhost:18185/search-api@sha256:' + '1' * 64,
                 'environment_fingerprint': 'd' * 64} for name in
                 ('ranker-a', 'ranker-b', 'ranker-c')},
             'observation_sha256': 'b' * 64,
@@ -48,12 +49,17 @@ class VariantGateTests(unittest.TestCase):
         self.selection = {'kind': 'variant-gate-selection', 'schema_version': 1,
             'selected': [
                 {'variant': 'ranker-a', 'intent': 'ranking-change'}]}
+        self.build = canonical({'source_sha': SOURCE,
+            'source_repository': 'elastic-agent/delivery-source',
+            'event_kind': 'pull_request', 'run_id': '8', 'run_attempt': '1',
+            'image': 'nexus.localhost:18185/search-api@sha256:' + '1' * 64})
 
     def check(self, approvals=()):
         report, selection = canonical(self.report), canonical(self.selection)
-        receipt = attest(report, SOURCE, EVIDENCE_KEY, STAMP)
+        receipt = attest(report, SOURCE, self.build, EVIDENCE_KEY, STAMP)
         return check(report, self.policy, selection, receipt, list(approvals),
-                     EVIDENCE_KEY, APPROVAL_KEY, sha(self.policy), SOURCE, NOW)
+                     EVIDENCE_KEY, APPROVAL_KEY, sha(self.policy), SOURCE,
+                     self.build, 'elastic-agent/delivery-source', NOW)
 
     def test_negative_within_bounds_requires_human_decision(self):
         self.assertEqual(self.check()['state'], 'decision_required')
@@ -61,10 +67,11 @@ class VariantGateTests(unittest.TestCase):
 
     def test_authenticated_exception_retains_measured_loss(self):
         report, selection = canonical(self.report), canonical(self.selection)
-        evidence = attest(report, SOURCE, EVIDENCE_KEY, STAMP)
+        evidence = attest(report, SOURCE, self.build, EVIDENCE_KEY, STAMP)
         with patch('variant_gate_issue.GiteaIdentity') as identity:
             identity.return_value.verify.return_value = {'username': 'finn', 'is_admin': True}
             approval = issue_approval(report, self.policy, selection, evidence,
+                self.build, 'elastic-agent/delivery-source',
                 'ranker-a', 'Security fix accepted with bounded relevance loss.',
                 SOURCE, 'finn', 'test-password', EVIDENCE_KEY, APPROVAL_KEY,
                 sha(self.policy), STAMP)
@@ -95,21 +102,35 @@ class VariantGateTests(unittest.TestCase):
 
     def test_untrusted_report_or_wrong_policy_is_invalid(self):
         report, selection = canonical(self.report), canonical(self.selection)
-        evidence = attest(report, SOURCE, EVIDENCE_KEY, STAMP)
+        evidence = attest(report, SOURCE, self.build, EVIDENCE_KEY, STAMP)
         with self.assertRaisesRegex(ValueError, 'attestation belongs'):
             check(report + b' ', self.policy, selection, evidence, [], EVIDENCE_KEY,
-                  APPROVAL_KEY, sha(self.policy), SOURCE, NOW)
+                  APPROVAL_KEY, sha(self.policy), SOURCE,
+                  self.build, 'elastic-agent/delivery-source', NOW)
         with self.assertRaisesRegex(ValueError, 'trusted policy pin'):
             check(report, self.policy, selection, evidence, [], EVIDENCE_KEY,
-                  APPROVAL_KEY, '0' * 64, SOURCE, NOW)
+                  APPROVAL_KEY, '0' * 64, SOURCE,
+                  self.build, 'elastic-agent/delivery-source', NOW)
         with self.assertRaisesRegex(ValueError, 'another report or source'):
             check(report, self.policy, selection, evidence, [], EVIDENCE_KEY,
-                  APPROVAL_KEY, sha(self.policy), 'f' * 40, NOW)
+                  APPROVAL_KEY, sha(self.policy), 'f' * 40,
+                  self.build, 'elastic-agent/delivery-source', NOW)
 
     def test_missing_frozen_evaluator_pin_is_invalid(self):
         del self.report['evaluator_sha256']
         with self.assertRaisesRegex(ValueError, 'frozen evaluator_sha256'):
             self.check()
+
+    def test_selected_variant_must_use_the_exact_source_build_image(self):
+        report, selection = canonical(self.report), canonical(self.selection)
+        self.report['variants']['ranker-a']['image'] = (
+            'nexus.localhost:18185/search-api@sha256:' + '2' * 64)
+        report = canonical(self.report)
+        receipt = attest(report, SOURCE, self.build, EVIDENCE_KEY, STAMP)
+        with self.assertRaisesRegex(ValueError, 'this source build image'):
+            check(report, self.policy, selection, receipt, [], EVIDENCE_KEY,
+                  APPROVAL_KEY, sha(self.policy), SOURCE,
+                  self.build, 'elastic-agent/delivery-source', NOW)
 
     def test_low_baseline_coverage_cannot_be_overridden(self):
         self.report['coverage']['ranker-b']['fraction'] = 0.79

@@ -72,8 +72,10 @@ def fixture(inputs, output):
                     'default_variant': 'ranker-a', 'baseline_variant': 'ranker-a',
                     'variants': {
                         'ranker-a': {'environment_fingerprint': 'c' * 64,
+                                     'image': 'nexus.localhost:18185/search-api@sha256:' + '1' * 64,
                                      'configuration_sha256': 'a' * 64},
                         'ranker-b': {'environment_fingerprint': 'd' * 64,
+                                     'image': 'nexus.localhost:18185/search-api@sha256:' + '2' * 64,
                                      'configuration_sha256': 'b' * 64}},
                     'catalogue_sha256': dependencies['catalogue'],
                     'query_suite_sha256': dependencies['query-suite'],

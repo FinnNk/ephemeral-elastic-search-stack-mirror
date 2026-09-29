@@ -24,8 +24,10 @@ class EvaluationIntegrationTests(unittest.TestCase):
             'default_variant': 'ranker-a', 'baseline_variant': 'ranker-a',
             'variants': {
                 'ranker-a': {'environment_fingerprint': 'a' * 64,
+                             'image': 'nexus.localhost:18185/search-api@sha256:' + '1' * 64,
                              'configuration_sha256': 'b' * 64},
                 'ranker-b': {'environment_fingerprint': 'c' * 64,
+                             'image': 'nexus.localhost:18185/search-api@sha256:' + '2' * 64,
                              'configuration_sha256': 'd' * 64}},
             'catalogue_sha256': fixture.dependencies['catalogue'],
             'query_suite_sha256': fixture.dependencies['query-suite'],

@@ -143,6 +143,12 @@ Delivery targets rendered before the control move retain an earlier Search API N
 
 The [measured walkthrough](research/evidence/promotion-deployment.md) covers promotion, rollback, denied unreviewed merge, stale proposals, incompatible schema and preview recreation. No artifact cleanup is enabled. Back up Nexus/PostgreSQL volumes, Git, credentials and Floci separately from project source.
 
+### Offline variant merge gate
+
+A source PR opts in with `gate/selection.json`. The workflow builds the exact PR commit, then runs the pinned Python gate in a disposable container. Nexus retains the report, signed attestation and CI build receipt under the source SHA. The selected variant's captured image must equal the attested build image. Missing or changed evidence fails the job; low judged coverage blocks it. A CI rerun can read evidence issued after the first build without changing the commit. The [managed rehearsal](research/evidence/managed-variant-gate.md) shows a blocked live report and a separate deterministic fixture pass.
+
+The environment-state ApplicationSet passes a frozen variant configuration to the Search API as base64 text so Helm's parameter parser does not split JSON commas. The chart decodes it into `SEARCH_VARIANTS_JSON`. The environment fingerprint covers that configuration, image, index and image-pull identity. Existing Gitea image environments use `registry-read`; the Nexus-backed proof uses `nexus-read`.
+
 ## Gitea to GHES
 
 | Shared implementation | Provider configuration / adapter |

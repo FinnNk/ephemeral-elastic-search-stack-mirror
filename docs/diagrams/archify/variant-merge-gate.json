@@ -19,18 +19,19 @@
   ],
   "nodes": [
     {"id": "selection", "lane": "source", "col": 0, "type": "frontend", "label": "Selected variants", "sublabel": "PR source SHA + intent", "width": 145},
-    {"id": "build", "lane": "source", "col": 1, "type": "backend", "label": "Build source", "sublabel": "Exact commit", "width": 126},
+    {"id": "build", "lane": "source", "col": 1, "type": "backend", "label": "Build source", "sublabel": "Commit + image receipt", "width": 138},
     {"id": "capture", "lane": "evaluate", "col": 2, "type": "backend", "label": "Capture variants", "sublabel": "Same query suite", "width": 146},
-    {"id": "report", "lane": "evaluate", "col": 3, "type": "database", "label": "Signed report", "sublabel": "Baseline deltas + pins", "width": 138},
+    {"id": "report", "lane": "evaluate", "col": 3, "type": "database", "label": "Signed report", "sublabel": "Image + metric pins", "width": 138},
     {"id": "approval", "lane": "review", "col": 3, "type": "frontend", "label": "Human exception", "sublabel": "Reason + reviewer", "width": 145},
-    {"id": "gate", "lane": "review", "col": 4, "type": "security", "label": "Variant gate", "sublabel": "Policy + signatures", "width": 132},
+    {"id": "gate", "lane": "review", "col": 4, "type": "security", "label": "Variant gate", "sublabel": "Policy + image receipt", "width": 142},
     {"id": "verdict", "lane": "review", "col": 5, "type": "database", "label": "PR verdict", "sublabel": "Measurements retained", "width": 132}
   ],
   "edges": [
     {"from": "selection", "to": "build", "label": "Reviewed SHA", "role": "main"},
-    {"from": "build", "to": "capture", "label": "Pinned API", "role": "main"},
+    {"from": "build", "to": "capture", "label": "Receipt image", "role": "main"},
     {"from": "capture", "to": "report", "label": "Pooled judgements", "role": "main"},
-    {"from": "report", "to": "gate", "label": "Signed evidence", "role": "main"},
+    {"from": "report", "to": "gate", "label": "Attested report", "role": "main"},
+    {"from": "build", "to": "gate", "label": "Build receipt", "role": "branch"},
     {"from": "selection", "to": "gate", "label": "Named choice", "role": "branch"},
     {"from": "approval", "to": "gate", "label": "Bounded exception", "role": "branch"},
     {"from": "gate", "to": "verdict", "label": "Decision", "role": "main"}

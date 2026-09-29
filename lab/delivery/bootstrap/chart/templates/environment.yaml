@@ -24,7 +24,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       imagePullSecrets:
-        - name: registry-read
+        - name: nexus-read
       containers:
         - name: api
           image: {{ .Values.image | quote }}

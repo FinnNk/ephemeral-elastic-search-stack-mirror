@@ -11,10 +11,13 @@ import urllib.request
 
 
 def artifact(base, source_sha, name, username, password, content=None):
-    if not re.fullmatch(r'[0-9a-f]{40}', source_sha) or name not in {
-            'report.json', 'attestation.json', 'approvals.json'}:
+    build_path = re.fullmatch(r'builds/[0-9a-f]{40}/[1-9][0-9]*-[1-9][0-9]*\.json', name)
+    if not re.fullmatch(r'[0-9a-f]{40}', source_sha) or not (
+            name in {'report.json', 'attestation.json', 'approvals.json'} or
+            build_path and name.split('/')[1] == source_sha):
         raise ValueError('Invalid gate artifact identity.')
-    url = base.rstrip('/') + '/variant-gates/' + source_sha + '/' + name
+    url = base.rstrip('/') + ('/' + name if build_path else
+                             '/variant-gates/' + source_sha + '/' + name)
     token = base64.b64encode((username + ':' + password).encode()).decode()
     headers = {'Authorization': 'Basic ' + token,
                'Content-Type': 'application/json'}
@@ -41,6 +44,18 @@ def main():
     def request(name, content=None):
         return artifact(os.environ['ARTIFACT_URL'], args.source_sha, name,
                         os.environ['NEXUS_USER'], os.environ['NEXUS_PASSWORD'], content)
+    def build_receipt(attestation):
+        run, attempt = (str(attestation.get(key, '')) for key in
+                        ('build_run_id', 'build_attempt'))
+        if not re.fullmatch(r'[1-9][0-9]*', run) or not re.fullmatch(
+                r'[1-9][0-9]*', attempt):
+            raise ValueError('Attestation has no exact source build attempt.')
+        payload = request(f'builds/{args.source_sha}/{run}-{attempt}.json')
+        import hashlib
+        if payload is None or hashlib.sha256(payload).hexdigest() != \
+                attestation.get('build_receipt_sha256'):
+            raise ValueError('Trusted source build receipt is absent or changed.')
+        return payload
     if args.action == 'publish-evidence':
         if not args.report or not args.attestation:
             parser.error('Evidence publication needs a report and attestation.')
@@ -52,6 +67,7 @@ def main():
         import hashlib
         if hashlib.sha256(report).hexdigest() != receipt['report_sha256']:
             raise ValueError('Evidence attestation has another report.')
+        build_receipt(receipt)
         for name, payload in (('report.json', report), ('attestation.json', attestation)):
             existing = request(name)
             if existing is not None and existing != payload:
@@ -86,6 +102,8 @@ def main():
             if payload is None:
                 raise ValueError('No frozen gate evidence at the exact source revision: ' + name)
             (args.directory / name).write_bytes(payload)
+        (args.directory / 'build-receipt.json').write_bytes(build_receipt(
+            json.loads((args.directory / 'attestation.json').read_bytes())))
         (args.directory / 'approvals.json').write_bytes(request('approvals.json') or b'[]')
 
 

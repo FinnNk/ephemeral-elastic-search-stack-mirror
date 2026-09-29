@@ -44,11 +44,20 @@ def verify(value, key, kind):
         raise ValueError('Trusted ' + kind + ' signature differs.')
 
 
-def attest(report_bytes, source_sha, key, issued_at):
+def attest(report_bytes, source_sha, build_receipt_bytes, key, issued_at):
     if not re.fullmatch('[0-9a-f]{40}', source_sha):
         raise ValueError('Attestation needs an exact source commit.')
+    build = json.loads(build_receipt_bytes)
+    if build.get('source_sha') != source_sha or not re.fullmatch(
+            r'[^\s@]+@sha256:[0-9a-f]{64}', str(build.get('image', ''))) or \
+            not str(build.get('run_id', '')).isdigit() or \
+            not str(build.get('run_attempt', '')).isdigit():
+        raise ValueError('Attestation needs a valid source build receipt.')
     return sign({'kind': 'variant-evidence-attestation', 'schema_version': 1,
                  'report_sha256': sha(report_bytes), 'source_sha': source_sha,
+                 'build_run_id': str(build['run_id']),
+                 'build_attempt': str(build['run_attempt']),
+                 'build_receipt_sha256': sha(build_receipt_bytes),
                  'issued_at': issued_at}, key)
 
 
@@ -71,7 +80,8 @@ def number(value, name, low=0, high=1):
 
 
 def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
-          evidence_key, approval_key, trusted_policy_sha, source_sha, now=None):
+          evidence_key, approval_key, trusted_policy_sha, source_sha,
+          build_receipt_bytes, source_repository, now=None):
     """Return a review state; malformed or untrusted evidence raises ValueError."""
     now = now or datetime.now(timezone.utc)
     if not re.fullmatch('[0-9a-f]{40}', source_sha) or \
@@ -106,6 +116,7 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
     if any(not isinstance(pin, dict) or not re.fullmatch(
             '[0-9a-f]{64}', str(pin.get('configuration_sha256', ''))) or
             not re.fullmatch('[0-9a-f]{64}', str(pin.get('environment_fingerprint', '')))
+            or not re.fullmatch(r'[^\s@]+@sha256:[0-9a-f]{64}', str(pin.get('image', '')))
             for pin in variants.values()):
         raise ValueError('Variant configuration or environment pin is missing.')
     choices = selection.get('selected')
@@ -116,6 +127,15 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
     if attestation.get('report_sha256') != sha(report_bytes) or \
             attestation.get('source_sha') != source_sha:
         raise ValueError('Evidence attestation belongs to another report or source.')
+    build = json.loads(build_receipt_bytes)
+    if (attestation.get('build_receipt_sha256') != sha(build_receipt_bytes) or
+            attestation.get('build_run_id') != str(build.get('run_id')) or
+            attestation.get('build_attempt') != str(build.get('run_attempt')) or
+            build.get('source_sha') != source_sha or
+            build.get('source_repository') != source_repository or
+            build.get('event_kind') != 'pull_request' or
+            not re.fullmatch(r'[^\s@]+@sha256:[0-9a-f]{64}', str(build.get('image', '')))):
+        raise ValueError('Trusted build receipt differs from the evaluated source.')
     hours = policy.get('max_age_hours')
     if type(hours) is not int or not 0 < hours <= 720:
         raise ValueError('Evidence age policy is invalid.')
@@ -150,6 +170,8 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
         variant, intent = choice['variant'], choice['intent']
         if variant not in variants or variant == baseline or intent not in change_policy:
             raise ValueError('Selection names an unknown variant, baseline or intent.')
+        if variants[variant]['image'] != build['image']:
+            raise ValueError('Selected variant was not captured from this source build image.')
         score = number(report['metrics'][variant].get(metric), 'Selected metric')
         coverage = number(report['coverage'][variant].get('fraction'), 'Judged coverage')
         changed = report['result_changes'][variant]
@@ -211,6 +233,8 @@ def main():
     parser.add_argument('--approval', type=Path, action='append', default=[])
     parser.add_argument('--approvals-file', type=Path)
     parser.add_argument('--source-sha', required=True)
+    parser.add_argument('--build-receipt', required=True, type=Path)
+    parser.add_argument('--source-repository', required=True)
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     try:
@@ -222,7 +246,8 @@ def main():
                         approvals,
                         os.environ['LAB_VARIANT_EVIDENCE_KEY'].encode(),
                         os.environ['LAB_VARIANT_APPROVAL_KEY'].encode(),
-                        os.environ['LAB_VARIANT_POLICY_SHA256'], args.source_sha)
+                        os.environ['LAB_VARIANT_POLICY_SHA256'], args.source_sha,
+                        args.build_receipt.read_bytes(), args.source_repository)
     except (ValueError, KeyError) as error:
         verdict = {'kind': 'variant-gate-verdict', 'state': 'invalid',
                    'reason': str(error)[:160]}

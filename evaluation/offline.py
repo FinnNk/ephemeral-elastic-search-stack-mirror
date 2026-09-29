@@ -42,6 +42,7 @@ def validate_observations(value):
             or not isinstance(pin, dict)
             or not re.fullmatch(r'[0-9a-f]{64}', str(pin.get('environment_fingerprint', '')))
             or not re.fullmatch(r'[0-9a-f]{64}', str(pin.get('configuration_sha256', '')))
+            or not re.fullmatch(r'[^\s@]+@sha256:[0-9a-f]{64}', str(pin.get('image', '')))
             for name, pin in variants.items()):
         raise ValueError('At least two named, pinned variants are required.')
     if value.get('default_variant') not in variants or value.get('baseline_variant') not in variants:
