@@ -6,12 +6,12 @@
   "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\archify\\judgement-coverage.json",
   "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\interactive\\judgement-coverage.html",
   "specification": {
-    "sha256": "fa8e98472f489d098979e87218178922d325f645615f676659322446e3307930",
-    "bytes": 2430
+    "sha256": "4f7de2661fb00038637f31606ab3667a5916bfdad9f51a0905293ca1b82f075e",
+    "bytes": 2440
   },
   "artifact": {
-    "sha256": "4cf5ad4e3bc63e0802e04d2c6135ade6023a3bb3648fa791358e034b366053ee",
-    "bytes": 803021
+    "sha256": "25d2e2144bb9fce0a3994d11bf1a03644f7213a725714bd6c590e3ff0340fcef",
+    "bytes": 803044
   },
   "validation": {
     "checksPassed": 9,

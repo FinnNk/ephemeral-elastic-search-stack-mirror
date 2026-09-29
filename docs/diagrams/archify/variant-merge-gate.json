@@ -1,0 +1,49 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Select and gate offline search variants",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {"entries": {
+      "frontend": {"label": "PR or reviewer"},
+      "backend": {"label": "Automation"},
+      "database": {"label": "Frozen evidence"},
+      "security": {"label": "Policy check"}
+    }}
+  },
+  "lanes": [
+    {"id": "source", "label": "Source and build"},
+    {"id": "evaluate", "label": "Frozen evaluation"},
+    {"id": "review", "label": "Merge decision"}
+  ],
+  "nodes": [
+    {"id": "selection", "lane": "source", "col": 0, "type": "frontend", "label": "Selected variants", "sublabel": "PR source SHA + intent", "width": 145},
+    {"id": "build", "lane": "source", "col": 1, "type": "backend", "label": "Build source", "sublabel": "Exact commit", "width": 126},
+    {"id": "capture", "lane": "evaluate", "col": 2, "type": "backend", "label": "Capture variants", "sublabel": "Same query suite", "width": 146},
+    {"id": "report", "lane": "evaluate", "col": 3, "type": "database", "label": "Signed report", "sublabel": "Baseline deltas + pins", "width": 138},
+    {"id": "approval", "lane": "review", "col": 3, "type": "frontend", "label": "Human exception", "sublabel": "Reason + reviewer", "width": 145},
+    {"id": "gate", "lane": "review", "col": 4, "type": "security", "label": "Variant gate", "sublabel": "Policy + signatures", "width": 132},
+    {"id": "verdict", "lane": "review", "col": 5, "type": "database", "label": "PR verdict", "sublabel": "Measurements retained", "width": 132}
+  ],
+  "edges": [
+    {"from": "selection", "to": "build", "label": "Reviewed SHA", "role": "main"},
+    {"from": "build", "to": "capture", "label": "Pinned API", "role": "main"},
+    {"from": "capture", "to": "report", "label": "Pooled judgements", "role": "main"},
+    {"from": "report", "to": "gate", "label": "Signed evidence", "role": "main"},
+    {"from": "selection", "to": "gate", "label": "Named choice", "role": "branch"},
+    {"from": "approval", "to": "gate", "label": "Bounded exception", "role": "branch"},
+    {"from": "gate", "to": "verdict", "label": "Decision", "role": "main"}
+  ],
+  "mainPath": ["selection", "build", "capture", "report", "gate", "verdict"],
+  "cards": [
+    {"dot": "cyan", "title": "Roles are independent", "items": [
+      "One runtime default is required",
+      "The evaluation baseline may be another variant"
+    ]},
+    {"dot": "emerald", "title": "Decision retains the evidence", "items": [
+      "A selected replacement becomes the new default on promotion",
+      "An exception records a reason without changing measured scores"
+    ]}
+  ]
+}

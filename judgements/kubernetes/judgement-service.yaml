@@ -62,7 +62,7 @@ spec:
         kubernetes.io/hostname: k3d-observability-0
       initContainers:
         - name: fetch-source
-          image: nexus.localhost:18185/relevance-judge:j1-1d82237c90e4c42f-amd64
+          image: nexus.localhost:18185/relevance-judge:j1-bd762253aeb823ed-amd64
           command: [python, /app/fetch_source.py]
           args:
             - --judgement-manifest-sha256
@@ -91,7 +91,7 @@ spec:
               mountPath: /inputs
       containers:
         - name: judgement-service
-          image: nexus.localhost:18185/relevance-judge:j1-1d82237c90e4c42f-amd64
+          image: nexus.localhost:18185/relevance-judge:j1-bd762253aeb823ed-amd64
           command: [python, /app/service.py]
           args:
             - --database

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "diagram_type": "dataflow",
   "meta": {
-    "title": "Compare relevance across frozen environments",
+    "title": "Evaluate frozen Search API variants",
     "locale": "en",
     "quality_profile": "showcase",
     "viewBox": [
@@ -31,15 +31,15 @@
     {
       "id": "baseline",
       "label": "Baseline",
-      "sublabel": "Frozen definition B",
+      "sublabel": "Named variant",
       "stage": 0,
       "row": 0,
       "type": "database"
     },
     {
       "id": "candidate",
-      "label": "Candidate",
-      "sublabel": "Frozen definition C",
+      "label": "Variants",
+      "sublabel": "One or more",
       "stage": 0,
       "row": 2,
       "type": "database"
@@ -55,7 +55,7 @@
     {
       "id": "baselineapi",
       "label": "Baseline API",
-      "sublabel": "Runs definition B",
+      "sublabel": "Pinned environment",
       "stage": 1,
       "row": 0,
       "type": "backend",
@@ -63,8 +63,8 @@
     },
     {
       "id": "candidateapi",
-      "label": "Candidate API",
-      "sublabel": "Runs definition C",
+      "label": "API(s)",
+      "sublabel": "Pinned runtime",
       "stage": 1,
       "row": 2,
       "type": "backend",
@@ -72,7 +72,7 @@
     },
     {
       "id": "baselineresults",
-      "label": "B results",
+      "label": "Base results",
       "sublabel": "IDs + errors",
       "stage": 2,
       "row": 0,
@@ -80,7 +80,7 @@
     },
     {
       "id": "candidateresults",
-      "label": "C results",
+      "label": "Variant results",
       "sublabel": "IDs + errors",
       "stage": 2,
       "row": 2,
@@ -175,13 +175,13 @@
     {
       "from": "baselineresults",
       "to": "evaluator",
-      "label": "B results",
+      "label": "Baseline results",
       "variant": "emphasis"
     },
     {
       "from": "candidateresults",
       "to": "evaluator",
-      "label": "C results",
+      "label": "All variant results",
       "variant": "emphasis"
     },
     {
@@ -202,16 +202,16 @@
       "dot": "violet",
       "title": "Pin environments and input versions",
       "items": [
-        "Each API pins its image, catalogue, recipe and engine",
-        "One query suite and judgement set are selected for the comparison"
+        "Default and baseline are named separately",
+        "APIs may share a frozen environment"
       ]
     },
     {
       "dot": "emerald",
       "title": "Score again without another search",
       "items": [
-        "Observations keep both ordered result sets and fingerprints",
-        "New judgements or metrics produce another retained report"
+        "Keep ordered results and fingerprints",
+        "Pool judgements across all variants"
       ]
     }
   ]

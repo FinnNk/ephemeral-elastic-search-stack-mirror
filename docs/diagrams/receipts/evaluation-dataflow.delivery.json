@@ -3,15 +3,15 @@
   "ok": true,
   "command": "deliver",
   "type": "dataflow",
-  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\archify\\evaluation-dataflow.json",
-  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\interactive\\evaluation-dataflow.html",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\archify\\evaluation-dataflow.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\interactive\\evaluation-dataflow.html",
   "specification": {
-    "sha256": "27fd66a4afd5c634aeecb5c8b5e80123c589b5bab7fa5f98456bf1a2ed983ca4",
-    "bytes": 4559
+    "sha256": "2fea71441e7dabf5f6579f83b2cc59c0d4da7adc3c638afcb753aefd6b6b9488",
+    "bytes": 4466
   },
   "artifact": {
-    "sha256": "a17047e5ff731be6ac3251b860db41367e33b00c626f4865f9b93276bfe15f38",
-    "bytes": 811705
+    "sha256": "79b6209d95cde455fa8bdf6ab0a607f25f2834f7e40d1dca356b0076ac0096ce",
+    "bytes": 811583
   },
   "validation": {
     "checksPassed": 9,

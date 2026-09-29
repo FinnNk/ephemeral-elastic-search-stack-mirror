@@ -41,7 +41,9 @@ Run again with another observation set and a new output directory when recall ch
 
 ## Replace the model
 
-Register a new model version in MLflow with the same input/output contract: each pair produces `labelled` plus `E`, `S`, `C` or `I`, or `abstain`. Pin the numbered version and artefact digest in the KServe `storageUri` and judgement-service model ConfigMap. Deploy and verify both pins together. The storage initialiser refuses changed model bytes; every prediction includes the verified identity, which the judgement API checks. A registry alias can select a version for a future deployment, but an evaluation records the exact version and digest.
+Register a new model version in MLflow with the same input/output contract: each pair produces `labelled` plus `E`, `S`, `C` or `I`, or `abstain`. Pin the numbered version and artefact digest in the KServe `storageUri` and judgement-service model ConfigMap. Deploy and verify both pins together. The storage initialiser reuses a complete matching model on restart and refuses changed or partial bytes; every prediction includes the verified identity, which the judgement API checks. A registry alias can select a version for a future deployment, but an evaluation records the exact version and digest.
+
+If the local SeaweedFS container is restarted, rerun `python lab/setup_judgement_secrets.py` to refresh the lab-only `model-artifacts` EndpointSlice to its current Docker IP. Rerun `python lab/setup_nexus.py` if the local Nexus container is restarted for the same reason. On Azure, object storage endpoints are supplied by the platform and do not use these local EndpointSlices.
 
 The numeric grade mapping is `I=0`, `C=1`, `S=2`, `E=3`. No label is inferred from abstention or a failed call. New model labels are cached only under that exact version and frozen source scope. Source labels always take precedence.
 

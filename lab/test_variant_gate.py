@@ -111,6 +111,10 @@ class VariantGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'frozen evaluator_sha256'):
             self.check()
 
+    def test_low_baseline_coverage_cannot_be_overridden(self):
+        self.report['coverage']['ranker-b']['fraction'] = 0.79
+        self.assertEqual(self.check()['state'], 'blocked')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -157,6 +157,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         gitea -> runner "Offers a build for a pinned commit" "Actions protocol"
         runner -> gitea "Fetches source and pushes tested images" "Git / HTTPS; OCI / HTTP"
         runner -> nexus "Publishes image, bundle and release receipt" "OCI / REST"
+        nexus -> runner "Supplies source-bound variant evidence for the merge gate" "REST"
         nexus -> nexusdb "Stores repository metadata" "PostgreSQL"
         engineer -> gitea "Reviews source and promotion PRs" "Browser / Git"
         coordinator -> gitea "Proposes and validates exact promotion revisions" "Git / REST over HTTPS"

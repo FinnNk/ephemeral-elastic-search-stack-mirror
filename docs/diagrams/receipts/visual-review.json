@@ -36,17 +36,17 @@
     {
       "diagram_type": "dataflow",
       "output": "interactive/evaluation-dataflow.html",
-      "specification_sha256": "27fd66a4afd5c634aeecb5c8b5e80123c589b5bab7fa5f98456bf1a2ed983ca4",
-      "artifact_sha256": "a17047e5ff731be6ac3251b860db41367e33b00c626f4865f9b93276bfe15f38",
+      "specification_sha256": "2fea71441e7dabf5f6579f83b2cc59c0d4da7adc3c638afcb753aefd6b6b9488",
+      "artifact_sha256": "79b6209d95cde455fa8bdf6ab0a607f25f2834f7e40d1dca356b0076ac0096ce",
       "validation": "9/9 showcase, 0 errors, 0 warnings",
       "browser_evidence": "passed",
       "visual_review": "passed",
-      "correction_rounds": 1,
+      "correction_rounds": 0,
       "review_scope": [
         "1440x900 light screenshot",
-        "2048x1320 dark screenshot"
+        "2048x1320 dark browser check"
       ],
-      "observations": "Reviewed separate frozen APIs, ordered observations, manifest-selected queries and judgements, and offline rescoring. Light and dark previews are legible; browser checks passed. Viewer export interactions were not manually exercised."
+      "observations": "Reviewed named baseline, additional variants, shared environment option and pooled judgements. The 1440px light preview is legible; browser checks passed."
     },
     {
       "diagram_type": "architecture",
@@ -201,42 +201,57 @@
     {
       "diagram_type": "workflow",
       "output": "interactive/judgement-coverage.html",
-      "specification_sha256": "fa8e98472f489d098979e87218178922d325f645615f676659322446e3307930",
-      "artifact_sha256": "4cf5ad4e3bc63e0802e04d2c6135ade6023a3bb3648fa791358e034b366053ee",
+      "specification_sha256": "4f7de2661fb00038637f31606ab3667a5916bfdad9f51a0905293ca1b82f075e",
+      "artifact_sha256": "25d2e2144bb9fce0a3994d11bf1a03644f7213a725714bd6c590e3ff0340fcef",
       "validation": "9/9 showcase, 0 errors, 0 warnings",
       "browser_evidence": "passed",
       "visual_review": "passed",
-      "correction_rounds": 1,
+      "correction_rounds": 0,
       "review_scope": [
         "1440x900 light screenshot",
-        "2048x1320 dark screenshot"
+        "2048x1320 dark browser check"
       ],
-      "observations": "Reviewed capture, pooled pairs, stored-label lookup, KServe gap call, frozen set and report path. Labels and routes are legible in both themes."
+      "observations": "Reviewed pooled pairs from two or more variants, stored-label lookup, KServe gap resolution and per-variant coverage. The 1440px light preview is legible; browser checks passed."
+    },
+    {
+      "diagram_type": "workflow",
+      "output": "interactive/variant-merge-gate.html",
+      "specification_sha256": "88e6a2a38d2c4effba86467f4b363d5e0f924168b9f0797b37e899e10ea70953",
+      "artifact_sha256": "323217e8eb5edd22c609fd39b505405a41798841b8309db9e71f071995acb70d",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "passed",
+      "visual_review": "passed",
+      "correction_rounds": 0,
+      "review_scope": [
+        "1440x900 light screenshot",
+        "2048x1320 dark browser check"
+      ],
+      "observations": "Reviewed selected variants, exact build, frozen report, bounded human exception and retained PR verdict. The 1440px light preview is legible; browser checks passed."
     }
   ],
   "c4": {
     "validation": "Structurizr validate and SVG/PNG export passed",
-    "visual_review": "03-evaluation and 18-delivery inspected after combining judgement, model and HTTPS views; all seven views validated and exported",
-    "review_scope": "Judgement supply, frozen API evaluation and HTTPS delivery are legible in the inspected views.",
+    "visual_review": "03-evaluation and 18-delivery inspected after combining judgement, variant and HTTPS views; all seven views validated and exported",
+    "review_scope": "Judgement supply, named-variant evaluation, source-bound evidence and HTTPS delivery are legible in the inspected views.",
     "sources": {
-      "workspace.dsl": "5cdc1e7864a96f289850844af33cce5e83c31997a8b58007d207b4f030f949a0",
+      "workspace.dsl": "b2fc3b699e20bda35c462a3c35b769c80312d34e627f82adf5517bc8210e7447",
       "layout.mjs": "2f219d96227f4e2d99d167740351d1bc13a2cc3112c4591559fcf6e9d17526a7"
     },
     "svg_sha256": {
       "01-context-key.svg": "be9439d77f1889d034468c1a41ef9d943133136dc9713d4dac82171e5de24539",
-      "01-context.svg": "1093802269d54017f56800a67ea612a6d89b27c63f7ebf42d50f547e58ce002f",
+      "01-context.svg": "a5cbd15ca9ae6d4a82c22131aa4191987710cf9e1a8122ba86374355329f56de",
       "02-control-key.svg": "b37e211ed58aaed3ef6cd72427088d61d7ece40dbb436554785b5319f4eebc02",
-      "02-control.svg": "efb570d74e3f8bf68c46201996741e832a0342be33d35b7657f15f6a9b7fdccd",
+      "02-control.svg": "ebee858e1d97aac6702a2a3b0deb46ea1bb95724ffeba1acbc16b6162fb0d264",
       "03-evaluation-key.svg": "8080406967252a5b342b33ad3b8c9de2c26d20adc9c2d32d04fad5d2f56e910f",
-      "03-evaluation.svg": "97a5130c3b487f0f02fb92400e8767093f1ff0fb6d9357ffa228a4452c5e5efe",
+      "03-evaluation.svg": "aa33e61e0740318be17213afb00fcd9051218b1602234e788588405a492ba0e6",
       "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
-      "04-create.svg": "a1a39b43195429c7d48fa0bbb2e257f9474b828e1fadb625806510dc2600ff2d",
+      "04-create.svg": "5ea4c19b0754ab83d86b2d255734250a920af19aefeabdb07a2ffe5767ca95cf",
       "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
-      "05-local.svg": "340cf3688db16dd87c3ac2d46ef82540359a3f851bd39dd6fc51f9ee7767ea3b",
+      "05-local.svg": "624651e38cc67976e786cb262bed883f4cc7e0a5ee590fa0df0b9f43bdff4bfe",
       "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
-      "06-azure.svg": "4b3efbf6f159662110fefab2e52a0e78ac6991cdb871f136440cdce02c29a4c0",
+      "06-azure.svg": "1bfc6a79f0526c9f3e401728b83bdf82d90ee888608efe3638a19f75b5bdb294",
       "18-delivery-key.svg": "21452daa1df3a7620c627c5f369c5a135c20ed1c1a77d656e05acfec268d661c",
-      "18-delivery.svg": "2ddeb34c234e28d51ee73517fe3453a31d788e74f41bbcc07ad744927accaffb"
+      "18-delivery.svg": "49a6509c7b398f2cb469aa15215e0e36a135654dc946bf16857705d444eb5027"
     }
   }
 }

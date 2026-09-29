@@ -41,6 +41,11 @@ def configure_ci():
     apply({'apiVersion': 'v1', 'kind': 'Secret',
            'metadata': {'name': 'delivery-registration', 'namespace': 'platform'},
            'stringData': {'token': token}})
+    from https_ingress import certificate
+    _, _, ca_path = certificate()
+    apply({'apiVersion': 'v1', 'kind': 'ConfigMap',
+           'metadata': {'name': 'delivery-runner-ca', 'namespace': 'platform'},
+           'data': {'root.pem': ca_path.read_text(encoding='utf-8')}})
     runner = (ROOT / 'lab/delivery/bootstrap/runner.yaml').read_text(encoding='utf-8')
     path = STATE / 'delivery-runner.yaml'
     path.write_text(runner, encoding='utf-8', newline='\n')

@@ -3,7 +3,7 @@
   "schema_version": 1,
   "max_age_hours": 72,
   "metric": "nDCG@10",
-  "minimum_judged_fraction": 0.5,
+  "minimum_judged_fraction": 0.8,
   "pass_min_delta": 0.0,
   "exception_min_delta": -0.03,
   "changed_query_fraction": {

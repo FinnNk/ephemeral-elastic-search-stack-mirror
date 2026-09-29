@@ -141,6 +141,8 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
                 number(limits['exception'], 'Result exception threshold'):
             raise ValueError('Result-change thresholds are invalid.')
     baseline_score = number(report['metrics'][baseline].get(metric), 'Baseline metric')
+    baseline_coverage = number(report['coverage'][baseline].get('fraction'),
+                               'Baseline judged coverage')
     receipts = []
     for choice in choices:
         if not isinstance(choice, dict) or set(choice) != {'variant', 'intent'}:
@@ -160,7 +162,8 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
         if report.get('delta_from_baseline', {}).get(variant, {}).get(metric) != delta:
             raise ValueError('Reported metric delta differs from its scores.')
         limits = change_policy[intent]
-        if coverage < minimum_coverage or delta < exception_delta or \
+        if baseline_coverage < minimum_coverage or coverage < minimum_coverage or \
+                delta < exception_delta or \
                 fraction > limits['exception']:
             state = 'blocked'
         elif delta >= pass_delta and fraction <= limits['pass']:

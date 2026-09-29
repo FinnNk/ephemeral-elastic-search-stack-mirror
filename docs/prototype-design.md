@@ -340,7 +340,7 @@ Shared immutable indices may outlive one environment while another uses them. Re
 | [Result preservation](diagrams/interactive/result-regression.html) | Did ordering or membership change? | Exact ordered-ID equality; RBO, Jaccard and rank moves |
 | [Performance](diagrams/interactive/performance-check.html) | Does the candidate meet the load profile and performance budgets? | Gatling latency, throughput, failed requests and repeatable B/C deltas |
 
-![Baseline and candidate frozen definitions feed separate APIs and result sets into one evaluator](diagrams/rendered/evaluation-dataflow.png)
+![Named frozen variants produce public API results for one evaluator](diagrams/rendered/evaluation-dataflow.png)
 
 A comparison references **two frozen environment definitions**, baseline B and candidate C. Each pins its API image, query assets and configuration, index definition/artifact, canonical dataset and engine version. Resolve or recreate both runtimes, verify each against its own fingerprint and confirm both APIs are ready before sending evaluation requests. The fingerprints identify each side independently; they do not have to match one another.
 
@@ -348,9 +348,9 @@ The local control UI offers a **quick** 50-query result preflight and a **full**
 
 Both APIs receive the same frozen original queries and request context. Relevance comparisons score their final results against the same frozen judgements; result-regression comparisons check whether those results changed; performance comparisons replay the same workload separately against each API. The comparison record retains both definition fingerprints, runtime IDs, evaluation-input hashes, responses and diagnostics. Creating a comparison must not silently substitute the latest baseline or candidate.
 
-For the standalone two-stage evaluation, capture both API result lists before resolving judgements. Pool the distinct query–product pairs through the deepest requested metric cut-off. The independent judgement service returns existing synthetic labels first; it asks a pinned MLflow model served by KServe to label only gaps. The first model abstains on every pair. Freeze the resulting judgement set and attempt receipt, then score both APIs against that one set. If a later candidate changes recall, resolve its new pairs into a new snapshot and rescore both sides. An abstention is unknown, whereas `I` is an explicit irrelevant judgement. [The contract](data-evaluation-contracts.md#resolve-judgement-gaps-before-scoring) records the exact hashes, coverage and local demonstration.
+For standalone variant evaluation, capture every named Search API result list before resolving judgements. The variant set requires one runtime default and one evaluation baseline; they may differ. Pool distinct query–product pairs across all variants through the deepest metric cut-off. The independent judgement service returns stored synthetic labels first and asks a pinned MLflow model served by KServe about gaps. The first model abstains on every gap. Freeze the resulting judgement set and attempt receipt, then score every variant against that one set. A changed recall set gets a new snapshot and report. An abstention is unknown, whereas `I` is an explicit irrelevant judgement. [The contract](data-evaluation-contracts.md#resolve-judgement-gaps-before-scoring) records the hashes and coverage.
 
-Two definitions can share compatible immutable resources. In the [API-only example](diagrams/interactive/shared-index-reuse.html), separate baseline and candidate API deployments read one frozen index. A mapping change builds a different index from the same dataset. The [relevance comparison](diagrams/interactive/evaluation-dataflow.html) separates the two result paths; the [C4 evaluation view](diagrams/rendered/03-evaluation.svg) records their service dependencies and diagnostic interfaces.
+Variants can share compatible immutable resources. In the [API-only example](diagrams/interactive/shared-index-reuse.html), separate API deployments read one frozen index. One API can also serve several pinned ranking configurations. A mapping change builds a different index from the same dataset. The [variant evaluation](diagrams/interactive/evaluation-dataflow.html) shows the named result paths; the [merge gate](diagrams/interactive/variant-merge-gate.html) shows source-bound evidence and the recorded release decision.
 
 - **Baseline:** Start with a search API that performs simple query normalisation and a BM25 baseline using a documented mapping, analysers and query template.
 - **Query understanding:** Candidate API versions may change spelling correction, tokenisation, intent or entity detection, synonym expansion, query rewriting and context handling before Elasticsearch receives a request.
@@ -360,12 +360,12 @@ Two definitions can share compatible immutable resources. In the [API-only examp
 
 Relevance evaluation follows these rules:
 
-- **Inputs:** A relevance comparison pins one dataset and query/judgement release and sends the same original request and context through the baseline and candidate **public search APIs**.
+- **Inputs:** A relevance evaluation pins one dataset, query suite and judgement release and sends the same original request and context through every named **public search API** variant.
 - **Judgement limits:** The report identifies the frozen synthetic judgement source, hashes, coverage of each returned top ten and unjudged IDs. The million-product pool includes earlier candidate results, so its score is a proxy that may favour those results. The separate resolution workflow can ask a model about gaps in both current recall sets before scoring; the all-abstaining model adds no labels. Coverage below 80% on either side marks the relevance claim insufficient and does not alter the result-change verdict.
 - **Captured response:** The evaluation client records the response actually returned to the caller, including ordered product IDs, zero results, errors and client-observed duration.
 - **Scoring:** Judgements are joined to those final product IDs; an established metrics library calculates end-to-end nDCG@10, MRR, precision/recall at selected cut-offs and per-query regressions.
 - **Coverage:** Report zero-result and failure rates separately so failures cannot disappear from metric denominators. Include category, intent and head/long-tail slices.
-- **Decision metric:** This black-box result is the authoritative comparison of relevance variants, including variants whose query understanding or reranking changes entirely outside Elasticsearch. A score from one candidate need not be comparable with a score from another; compare ordering and judged outcomes.
+- **Decision metric:** Public API results provide the black-box comparison, including query understanding or reranking changes outside Elasticsearch. The merge gate compares selected variants with the named baseline under one frozen specification and coverage policy; a bounded human exception records the reason without changing measured scores.
 
 Use three clearly labelled evidence layers:
 

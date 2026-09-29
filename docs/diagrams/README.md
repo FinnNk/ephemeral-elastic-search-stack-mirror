@@ -53,8 +53,9 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 
 | View | Contents | Editable source |
 | --- | --- | --- |
-| [07 · Compare relevance](interactive/evaluation-dataflow.html) | Both APIs produce retained observations; an independent evaluator scores them against selected judgements. | [Archify data flow](archify/evaluation-dataflow.json) |
-| [Resolve judgement gaps](interactive/judgement-coverage.html) | Pool B and C results, ask the pinned model about missing labels, then freeze and score one set. | [Archify workflow](archify/judgement-coverage.json) |
+| [07 · Compare relevance](interactive/evaluation-dataflow.html) | Every named variant produces retained API observations; an independent evaluator scores them against one selected judgement set. | [Archify data flow](archify/evaluation-dataflow.json) |
+| [Variant merge gate](interactive/variant-merge-gate.html) | Select variants, check signed evidence and record a bounded human exception. | [Archify workflow](archify/variant-merge-gate.json) |
+| [Resolve judgement gaps](interactive/judgement-coverage.html) | Pool all returned pairs, ask the pinned model about missing labels, then freeze and score one set. | [Archify workflow](archify/judgement-coverage.json) |
 | [11 · Verify unchanged results](interactive/result-regression.html) | Compare ordered API results, explain differences and record an exact-match verdict. | [Archify workflow](archify/result-regression.json) |
 | [12 · Check API performance](interactive/performance-check.html) | Gatling replays pinned phases against each API; reports retain phase verdicts and capacity. | [Archify workflow](archify/performance-check.json) |
 

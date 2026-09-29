@@ -44,6 +44,19 @@ class VariantCaptureTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'another variant'):
                 worker.request('ranker-b', target, row)
 
+    def test_public_api_twenty_results_are_retained_at_metric_depth(self):
+        row = {'query_id': 'q1', 'query': 'lamp', 'country': 'GB', 'currency': 'GBP'}
+        target = {'environment': 'lab-ranker', 'selection': 'default',
+                  'configuration_sha256': 'a' * 64}
+        payload = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP',
+                   'variant_id': 'ranker-a', 'configuration_sha256': 'a' * 64,
+                   'ids': ['p' + str(i) for i in range(20)], 'total': 240}
+        with patch.object(worker.urllib.request, 'urlopen',
+                          return_value=Response(json.dumps(payload).encode())):
+            result = worker.request('ranker-a', target, row)
+        self.assertEqual(result['ids'], payload['ids'][:10])
+        self.assertEqual(result['total'], 240)
+
 
 if __name__ == '__main__':
     unittest.main()

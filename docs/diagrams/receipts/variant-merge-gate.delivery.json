@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\archify\\variant-merge-gate.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\interactive\\variant-merge-gate.html",
+  "specification": {
+    "sha256": "88e6a2a38d2c4effba86467f4b363d5e0f924168b9f0797b37e899e10ea70953",
+    "bytes": 2693
+  },
+  "artifact": {
+    "sha256": "323217e8eb5edd22c609fd39b505405a41798841b8309db9e71f071995acb70d",
+    "bytes": 806570
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

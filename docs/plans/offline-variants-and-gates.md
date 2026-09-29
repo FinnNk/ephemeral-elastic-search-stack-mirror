@@ -1,6 +1,6 @@
 # Offline variants and merge decisions
 
-**Status:** the frozen-variant contract and N-way scoring are ready in the first review batch. The selected-variant gate is in the second review batch. Live proof and reference diagrams follow in the third.
+**Status:** the first review batch adds N-way capture and scoring; the second adds the selected-variant gate. The third demonstrates 1M products, 1,000 queries, three variants and pooled KServe abstentions, and updates the reference diagrams. A fourth integration check will use an Argo-managed frozen definition and exercise a declared gate in source CI.
 
 ## Intent
 
@@ -23,6 +23,7 @@ Evaluate two or more frozen Search API variants on one synthetic query suite. Ex
 | 1. Frozen variants | Variant manifest and explicit Search API selection; finite N-way capture; N-way scoring and pooled judgements; deterministic synthetic fixtures | Two and three variants work, including default ≠ baseline; wrong echo, changed pin, incomplete capture and missing pair fail closed; a two-version replacement needs no runtime flag service. |
 | 2. Decisions and merge gate | Versioned gate policy, selected variants, per-variant verdicts and trusted human exception receipt; portable CI command and source workflow wiring | Passing, decision-required, approved-exception, blocked and invalid cases are distinct. An approval binds exact evidence, policy, selected variant, reviewer and reason; an untrusted PR-authored approval cannot pass. |
 | 3. Reference proof | End-to-end synthetic run, evidence, operating guide, C4/workflow diagrams and roadmap; clean reference language | Local live API capture and gate examples match the documented contract. Old pair-shaped input is rejected instead of adapted. Each batch is committed and offered as a stacked PR; merge only after acceptance. |
+| 4. Managed gate rehearsal | Run `evaluation/capture.py` against an Argo-managed variant environment; publish source-bound evidence after a delivery-source PR commit; verify the declared CI gate and retained decision | The same source SHA identifies the build, signed report and CI verdict. A missing bundle fails. A complete low-coverage report blocks. A separate deterministic adequate-coverage fixture exercises pass and bounded human exception without claiming live model quality. |
 
 ## Where to look
 

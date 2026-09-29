@@ -42,11 +42,11 @@ def request(variant, target, row):
     if value.get('variant_id') != variant or \
             value.get('configuration_sha256') != target['configuration_sha256']:
         raise ValueError('Search API served another variant or configuration.')
-    if not isinstance(ids, list) or len(ids) > 10 or len(ids) != len(set(ids)) or \
+    if not isinstance(ids, list) or len(ids) > 20 or len(ids) != len(set(ids)) or \
             type(value.get('total')) is not int or value['total'] < len(ids):
         raise ValueError('Search API returned an invalid result list.')
     return {'variant_id': variant, 'configuration_sha256': target['configuration_sha256'],
-            'ids': ids, 'total': value['total']}
+            'ids': ids[:10], 'total': value['total']}
 
 
 def run(rows, variants, worker_count=8):

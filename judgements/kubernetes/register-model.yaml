@@ -15,7 +15,7 @@ spec:
         kubernetes.io/hostname: k3d-observability-0
       containers:
         - name: register
-          image: nexus.localhost:18185/relevance-judge:j1-1d82237c90e4c42f-amd64
+          image: nexus.localhost:18185/relevance-judge:j1-bd762253aeb823ed-amd64
           command: [python, /app/noop_model.py]
           args:
             - --tracking-uri

@@ -22,7 +22,7 @@ python lab/setup_nexus.py
 python lab/setup_delivery.py
 ```
 
-The setup creates private repositories and a repository-scoped `lab-delivery` runner. It seeds source only once; subsequent source changes use branches and PRs. Both `finnnk` and the agent can access the demonstration repositories. The runner uses the existing privileged rootless Docker-in-Docker lab pattern; it is for trusted local contributors, not arbitrary public fork code.
+The setup creates private repositories and a repository-scoped `lab-delivery` runner. It seeds source only once; subsequent source changes use branches and PRs. Both `finnnk` and the agent can access the demonstration repositories. The runner uses the existing privileged rootless Docker-in-Docker lab pattern; it is for trusted local contributors, not arbitrary public fork code. Its mounted lab root CA verifies the internal HTTPS Gitea address retained in runner registration.
 
 1. Open a source branch and PR in `delivery-source`.
 2. **Reference release CI** checks out the exact PR head SHA. Its first step has only a source-read token.
@@ -31,6 +31,8 @@ The setup creates private repositories and a repository-scoped `lab-delivery` ru
 5. Merge the accepted source PR. CI builds the merged SHA and records a separate release. Promotion uses the merged-source release and its own evaluation.
 
 A failing test stops publication. The source PR may still have older successful runs: select a run that matches the current head exactly. The [retained CI evidence](research/evidence/portable-ci.md) demonstrates both successful and failed paths.
+
+For a selected offline variant, the source PR commits `gate/selection.json` without a source SHA. The exact PR build runs first; an independent evaluator then publishes a signed report and attestation to Nexus under that SHA. The release workflow fetches those bytes and checks the versioned policy, named baseline, coverage, metric deltas, changed-result fraction and any signed administrator exception. A missing bundle or a blocked result fails the PR job. An approved exception keeps the measured score and reason in separate fields. The [variant guide](variant-evaluation.md) defines the frozen inputs and decision contract.
 
 ## Retained release contract
 
