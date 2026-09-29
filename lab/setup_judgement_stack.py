@@ -1,0 +1,112 @@
+"""Install or verify the lab's pinned MLflow/KServe judgement stack."""
+
+import argparse
+import json
+
+from common import HELM, IN_CLUSTER, ROOT, STATE, guard, k, run
+from setup_judgement_secrets import configure as configure_secrets
+from setup_nexus import configure_network
+from publish_judgement_image import source_sha256
+
+SOURCES = ROOT / 'judgements' / 'kubernetes'
+
+
+def chart(name, source, version, namespace, *values):
+    command = [HELM]
+    if not IN_CLUSTER:
+        command += ['--kubeconfig', str(STATE / 'kubeconfig.yaml')]
+    command += ['upgrade', '--install', name, source, '--version', version,
+               '--namespace', namespace, '--create-namespace', '--wait',
+               '--timeout', '5m', *values]
+    run(command)
+
+
+def manifest(name):
+    k('apply', '-f', str(SOURCES / name))
+
+
+def wait_ready(million=False):
+    guard()
+    k('wait', '--for=condition=Ready', 'externalsecret', '--all', '-n', 'lab-models',
+      '--timeout=180s')
+    k('rollout', 'status', 'statefulset/mlflow-postgres', '-n', 'lab-models',
+      '--timeout=180s')
+    k('rollout', 'status', 'deployment/mlflow-mlflow', '-n', 'lab-models',
+      '--timeout=180s')
+    k('wait', '--for=condition=Ready', 'inferenceservice/synthetic-esci-judge',
+      '-n', 'lab-models', '--timeout=180s')
+    k('rollout', 'status', 'deployment/synthetic-esci-judge-predictor',
+      '-n', 'lab-models', '--timeout=180s')
+    k('rollout', 'status', 'deployment/judgement-service', '-n', 'lab-models',
+      '--timeout=180s')
+    expected = 'j1-' + source_sha256()[:16]
+    deployments = ['mlflow-mlflow', 'synthetic-esci-judge-predictor',
+                   'judgement-service']
+    if million:
+        k('rollout', 'status', 'deployment/judgement-service-million', '-n', 'lab-models',
+          '--timeout=600s')
+        deployments.append('judgement-service-million')
+    for deployment in deployments:
+        value = json.loads(k('get', 'deployment/' + deployment, '-n', 'lab-models',
+                             '-o', 'json').stdout)
+        pod = value['spec']['template']['spec']
+        images = [item['image'] for item in pod.get('initContainers', []) +
+                  pod.get('containers', [])]
+        if not images or any(expected not in image for image in images):
+            raise ValueError(deployment + ' does not run the pinned source image.')
+    result = k('exec', '-n', 'lab-models', 'deployment/judgement-service', '-c',
+               'judgement-service', '--', 'python', '/app/smoke.py')
+    checks = {'ten_thousand': json.loads(result.stdout)}
+    if million:
+        result = k('exec', '-n', 'lab-models', 'deployment/judgement-service-million',
+                   '-c', 'judgement-service-million', '--', 'python', '/app/smoke.py')
+        checks['million'] = json.loads(result.stdout)
+    return checks
+
+
+def install(million=False):
+    guard()
+    expected = 'j1-' + source_sha256()[:16]
+    for name in ('mlflow-values.yaml', 'register-model.yaml', 'kserve-model.yaml',
+                 'judgement-service.yaml', 'judgement-service-million.yaml'):
+        if expected not in (SOURCES / name).read_text(encoding='utf-8'):
+            raise ValueError(name + ' does not pin the current judgement source image.')
+    configure_network()
+    chart('cert-manager', 'oci://quay.io/jetstack/charts/cert-manager', 'v1.17.0',
+          'cert-manager', '--set', 'crds.enabled=true')
+    chart('kserve-crd', 'oci://ghcr.io/kserve/charts/kserve-crd', 'v0.19.0', 'kserve')
+    chart('kserve-resources', 'oci://ghcr.io/kserve/charts/kserve-resources',
+          'v0.19.0', 'kserve', '--set', 'kserve.controller.deploymentMode=Standard')
+    configure_secrets()
+    k('wait', '--for=condition=Ready', 'externalsecret', '--all', '-n', 'lab-models',
+      '--timeout=180s')
+    manifest('postgres.yaml')
+    k('rollout', 'status', 'statefulset/mlflow-postgres', '-n', 'lab-models',
+      '--timeout=180s')
+    chart('mlflow', 'oci://ghcr.io/mlflow/charts/mlflow', '0.1.0', 'lab-models',
+          '-f', str(SOURCES / 'mlflow-values.yaml'))
+    existing = k('get', 'job/register-synthetic-esci-judge', '-n', 'lab-models',
+                 '-o', 'json', check=False)
+    if existing.returncode:
+        manifest('register-model.yaml')
+    k('wait', '--for=condition=Complete', 'job/register-synthetic-esci-judge',
+      '-n', 'lab-models', '--timeout=240s')
+    manifest('kserve-model.yaml')
+    k('wait', '--for=condition=Ready', 'inferenceservice/synthetic-esci-judge',
+      '-n', 'lab-models', '--timeout=180s')
+    k('rollout', 'restart', 'deployment/synthetic-esci-judge-predictor',
+      '-n', 'lab-models')
+    manifest('judgement-service.yaml')
+    if million:
+        manifest('judgement-service-million.yaml')
+    return wait_ready(million)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--verify-only', action='store_true')
+    parser.add_argument('--million', action='store_true',
+                        help='Also deploy or check the million-product source profile')
+    args = parser.parse_args()
+    print(json.dumps(wait_ready(args.million) if args.verify_only else install(args.million),
+                     sort_keys=True))

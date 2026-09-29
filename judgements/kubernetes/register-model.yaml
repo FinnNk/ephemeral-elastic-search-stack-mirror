@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: register-synthetic-esci-judge
+  namespace: lab-models
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      imagePullSecrets:
+        - name: nexus-read
+      nodeSelector:
+        kubernetes.io/hostname: k3d-observability-0
+      containers:
+        - name: register
+          image: nexus.localhost:18185/relevance-judge:j1-16d07a501250f824-amd64
+          command: [python, /app/noop_model.py]
+          args:
+            - --tracking-uri
+            - http://mlflow-mlflow.lab-models.svc:5000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi

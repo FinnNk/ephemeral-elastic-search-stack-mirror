@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: judgement-model-pin
+  namespace: lab-models
+data:
+  model.json: |
+    {"name":"synthetic-esci-judge","version":"1","artifact_sha256":"364d0b0961e682ba1440ff570a6288631486c1362e2b68f328aafcf270e5d894"}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: judgement-service-million
+  namespace: lab-models
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: nexus-read
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: judgement-identity-cache-million
+  namespace: lab-models
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: judgement-service-million
+  namespace: lab-models
+spec:
+  selector:
+    app: judgement-service-million
+  ports:
+    - name: http
+      port: 18086
+      targetPort: 18086
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: judgement-service-million
+  namespace: lab-models
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: judgement-service-million
+  template:
+    metadata:
+      labels:
+        app: judgement-service-million
+    spec:
+      serviceAccountName: judgement-service-million
+      nodeSelector:
+        kubernetes.io/hostname: k3d-observability-0
+      initContainers:
+        - name: fetch-source
+          image: nexus.localhost:18185/relevance-judge:j1-16d07a501250f824-amd64
+          command: [python, /app/fetch_source.py]
+          args:
+            - --judgement-manifest-sha256
+            - f6afb55d73afa6683ad06baed7a39184f78eabf691c7ab4949e0c6915e95bfa0
+            - --catalogue-manifest-sha256
+            - e640026f0518950895c1a84f364bbf60edfc34e9d55ca7c4466aa0707d53968e
+            - --query-manifest-sha256
+            - 8ba583afb89fe114466d7d6e816f8853aba5ff66778597ef347109e941306783
+            - --output
+            - /inputs
+          env:
+            - name: DATA_BLOB_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: judgement-blob
+                  key: DATA_BLOB_CONNECTION_STRING
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          volumeMounts:
+            - name: inputs
+              mountPath: /inputs
+      containers:
+        - name: judgement-service-million
+          image: nexus.localhost:18185/relevance-judge:j1-16d07a501250f824-amd64
+          command: [python, /app/service.py]
+          args:
+            - --database
+            - /state/labels.sqlite3
+            - --source-judgements
+            - /inputs/judgements.jsonl
+            - --catalogue
+            - /inputs/products.content
+            - --queries
+            - /inputs/queries.jsonl
+            - --context
+            - /inputs/context.json
+            - --model
+            - /config/model.json
+            - --predict-url
+            - http://synthetic-esci-judge-predictor.lab-models.svc/v1/models/judgement-model:predict
+          ports:
+            - name: http
+              containerPort: 18086
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 18086
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          volumeMounts:
+            - name: inputs
+              mountPath: /inputs
+              readOnly: true
+            - name: state
+              mountPath: /state
+            - name: config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: inputs
+          emptyDir: {}
+        - name: state
+          persistentVolumeClaim:
+            claimName: judgement-identity-cache-million
+        - name: config
+          configMap:
+            name: judgement-model-pin

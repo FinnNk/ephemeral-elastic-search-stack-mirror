@@ -149,7 +149,8 @@ def configure_network():
     # containerd reads this per-registry file when resolving a new image, without a node restart.
     host_config = 'server = "http://relevance-nexus:5000"\n[host."http://relevance-nexus:5000"]\n  capabilities = ["pull", "resolve"]\n'
     path = '/var/lib/rancher/k3s/agent/etc/containerd/certs.d/' + REGISTRY
-    for node in ('k3d-relevance-lab-server-0', 'k3d-relevance-lab-agent-0'):
+    for node in ('k3d-relevance-lab-server-0', 'k3d-relevance-lab-agent-0',
+                 'k3d-observability-0'):
         docker('exec', node, 'mkdir', '-p', path)
         docker('exec', '-i', node, 'sh', '-c', 'cat > ' + path + '/hosts.toml', body=host_config)
 

@@ -1,0 +1,48 @@
+image:
+  repository: nexus.localhost:18185/relevance-judge
+  tag: j1-16d07a501250f824-amd64
+imagePullSecrets:
+  - name: nexus-read
+replicaCount: 1
+deploymentStrategy:
+  type: Recreate
+server:
+  value_options:
+    host: 0.0.0.0
+    port: 5000
+    workers: 1
+    allowed_hosts: "mlflow-mlflow.lab-models.svc:5000,mlflow-mlflow.lab-models.svc.cluster.local:5000,localhost:5000,127.0.0.1:5000"
+mlflow:
+  backendStoreUriFrom:
+    secretKeyRef:
+      name: mlflow-db
+      key: uri
+  artifactsDestination: s3://lab-index-snapshots/mlflow
+env:
+  - name: AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: mlflow-s3
+        key: AWS_ACCESS_KEY_ID
+  - name: AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: mlflow-s3
+        key: AWS_SECRET_ACCESS_KEY
+  - name: AWS_DEFAULT_REGION
+    value: us-east-1
+  - name: MLFLOW_S3_ENDPOINT_URL
+    value: http://model-artifacts.lab-models.svc:8333
+  - name: GIT_PYTHON_REFRESH
+    value: quiet
+resources:
+  requests:
+    cpu: 150m
+    memory: 768Mi
+  limits:
+    cpu: "1"
+    memory: 2Gi
+nodeSelector:
+  kubernetes.io/hostname: k3d-observability-0
+networkPolicy:
+  enabled: false
