@@ -51,6 +51,20 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 tags "Job"
             }
         }
+        judgementSupply = softwareSystem "Judgement supply" "Returns stored synthetic labels and attempts to resolve gaps." {
+            judgementApi = container "Judgement API" "Checks frozen query/product records; stores labels and inference attempts." "Python HTTP API / SQLite" {
+                tags "Platform"
+            }
+            kserve = container "KServe predictor" "Serves a numbered MLflow model version and returns its identity." "KServe Standard / Python predictor" {
+                tags "Platform"
+            }
+            mlflow = container "MLflow registry" "Records registered model versions and artefact locations." "MLflow / PostgreSQL" {
+                tags "Platform"
+            }
+            modelStore = container "Model artefact store" "Retains registered model files separately from index snapshots." "SeaweedFS S3 locally / Azure object store proposed" {
+                tags "Store"
+            }
+        }
         observability = softwareSystem "Lab observability" "Collects lab signals and supports operational investigation." {
             gateway = container "OTel gateway" "Receives OTLP, redacts attributes and forwards bounded batches." "OpenTelemetry Collector Contrib" {
                 tags "Platform"
@@ -110,6 +124,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         engineer -> inputProduction "Revises synthetic inputs"
         inputProduction -> lab "Publishes frozen synthetic inputs" "Manifest and Blob API"
         lab -> assessment "Submits retained observations for scoring" "Artifact references"
+        assessment -> judgementSupply "Resolves pooled gaps before scoring both result lists" "Versioned JSON API"
         operator -> lab "Validates lifecycle and isolation"
         engineer -> delivery "Pushes code and opens pull requests" "Git / HTTPS"
         operator -> platform "Operates cluster and reconciliation" "HTTPS"
@@ -192,6 +207,11 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         evaluation -> artifacts "Reads inputs and load reports; saves verdicts" "Azure Blob API"
         producer -> artifacts "Publishes immutable synthetic inputs and manifests" "Blob API"
         offline -> artifacts "Reads observations and judgements; retains reports" "Blob API"
+        offline -> judgementApi "Resolves missing pooled query-product pairs" "JSON / HTTP"
+        judgementApi -> artifacts "Loads pinned synthetic catalogue, queries and labels" "Azure Blob API"
+        judgementApi -> kserve "Requests labels for missing pairs" "KServe V1 inference API"
+        kserve -> mlflow "Downloads exact registered model version at startup" "MLflow registry API"
+        mlflow -> modelStore "Stores model artefacts" "S3 locally"
         performance -> search "Loads one pinned API at a time" "Public search API / HTTP"
         performance -> artifacts "Reads compiled workload; saves reports" "Azure Blob API"
         indexing -> artifacts "Reads immutable catalogue" "Azure Blob API"
@@ -204,6 +224,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             deploymentNode "Developer machine" "Windows x64; Apple silicon support to validate" "Local host" {
                 deploymentNode "Snapshot storage" "Docker volume survives Elasticsearch Pod and data-PVC replacement" "Host Docker service" {
                     containerInstance snapshots
+                    containerInstance modelStore
                 }
                 deploymentNode "Release storage" "Separate persistent volumes; loopback administration" "Host Docker services" {
                     containerInstance nexus
@@ -247,6 +268,11 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     }
                     deploymentNode "Shared search namespace" "One shared engine; scoped index credentials" "Namespace / persistent volume" {
                         containerInstance elastic
+                    }
+                    deploymentNode "Judgement and model services" "Independent of Search API experiments" "lab-models namespace / persistent volumes" {
+                        containerInstance judgementApi
+                        containerInstance kserve
+                        containerInstance mlflow
                     }
                     deploymentNode "Experiment namespaces" "2–3 locally; one API deployment per namespace" "Namespaces / quotas / policies" {
                         containerInstance search
@@ -299,6 +325,12 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance coordinator
                         containerInstance gateway
                         containerInstance logagent
+                        containerInstance judgementApi
+                        containerInstance kserve
+                        containerInstance mlflow
+                    }
+                    deploymentNode "Model artefacts" "Object storage option to validate" "Azure object store" {
+                        containerInstance modelStore
                     }
                     deploymentNode "Shared Elasticsearch nodes" "Self-managed under ECK; contention measured separately" "Stateful workloads / persistent disks" {
                         containerInstance elastic
@@ -322,7 +354,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
     views {
         systemContext lab "01-context" {
             title "C4 System context — search relevance lab"
-            include engineer operator lab delivery platform inputProduction assessment
+            include engineer operator lab delivery platform inputProduction assessment judgementSupply
             autolayout lr
         }
         container lab "02-control" {
@@ -332,7 +364,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         }
         container lab "03-evaluation" {
             title "C4 Containers — API capture, index and load checks"
-            include generator artifacts indexing elastic snapshots search evaluation performance
+            include generator artifacts indexing elastic snapshots search evaluation performance judgementApi kserve mlflow modelStore
             autolayout lr
         }
         container delivery "18-delivery" {

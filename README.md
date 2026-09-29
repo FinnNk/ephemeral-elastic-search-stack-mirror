@@ -4,7 +4,7 @@ This project is a home lab for comparing ecommerce search changes against a repr
 
 The [prototype design](docs/prototype-design.md) defines the architecture, quantitative targets, frozen datasets, environment lifecycle and three comparison modes: relevance, result preservation and Gatling performance. The design keeps a provider boundary for a later move from Gitea to GitHub Enterprise.
 
-Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram guide](docs/diagrams/README.md) for seven Structurizr C4 views and twelve interactive Archify views, with editable sources and rendering instructions.
+Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram guide](docs/diagrams/README.md) for seven Structurizr C4 views and fourteen interactive Archify views, with editable sources and rendering instructions.
 
 The [delivery roadmap](docs/plans/roadmap.md) summarises demonstrated behaviour and remaining gates. See the [scale evidence](docs/research/evidence/million-scale.md), [concurrency evidence](docs/research/evidence/concurrency-isolation.md) and [native/cloud validation plan](docs/plans/native-cloud-validation.md).
 
@@ -16,6 +16,7 @@ The [platform guide](research/platform-spike/README.md) runs local Gitea, Argo C
 
 The [secret operating guide](docs/keyvault-secrets.md) covers ESO-backed retained lab credentials and the boundary with bootstrap and short-lived environment Secrets.
 The [local HTTPS guide](docs/https-ingress.md) lists the five TLS browser endpoints and the local CA bootstrap.
+The [judgement resolution guide](docs/judgement-resolution.md) covers MLflow, KServe, stored-label precedence and pooled evaluation gaps.
 
 - [Research results](docs/research/platform-spike.md): 20 warm lifecycle trials, API and analyser comparisons, isolation and failure recovery.
 - [Proposed decision](docs/adr/ADR-0001-reconcile-environments-from-git.md): reconcile environments from Git-file ApplicationSets; use k3d provisionally.

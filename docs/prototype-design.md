@@ -37,7 +37,7 @@ This is a relevance lab, not a production commerce platform. All products, queri
 
 ## Proposed architecture
 
-The architecture is maintained as a [Structurizr C4 model](diagrams/workspace.dsl), with complementary Archify workflow, lifecycle and evaluation data-flow views. Open the [diagram gallery](diagrams/index.html) for all nineteen views, or use the [diagram guide](diagrams/README.md) for their scope, editable sources and rendering commands.
+The architecture is maintained as a [Structurizr C4 model](diagrams/workspace.dsl), with complementary Archify workflow, lifecycle and evaluation data-flow views. Open the [diagram gallery](diagrams/index.html) for all twenty-one views, or use the [diagram guide](diagrams/README.md) for their scope, editable sources and rendering commands.
 
 ![C4 system context: people, search relevance lab and supporting platforms](diagrams/rendered/01-context.svg)
 
@@ -348,6 +348,8 @@ The local control UI offers a **quick** 50-query result preflight and a **full**
 
 Both APIs receive the same frozen original queries and request context. Relevance comparisons score their final results against the same frozen judgements; result-regression comparisons check whether those results changed; performance comparisons replay the same workload separately against each API. The comparison record retains both definition fingerprints, runtime IDs, evaluation-input hashes, responses and diagnostics. Creating a comparison must not silently substitute the latest baseline or candidate.
 
+For the standalone two-stage evaluation, capture both API result lists before resolving judgements. Pool the distinct query–product pairs through the deepest requested metric cut-off. The independent judgement service returns existing synthetic labels first; it asks a pinned MLflow model served by KServe to label only gaps. The first model abstains on every pair. Freeze the resulting judgement set and attempt receipt, then score both APIs against that one set. If a later candidate changes recall, resolve its new pairs into a new snapshot and rescore both sides. An abstention is unknown, whereas `I` is an explicit irrelevant judgement. [The contract](data-evaluation-contracts.md#resolve-judgement-gaps-before-scoring) records the exact hashes, coverage and local demonstration.
+
 Two definitions can share compatible immutable resources. In the [API-only example](diagrams/interactive/shared-index-reuse.html), separate baseline and candidate API deployments read one frozen index. A mapping change builds a different index from the same dataset. The [relevance comparison](diagrams/interactive/evaluation-dataflow.html) separates the two result paths; the [C4 evaluation view](diagrams/rendered/03-evaluation.svg) records their service dependencies and diagnostic interfaces.
 
 - **Baseline:** Start with a search API that performs simple query normalisation and a BM25 baseline using a documented mapping, analysers and query template.
@@ -359,7 +361,7 @@ Two definitions can share compatible immutable resources. In the [API-only examp
 Relevance evaluation follows these rules:
 
 - **Inputs:** A relevance comparison pins one dataset and query/judgement release and sends the same original request and context through the baseline and candidate **public search APIs**.
-- **Judgement limits:** The report identifies the frozen synthetic judgement source, hashes, coverage of each returned top ten and unjudged IDs. The million-product pool includes earlier candidate results, so its score is a proxy that may favour those results. Coverage below 80% on either side marks the relevance claim insufficient; this does not generate new judgements or alter the result-change verdict.
+- **Judgement limits:** The report identifies the frozen synthetic judgement source, hashes, coverage of each returned top ten and unjudged IDs. The million-product pool includes earlier candidate results, so its score is a proxy that may favour those results. The separate resolution workflow can ask a model about gaps in both current recall sets before scoring; the all-abstaining model adds no labels. Coverage below 80% on either side marks the relevance claim insufficient and does not alter the result-change verdict.
 - **Captured response:** The evaluation client records the response actually returned to the caller, including ordered product IDs, zero results, errors and client-observed duration.
 - **Scoring:** Judgements are joined to those final product IDs; an established metrics library calculates end-to-end nDCG@10, MRR, precision/recall at selected cut-offs and per-query regressions.
 - **Coverage:** Report zero-result and failure rates separately so failures cannot disappear from metric denominators. Include category, intent and head/long-tail slices.

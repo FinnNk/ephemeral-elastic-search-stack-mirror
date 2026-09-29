@@ -1,6 +1,6 @@
 # Independent synthetic data and evaluation contracts
 
-The `data/` package owns synthetic input generation, validation and publication. It imports neither the Search API nor the control runtime. The `evaluation/` package scores retained public-API observations. Delivery owns the separate promotion policy. All example inputs remain synthetic.
+The `data/` package owns synthetic input generation, validation and publication. It imports neither the Search API nor the control runtime. The `judgements/` package resolves gaps in the union of both result lists. The `evaluation/` package scores retained public-API observations. Delivery owns the separate promotion policy. All example inputs remain synthetic.
 
 | Artifact | Stable identity and dependencies | Consumer |
 | --- | --- | --- |
@@ -38,6 +38,16 @@ The control UI accepts a query-suite manifest SHA-256 for result preservation or
 `evaluation/capture.py` is the standalone capture route for a selected query file and manifest, catalogue manifest and two frozen API names. Its observation set can be rescored independently of the control UI. New environment and delivery definitions use the same pinned catalogue manifest, while functional checks can select a revised query and compatible judgement manifest without rebuilding an index.
 
 The evaluator accepts observation, catalogue, query and judgement manifests plus a versioned specification. It rejects another catalogue/query suite, a mismatched judgement dependency, duplicate results, incomplete capture and a metric cut-off deeper than the captured list. It uses `ir-measures==0.4.3` with explicit nDCG, Judged and RR definitions. Missing labels remain unknown in the contract; the library treats them as zero for these metrics, so coverage is reported separately.
+
+### Resolve judgement gaps before scoring
+
+`judgements/evaluate.py` takes one retained observation set from two frozen Search APIs. It forms the union of query–product pairs through the deepest requested metric cut-off. Existing synthetic labels take precedence. The independent judgement service checks each missing pair against the selected catalogue and original query, then calls an exact MLflow model version served by KServe. The current model abstains on every pair. An abstention remains unjudged; an inference error is recorded separately. Neither becomes grade zero.
+
+The command writes `frozen/judgements.jsonl`, `frozen/judgement-set.json`, `frozen/resolution.json` and `evaluation.json`. The manifest pins the original catalogue and query suite, source labels, observation hash and exact model artefact. The resolution receipt records input hashes, outcomes and coverage for both result lists. The evaluator scores both sides against that one immutable set. A later recall change gets a new snapshot and report; previous evidence stays intact. Repeating the same run with changed bytes is rejected.
+
+The local deployment uses MLflow with PostgreSQL metadata and a separate S3 prefix for model artefacts, KServe Standard mode with a custom storage initialiser, and a judgement API in `lab-models`. The initialiser downloads a numbered registry version and checks its artefact digest. The predictor returns that identity with each inference response; the judgement API rejects another identity. Floci Blob supplies the hash-checked synthetic catalogue, query suite and original labels. ESO supplies retained credentials from Floci Key Vault. This lab path has been exercised with a 10k catalogue and a retained 50-query comparison; the model returned 56 abstentions, leaving 444 of 500 pooled pairs judged. The 1M/1,000-query path also ran; only 21 of 10,000 returned pairs were judged under the all-abstaining model, so its score is not a relevance claim. These are contract and topology checks, not model-quality evidence.
+
+The existing control UI comparison continues to use its explicitly selected frozen judgement set. The two-stage resolver is available as a standalone evaluation workflow while the control comparison contract remains stable. See the [implementation plan](plans/mlflow-kserve-judgement-coverage.md) and [local run evidence](research/evidence/mlflow-kserve-judgement-coverage.md).
 
 ```powershell
 $env:PYTHONPATH = (Resolve-Path .lab/python-libs).Path

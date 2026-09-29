@@ -39,12 +39,26 @@ The service lookup key includes the catalogue and query-suite identities, query 
 | Batch | Implementation | Acceptance |
 | --- | --- | --- |
 | 1. Contract and integration spike | Model schema and all-abstaining MLflow pyfunc; test registered-version retrieval through a KServe custom storage initializer; validate artefact-store compatibility and measure resources | Exact version loads in KServe and returns `abstain`; no judgement is created |
-| 2. Registry and serving | Deploy MLflow metadata/artefact storage, KServe Standard mode, initializer and pinned InferenceService through the lab's Kubernetes/GitOps path | Clean bootstrap can register and serve the model; alias movement cannot change a running pinned version |
+| 2. Registry and serving | Deploy MLflow metadata/artefact storage, KServe Standard mode, initialiser and pinned InferenceService through versioned Kubernetes manifests and a repeatable local bootstrap | A numbered version loads with verified artefact bytes; a reconciled stack still serves the same pinned model |
 | 3. Judgement service | Stored-label lookup, batch gap resolution, bounded inference, provenance and attempt receipts; synthetic source import | Stored labels win; misses call KServe; abstentions remain unjudged; failures stay explicit |
 | 4. Evaluation integration | Pool both result sets, resolve gaps, freeze a new judgement snapshot, score both sides; expose coverage and snapshot lineage | A recall change can add required pairs; both sides are rescored against the same immutable snapshot |
 | 5. Reference documentation | Update contract, operating guide, design and diagrams, including the two-phase evaluation and model promotion path | A reader can trace a pair from observation through resolution to a frozen report |
 
-Finish each batch with evidence, a commit and a reviewable PR. The user has authorised autonomous progression through this plan; do not merge a branch into protected main without its normal review path.
+Finish each review batch with evidence, a commit and a reviewable PR. The user has authorised autonomous progression through this plan; do not merge a branch into protected main without its normal review path.
+
+The review stack groups the shared model image, judgement API and evaluation command into one implementation PR after the plan PR; the documentation and evidence form the final PR. This keeps each submitted change runnable with its pinned image.
+
+## Implemented outcome
+
+| Batch | Local evidence |
+| --- | --- |
+| 1 | MLflow version `1` loaded through the KServe storage initialiser; its artefact hash was verified and every prediction abstained. |
+| 2 | cert-manager, KServe Standard, MLflow/PostgreSQL and model artefact storage run in the lab. The versioned bootstrap reconciled them twice and checked the pinned image. A clean-cluster replay remains a portability gate. |
+| 3 | Stored labels take precedence; the API rejects altered frozen records, records attempts and distinguishes abstention from failure. A hash-only identity cache reduced the 1M import from 3.5 GB to 243 MB. |
+| 4 | The standalone evaluator pools both result sets, freezes one set and scores both sides. Retained 10k/50-query and 1M/1,000-query runs replayed to identical report hashes. The 1M all-abstaining run had only 0.21% judged coverage and is not relevance evidence. |
+| 5 | The [operating guide](../judgement-resolution.md), [contracts](../data-evaluation-contracts.md), [design](../prototype-design.md), [C4 model](../diagrams/workspace.dsl), [Archify workflow](../diagrams/interactive/judgement-coverage.html) and [measurements](../research/evidence/mlflow-kserve-judgement-coverage.md) trace this path. |
+
+The existing control UI keeps its selected-judgement route. The new two-stage route is available over retained observations through a standalone command. A later integration can expose that command through the UI without moving model inference into the Search API. Apple silicon, Azure identity/storage and a reviewed non-abstaining model remain separate validation work.
 
 ## References
 

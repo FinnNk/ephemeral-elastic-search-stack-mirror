@@ -50,7 +50,7 @@ const context = workspace.views.systemContextViews[0];
 position(context, {'Lab user':[100,100],'Platform engineer':[100,1050],
   'Synthetic input production':[950,100],'Search relevance lab':[950,650],
   'Offline evaluation':[1900,1850],'Source and build platform':[1900,100],
-  'Deployment platform':[1900,1250]});
+  'Judgement supply':[1900,650],'Deployment platform':[1900,1250]});
 // The context focuses on explicit system contracts; detailed ECK control is in the model.
 context.relationships = context.relationships.filter(r => {
   const m=relationships.get(r.id); return !edgeRoute(r) &&
@@ -79,7 +79,10 @@ const evaluation = workspace.views.containerViews.find(v=>v.key==='03-evaluation
 position(evaluation, {'Workload compiler':[100,100],'Artifact store':[900,100],
   'Index build job':[1700,100],'Observation capture job':[100,800],
   'Search API':[900,800],'Shared search engine':[1700,800],
-  'Gatling load job':[900,1500],'Index snapshot repository':[1700,1500]});
+  'Gatling load job':[900,1500],'Index snapshot repository':[1700,1500],
+  'Judgement API':[100,2200],'KServe predictor':[900,2200],
+  'MLflow registry':[1700,2200],
+  'Model artefact store':[1700,2900]});
 route(evaluation,'Gatling load job','Artifact store',[[1360,1630],[1360,500],[1250,500]],35);
 route(evaluation,'Gatling load job','Search API',[],75);
 
@@ -134,7 +137,8 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Indexing namespace':{x:1480,y:4850,cols:1},
   'Shared search namespace':{x:2080,y:4850,cols:1},
   'Comparison jobs':{x:160,y:5550,cols:2},
-  'Independent input and scoring jobs':{x:1480,y:5550,cols:2}
+  'Independent input and scoring jobs':{x:1480,y:5550,cols:2},
+  'Judgement and model services':{x:160,y:6250,cols:3}
 });
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Organisation delivery services':{x:160,y:160,cols:2},
@@ -143,14 +147,15 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Azure Key Vault':{x:2080,y:700,cols:1},
   'Platform and lab services':{x:160,y:1450,cols:3},
   'Managed control plane':{x:2080,y:1450,cols:1},
-  'Experiment worker nodes':{x:160,y:2950,cols:3},
-  'Shared Elasticsearch nodes':{x:2080,y:2950,cols:1},
-  'Comparison workers':{x:160,y:3530,cols:2},
-  'Independent input and scoring jobs':{x:1480,y:3530,cols:2}
+  'Experiment worker nodes':{x:160,y:3550,cols:3},
+  'Shared Elasticsearch nodes':{x:2080,y:3550,cols:1},
+  'Comparison workers':{x:160,y:4200,cols:2},
+  'Independent input and scoring jobs':{x:1480,y:4200,cols:2},
+  'Model artefacts':{x:160,y:4950,cols:1}
 });
 const canvases = {'01-context':[2900,2300], '02-control':[2380,2250],
-  '03-evaluation':[2380,2110], '04-create':[2850,1450],
-  '05-local':[2800,6700], '06-azure':[2800,4310], '18-delivery':[3250,2150]};
+  '03-evaluation':[2380,3450], '04-create':[2850,1450],
+  '05-local':[2800,7600], '06-azure':[2800,5600], '18-delivery':[3250,2150]};
 for (const collection of ['systemContextViews','containerViews','dynamicViews','deploymentViews']) {
   for (const view of workspace.views[collection] || []) {
     const [width,height]=canvases[view.key];
