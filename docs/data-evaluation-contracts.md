@@ -1,6 +1,6 @@
 # Independent synthetic data and evaluation contracts
 
-The `data/` package owns synthetic input generation, validation and publication. It imports neither the Search API nor the control runtime. The `judgements/` package resolves gaps in the union of both result lists. The `evaluation/` package scores retained public-API observations. Delivery owns the separate promotion policy. All example inputs remain synthetic.
+The `data/` package owns synthetic input generation, validation and publication. It imports neither the Search API nor the control runtime. The `judgements/` package resolves gaps in the union of every variant's result list. The `evaluation/` package scores retained public-API observations. Delivery owns the separate promotion policy. All example inputs remain synthetic.
 
 | Artifact | Stable identity and dependencies | Consumer |
 | --- | --- | --- |
@@ -31,28 +31,25 @@ Set `DATA_BLOB_CONNECTION_STRING` using the separately retained emulator credent
 
 ## Capture once, score again
 
-Functional comparisons retain a `search-observation-set` Blob independently of the comparison report. The comparison API exposes its hash and Blob reference. Older reports remain retained as evidence; new evaluations consume captured observations directly.
+Offline variant evaluations retain a `search-variant-observation-set` Blob independently of the score report. Each query has one result per named variant; the frozen set names a mandatory default and a separately chosen baseline. The [variant guide](variant-evaluation.md) defines selection and replacement releases.
 
 The control UI accepts a query-suite manifest SHA-256 for result preservation or relevance, and a matching judgement-set manifest SHA-256 for relevance. Blank fields use the pinned defaults shown in the UI. The controller reads manifests and content by hash from Floci, checks catalogue and query dependencies, and retains the selected hashes with each comparison. The Kubernetes control Pod completed result and relevance checks using a revised three-query suite and matching synthetic judgements against two APIs sharing one frozen index. Performance uses its separately pinned workload. See the [runtime evidence](research/evidence/runtime-consolidation-delivery.md).
 
-`evaluation/capture.py` is the standalone capture route for a selected query file and manifest, catalogue manifest and two frozen API names. Its observation set can be rescored independently of the control UI. New environment and delivery definitions use the same pinned catalogue manifest, while functional checks can select a revised query and compatible judgement manifest without rebuilding an index.
+`evaluation/capture.py` takes a variant-set definition, a query file and manifest, and a catalogue manifest. It validates each frozen environment fingerprint and the Search API's echoed variant/configuration identity. Its complete N-way observation set can be rescored independently of the control UI. A two-version replacement is a set of two variants, each selected as the default of its own pinned deployment.
 
 The evaluator accepts observation, catalogue, query and judgement manifests plus a versioned specification. It rejects another catalogue/query suite, a mismatched judgement dependency, duplicate results, incomplete capture and a metric cut-off deeper than the captured list. It uses `ir-measures==0.4.3` with explicit nDCG, Judged and RR definitions. Missing labels remain unknown in the contract; the library treats them as zero for these metrics, so coverage is reported separately.
 
 ### Resolve judgement gaps before scoring
 
-`judgements/evaluate.py` takes one retained observation set from two frozen Search APIs. It forms the union of query–product pairs through the deepest requested metric cut-off. Existing synthetic labels take precedence. The independent judgement service checks each missing pair against the selected catalogue and original query, then calls an exact MLflow model version served by KServe. The current model abstains on every pair. An abstention remains unjudged; an inference error is recorded separately. Neither becomes grade zero.
+`judgements/evaluate.py` takes one retained variant observation set. It forms the union of query–product pairs across every variant through the deepest requested metric cut-off. Existing synthetic labels take precedence. The independent judgement service checks each missing pair against the selected catalogue and original query, then calls an exact MLflow model version served by KServe. The current model abstains on every pair. An abstention remains unjudged; an inference error is recorded separately. Neither becomes grade zero.
 
-The command writes `frozen/judgements.jsonl`, `frozen/judgement-set.json`, `frozen/resolution.json` and `evaluation.json`. The manifest pins the original catalogue and query suite, source labels, observation hash and exact model artefact. The resolution receipt records input hashes, outcomes and coverage for both result lists. The evaluator scores both sides against that one immutable set. A later recall change gets a new snapshot and report; previous evidence stays intact. Repeating the same run with changed bytes is rejected.
+The command writes `frozen/judgements.jsonl`, `frozen/judgement-set.json`, `frozen/resolution.json` and `evaluation.json`. The manifest pins the original catalogue and query suite, source labels, observation hash and exact model artefact. The resolution receipt records input hashes, outcomes and coverage for every variant. The evaluator scores all variants against that one immutable set. A later recall change gets a new snapshot and report; previous evidence stays intact. Repeating the same run with changed bytes is rejected.
 
 The local deployment uses MLflow with PostgreSQL metadata and a separate S3 prefix for model artefacts, KServe Standard mode with a custom storage initialiser, and a judgement API in `lab-models`. The initialiser downloads a numbered registry version and checks its artefact digest. The predictor returns that identity with each inference response; the judgement API rejects another identity. Floci Blob supplies the hash-checked synthetic catalogue, query suite and original labels. ESO supplies retained credentials from Floci Key Vault. This lab path has been exercised with a 10k catalogue and a retained 50-query comparison; the model returned 56 abstentions, leaving 444 of 500 pooled pairs judged. The 1M/1,000-query path also ran; only 21 of 10,000 returned pairs were judged under the all-abstaining model, so its score is not a relevance claim. These are contract and topology checks, not model-quality evidence.
 
 The existing control UI comparison continues to use its explicitly selected frozen judgement set. The two-stage resolver is available as a standalone evaluation workflow while the control comparison contract remains stable. See the [implementation plan](plans/mlflow-kserve-judgement-coverage.md) and [local run evidence](research/evidence/mlflow-kserve-judgement-coverage.md).
 
-```powershell
-$env:PYTHONPATH = (Resolve-Path .lab/python-libs).Path
-python evaluation/offline.py --observations .lab/offline-7j/direct-observations-10k-v2.json --judgements .lab/releases/retail-gb-10k-v1/judgements.jsonl --judgement-manifest .lab/artifacts-v2/retail-gb-10k-v1/judgement-set.json --specification evaluation/specs/proxy-v1.json --catalogue-manifest .lab/artifacts-v2/retail-gb-10k-v1/catalogue.json --query-manifest .lab/artifacts-v2/retail-gb-10k-v1/query-suite.json --output .lab/offline-7j/direct-report-10k-v2.json
-```
+Use `evaluation/capture.py --variant-set <frozen-set> --queries <synthetic-jsonl> --query-manifest <manifest> --catalogue-manifest <manifest> --output <new-file>` to capture a current set. Pass that output and matching frozen inputs to `judgements/evaluate.py`. Pair-shaped historical observations are not accepted by this path.
 
 The independently built evaluator image also completed a 1,000-query rescore with Docker networking disabled. A synthetic assessor revision changed `S`/grade-2 labels to `E`/grade-3 without consulting API output; specification v2 added nDCG@5. The same observation bytes produced two separately retained reports. This demonstrates independent versioning, not improved or externally valid relevance.
 

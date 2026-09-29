@@ -12,6 +12,7 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from telemetry import telemetry
+from variants import BASE, select
 
 MAX_QUERY_LENGTH = 150
 DIAGNOSTIC_SCHEMA = 1
@@ -34,13 +35,16 @@ def understand(query):
     return query, 'none'
 
 
-def query_body(query, country, currency):
+def query_body(query, country, currency, variant=None):
     understood_query, _decision = understand(query)
+    boosts = (variant or {'field_boosts': BASE})['field_boosts']
     return {
         'size': 20,
         'track_total_hits': True,
         'query': {'bool': {
-            'must': [{'multi_match': {'query': understood_query, 'fields': ['title^4', 'product_type^3', 'brand^2', 'description']}}],
+            'must': [{'multi_match': {'query': understood_query,
+                                     'fields': [field if boosts[field] == 1 else
+                                                f'{field}^{boosts[field]}' for field in BASE]}}],
             'filter': [{'term': {'country': country}}, {'term': {'currency': currency}}, {'term': {'available': True}}],
         }},
         'sort': [{'_score': 'desc'}, {'product_id': 'asc'}],
@@ -107,6 +111,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             query, country, currency = validated_query(self.path)
             correlation_id = diagnostic_options(self.path)
+            variant_id, variant, configuration_sha256 = select(self.headers)
         except ValueError as error:
             return self.send_json(400, {'error': str(error)})
         with telemetry.span('search.request', self.headers) as request_span:
@@ -116,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
             params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             raw_query = params.get('q', [''])[0]
             with telemetry.span('search.query_understanding'):
-                body = query_body(query, country, currency)
+                body = query_body(query, country, currency, variant)
             auth = base64.b64encode((os.environ['ES_USER'] + ':' + os.environ['ES_PASSWORD']).encode()).decode()
             headers = {'Content-Type': 'application/json', 'Authorization': 'Basic ' + auth}
             telemetry.inject(headers)
@@ -140,6 +145,8 @@ class Handler(BaseHTTPRequestHandler):
             api_ms = (time.monotonic() - start) * 1000
             try:
                 payload = api_response(query, country, currency, result, api_ms)
+                payload['variant_id'] = variant_id
+                payload['configuration_sha256'] = configuration_sha256
             except (KeyError, TypeError, ValueError) as error:
                 telemetry.record(502, api_ms, self.headers.get('X-Lab-Traffic-Class'),
                                  type(error).__name__, correlation_id)

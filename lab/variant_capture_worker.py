@@ -1,0 +1,78 @@
+"""Capture every named variant through the public Search API in a finite Job."""
+
+import concurrent.futures
+import json
+import os
+import re
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
+
+
+def request(variant, target, row):
+    query = urllib.parse.urlencode({'q': row['query'], 'country': row['country'],
+                                    'currency': row['currency']})
+    url = f"http://search.{target['environment']}.svc.cluster.local:8080/search?{query}"
+    headers = {'X-Lab-Traffic-Class': 'probe'}
+    trace_id, span_id = os.environ.get('LAB_TRACE_ID', ''), os.environ.get('LAB_SPAN_ID', '')
+    if re.fullmatch('[0-9a-f]{32}', trace_id) and re.fullmatch('[0-9a-f]{16}', span_id) and \
+            int(trace_id, 16) and int(span_id, 16):
+        headers['traceparent'] = f'00-{trace_id}-{span_id}-01'
+    if target['selection'] == 'explicit':
+        headers['X-Lab-Variant'] = variant
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=10) as reply:
+                value = json.load(reply)
+            break
+        except urllib.error.HTTPError as error:
+            if error.code < 500 or attempt == 2:
+                raise
+            time.sleep(0.2 * (attempt + 1))
+        except (urllib.error.URLError, TimeoutError):
+            if attempt == 2:
+                raise
+            time.sleep(0.2 * (attempt + 1))
+    if (value.get('query'), value.get('country'), value.get('currency')) != (
+            row['query'], row['country'], row['currency']):
+        raise ValueError('Search API did not echo the frozen request.')
+    ids = value.get('ids')
+    if value.get('variant_id') != variant or \
+            value.get('configuration_sha256') != target['configuration_sha256']:
+        raise ValueError('Search API served another variant or configuration.')
+    if not isinstance(ids, list) or len(ids) > 10 or len(ids) != len(set(ids)) or \
+            type(value.get('total')) is not int or value['total'] < len(ids):
+        raise ValueError('Search API returned an invalid result list.')
+    return {'variant_id': variant, 'configuration_sha256': target['configuration_sha256'],
+            'ids': ids, 'total': value['total']}
+
+
+def run(rows, variants, worker_count=8):
+    if not 1 <= worker_count <= 16:
+        raise ValueError('Capture concurrency must be between 1 and 16.')
+
+    def one(row):
+        try:
+            return {'query_id': row['query_id'], 'results': {
+                variant: request(variant, target, row) for variant, target in variants.items()}}
+        except Exception as error:
+            return {'query_id': row['query_id'], 'error': {
+                'kind': type(error).__name__, 'detail': str(error)[:120]}}
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=worker_count) as workers:
+        return list(workers.map(one, rows))
+
+
+if __name__ == '__main__':
+    rows = [json.loads(line) for line in Path('/input/queries.jsonl').read_text(encoding='utf-8').splitlines()]
+    variants = json.loads(Path('/input/variants.json').read_text(encoding='utf-8'))
+    started = time.monotonic()
+    result = run(rows, variants)
+    print(json.dumps({'event': 'lab.job.completed', 'service': 'lab-variant-capture-worker',
+                      'state': 'complete' if all('error' not in row for row in result) else 'incomplete',
+                      'query_count': len(rows), 'variant_count': len(variants),
+                      'duration_ms': round((time.monotonic() - started) * 1000, 3)},
+                     sort_keys=True), flush=True)
+    print(json.dumps(result, separators=(',', ':')), flush=True)

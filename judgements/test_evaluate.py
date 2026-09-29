@@ -19,24 +19,32 @@ class EvaluationIntegrationTests(unittest.TestCase):
             'metrics': ['nDCG@10', 'Judged@10'], 'aggregation': 'macro',
             'unjudged_policy': 'unknown; metric library treats missing qrels as zero'}))
         observation = fixture.write('complete-observations.json', {
-            'kind': 'search-observation-set', 'schema_version': 1,
-            'captured_depth': 10, 'request_adapter': 'search-api-v1', 'errors': [],
-            'baseline_fingerprint': 'baseline', 'candidate_fingerprint': 'candidate',
+            'kind': 'search-variant-observation-set', 'schema_version': 1,
+            'captured_depth': 10, 'request_adapter': 'search-api-variant-v1', 'errors': [],
+            'default_variant': 'ranker-a', 'baseline_variant': 'ranker-a',
+            'variants': {
+                'ranker-a': {'environment_fingerprint': 'a' * 64,
+                             'configuration_sha256': 'b' * 64},
+                'ranker-b': {'environment_fingerprint': 'c' * 64,
+                             'configuration_sha256': 'd' * 64}},
             'catalogue_sha256': fixture.dependencies['catalogue'],
             'query_suite_sha256': fixture.dependencies['query-suite'],
             'observations': [{'query_id': 'q1',
                 'request': {'query': 'lamp', 'country': 'GB', 'currency': 'GBP',
                             'filters': {}},
-                'baseline': {'ids': ['p1', 'p2'], 'total': 2},
-                'candidate': {'ids': ['p1', 'p3'], 'total': 2}}]})
+                'results': {
+                    'ranker-a': {'ids': ['p1', 'p2'], 'total': 2,
+                                 'variant_id': 'ranker-a', 'configuration_sha256': 'b' * 64},
+                    'ranker-b': {'ids': ['p1', 'p3'], 'total': 2,
+                                 'variant_id': 'ranker-b', 'configuration_sha256': 'd' * 64}}}]})
         output = fixture.root / 'scored'
         report = run(observation, fixture.specification, fixture.catalogue,
                      fixture.cm, fixture.qm, fixture.source, fixture.sm, output,
                      lambda pairs: [{'outcome': 'abstain'} for _ in pairs],
                      fixture.model)
         self.assertEqual(report['coverage_at_metric_cutoff']['pool']['abstained'], 2)
-        self.assertEqual(report['coverage_returned']['baseline']['judged'], 1)
-        self.assertEqual(report['coverage_returned']['candidate']['judged'], 1)
+        self.assertEqual(report['coverage_returned']['ranker-a']['judged'], 1)
+        self.assertEqual(report['coverage_returned']['ranker-b']['judged'], 1)
         self.assertEqual(report['judgement_sha256'],
                          json.loads((output / 'evaluation.json').read_bytes())['judgement_sha256'])
         self.assertEqual(run(observation, fixture.specification, fixture.catalogue,

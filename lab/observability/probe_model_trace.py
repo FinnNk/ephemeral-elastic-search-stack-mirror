@@ -63,11 +63,18 @@ def fixture(inputs, output):
         request['filters'] = query.get('filters', {})
         answer = {'ids': ids, 'total': len(ids)}
         return {'query_id': query['query_id'], 'request': request,
-                'baseline': answer, 'candidate': answer}
-    observations = {'kind': 'search-observation-set', 'schema_version': 1,
-                    'captured_depth': 5, 'request_adapter': 'search-api-v1', 'errors': [],
-                    'baseline_fingerprint': 'synthetic-model-probe-baseline',
-                    'candidate_fingerprint': 'synthetic-model-probe-candidate',
+                'results': {'ranker-a': {**answer, 'variant_id': 'ranker-a',
+                                         'configuration_sha256': 'a' * 64},
+                            'ranker-b': {**answer, 'variant_id': 'ranker-b',
+                                         'configuration_sha256': 'b' * 64}}}
+    observations = {'kind': 'search-variant-observation-set', 'schema_version': 1,
+                    'captured_depth': 5, 'request_adapter': 'search-api-variant-v1', 'errors': [],
+                    'default_variant': 'ranker-a', 'baseline_variant': 'ranker-a',
+                    'variants': {
+                        'ranker-a': {'environment_fingerprint': 'c' * 64,
+                                     'configuration_sha256': 'a' * 64},
+                        'ranker-b': {'environment_fingerprint': 'd' * 64,
+                                     'configuration_sha256': 'b' * 64}},
                     'catalogue_sha256': dependencies['catalogue'],
                     'query_suite_sha256': dependencies['query-suite'],
                     'observations': [

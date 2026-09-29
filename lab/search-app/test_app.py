@@ -1,5 +1,6 @@
 import unittest
 import app
+import variants
 from telemetry import Telemetry, classify, traffic_class
 from http.server import ThreadingHTTPServer
 import http.client
@@ -24,6 +25,21 @@ class SearchContract(unittest.TestCase):
         self.assertEqual(body['query']['bool']['filter'], [
             {'term': {'country': 'GB'}}, {'term': {'currency': 'GBP'}}, {'term': {'available': True}}])
         self.assertEqual(body['sort'][-1], {'product_id': 'asc'})
+
+    def test_default_and_explicit_variant_are_separate(self):
+        config = {'default_variant': 'ranker-a', 'variants': {
+            'ranker-a': {'field_boosts': variants.BASE},
+            'ranker-b': {'field_boosts': {**variants.BASE, 'brand': 6}}}}
+        with patch.dict(os.environ, {'SEARCH_VARIANTS_JSON': json.dumps(config)}):
+            default, _, default_sha = variants.select({})
+            selected, settings, selected_sha = variants.select({'X-Lab-Variant': 'ranker-b'})
+            self.assertEqual(default, 'ranker-a')
+            self.assertEqual(selected, 'ranker-b')
+            self.assertNotEqual(default_sha, selected_sha)
+            self.assertIn('brand^6', app.query_body('shirt', 'GB', 'GBP', settings)
+                          ['query']['bool']['must'][0]['multi_match']['fields'])
+            with self.assertRaisesRegex(ValueError, 'Unknown search variant'):
+                variants.select({'X-Lab-Variant': 'missing'})
 
     def test_public_result_shape(self):
         hit = {'_id': 'gb-000001', '_source': {

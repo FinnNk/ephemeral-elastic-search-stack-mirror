@@ -19,14 +19,24 @@ class OfflineContractTests(unittest.TestCase):
         query_sha = 'b' * 64
         self.write('catalogue.json', {'kind': 'catalogue', 'content': {'sha256': catalogue_sha}})
         self.write('queries.json', {'kind': 'query-suite', 'content': {'sha256': query_sha}})
-        self.write('observations.json', {'kind': 'search-observation-set', 'schema_version': 1,
-                   'baseline_fingerprint': 'c' * 64, 'candidate_fingerprint': 'd' * 64,
+        self.write('observations.json', {'kind': 'search-variant-observation-set', 'schema_version': 1,
+                   'default_variant': 'ranker-a', 'baseline_variant': 'ranker-b',
+                   'variants': {
+                       'ranker-a': {'environment_fingerprint': 'c' * 64,
+                                    'configuration_sha256': 'e' * 64},
+                       'ranker-b': {'environment_fingerprint': 'd' * 64,
+                                    'configuration_sha256': 'f' * 64}},
                    'catalogue_sha256': catalogue_sha, 'query_suite_sha256': query_sha,
-                   'request_adapter': 'search-api-v1', 'captured_depth': 10, 'errors': [],
+                   'request_adapter': 'search-api-variant-v1', 'captured_depth': 10, 'errors': [],
                    'observations': [{'query_id': 'q1', 'request': {'query': 'lamp',
                        'country': 'GB', 'currency': 'GBP', 'filters': {}},
-                       'baseline': {'ids': ['p1'], 'total': 1},
-                       'candidate': {'ids': ['p1'], 'total': 1}}]})
+                       'results': {
+                           'ranker-a': {'variant_id': 'ranker-a',
+                                        'configuration_sha256': 'e' * 64,
+                                        'ids': ['p1'], 'total': 1},
+                           'ranker-b': {'variant_id': 'ranker-b',
+                                        'configuration_sha256': 'f' * 64,
+                                        'ids': ['p1'], 'total': 1}}}]})
         self.write('judgements.jsonl', {'query_id': 'q1', 'product_id': 'p1', 'grade': 3})
         self.write('judgement-manifest.json', {'kind': 'judgement-set', 'schema_version': 1,
                    'content': {'sha256': sha((self.root / 'judgements.jsonl').read_bytes())},
@@ -44,8 +54,38 @@ class OfflineContractTests(unittest.TestCase):
                         self.root / 'specification.json', self.root / 'catalogue.json',
                         self.root / 'queries.json', self.root / 'judgement-manifest.json')
 
-    def test_valid_pair_scores(self):
-        self.assertTrue(self.evaluate()['complete'])
+    def test_default_may_differ_from_baseline(self):
+        report = self.evaluate()
+        self.assertTrue(report['complete'])
+        self.assertEqual(report['default_variant'], 'ranker-a')
+        self.assertEqual(report['baseline_variant'], 'ranker-b')
+        self.assertEqual(report['delta_from_baseline']['ranker-a']['nDCG@10'], 0)
+
+    def test_missing_or_wrong_variant_echo_is_invalid(self):
+        value = json.loads((self.root / 'observations.json').read_bytes())
+        value['observations'][0]['results']['ranker-a']['variant_id'] = 'ranker-b'
+        self.write('observations.json', value)
+        with self.assertRaisesRegex(ValueError, 'result list is invalid'):
+            self.evaluate()
+
+    def test_three_variants_share_one_judgement_set(self):
+        value = json.loads((self.root / 'observations.json').read_bytes())
+        value['variants']['ranker-c'] = {'environment_fingerprint': '1' * 64,
+                                         'configuration_sha256': '2' * 64}
+        value['observations'][0]['results']['ranker-c'] = {
+            'variant_id': 'ranker-c', 'configuration_sha256': '2' * 64,
+            'ids': ['p1'], 'total': 1}
+        self.write('observations.json', value)
+        report = self.evaluate()
+        self.assertEqual(set(report['metrics']), {'ranker-a', 'ranker-b', 'ranker-c'})
+        self.assertEqual(report['coverage']['ranker-c']['judged'], 1)
+
+    def test_pair_shaped_input_is_rejected_without_adapter(self):
+        value = json.loads((self.root / 'observations.json').read_bytes())
+        value['kind'] = 'search-observation-set'
+        self.write('observations.json', value)
+        with self.assertRaisesRegex(ValueError, 'Unsupported observation contract'):
+            self.evaluate()
 
     def test_other_catalogue_cannot_be_scored(self):
         self.write('catalogue.json', {'kind': 'catalogue', 'content': {'sha256': 'e' * 64}})

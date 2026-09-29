@@ -216,27 +216,27 @@
   ],
   "c4": {
     "validation": "Structurizr validate and SVG/PNG export passed",
-    "visual_review": "03-evaluation and 05-local PNGs inspected after model telemetry edges; other views exported and validated",
-    "review_scope": "Model telemetry boundaries and local collector placement are legible in the inspected views.",
+    "visual_review": "03-evaluation and 18-delivery inspected after combining judgement, model and HTTPS views; all seven views validated and exported",
+    "review_scope": "Judgement supply, frozen API evaluation and HTTPS delivery are legible in the inspected views.",
     "sources": {
-      "workspace.dsl": "708f2644e34a7c0c07a0857072244d24f1435873f3ea07af69351310e8da024e",
+      "workspace.dsl": "5cdc1e7864a96f289850844af33cce5e83c31997a8b58007d207b4f030f949a0",
       "layout.mjs": "2f219d96227f4e2d99d167740351d1bc13a2cc3112c4591559fcf6e9d17526a7"
     },
     "svg_sha256": {
       "01-context-key.svg": "be9439d77f1889d034468c1a41ef9d943133136dc9713d4dac82171e5de24539",
-      "01-context.svg": "6f2fab3bcb5505d6926072294a21ae2b0092f2310ec3e64ae5d219be7c87ba38",
+      "01-context.svg": "1093802269d54017f56800a67ea612a6d89b27c63f7ebf42d50f547e58ce002f",
       "02-control-key.svg": "b37e211ed58aaed3ef6cd72427088d61d7ece40dbb436554785b5319f4eebc02",
-      "02-control.svg": "12821d28c1293cf29ccfc38e7f1fe9cc14b7572a2f27b032037afb740e39f34d",
+      "02-control.svg": "efb570d74e3f8bf68c46201996741e832a0342be33d35b7657f15f6a9b7fdccd",
       "03-evaluation-key.svg": "8080406967252a5b342b33ad3b8c9de2c26d20adc9c2d32d04fad5d2f56e910f",
-      "03-evaluation.svg": "9c220c54ee69e3e8202953738baf3d2385d16443be73ca64b94ccdaf792c6de2",
+      "03-evaluation.svg": "97a5130c3b487f0f02fb92400e8767093f1ff0fb6d9357ffa228a4452c5e5efe",
       "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
-      "04-create.svg": "fe4c6842ef502738a20c0b685a3de0a878deca15bc00eff9c2065dcff4c71d5b",
+      "04-create.svg": "a1a39b43195429c7d48fa0bbb2e257f9474b828e1fadb625806510dc2600ff2d",
       "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
-      "05-local.svg": "e64027095fc461902ebd1b0cfceec64de49e54ba144eebd16632b4ec030109b5",
+      "05-local.svg": "340cf3688db16dd87c3ac2d46ef82540359a3f851bd39dd6fc51f9ee7767ea3b",
       "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
-      "06-azure.svg": "f65c8a423b03d7e80ca5b6594d9809b6cea3570d06e3eda2ef7fbbefd8f01c93",
+      "06-azure.svg": "4b3efbf6f159662110fefab2e52a0e78ac6991cdb871f136440cdce02c29a4c0",
       "18-delivery-key.svg": "21452daa1df3a7620c627c5f369c5a135c20ed1c1a77d656e05acfec268d661c",
-      "18-delivery.svg": "3512f0d9211b3a54b02a16c2a9268d1f3e84e535fb9b41e305968b68e91d4e20"
+      "18-delivery.svg": "2ddeb34c234e28d51ee73517fe3453a31d788e74f41bbcc07ad744927accaffb"
     }
   }
 }

@@ -1,8 +1,9 @@
-"""Score retained public-API observations without contacting either Search API."""
+"""Score one frozen public-API observation set across named variants."""
 
 import argparse
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 import sys
@@ -33,12 +34,22 @@ def source_identity():
 
 
 def validate_observations(value):
-    if value.get('kind') != 'search-observation-set' or value.get('schema_version') != SCHEMA:
+    if value.get('kind') != 'search-variant-observation-set' or value.get('schema_version') != SCHEMA:
         raise ValueError('Unsupported observation contract.')
+    variants = value.get('variants')
+    if not isinstance(variants, dict) or len(variants) < 2 or any(
+            not isinstance(name, str) or not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', name)
+            or not isinstance(pin, dict)
+            or not re.fullmatch(r'[0-9a-f]{64}', str(pin.get('environment_fingerprint', '')))
+            or not re.fullmatch(r'[0-9a-f]{64}', str(pin.get('configuration_sha256', '')))
+            for name, pin in variants.items()):
+        raise ValueError('At least two named, pinned variants are required.')
+    if value.get('default_variant') not in variants or value.get('baseline_variant') not in variants:
+        raise ValueError('Default and baseline must name variants in the frozen set.')
     depth = value.get('captured_depth')
     if type(depth) is not int or depth < 1:
         raise ValueError('Observation depth is invalid.')
-    if value.get('errors') != [] or value.get('request_adapter') != 'search-api-v1':
+    if value.get('errors') != [] or value.get('request_adapter') != 'search-api-variant-v1':
         raise ValueError('Observation execution is incomplete or uses another request adapter.')
     if value.get('captured_at') is not None:
         moment = datetime.fromisoformat(value['captured_at'].replace('Z', '+00:00'))
@@ -55,12 +66,16 @@ def validate_observations(value):
                    for key in ('query', 'country', 'currency')) or \
                 not isinstance(request.get('filters'), dict):
             raise ValueError('Observation does not retain the original request.')
-        for side in ('baseline', 'candidate'):
-            answer = row.get(side, {})
+        answers = row.get('results')
+        if not isinstance(answers, dict) or set(answers) != set(variants):
+            raise ValueError('Observation does not cover every frozen variant.')
+        for variant, answer in answers.items():
             result_ids = answer.get('ids')
             if not isinstance(result_ids, list) or len(result_ids) > depth or \
                     len(set(result_ids)) != len(result_ids) or \
-                    type(answer.get('total')) is not int or answer['total'] < len(result_ids):
+                    type(answer.get('total')) is not int or answer['total'] < len(result_ids) or \
+                    answer.get('variant_id') != variant or \
+                    answer.get('configuration_sha256') != variants[variant]['configuration_sha256']:
                 raise ValueError('Observation result list is invalid.')
     if not ids:
         raise ValueError('Observation set is empty.')
@@ -125,26 +140,31 @@ def evaluate(observation_path, judgement_path, specification_path,
     results = {}
     coverage = {}
     per_case = {}
-    for side in ('baseline', 'candidate'):
-        run = [ir_measures.ScoredDoc(row['query_id'], pid, len(row[side]['ids']) - rank)
+    for variant in observations['variants']:
+        run = [ir_measures.ScoredDoc(row['query_id'], pid, len(row['results'][variant]['ids']) - rank)
                for row in observations['observations']
-               for rank, pid in enumerate(row[side]['ids'])]
+               for rank, pid in enumerate(row['results'][variant]['ids'])]
         aggregate = ir_measures.calc_aggregate(selected, qrels, run)
-        results[side] = {name: round(aggregate[METRICS[name]], 6) for name in names}
+        results[variant] = {name: round(aggregate[METRICS[name]], 6) for name in names}
         judged = sum((row['query_id'], pid) in judgements
-                     for row in observations['observations'] for pid in row[side]['ids'])
-        returned = sum(len(row[side]['ids']) for row in observations['observations'])
-        coverage[side] = {'judged': judged, 'returned': returned,
+                     for row in observations['observations'] for pid in row['results'][variant]['ids'])
+        returned = sum(len(row['results'][variant]['ids']) for row in observations['observations'])
+        coverage[variant] = {'judged': judged, 'returned': returned,
                           'fraction': round(judged / returned, 6) if returned else None}
         values = {name: {} for name in names}
         for item in ir_measures.iter_calc(selected, qrels, run):
             name = next(name for name in names if METRICS[name] == item.measure)
             values[name][item.query_id] = round(item.value, 6)
-        per_case[side] = values
-    return {'kind': 'offline-evaluation-report', 'schema_version': SCHEMA,
+        per_case[variant] = values
+    baseline = observations['baseline_variant']
+    deltas = {variant: {name: round(score - results[baseline][name], 6)
+                        for name, score in scores.items()}
+              for variant, scores in results.items() if variant != baseline}
+    return {'kind': 'variant-evaluation-report', 'schema_version': SCHEMA,
             'complete': True, 'query_count': len(observed_ids),
-            'baseline_fingerprint': observations['baseline_fingerprint'],
-            'candidate_fingerprint': observations['candidate_fingerprint'],
+            'default_variant': observations['default_variant'],
+            'baseline_variant': baseline, 'variants': observations['variants'],
+            'variant_set_sha256': observations.get('variant_set_sha256'),
             'catalogue_sha256': observations['catalogue_sha256'],
             'query_suite_sha256': observations['query_suite_sha256'],
             'observation_sha256': sha(observation_bytes),
@@ -154,7 +174,8 @@ def evaluate(observation_path, judgement_path, specification_path,
             'judgement_manifest_sha256': sha(judgement_manifest_bytes),
             'specification_sha256': sha(specification_bytes),
             'evaluator_sha256': source_identity(),
-            'metrics': results, 'coverage': coverage, 'per_case': per_case,
+            'metrics': results, 'delta_from_baseline': deltas,
+            'coverage': coverage, 'per_case': per_case,
             'unjudged_policy': specification['unjudged_policy']}
 
 

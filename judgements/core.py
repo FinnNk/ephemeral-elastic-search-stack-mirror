@@ -26,17 +26,22 @@ def metric_depth(specification):
 
 
 def pool(observations, specification):
-    """Return unique pairs from both sides through the deepest metric cut-off."""
+    """Return unique pairs from every variant through the deepest metric cut-off."""
     depth = metric_depth(specification)
     if depth > observations.get('captured_depth', 0):
         raise ValueError('Metric cut-off exceeds captured result depth.')
     required = {}
-    sides = {'baseline': set(), 'candidate': set()}
+    variants = observations.get('variants')
+    if not isinstance(variants, dict) or len(variants) < 2:
+        raise ValueError('A frozen set needs at least two variants.')
+    sides = {variant: set() for variant in variants}
     for row in observations.get('observations', []):
         query_id = row['query_id']
         request = row['request']
+        if set(row.get('results', {})) != set(sides):
+            raise ValueError('Observation does not cover every variant.')
         for side in sides:
-            for product_id in row[side]['ids'][:depth]:
+            for product_id in row['results'][side]['ids'][:depth]:
                 key = (query_id, product_id)
                 sides[side].add(key)
                 required[key] = {'query_id': query_id, 'product_id': product_id,

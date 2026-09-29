@@ -1,6 +1,6 @@
 # Judgement gap resolution
 
-This workflow fills gaps exposed by a baseline or candidate's returned products. All inputs and existing labels are synthetic. The first registered model abstains on every gap, so it exercises the model path without increasing coverage.
+This workflow fills gaps exposed by any variant's returned products. All inputs and existing labels are synthetic. The first registered model abstains on every gap, so it exercises the model path without increasing coverage.
 
 ## Local topology
 
@@ -29,11 +29,11 @@ The setup command checks the lab cluster, configures the Nexus image mirror, ins
 
 ## Capture, resolve and score
 
-1. Capture baseline and candidate ordered results with `evaluation/capture.py` or select a retained `search-observation-set`. Keep the matching catalogue and query manifests.
+1. Capture ordered results for a frozen variant set with `evaluation/capture.py` or select a retained `search-variant-observation-set`. Keep the matching catalogue and query manifests.
 2. Forward the cluster-only API for a local run: `kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-models port-forward service/judgement-service 18086:18086`.
 3. Run `judgements/evaluate.py` with `--observations`, `--specification`, `--catalogue`, `--catalogue-manifest`, `--query-manifest`, `--source-judgements`, `--source-manifest`, `--output`, `--resolve-url http://127.0.0.1:18086/v1/judgements:resolve`, and the exact `--model-name`, `--model-version` and `--model-artifact-sha256` from `judgement-model-pin`.
 
-The output directory contains `frozen/judgements.jsonl`, `frozen/judgement-set.json`, `frozen/resolution.json` and `evaluation.json`. The command prints metric, coverage and input hashes. The frozen set retains every source label, even if that pair was outside the current recall pool. `resolution.json` records each attempted gap, input hash, outcome and per-side coverage. `evaluation.json` scores both sides against the same set. Inference failure marks that report incomplete; an abstention leaves the pair unknown and lowers judged coverage.
+The output directory contains `frozen/judgements.jsonl`, `frozen/judgement-set.json`, `frozen/resolution.json` and `evaluation.json`. The command prints metric, coverage and input hashes. The frozen set retains every source label, even if that pair was outside the current recall pool. `resolution.json` records each attempted gap, input hash, outcome and per-variant coverage. `evaluation.json` scores every variant against the same set. Inference failure marks that report incomplete; an abstention leaves the pair unknown and lowers judged coverage.
 
 Set `OTEL_EXPORTER_OTLP_ENDPOINT` to the lab gateway when running the evaluator where that service is reachable. It propagates `traceparent` to the judgement API, which propagates it to KServe. The API and predictor export by default in the local manifests. In SigNoz, the [model dashboard](observability-backend.md#model-health-and-input-shift) shows prediction outcomes, failures, batch latency, labelled coverage and query-length input shift. The frozen report contains the exact score and counts; no query text or product body is sent as telemetry. The shift compares frozen observation-query length buckets with the attempted pair mix, rather than with training data. No attempts produce an unknown shift value.
 

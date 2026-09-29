@@ -55,11 +55,12 @@ class PrepareTests(unittest.TestCase):
         observations = self.write('observations-' + candidate + '.json', {
             'captured_depth': 10, 'catalogue_sha256': self.dependencies['catalogue'],
             'query_suite_sha256': self.dependencies['query-suite'],
+            'variants': {'ranker-a': {}, 'ranker-b': {}},
             'observations': [{'query_id': 'q1',
               'request': {'query': 'lamp', 'country': 'GB', 'currency': 'GBP',
                           'filters': {}},
-              'baseline': {'ids': ['p1', 'p2']},
-              'candidate': {'ids': ['p1', candidate]}}]})
+              'results': {'ranker-a': {'ids': ['p1', 'p2']},
+                          'ranker-b': {'ids': ['p1', candidate]}}}]})
         return prepare(observations, self.specification, self.catalogue, self.cm,
                        self.qm, self.source, self.sm, self.root / output,
                        infer, self.model)

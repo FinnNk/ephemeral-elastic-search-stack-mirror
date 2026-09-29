@@ -56,7 +56,7 @@ def compatible(release, recipe):
 
 
 def resolve(run_id, dataset='retail-gb-10k-v1', recipe_sha=None, merged=True,
-            query_manifest_sha=None, judgement_manifest_sha=None):
+            query_manifest_sha=None, judgement_manifest_sha=None, variant_config=None):
     receipt, release, _files = from_run(run_id)
     if merged and receipt['event_kind'] != 'push':
         raise ValueError('Promotion requires a successful merged-source push build.')
@@ -85,6 +85,12 @@ def resolve(run_id, dataset='retail-gb-10k-v1', recipe_sha=None, merged=True,
               'query_manifest_sha256': selected['query_manifest_sha256'],
               'judgement_manifest_sha256': selected['judgement_manifest_sha256'],
               'dataset_release': dataset, 'request_context': {'country': 'GB', 'currency': 'GBP'}}
+    if variant_config is not None:
+        if not isinstance(variant_config, dict) or \
+                variant_config.get('default_variant') not in variant_config.get('variants', {}):
+            raise ValueError('Frozen variant configuration needs a named default.')
+        fields['variant_config_json'] = json.dumps(variant_config, sort_keys=True,
+                                                    separators=(',', ':'))
     return {'fields': fields, 'fingerprint': fingerprint(fields), 'build_run': run_id}
 
 
@@ -92,6 +98,11 @@ def validate_deployment(deployment):
     fields = deployment['fields']
     if fingerprint(fields) != deployment['fingerprint']:
         raise ValueError('Deployment fingerprint differs.')
+    if fields.get('variant_config_json') is not None:
+        selected = json.loads(fields['variant_config_json'])
+        if selected.get('default_variant') not in selected.get('variants', {}) or \
+                json.dumps(selected, sort_keys=True, separators=(',', ':')) != fields['variant_config_json']:
+            raise ValueError('Variant configuration is not canonical or has no default.')
     release, files = load(fields['software_release_id'])
     receipt, built, _ = from_run(deployment['build_run'])
     if (receipt['event_kind'] != 'push' or receipt['release_id'] != fields['software_release_id'] or
