@@ -160,6 +160,13 @@ def evaluate(observation_path, judgement_path, specification_path,
     deltas = {variant: {name: round(score - results[baseline][name], 6)
                         for name, score in scores.items()}
               for variant, scores in results.items() if variant != baseline}
+    result_changes = {}
+    for variant in results:
+        changed = sum(row['results'][variant]['ids'] != row['results'][baseline]['ids'] or
+                      row['results'][variant]['total'] != row['results'][baseline]['total']
+                      for row in observations['observations'])
+        result_changes[variant] = {'changed_queries': changed,
+                                   'fraction': round(changed / len(observed_ids), 6)}
     return {'kind': 'variant-evaluation-report', 'schema_version': SCHEMA,
             'complete': True, 'query_count': len(observed_ids),
             'default_variant': observations['default_variant'],
@@ -175,6 +182,7 @@ def evaluate(observation_path, judgement_path, specification_path,
             'specification_sha256': sha(specification_bytes),
             'evaluator_sha256': source_identity(),
             'metrics': results, 'delta_from_baseline': deltas,
+            'result_changes': result_changes,
             'coverage': coverage, 'per_case': per_case,
             'unjudged_policy': specification['unjudged_policy']}
 

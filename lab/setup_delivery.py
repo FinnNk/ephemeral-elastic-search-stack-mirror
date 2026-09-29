@@ -1,6 +1,7 @@
 """Seed isolated delivery demo repositories and a repository-scoped Actions runner."""
 import json
 import shutil
+import secrets
 from common import ROOT, STATE, apply, guard, k
 from gitea import api
 from delivery_provider import SOURCE, DESIRED, endpoint, ensure_repo, git
@@ -8,6 +9,7 @@ from load_release import BASELINE_MAPPING, INDEXER_IMAGE
 from load_million_release import MAPPING as MILLION_MAPPING
 from nexus import REGISTRY, credentials
 from delivery.ci.release import canonical, digest
+from keyvault import floci_forward, vault_request
 
 
 def configure_ci():
@@ -23,8 +25,18 @@ def configure_ci():
     existing = {row['name'] for row in api(endpoint(SOURCE, '/actions/variables'))}
     for name, data in {'SOURCE_BASE_URL': 'https://gitea-internal.lab-ingress.svc.cluster.local',
                        'RELEASE_REGISTRY': REGISTRY,
-                       'RELEASE_ARTIFACT_URL': 'http://nexus.platform.svc.cluster.local:8081/repository/lab-releases'}.items():
+                       'RELEASE_ARTIFACT_URL': 'http://nexus.platform.svc.cluster.local:8081/repository/lab-releases',
+                       'LAB_VARIANT_POLICY_SHA256': digest((ROOT / 'lab/delivery/policies/variant-merge-v1.json').read_bytes()),
+                       'LAB_VARIANT_GATE_CODE_SHA256': digest((ROOT / 'lab/variant_gate.py').read_bytes())}.items():
         api(endpoint(SOURCE, '/actions/variables/' + name), 'PUT' if name in existing else 'POST', {'value': data})
+    with floci_forward() as base:
+        for name in ('LAB_VARIANT_EVIDENCE_KEY', 'LAB_VARIANT_APPROVAL_KEY'):
+            remote = 'lab-variant-gate-' + name.lower().replace('_', '-')
+            record = vault_request(base, remote)
+            if record is None:
+                vault_request(base, remote, 'PUT', secrets.token_urlsafe(48))
+                record = vault_request(base, remote)
+            api(endpoint(SOURCE, '/actions/secrets/' + name), 'PUT', {'data': record['value']})
     token = api(endpoint(SOURCE, '/actions/runners/registration-token'), 'POST')['token']
     apply({'apiVersion': 'v1', 'kind': 'Secret',
            'metadata': {'name': 'delivery-registration', 'namespace': 'platform'},
@@ -49,6 +61,7 @@ def seed_source(path):
     dockerfile.write_text(dockerfile.read_text().replace('python:3.13.7-alpine3.22', INDEXER_IMAGE),
                           encoding='utf-8', newline='\n')
     shutil.copytree(ROOT / 'lab/delivery/ci', path / 'ci', ignore=shutil.ignore_patterns('__pycache__'), dirs_exist_ok=True)
+    shutil.copyfile(ROOT / 'lab/variant_gate.py', path / 'ci/variant_gate.py')
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/chart', path / 'chart', dirs_exist_ok=True)
     chart = path / 'chart/templates/environment.yaml'
     chart.write_text(chart.read_text().replace('name: registry-read', 'name: nexus-read'),
@@ -56,6 +69,9 @@ def seed_source(path):
     (path / '.github/workflows').mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/workflows/release.yaml', path / '.github/workflows/release.yaml')
     (path / 'contracts').mkdir(exist_ok=True)
+    (path / 'gate').mkdir(exist_ok=True)
+    shutil.copyfile(ROOT / 'lab/delivery/policies/variant-merge-v1.json',
+                    path / 'gate/policy.json')
     worker = (ROOT / 'lab/index_job.py').read_text(encoding='utf-8').encode()
     contract = {'engine_version': '9.5.4', 'definitions': [BASELINE_MAPPING, MILLION_MAPPING],
                 'indexer_image': INDEXER_IMAGE, 'indexer_source_sha256': digest(worker)}

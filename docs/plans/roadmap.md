@@ -24,7 +24,7 @@ The next judgement-specific batch is [control UI integration](judgement-control-
 
 The [model observability batch](model-observability.md) adds a source-controlled SigNoz dashboard, bounded inference and coverage metrics, an input-selection shift signal and connected judgement/KServe tracing. Its [local evidence](../research/evidence/model-observability-2026-09-29.md) shows the exact scope and older-release deployment caveat. Control UI integration remains the next judgement workflow batch.
 
-The [offline variant plan](offline-variants-and-gates.md) now has a canonical N-way capture, score and pooled-judgement contract on its first review branch. The [next batch](variant-merge-gate.md) will turn selected variant results into explicit merge verdicts and recorded human exceptions. A two-version replacement uses the same contract without an online traffic split.
+The [offline variant plan](offline-variants-and-gates.md) has a canonical N-way capture, score and pooled-judgement contract on its first review branch. The second batch adds a [selected-variant merge gate](variant-merge-gate.md) with signed evidence and recorded human exceptions. The [next batch](variant-reference-proof.md) will run the full path locally and align the diagrams. A two-version replacement uses the same contract without an online traffic split.
 
 1. [SigNoz backend and signal transport](signoz-backend-and-investigation.md) is ready for review. The backend, gateway and log agent are deployed; the agent organisation is bootstrapped and all three signal types have stored records.
 2. [SigNoz account and SLO dashboard](signoz-connected-investigation.md) is ready for review. The owner invitation is pending activation; the dashboard and synthetic interval checks are live.

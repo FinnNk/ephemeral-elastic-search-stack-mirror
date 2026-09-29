@@ -17,7 +17,7 @@ Turn a frozen multi-variant report into a merge decision for one or more declare
 1. A two-variant replacement and a three-variant ranking change produce deterministic gate receipts.
 2. A small negative result inside the exception band requires a recorded approval; a more negative result stays blocked.
 3. Changed evidence, forged approval, wrong selected variant, missing coverage and incomplete capture cannot pass.
-4. The portable release workflow invokes the gate for declared variant evidence before publishing an image. Tests cover each state and its exit code.
+4. The portable release workflow builds the exact PR source, then fetches signed evaluation evidence from Nexus by that source SHA and invokes the gate. Tests cover each state; a declared selection with missing evidence fails.
 
 ## Where to look
 

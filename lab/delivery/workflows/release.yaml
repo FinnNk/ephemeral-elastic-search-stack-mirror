@@ -41,3 +41,26 @@ jobs:
           set -eu
           cd source
           sh ci/build.sh
+      - name: Check selected offline variants
+        if: github.event_name == 'pull_request'
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+          ARTIFACT_URL: ${{ vars.RELEASE_ARTIFACT_URL }}
+          NEXUS_USER: ${{ secrets.NEXUS_USER }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          LAB_VARIANT_EVIDENCE_KEY: ${{ secrets.LAB_VARIANT_EVIDENCE_KEY }}
+          LAB_VARIANT_APPROVAL_KEY: ${{ secrets.LAB_VARIANT_APPROVAL_KEY }}
+          LAB_VARIANT_POLICY_SHA256: ${{ vars.LAB_VARIANT_POLICY_SHA256 }}
+          LAB_VARIANT_GATE_CODE_SHA256: ${{ vars.LAB_VARIANT_GATE_CODE_SHA256 }}
+        run: |
+          set -eu
+          cd source
+          if test -f gate/selection.json; then
+            test "$(sha256sum ci/variant_gate.py | cut -d ' ' -f 1)" = "$LAB_VARIANT_GATE_CODE_SHA256"
+            python ci/variant_gate_store.py fetch --source-sha "$SOURCE_SHA" --directory gate/evidence
+            python ci/variant_gate.py --report gate/evidence/report.json \
+              --policy gate/policy.json --selection gate/selection.json \
+              --attestation gate/evidence/attestation.json \
+              --approvals-file gate/evidence/approvals.json \
+              --source-sha "$SOURCE_SHA" --output gate/evidence/verdict.json
+          fi

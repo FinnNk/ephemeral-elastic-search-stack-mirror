@@ -1,6 +1,6 @@
 # Offline variants and merge decisions
 
-**Status:** the frozen-variant contract and N-way scoring are implemented on the first review branch. The gate and live proof follow as stacked batches.
+**Status:** the frozen-variant contract and N-way scoring are ready in the first review batch. The selected-variant gate is in the second review batch. Live proof and reference diagrams follow in the third.
 
 ## Intent
 

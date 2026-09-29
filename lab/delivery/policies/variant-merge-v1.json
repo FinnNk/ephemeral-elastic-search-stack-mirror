@@ -1,0 +1,13 @@
+{
+  "kind": "variant-merge-policy",
+  "schema_version": 1,
+  "max_age_hours": 72,
+  "metric": "nDCG@10",
+  "minimum_judged_fraction": 0.5,
+  "pass_min_delta": 0.0,
+  "exception_min_delta": -0.03,
+  "changed_query_fraction": {
+    "preserve-results": {"pass": 0.0, "exception": 0.01},
+    "ranking-change": {"pass": 1.0, "exception": 1.0}
+  }
+}
