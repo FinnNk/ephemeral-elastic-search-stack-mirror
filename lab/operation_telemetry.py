@@ -86,6 +86,13 @@ def response_status(status):
     trace.get_current_span().set_attribute('http.response.status_code', status)
 
 
+def inject(headers):
+    """Pass the active control trace to a downstream HTTP request."""
+    if _tracer is not None:
+        from opentelemetry import propagate
+        propagate.inject(headers)
+
+
 def correlation(**fields):
     """Attach immutable references to the active span and return its IDs for Jobs."""
     if _tracer is None:

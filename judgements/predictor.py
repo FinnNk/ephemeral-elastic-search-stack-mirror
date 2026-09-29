@@ -4,6 +4,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
+import time
+
+from telemetry import telemetry
 
 
 def predict(model, instances):
@@ -38,15 +41,32 @@ def serve(model, identity, host='0.0.0.0', port=8080):
             if self.path != '/v1/models/judgement-model:predict':
                 self.send_error(404)
                 return
-            try:
-                length = int(self.headers.get('Content-Length', '0'))
-                if length < 1 or length > 2_000_000:
-                    raise ValueError('Inference payload size is invalid.')
-                value = json.loads(self.rfile.read(length))
-                self.reply(200, {'predictions': predict(model, value['instances']),
-                                 'model': identity})
-            except (ValueError, KeyError, TypeError) as error:
-                self.reply(400, {'error': str(error)})
+            with telemetry.span('model.http', self.headers, kind='server'):
+                started = time.monotonic()
+                try:
+                    length = int(self.headers.get('Content-Length', '0'))
+                    if length < 1 or length > 2_000_000:
+                        raise ValueError('Inference payload size is invalid.')
+                    value = json.loads(self.rfile.read(length))
+                    with telemetry.span('model.predict'):
+                        rows = predict(model, value['instances'])
+                    duration_ms = (time.monotonic() - started) * 1000
+                    telemetry.count_predictions(identity['version'], rows, duration_ms)
+                    telemetry.count_request(identity['version'], 'success')
+                    telemetry.attributes(http_response_status_code=200,
+                                         lab_model_version=str(identity['version']),
+                                         lab_model_batch_size=len(rows))
+                    self.reply(200, {'predictions': rows, 'model': identity})
+                except (ValueError, KeyError, TypeError) as error:
+                    telemetry.count_request(identity['version'], 'error')
+                    telemetry.attributes(http_response_status_code=400,
+                                         error_type=type(error).__name__)
+                    self.reply(400, {'error': str(error)})
+                except Exception as error:
+                    telemetry.count_request(identity['version'], 'error')
+                    telemetry.attributes(http_response_status_code=500,
+                                         error_type=type(error).__name__)
+                    self.reply(500, {'error': 'Model inference failed.'})
 
         def reply(self, status, value):
             body = json.dumps(value, sort_keys=True).encode()
@@ -61,6 +81,8 @@ def serve(model, identity, host='0.0.0.0', port=8080):
 
 if __name__ == '__main__':
     import mlflow
+
+    telemetry.configure('judgement-predictor')
     directory = Path(os.environ.get('MODEL_DIR', '/mnt/models'))
     identity = json.loads((directory / '.model-identity.json').read_bytes())
     model = mlflow.pyfunc.load_model(str(directory))

@@ -1,4 +1,7 @@
 import unittest
+import os
+import io
+import json
 from unittest.mock import patch
 
 import evaluation_worker
@@ -7,6 +10,25 @@ from input_selection import DEFAULTS
 
 
 class EvaluatorContract(unittest.TestCase):
+    def test_capture_worker_propagates_only_valid_trace_context(self):
+        with patch.dict(os.environ, {'LAB_TRACE_ID': 'a' * 32,
+                                     'LAB_SPAN_ID': 'b' * 16}):
+            self.assertEqual(evaluation_worker.traceparent(),
+                             '00-' + 'a' * 32 + '-' + 'b' * 16 + '-01')
+        with patch.dict(os.environ, {'LAB_TRACE_ID': '0' * 32,
+                                     'LAB_SPAN_ID': 'b' * 16}):
+            self.assertIsNone(evaluation_worker.traceparent())
+        row = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP'}
+        answer = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP',
+                  'ids': ['p1'], 'total': 1}
+        with patch.dict(os.environ, {'LAB_TRACE_ID': 'a' * 32,
+                                     'LAB_SPAN_ID': 'b' * 16}), \
+                patch.object(evaluation_worker.urllib.request, 'urlopen') as open_url:
+            open_url.return_value.__enter__.return_value = io.BytesIO(json.dumps(answer).encode())
+            self.assertEqual(evaluation_worker.request('baseline', row)['ids'], ['p1'])
+            self.assertEqual(open_url.call_args.args[0].get_header('Traceparent'),
+                             '00-' + 'a' * 32 + '-' + 'b' * 16 + '-01')
+
     def test_worker_keeps_frozen_order_and_isolates_request_errors(self):
         rows = [{'query_id': 'q1', 'query': 'shoes', 'country': 'GB', 'currency': 'GBP'},
                 {'query_id': 'q2', 'query': 'coat', 'country': 'GB', 'currency': 'GBP'}]

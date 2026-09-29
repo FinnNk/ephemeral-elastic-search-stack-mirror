@@ -4,6 +4,7 @@ import urllib.parse
 import urllib.request
 
 from common import IN_CLUSTER, k
+from operation_telemetry import inject
 
 
 def search(name,query='running shoes',request_id=None):
@@ -12,7 +13,9 @@ def search(name,query='running shoes',request_id=None):
         url+='&diagnostics=1&request_id='+urllib.parse.quote(request_id)
     if IN_CLUSTER:
         try:
-            with urllib.request.urlopen(url,timeout=3) as response:
+            headers = {}
+            inject(headers)
+            with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=3) as response:
                 return json.load(response)
         except (OSError,ValueError):
             return None

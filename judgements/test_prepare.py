@@ -76,6 +76,8 @@ class PrepareTests(unittest.TestCase):
                          first_bytes)
         self.assertEqual(first['coverage']['pool']['abstained'], 1)
         self.assertEqual(second['coverage']['pool']['newly_labelled'], 2)
+        self.assertEqual(second['input_shift']['feature'], 'query_length')
+        self.assertEqual(second['input_shift']['observed_count'], 2)
         self.assertEqual(json.loads((self.root / 'snapshot-two/judgement-set.json').read_bytes())
                          ['dependencies'], self.dependencies)
 

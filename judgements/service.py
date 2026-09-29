@@ -10,6 +10,7 @@ import threading
 from urllib import request
 
 from core import GRADE_TO_LABEL, LABEL_TO_GRADE, canonical, digest
+from telemetry import telemetry
 
 
 class JudgementService:
@@ -148,9 +149,12 @@ class JudgementService:
 
 def kserve_predict(url, pairs, model):
     payload = canonical({'instances': pairs})
-    call = request.Request(url, payload, {'Content-Type': 'application/json'})
-    with request.urlopen(call, timeout=8) as response:
-        answer = json.loads(response.read())
+    with telemetry.span('kserve.predict', kind='client'):
+        headers = {'Content-Type': 'application/json'}
+        telemetry.inject(headers)
+        call = request.Request(url, payload, headers)
+        with request.urlopen(call, timeout=8) as response:
+            answer = json.loads(response.read())
     if answer.get('model') != model:
         raise ValueError('KServe responded from another registered model version.')
     return answer['predictions']
@@ -168,14 +172,23 @@ def serve(service, host='0.0.0.0', port=18086):
             if self.path != '/v1/judgements:resolve':
                 self.send_error(404)
                 return
-            try:
-                length = int(self.headers.get('Content-Length', '0'))
-                if not 0 < length <= 2_000_000:
-                    raise ValueError('Resolution request is too large.')
-                body = json.loads(self.rfile.read(length))
-                self.reply(200, service.resolve(body['context'], body['pairs']))
-            except (ValueError, KeyError, TypeError) as error:
-                self.reply(400, {'error': str(error)})
+            with telemetry.span('judgement.http', self.headers, kind='server'):
+                try:
+                    length = int(self.headers.get('Content-Length', '0'))
+                    if not 0 < length <= 2_000_000:
+                        raise ValueError('Resolution request is too large.')
+                    body = json.loads(self.rfile.read(length))
+                    with telemetry.span('judgement.lookup'):
+                        value = service.resolve(body['context'], body['pairs'])
+                    telemetry.count_results(service.model['version'], value['results'])
+                    telemetry.attributes(http_response_status_code=200,
+                                         lab_model_version=str(service.model['version']),
+                                         lab_judgement_pairs=len(value['results']))
+                    self.reply(200, value)
+                except (ValueError, KeyError, TypeError) as error:
+                    telemetry.attributes(http_response_status_code=400,
+                                         error_type=type(error).__name__)
+                    self.reply(400, {'error': str(error)})
 
         def reply(self, status, value):
             body = canonical(value)
@@ -208,6 +221,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=Path, required=True)
     parser.add_argument('--predict-url', required=True)
     args = parser.parse_args()
+    telemetry.configure('judgement-service')
     args.database.parent.mkdir(parents=True, exist_ok=True)
     instance = JudgementService(args.database, read_rows(args.source_judgements),
         read_rows(args.queries), read_rows(args.catalogue),

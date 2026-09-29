@@ -2,11 +2,22 @@
 import concurrent.futures
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+
+def traceparent():
+    """Continue the control operation trace without exporting from the finite Job."""
+    trace_id = os.environ.get('LAB_TRACE_ID', '')
+    span_id = os.environ.get('LAB_SPAN_ID', '')
+    if re.fullmatch('[0-9a-f]{32}', trace_id) and re.fullmatch('[0-9a-f]{16}', span_id) and \
+            int(trace_id, 16) and int(span_id, 16):
+        return '00-' + trace_id + '-' + span_id + '-01'
+    return None
 
 
 def request(name, row):
@@ -15,7 +26,9 @@ def request(name, row):
     url = f'http://search.{name}.svc.cluster.local:8080/search?' + query
     for attempt in range(3):
         try:
-            with urllib.request.urlopen(url, timeout=10) as reply:
+            headers = {'traceparent': parent} if (parent := traceparent()) else {}
+            call = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(call, timeout=10) as reply:
                 value = json.load(reply)
             break
         except urllib.error.HTTPError as error:

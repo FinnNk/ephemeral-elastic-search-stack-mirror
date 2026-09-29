@@ -62,7 +62,7 @@ spec:
         kubernetes.io/hostname: k3d-observability-0
       initContainers:
         - name: fetch-source
-          image: nexus.localhost:18185/relevance-judge:j1-16d07a501250f824-amd64
+          image: nexus.localhost:18185/relevance-judge:j1-1d82237c90e4c42f-amd64
           command: [python, /app/fetch_source.py]
           args:
             - --judgement-manifest-sha256
@@ -91,7 +91,7 @@ spec:
               mountPath: /inputs
       containers:
         - name: judgement-service-million
-          image: nexus.localhost:18185/relevance-judge:j1-16d07a501250f824-amd64
+          image: nexus.localhost:18185/relevance-judge:j1-1d82237c90e4c42f-amd64
           command: [python, /app/service.py]
           args:
             - --database
@@ -108,6 +108,11 @@ spec:
             - /config/model.json
             - --predict-url
             - http://synthetic-esci-judge-predictor.lab-models.svc/v1/models/judgement-model:predict
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://lab-otel-gateway.lab-observability.svc.cluster.local:4318
+            - name: LAB_SOURCE_PROFILE
+              value: 1m
           ports:
             - name: http
               containerPort: 18086

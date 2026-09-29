@@ -1,0 +1,786 @@
+{
+  "schemaVersion": "v6",
+  "name": "relevance-lab-model-health",
+  "tags": [
+    {
+      "key": "lab",
+      "value": "relevance"
+    },
+    {
+      "key": "contract",
+      "value": "model-health-v1"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Model health and input shift",
+      "description": "Inference, abstention, coverage and frozen-input mix."
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/guidance"
+              }
+            },
+            {
+              "x": 0,
+              "y": 4,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/predictions"
+              }
+            },
+            {
+              "x": 6,
+              "y": 4,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/abstention"
+              }
+            },
+            {
+              "x": 0,
+              "y": 10,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/requests"
+              }
+            },
+            {
+              "x": 6,
+              "y": 10,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/error_rate"
+              }
+            },
+            {
+              "x": 0,
+              "y": 16,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/latency"
+              }
+            },
+            {
+              "x": 6,
+              "y": 16,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/coverage"
+              }
+            },
+            {
+              "x": 0,
+              "y": 22,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/judgements"
+              }
+            },
+            {
+              "x": 6,
+              "y": 22,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/labels"
+              }
+            },
+            {
+              "x": 0,
+              "y": 28,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/shift"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "panels": {
+      "guidance": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Interpretation"
+          },
+          "plugin": {
+            "kind": "signoz/TextPanel",
+            "spec": {
+              "mode": "markdown",
+              "text": "**No data is unknown.** The current model abstains on every gap. Prediction mix, inference failures, batch latency and judged coverage are operational signals, not relevance accuracy. The label-mix panel has no model-labelled values until a reviewed model produces them.\n\n**Input shift** is Jensen\u2013Shannon divergence (0 to 1) between query-length buckets of the frozen observation queries and the pairs sent to the model. It measures selection into inference, not drift against model training data. Open a trace by `judgement.evaluate` or `judgement.http` and follow `judgement.resolve` \u2192 `kserve.predict` \u2192 `model.http` \u2192 `model.predict`. The frozen resolution report owns exact inputs and coverage.",
+              "presentation": {
+                "textAlign": "left",
+                "verticalAlign": "top"
+              },
+              "headerOptions": {
+                "hide": false
+              }
+            }
+          },
+          "queries": []
+        }
+      },
+      "predictions": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Predictions by outcome"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.predictions",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.model.outcome"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "abstention": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model abstention %"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.predictions",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.model.outcome = 'abstain'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.predictions",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(B/A)*100",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "requests": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Inference requests by result"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.requests",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.model.request_outcome"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "error_rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Inference request error %"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.requests",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.model.request_outcome = 'error'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.requests",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(B/A)*100",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Mean batch inference latency (ms)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "ms"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.inference_duration.sum",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.inference_duration.count",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A/B",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "coverage": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Pooled pairs with a label %"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.judgement.pool_coverage_percent",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "judgements": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Judgement API responses by outcome"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.judgement.results",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.judgement.outcome"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "labels": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model label mix"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": "lab.model.outcome = 'labelled'"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.predictions",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.model.label"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "shift": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Query-length input shift (JSD)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 60,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.model.input_shift_jsd",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "variables": []
+  }
+}

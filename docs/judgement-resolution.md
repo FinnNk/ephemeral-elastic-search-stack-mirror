@@ -35,6 +35,8 @@ The setup command checks the lab cluster, configures the Nexus image mirror, ins
 
 The output directory contains `frozen/judgements.jsonl`, `frozen/judgement-set.json`, `frozen/resolution.json` and `evaluation.json`. The command prints metric, coverage and input hashes. The frozen set retains every source label, even if that pair was outside the current recall pool. `resolution.json` records each attempted gap, input hash, outcome and per-side coverage. `evaluation.json` scores both sides against the same set. Inference failure marks that report incomplete; an abstention leaves the pair unknown and lowers judged coverage.
 
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to the lab gateway when running the evaluator where that service is reachable. It propagates `traceparent` to the judgement API, which propagates it to KServe. The API and predictor export by default in the local manifests. In SigNoz, the [model dashboard](observability-backend.md#model-health-and-input-shift) shows prediction outcomes, failures, batch latency, labelled coverage and query-length input shift. The frozen report contains the exact score and counts; no query text or product body is sent as telemetry. The shift compares frozen observation-query length buckets with the attempted pair mix, rather than with training data. No attempts produce an unknown shift value.
+
 Run again with another observation set and a new output directory when recall changes. Existing output bytes are immutable: a conflicting replay fails. This also catches an inference outcome that changed despite the same pinned source and model identity.
 
 ## Replace the model

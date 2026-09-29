@@ -9,6 +9,8 @@ import sys
 from urllib import request
 
 from core import canonical, digest, pool, resolve
+from drift import input_shift
+from telemetry import telemetry
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'data'))
 from contracts import envelope, validate_envelope
@@ -57,9 +59,12 @@ def service_client(url, context, model_identity, timeout=10):
 
     def predict(items):
         body = canonical({'context': context, 'pairs': items})
-        call = request.Request(url, body, {'Content-Type': 'application/json'})
-        with request.urlopen(call, timeout=timeout) as response:
-            value = json.loads(response.read())
+        with telemetry.span('judgement.resolve', kind='client'):
+            headers = {'Content-Type': 'application/json'}
+            telemetry.inject(headers)
+            call = request.Request(url, body, headers)
+            with request.urlopen(call, timeout=timeout) as response:
+                value = json.loads(response.read())
         if value.get('model') != model_identity:
             raise ValueError('Judgement service uses another model version.')
         return [{'outcome': 'labelled', 'label': row['label']}
@@ -105,6 +110,7 @@ def prepare(observation_path, specification_path, catalogue_path, catalogue_mani
     products = selected_products(catalogue_path, missing_ids)
     frozen, attempts = resolve(observations, specification, read_rows(source_path),
                                products, predict)
+    attempts['input_shift'] = input_shift(observations, attempts['attempts'])
     attempts['model'] = model_identity
     attempts['source_judgement_sha256'] = source_manifest['content']['sha256']
     attempts['observation_sha256'] = digest(observation_bytes)
@@ -125,7 +131,7 @@ def prepare(observation_path, specification_path, catalogue_path, catalogue_mani
     return {'judgements': manifest['content']['sha256'],
             'manifest': digest(canonical(manifest)),
             'resolution': digest(canonical(attempts)),
-            'coverage': attempts['counts']}
+            'coverage': attempts['counts'], 'input_shift': attempts['input_shift']}
 
 
 def main():

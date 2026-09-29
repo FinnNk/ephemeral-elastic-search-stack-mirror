@@ -14,7 +14,7 @@ metadata:
 spec:
   container:
     name: storage-initializer
-    image: nexus.localhost:18185/relevance-judge:j1-16d07a501250f824-amd64
+    image: nexus.localhost:18185/relevance-judge:j1-1d82237c90e4c42f-amd64
     command: [python, /app/fetch_model.py]
     env:
       - name: MLFLOW_TRACKING_URI
@@ -43,11 +43,13 @@ spec:
       autoSelect: false
   containers:
     - name: kserve-container
-      image: nexus.localhost:18185/relevance-judge:j1-16d07a501250f824-amd64
+      image: nexus.localhost:18185/relevance-judge:j1-1d82237c90e4c42f-amd64
       command: [python, /app/predictor.py]
       env:
         - name: MODEL_DIR
           value: /mnt/models
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://lab-otel-gateway.lab-observability.svc.cluster.local:4318
       ports:
         - containerPort: 8080
           name: http1
