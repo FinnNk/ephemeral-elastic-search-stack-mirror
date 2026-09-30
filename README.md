@@ -17,6 +17,7 @@ The [platform guide](research/platform-spike/README.md) runs local Gitea, Argo C
 The [secret operating guide](docs/keyvault-secrets.md) covers ESO-backed retained lab credentials and the boundary with bootstrap and short-lived environment Secrets.
 The [local HTTPS guide](docs/https-ingress.md) lists the five TLS browser endpoints and the local CA bootstrap.
 The [judgement resolution guide](docs/judgement-resolution.md) covers MLflow, KServe, stored-label precedence and pooled evaluation gaps.
+The [v3 model installation guide](docs/esci-model-installation.md) packages the selected LoRA and learned score mapping for MLflow, with abstention, serving checks and rollback. GPU activation remains pending.
 
 - [Research results](docs/research/platform-spike.md): 20 warm lifecycle trials, API and analyser comparisons, isolation and failure recovery.
 - [Proposed decision](docs/adr/ADR-0001-reconcile-environments-from-git.md): reconcile environments from Git-file ApplicationSets; use k3d provisionally.

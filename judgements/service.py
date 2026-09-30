@@ -4,6 +4,8 @@ import argparse
 import gzip
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import math
+import os
 from pathlib import Path
 import sqlite3
 import threading
@@ -147,13 +149,15 @@ class JudgementService:
         return {'results': results, 'model': self.model}
 
 
-def kserve_predict(url, pairs, model):
+def kserve_predict(url, pairs, model, timeout=8):
+    if not math.isfinite(timeout) or not 0 < timeout <= 600:
+        raise ValueError('Model timeout must be between zero and 600 seconds.')
     payload = canonical({'instances': pairs})
     with telemetry.span('kserve.predict', kind='client'):
         headers = {'Content-Type': 'application/json'}
         telemetry.inject(headers)
         call = request.Request(url, payload, headers)
-        with request.urlopen(call, timeout=8) as response:
+        with request.urlopen(call, timeout=timeout) as response:
             answer = json.loads(response.read())
     if answer.get('model') != model:
         raise ValueError('KServe responded from another registered model version.')
@@ -221,11 +225,14 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=Path, required=True)
     parser.add_argument('--predict-url', required=True)
     args = parser.parse_args()
+    model_timeout = float(os.environ.get('JUDGEMENT_PREDICT_TIMEOUT_SECONDS', '8'))
+    if not math.isfinite(model_timeout) or not 0 < model_timeout <= 600:
+        raise ValueError('Model timeout must be between zero and 600 seconds.')
     telemetry.configure('judgement-service')
     args.database.parent.mkdir(parents=True, exist_ok=True)
     instance = JudgementService(args.database, read_rows(args.source_judgements),
         read_rows(args.queries), read_rows(args.catalogue),
         json.loads(args.context.read_bytes()), json.loads(args.model.read_bytes()),
         lambda pairs: kserve_predict(args.predict_url, pairs,
-                                    json.loads(args.model.read_bytes())))
+                                    json.loads(args.model.read_bytes()), timeout=model_timeout))
     serve(instance)

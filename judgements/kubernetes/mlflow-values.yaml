@@ -1,6 +1,6 @@
 image:
   repository: nexus.localhost:18185/relevance-judge
-  tag: j1-bd762253aeb823ed-amd64
+  tag: j1-d8cfdaf005e8bb88-amd64
 imagePullSecrets:
   - name: nexus-read
 replicaCount: 1

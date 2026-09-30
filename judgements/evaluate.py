@@ -53,6 +53,8 @@ def main():
                  'query-manifest', 'source-judgements', 'source-manifest', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--resolve-url', required=True)
+    parser.add_argument('--resolve-timeout', type=float, default=10,
+                        help='Seconds per resolution batch; use 130 for the v3 candidate')
     parser.add_argument('--model-name', required=True)
     parser.add_argument('--model-version', required=True)
     parser.add_argument('--model-artifact-sha256', required=True)
@@ -68,7 +70,7 @@ def main():
         result = run(args.observations, args.specification, args.catalogue,
                      args.catalogue_manifest, args.query_manifest, args.source_judgements,
                      args.source_manifest, args.output,
-                     service_client(args.resolve_url, context, model), model)
+                     service_client(args.resolve_url, context, model, timeout=args.resolve_timeout), model)
     print(json.dumps(result, sort_keys=True))
 
 

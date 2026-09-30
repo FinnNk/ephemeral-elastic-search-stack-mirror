@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import re
 
 from common import HELM, IN_CLUSTER, ROOT, STATE, guard, k, run
 from setup_judgement_secrets import configure as configure_secrets
@@ -25,8 +26,24 @@ def manifest(name):
     k('apply', '-f', str(SOURCES / name))
 
 
+def guard_bootstrap_model():
+    """The bootstrap includes a v1-only smoke test and must not reset a later model."""
+    existing = k('get', 'inferenceservice/synthetic-esci-judge', '-n', 'lab-models',
+                 '-o', 'json', check=False)
+    if existing.returncode:
+        return
+    model = json.loads(existing.stdout)['spec']['predictor']['model']
+    expected = re.search(r'storageUri: (\S+)',
+                         (SOURCES / 'kserve-model.yaml').read_text(encoding='utf-8')).group(1)
+    if model.get('storageUri') != expected or model.get('runtime') != 'synthetic-judge-runtime':
+        raise ValueError('A replacement judgement model is installed. This bootstrap would '
+                         'reset it to v1. Use docs/esci-model-installation.md for model '
+                         'verification, promotion and rollback.')
+
+
 def wait_ready(million=False):
     guard()
+    guard_bootstrap_model()
     k('wait', '--for=condition=Ready', 'externalsecret', '--all', '-n', 'lab-models',
       '--timeout=180s')
     k('rollout', 'status', 'statefulset/mlflow-postgres', '-n', 'lab-models',
@@ -66,6 +83,7 @@ def wait_ready(million=False):
 
 def install(million=False):
     guard()
+    guard_bootstrap_model()
     expected = 'j1-' + source_sha256()[:16]
     for name in ('mlflow-values.yaml', 'register-model.yaml', 'kserve-model.yaml',
                  'judgement-service.yaml', 'judgement-service-million.yaml'):

@@ -4,6 +4,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import math
 from pathlib import Path
 import sys
 from urllib import request
@@ -54,6 +55,8 @@ def require_content(path, manifest, kind):
 
 
 def service_client(url, context, model_identity, timeout=10):
+    if not math.isfinite(timeout) or not 0 < timeout <= 900:
+        raise ValueError('Resolution timeout must be between zero and 900 seconds.')
     if not url.startswith(('http://', 'https://')):
         raise ValueError('KServe URL needs an HTTP(S) scheme.')
 
@@ -140,6 +143,8 @@ def main():
                  'query-manifest', 'source-judgements', 'source-manifest', 'output'):
         parser.add_argument('--' + name, required=True, type=Path)
     parser.add_argument('--resolve-url', required=True)
+    parser.add_argument('--resolve-timeout', type=float, default=10,
+                        help='Seconds per resolution batch; use 130 for the v3 candidate')
     parser.add_argument('--model-name', required=True)
     parser.add_argument('--model-version', required=True)
     parser.add_argument('--model-artifact-sha256', required=True)
@@ -154,7 +159,7 @@ def main():
     result = prepare(args.observations, args.specification, args.catalogue,
                      args.catalogue_manifest, args.query_manifest,
                      args.source_judgements, args.source_manifest, args.output,
-                     service_client(args.resolve_url, context, model), model)
+                     service_client(args.resolve_url, context, model, timeout=args.resolve_timeout), model)
     print(json.dumps(result, sort_keys=True))
 
 

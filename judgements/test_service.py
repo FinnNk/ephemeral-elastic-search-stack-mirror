@@ -3,11 +3,25 @@
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch, MagicMock
+import json
 
-from service import JudgementService
+from service import JudgementService, kserve_predict
 
 
 class ServiceTests(unittest.TestCase):
+    def test_predict_timeout_is_explicit_and_identity_still_checked(self):
+        with patch('service.request.urlopen') as open_url:
+            reply = MagicMock()
+            reply.read.return_value = json.dumps({'model': self.model, 'predictions': []}).encode()
+            open_url.return_value.__enter__.return_value = reply
+            self.assertEqual(kserve_predict('http://example.invalid/predict', [], self.model,
+                                           timeout=120), [])
+            self.assertEqual(open_url.call_args.kwargs['timeout'], 120)
+            with self.assertRaises(ValueError):
+                kserve_predict('http://example.invalid/predict', [], self.model,
+                               timeout=float('nan'))
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)

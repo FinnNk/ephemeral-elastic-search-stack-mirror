@@ -41,11 +41,24 @@ Run again with another observation set and a new output directory when recall ch
 
 ## Replace the model
 
+For the selected **Larger v3 + learned score mapping** candidate, follow the
+[installation guide](esci-model-installation.md). It includes a self-contained
+MLflow bundle, a separate CUDA runtime and guarded promotion manifests. Its
+research operating point does not establish accuracy on the synthetic lab data.
+The stack bootstrap refuses to reset an installed replacement to the original
+all-abstaining version.
+
 Register a new model version in MLflow with the same input/output contract: each pair produces `labelled` plus `E`, `S`, `C` or `I`, or `abstain`. Pin the numbered version and artefact digest in the KServe `storageUri` and judgement-service model ConfigMap. Deploy and verify both pins together. The storage initialiser reuses a complete matching model on restart and refuses changed or partial bytes; every prediction includes the verified identity, which the judgement API checks. A registry alias can select a version for a future deployment, but an evaluation records the exact version and digest.
 
 If the local SeaweedFS container is restarted, rerun `python lab/setup_judgement_secrets.py` to refresh the lab-only `model-artifacts` EndpointSlice to its current Docker IP. Rerun `python lab/setup_nexus.py` if the local Nexus container is restarted for the same reason. On Azure, object storage endpoints are supplied by the platform and do not use these local EndpointSlices.
 
 The numeric grade mapping is `I=0`, `C=1`, `S=2`, `E=3`. No label is inferred from abstention or a failed call. New model labels are cached only under that exact version and frozen source scope. Source labels always take precedence.
+
+The judgement API defaults to an eight-second predictor timeout. A slower model
+can set `JUDGEMENT_PREDICT_TIMEOUT_SECONDS` (positive, at most 600); use a larger
+`--resolve-timeout` on `judgements/evaluate.py` or `judgements/prepare.py`
+(default 10, at most 900). The candidate guide starts at 120 and 130 seconds
+respectively; these limits still require live throughput validation.
 
 ## Limits of this slice
 
