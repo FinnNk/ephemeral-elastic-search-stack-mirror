@@ -1,4 +1,5 @@
 import json
+import hashlib
 import threading
 import urllib.error
 import urllib.request
@@ -6,7 +7,7 @@ import unittest
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from control_api import Handler
 from control_identity import Sessions
@@ -23,6 +24,15 @@ class EmptyStore:
         if instance_id == 'other':
             return {'id': 'other', 'name': 'lab-other', 'state': 'ready',
                     'owner': 'bob', 'expires_at': '2099-01-01T00:00:00Z'}
+        return None
+
+    def get_comparison(self, comparison_id):
+        if comparison_id == 'notebook-demo':
+            payload = b'{"cells":[],"nbformat":4}'
+            return {'id': comparison_id, 'baseline_id': 'known', 'candidate_id': 'known',
+                    'summary': {'notebook': {'state': 'complete',
+                        'executed_blob': 'runs/notebooks/demo.ipynb',
+                        'executed_sha256': hashlib.sha256(payload).hexdigest()}}}
         return None
 
 
@@ -89,12 +99,31 @@ class LocalControlApi(unittest.TestCase):
         request = urllib.request.Request(self.base + '/api/comparisons', method='POST',
             data=json.dumps({'baseline_id': 'known', 'candidate_id': 'other',
                              'mode': 'relevance', 'query_manifest_sha256': 'a' * 64,
-                             'judgement_manifest_sha256': 'b' * 64}).encode(),
+                             'judgement_manifest_sha256': 'b' * 64,
+                             'notebook': 'comparison-explorer.ipynb'}).encode(),
             headers={'Cookie': cookie, 'Content-Type': 'application/json', 'X-Lab-Intent': '1'})
         with urllib.request.urlopen(request) as response:
             self.assertEqual(response.status, 201)
         self.assertEqual(Handler.controller.last_comparison[3]['query_manifest_sha'], 'a' * 64)
         self.assertEqual(Handler.controller.last_comparison[3]['judgement_manifest_sha'], 'b' * 64)
+        self.assertEqual(Handler.controller.last_comparison[3]['notebook'], 'comparison-explorer.ipynb')
+
+    def test_executed_notebook_download_checks_owner_and_hash(self):
+        cookie = self.login('alice')
+        blob = Mock()
+        blob.download_blob.return_value.readall.return_value = b'{"cells":[],"nbformat":4}'
+        account = Mock()
+        account.get_blob_client.return_value = blob
+        with patch('control_api.service', return_value=account):
+            request = urllib.request.Request(self.base + '/api/comparisons/notebook-demo/notebook',
+                                             headers={'Cookie': cookie})
+            with urllib.request.urlopen(request) as response:
+                self.assertEqual(response.headers['Content-Type'], 'application/x-ipynb+json')
+                self.assertEqual(response.read(), b'{"cells":[],"nbformat":4}')
+            blob.download_blob.return_value.readall.return_value = b'changed'
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(request)
+            self.assertEqual(error.exception.code, 502)
 
     def test_mutation_requires_json_intent_header(self):
         request = urllib.request.Request(self.base + '/api/environments', method='POST', data=b'{}',

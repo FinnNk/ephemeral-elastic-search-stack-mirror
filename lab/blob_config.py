@@ -43,8 +43,9 @@ def service():
     return BlobServiceClient(account_url=account_url, credential=credential(local))
 
 
-def signed_read_url(blob_name, expiry):
-    account_url, container, pod_url, local = settings()
+def signed_read_url(blob_name, expiry, container=None):
+    account_url, default_container, pod_url, local = settings()
+    container = container or default_container
     if local:
         sas = generate_blob_sas('devstoreaccount1', container, blob_name, account_key=DEMO_KEY,
                                 permission=BlobSasPermissions(read=True), expiry=expiry)

@@ -98,6 +98,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             performance = container "Gatling load job" "Measures API latency, throughput and errors under pinned load." "Kubernetes Job / Gatling OSS Java SDK" {
                 tags "Job"
             }
+            notebook = container "Exploratory notebook job" "Runs a selected notebook on a retained comparison report." "Kubernetes Job / Papermill" {
+                tags "Job"
+            }
             indexing = container "Index build job" "Builds a shared or dedicated index from a pinned catalogue recipe." "Kubernetes Job / Elasticsearch bulk API" {
                 tags "Job"
             }
@@ -192,6 +195,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         }
         kube -> evaluation "Runs comparison" "Job"
         kube -> performance "Runs scheduled load test" "Job"
+        kube -> notebook "Runs optional report analysis" "Job"
         kube -> indexing "Runs mapping build" "Job"
         search -> elastic "Retrieves products with scoped credentials" "Elasticsearch REST"
         search -> gateway "Exports request traces and unsampled SLI counts" "OTLP/HTTP"
@@ -218,6 +222,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         mlflow -> modelStore "Stores model artefacts" "S3 locally"
         performance -> search "Loads one pinned API at a time" "Public search API / HTTP"
         performance -> artifacts "Reads compiled workload; saves reports" "Azure Blob API"
+        api -> notebook "Submits selected notebook after report retention" "Kubernetes Job"
+        notebook -> artifacts "Reads frozen comparison report" "Read-only Blob URL"
+        notebook -> api "Returns executed notebook for retention" "Job output"
         indexing -> artifacts "Reads immutable catalogue" "Azure Blob API"
         indexing -> elastic "Builds a recipe-marked frozen index" "Bulk REST API"
         elastic -> snapshots "Saves and restores recipe-matched index copies" "S3 locally / Azure Blob proposed"
@@ -288,6 +295,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance evaluation
                         containerInstance performance
                     }
+                    deploymentNode "Exploratory notebooks" "Optional finite jobs over retained reports" "lab-notebooks namespace" {
+                        containerInstance notebook
+                    }
                     deploymentNode "Independent input and scoring jobs" "Finite producer and evaluator" "lab-data and lab-offline-evaluation / Jobs" {
                         containerInstance producer
                         containerInstance offline
@@ -346,6 +356,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     deploymentNode "Comparison workers" "Reserved load-generator resources; lab-owned namespace" "Separate worker pool / quotas" {
                         containerInstance evaluation
                         containerInstance performance
+                        containerInstance notebook
                     }
                     deploymentNode "Independent input and scoring jobs" "Separate artifact producers and evaluator" "Namespaces / jobs" {
                         containerInstance producer
@@ -368,7 +379,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         }
         container lab "03-evaluation" {
             title "C4 Containers — API capture, index and load checks"
-            include generator artifacts indexing elastic snapshots search evaluation performance judgementApi kserve mlflow modelStore
+            include generator artifacts indexing elastic snapshots search evaluation performance notebook judgementApi kserve mlflow modelStore
             autolayout lr
         }
         container delivery "18-delivery" {
