@@ -246,6 +246,28 @@ class LifecycleContract(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.service.compare(baseline['id'], baseline['id'], 'relevance')
 
+    def test_exploratory_notebook_is_recorded_without_changing_verdict(self):
+        baseline = self.service.create('lab-baseline', 3)
+        candidate = self.service.create('lab-candidate', 4)
+        self.service.comparator = lambda _a, _b, mode: {
+            'complete': True, 'verdict': 'unchanged', 'report_sha256': 'd' * 64,
+            'report_blob': 'runs/report.json', 'mode': mode}
+        with patch('notebook_task.run', side_effect=RuntimeError('Notebook failed')):
+            failed = self.service.compare(baseline['id'], candidate['id'], 'result-regression',
+                notebook='comparison-explorer.ipynb')
+        self.assertEqual((failed['state'], failed['verdict']), ('complete', 'unchanged'))
+        self.assertEqual(failed['summary']['notebook']['state'], 'failed')
+        with patch('notebook_task.run', return_value={
+                'state': 'complete', 'source': 'comparison-explorer.ipynb',
+                'executed_sha256': 'e' * 64, 'executed_blob': 'runs/notebooks/example.ipynb'}):
+            passed = self.service.compare(baseline['id'], candidate['id'], 'result-regression',
+                notebook='comparison-explorer.ipynb')
+        self.assertEqual(passed['summary']['notebook']['state'], 'complete')
+        self.assertEqual(passed['verdict'], 'unchanged')
+        with self.assertRaisesRegex(ValueError, 'packaged exploratory notebook'):
+            self.service.compare(baseline['id'], candidate['id'], 'result-regression',
+                notebook='../outside.ipynb')
+
     def test_long_comparison_leaves_activity_responsive_and_pins_its_environments(self):
         baseline = self.service.create('lab-baseline', 3)
         candidate = self.service.create('lab-candidate', 4)

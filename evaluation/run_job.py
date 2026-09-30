@@ -8,10 +8,12 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import time
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'lab'))
 STATE = Path(os.environ.get('LAB_STATE_DIR', ROOT / '.lab'))
 NAMESPACE = 'lab-offline-evaluation'
 KUBE = ['kubectl', '--kubeconfig', str(STATE / 'kubeconfig.yaml')]
@@ -57,7 +59,11 @@ def main():
     parser.add_argument('--query-manifest', required=True, type=Path)
     parser.add_argument('--judgement-manifest', required=True, type=Path)
     parser.add_argument('--evaluated-at')
+    parser.add_argument('--notebook', help='Packaged exploratory notebook to run after report retention')
     args = parser.parse_args()
+    if args.notebook:
+        from notebook_task import source
+        source(args.notebook)
     if args.evaluated_at and datetime.fromisoformat(args.evaluated_at.replace('Z', '+00:00')).utcoffset() is None:
         raise ValueError('Evaluation time must include a UTC offset.')
     if kubectl('config', 'current-context').stdout.strip() != 'k3d-relevance-lab':
@@ -153,12 +159,22 @@ def main():
         logs = kubectl('logs', 'job/' + name, '-n', NAMESPACE, check=False)
         if logs.returncode:
             raise RuntimeError('Offline evaluator Job logs unavailable: ' + logs.stderr[-800:])
-        print(json.dumps({'job': name, **json.loads(logs.stdout.splitlines()[-1])}, sort_keys=True))
+        result = {'job': name, **json.loads(logs.stdout.splitlines()[-1])}
     finally:
         kubectl('delete', 'job/' + name, '-n', NAMESPACE,
                 '--ignore-not-found', '--wait=true', check=False)
         kubectl('delete', 'secret/' + secret_name, '-n', NAMESPACE,
                 '--ignore-not-found', check=False)
+    if args.notebook:
+        try:
+            from notebook_task import run as run_notebook
+            report = result['report']
+            result['notebook'] = run_notebook(args.notebook, report['sha256'], report['blob'])
+        except Exception as error:
+            result['notebook'] = {'state': 'failed', 'source': args.notebook,
+                                  'error': str(error)[:200] if isinstance(error, ValueError)
+                                  else type(error).__name__}
+    print(json.dumps(result, sort_keys=True))
 
 
 if __name__ == '__main__':

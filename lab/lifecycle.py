@@ -578,7 +578,10 @@ class Lifecycle:
 
     @operation('comparison.evaluate')
     def compare(self, baseline_id, candidate_id, mode, profile='probe', scope='full',
-                query_manifest_sha=None, judgement_manifest_sha=None):
+                query_manifest_sha=None, judgement_manifest_sha=None, notebook=None):
+        if notebook is not None:
+            from notebook_task import source
+            source(notebook)
         if baseline_id == candidate_id:
             raise ValueError('Select two distinct environments.')
         with self.lock:
@@ -646,6 +649,14 @@ class Lifecycle:
         except Exception as error:
             return self.store.update_comparison(comparison_id, state='failed',
                 updated_at=stamp(self.clock()), error=type(error).__name__ + ': ' + str(error))
+        if notebook is not None:
+            try:
+                from notebook_task import run
+                summary['notebook'] = run(notebook, summary['report_sha256'], summary['report_blob'])
+            except Exception as error:
+                summary['notebook'] = {'state': 'failed', 'source': notebook,
+                                       'error': str(error)[:200] if isinstance(error, ValueError)
+                                       else type(error).__name__}
         return self.store.update_comparison(comparison_id,
             state='complete' if summary['complete'] else 'incomplete',
             updated_at=stamp(self.clock()), report_sha256=summary['report_sha256'],

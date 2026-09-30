@@ -70,6 +70,9 @@ def prepare_config(image, baseline_run):
         'HELM_CONFIG_HOME': '/state/helm-config',
         'HELM_DATA_HOME': '/state/helm-data',
     }
+    notebook_image = STATE / 'notebook-image.json'
+    if notebook_image.exists():
+        data['LAB_NOTEBOOK_IMAGE'] = json.loads(notebook_image.read_text(encoding='utf-8'))['image']
     apply({'apiVersion': 'v1', 'kind': 'ConfigMap',
            'metadata': {'name': 'lab-control-config', 'namespace': NAMESPACE}, 'data': data})
     from keyvault import managed
@@ -232,6 +235,8 @@ def bind_existing_namespaces():
 
 def staged(image, baseline_run):
     base()
+    from install_notebooks import install as install_notebooks
+    install_notebooks()
     prepare_config(image, baseline_run)
     bind_existing_namespaces()
     active = k('get', 'deployment/lab-control', '-n', NAMESPACE, check=False).returncode == 0

@@ -109,6 +109,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(200, {release_id: available_kinds(release_id) for release_id in RELEASES})
         if parts == ['api', 'input-sets']:
             return self.send_json(200, DEFAULTS)
+        if parts == ['api', 'notebooks']:
+            from notebook_task import available
+            return self.send_json(200, available())
         if parts == ['api', 'environments']:
             return self.send_json(200, [row for row in self.controller.store.all() if self.visible(row, identity)])
         if parts == ['api', 'comparisons']:
@@ -131,6 +134,15 @@ class Handler(BaseHTTPRequestHandler):
                 if hashlib.sha256(payload).hexdigest() != row['report_sha256']:
                     return self.send_json(502, {'error': 'Saved report hash differs from its record.'})
                 return self.send_bytes(200, payload, 'application/json; charset=utf-8')
+            if len(parts) == 4 and parts[3] == 'notebook':
+                notebook = (row.get('summary') or {}).get('notebook') or {}
+                if notebook.get('state') != 'complete':
+                    return self.send_json(409, {'error': 'Comparison has no executed notebook.'})
+                container, blob_name = notebook['executed_blob'].split('/', 1)
+                payload = service().get_blob_client(container, blob_name).download_blob().readall()
+                if hashlib.sha256(payload).hexdigest() != notebook['executed_sha256']:
+                    return self.send_json(502, {'error': 'Executed notebook hash differs from its record.'})
+                return self.send_bytes(200, payload, 'application/x-ipynb+json')
         if len(parts) >= 3 and parts[:2] == ['api', 'environments']:
             row = self.controller.store.get(parts[2])
             if row is None:
@@ -216,7 +228,8 @@ class Handler(BaseHTTPRequestHandler):
                                               profile=payload.get('profile', 'probe'),
                                               scope=payload.get('scope', 'full'),
                                               query_manifest_sha=payload.get('query_manifest_sha256') or None,
-                                              judgement_manifest_sha=payload.get('judgement_manifest_sha256') or None)
+                                              judgement_manifest_sha=payload.get('judgement_manifest_sha256') or None,
+                                              notebook=payload.get('notebook') or None)
                 return self.send_json(201 if row['state'] == 'complete' else 202, row)
             if len(parts) == 4 and parts[:2] == ['api', 'environments']:
                 if not self.visible(self.controller.store.get(parts[2]), identity):
