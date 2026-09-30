@@ -113,4 +113,5 @@ def register(
         "implementation_sha256": implementation,
         "qualification": "pending",
         "reused": reused,
+        "verified_local_path": str(path),
     }

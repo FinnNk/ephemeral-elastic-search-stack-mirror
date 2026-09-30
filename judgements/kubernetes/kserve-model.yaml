@@ -14,7 +14,7 @@ metadata:
 spec:
   container:
     name: storage-initializer
-    image: nexus.localhost:18185/relevance-judge:j1-d8cfdaf005e8bb88-amd64
+    image: nexus.localhost:18185/relevance-judge:j1-b6a821a49492315e-amd64
     command: [python, /app/fetch_model.py]
     env:
       - name: MLFLOW_TRACKING_URI
@@ -43,7 +43,7 @@ spec:
       autoSelect: false
   containers:
     - name: kserve-container
-      image: nexus.localhost:18185/relevance-judge:j1-d8cfdaf005e8bb88-amd64
+      image: nexus.localhost:18185/relevance-judge:j1-b6a821a49492315e-amd64
       command: [python, /app/predictor.py]
       env:
         - name: MODEL_DIR

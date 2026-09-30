@@ -44,7 +44,7 @@ source, and the existing 80% judged-coverage gate remains in force.
 | Ignored registration receipt | Numbered MLflow URI, model-tree digest and implementation digest |
 
 The built assets occupy **8,691,339,810 bytes (8.69 GB / 8.09 GiB)**, excluding the
-small MLflow wrapper and the CUDA image. Allow at least three copies of the model
+small MLflow wrapper and the CUDA image (Docker reports **3.39 GB**). Allow at least three copies of the model
 during registration/download/staging, plus the source checkpoint, runtime image
 and registry storage. The storage initialiser stages a download before copying it
 to `/mnt/models`; budget at least 18 GB of temporary space for that step.
@@ -115,51 +115,71 @@ A completed bundle can be reused. A partial or changed bundle fails verification
 preserve it for diagnosis and choose a new output directory. Do not overwrite
 canaries or failed qualification evidence.
 
-## 3. Register in the lab's MLflow
+## 3. Publish the runtime and API images
 
 The existing [judgement stack](judgement-resolution.md#start-or-verify-the-stack)
-must already be installed. Keep this port forward running in a second terminal:
-
-```powershell
-kubectl --kubeconfig "$env:LAB_STATE_DIR/kubeconfig.yaml" -n lab-models port-forward service/mlflow-mlflow 5000:5000
-```
-
-Then register the bundle. The server uses its existing object-store credentials;
-the client does not need an S3 secret.
-Keep transfers through the MLflow proxy: the lab's presigned S3 addresses resolve
-inside Kubernetes and are not reachable directly from the laptop.
-
-```powershell
-& $py lab/install_judgement_model.py register --bundle "$pack/esci-v3-score-map" --tracking-uri http://127.0.0.1:5000 --receipt "$pack/registration.json"
-```
-
-This uploads a self-contained MLflow pyfunc and writes its version/digest receipt.
-The active service and its model pin are unchanged. Repeat the command to verify
-and reuse the registration. Keep the receipt beside the release. Protect registry
-and object-store access: MLflow models include executable Python code.
-
-## 4. Publish the separate runtime image
+must already be installed. Publish the separate CUDA runtime:
 
 ```powershell
 & $py lab/publish_esci_image.py
 $image = (Get-Content "$env:LAB_STATE_DIR/esci-image.json" -Raw | ConvertFrom-Json).image
-& $py lab/install_judgement_model.py render --receipt "$pack/registration.json" --image $image --output "$pack/candidate.json"
 ```
 
-The publisher uses the lab's existing Nexus publisher credentials without
-printing them. It records the immutable registry digest in `esci-image.json`.
-The image contains dependencies and serving code; it does not contain model
-weights. The generated candidate has a separate service name and no live model
-ConfigMap. Existing CPU images remain usable for MLflow, the storage initialiser
-and the judgement API.
-
+The publisher uses the lab's existing Nexus publisher credentials and records
+the immutable registry digest in `esci-image.json`. The image contains
+dependencies and serving code. Model weights are stored separately in MLflow.
 Publish the updated CPU API image too; it adds a configurable model-call timeout
-while preserving the existing default for the all-abstaining model:
+while preserving the default for the all-abstaining model:
 
 ```powershell
 & $py lab/publish_judgement_image.py --platforms amd64
 $apiImage = (Get-Content "$env:LAB_STATE_DIR/judgement-image.json" -Raw | ConvertFrom-Json).image
 ```
+
+## 4. Register in the lab's MLflow
+
+Use the local helper on this Windows/k3d installation. Two full-size transfers
+through `kubectl port-forward` stalled during verification. The helper keeps
+large transfers on the lab's Docker network:
+
+```powershell
+& $py lab/register_esci_local.py --bundle "$pack/esci-v3-score-map" --receipt "$pack/registration.json" --image $image
+```
+
+It runs without GPU access, mounts the bundle and source read-only, and shares
+the existing `k3d-observability-0` node's network namespace. A hosts-file mount
+inside the helper resolves the MLflow and object-store services. Chunked,
+presigned transfers go directly to the object store, preserving MLflow's
+allowed-host check and avoiding its 2 GiB server-memory limit. No node hosts
+file or registry resource settings are changed.
+The downloaded, verified MLflow directory is retained under
+`$pack/registration-tmp`; the receipt records its host path for offline checks.
+
+This uploads a self-contained MLflow pyfunc and writes its version/digest receipt.
+The server uses its existing object-store credentials; the client needs no S3
+secret. Repeat the command to verify and reuse the registration. Keep the receipt
+beside the release. The active service and its model pin are unchanged.
+
+For another installation with a directly reachable tracking endpoint, the
+portable registration command is:
+
+```powershell
+& $py lab/install_judgement_model.py register --bundle "$pack/esci-v3-score-map" --tracking-uri $trackingUri --receipt "$pack/registration.json"
+```
+
+Set `$trackingUri` to that installation's MLflow URL. Large-file transport outside
+the supplied local helper requires separate verification: presigned addresses
+must be reachable, and proxying this model caused an OOM in the lab's 2 GiB
+MLflow Pod. The local helper explicitly enables direct multipart transfer.
+
+Generate candidate manifests after registration:
+
+```powershell
+& $py lab/install_judgement_model.py render --receipt "$pack/registration.json" --image $image --output "$pack/candidate.json"
+```
+
+The candidate uses a separate service name and has no live model ConfigMap.
+Existing CPU images remain usable for MLflow and the storage initialiser.
 
 ## 5. Qualify on a GPU before promotion
 
@@ -256,7 +276,7 @@ uv pip install --python $py -r lab/requirements-azure.txt -r lab/requirements-ev
 & $py -m pytest -q judgements/esci/test_release.py
 & $py -m unittest discover -s lab -p test_esci_bootstrap_guard.py -v
 & $py -m unittest discover -s judgements -p 'test_*.py' -v
-& $py -m ruff check judgements/esci lab/install_judgement_model.py lab/publish_esci_image.py --ignore E402
+& $py -m ruff check judgements/esci lab/install_judgement_model.py lab/publish_esci_image.py lab/register_esci_local.py --ignore E402
 ```
 
 The tests cover exported mapping parity, input text, abstention boundaries,

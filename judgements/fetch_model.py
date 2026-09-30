@@ -22,8 +22,11 @@ def tree_digest(directory):
     """Hash paths and bytes, so a model version also pins its artefact content."""
     root = Path(directory)
     value = hashlib.sha256()
-    for path in sorted(item for item in root.rglob('*') if item.is_file() and
-                       item.relative_to(root).as_posix() != '.model-identity.json'):
+    # Path ordering is case-insensitive on Windows. Sort POSIX strings explicitly
+    # so a Windows registration matches the Linux storage initialiser's digest.
+    paths = (item for item in root.rglob('*') if item.is_file() and
+             item.relative_to(root).as_posix() != '.model-identity.json')
+    for path in sorted(paths, key=lambda item: item.relative_to(root).as_posix()):
         value.update(path.relative_to(root).as_posix().encode())
         value.update(b'\0')
         with path.open('rb') as stream:
