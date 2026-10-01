@@ -18,13 +18,13 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
-The [documentation authorship review](documentation-authorship.md) is accepted on main. D1, current operating guides, is accepted on main, including two maintained UI/notebook illustrations. [D2: evaluation and delivery](documentation-evaluation-delivery.md) is implemented for review. [D3: models and observability](documentation-model-observability.md) is implemented for review. The next documentation batch is [D4: design and navigation](documentation-design-navigation.md). Canonical HTTPS control routing and secure session cookies remain a separate implementation gap; other validation gates below remain separate.
+The [documentation authorship review](documentation-authorship.md) is accepted on main. D1, current operating guides, is accepted on main, including two maintained UI/notebook illustrations. [D2: evaluation and delivery](documentation-evaluation-delivery.md) is implemented for review. [D3: models and observability](documentation-model-observability.md) is implemented for review. [D4: design and navigation](documentation-design-navigation.md) is implemented for review. The next documentation batch is [D5: historical records and final review](documentation-historical-final-review.md). Canonical HTTPS control routing and secure session cookies remain a separate implementation gap; other validation gates below remain separate.
 
 The project-side [developer guide and disconnected demo batch](developer-guide-demo.md) is accepted on main. It adds workstation trust instructions, explicit browser access, a separate in-memory search demo and illustrated delivery/evaluation guides. The source code change still needs exact-commit lab evidence before merge; mock demo results cannot satisfy that gate.
 
 The [documentation relevance gate batch](documentation-relevance-gate.md) is accepted and active on source main. It retains application checks, exempts only the two source README paths and runs the relevance decision from the trusted target revision. Main protection requires both checks and review. The rebased README PR passed both checks and is merged to source main. The next step is the developer walkthrough. The [evidence](../research/evidence/documentation-relevance-gate.md) records the protected fixture controls and activation checks.
 
-The [MLflow and KServe judgement coverage plan](mlflow-kserve-judgement-coverage.md) adds a two-stage relevance evaluation: capture both recall sets, resolve their union, freeze one judgement snapshot and score both sides. Its first model abstains on every pair. All five local implementation batches are ready as a review stack; the existing control UI retains its selected-judgement route. The [local evidence](../research/evidence/mlflow-kserve-judgement-coverage.md) records the 1M cache correction and low coverage. This does not close the unrelated gates below.
+The [MLflow and KServe judgement coverage plan](mlflow-kserve-judgement-coverage.md) adds a two-stage relevance evaluation: capture both recall sets, resolve their union, freeze one judgement snapshot and score both sides. Its first model abstains on every pair. The local implementation batches are accepted on main; the existing control UI retains its selected-judgement route. The [local evidence](../research/evidence/mlflow-kserve-judgement-coverage.md) records the 1M cache correction and low coverage. This does not close the unrelated gates below.
 
 The next judgement-specific batch is [control UI integration](judgement-control-integration.md): launch the verified resolver as a finite Job from retained observations and show frozen coverage and lineage in the UI.
 
@@ -32,15 +32,26 @@ The [model observability batch](model-observability.md) adds a source-controlled
 
 The four [offline variant batches](offline-variants-and-gates.md) are merged on Gitea `main`: N-way capture and scoring, a selected-variant merge gate, a [live million-product proof](../research/evidence/offline-variants-million.md), and an [Argo-managed source CI rehearsal](../research/evidence/managed-variant-gate.md). The live model abstained on 10,946 gaps, leaving coverage below the 80% minimum; CI blocked the result. A separate, explicitly synthetic full-coverage fixture passed CI. The [operator decision rehearsal](variant-gate-operator-validation.md) is the next variant-specific check; it needs a real human release choice and better judged evidence. A two-version replacement needs no online traffic split. The GitHub offsite review stack remains open.
 
-1. [SigNoz backend and signal transport](signoz-backend-and-investigation.md) is ready for review. The backend, gateway and log agent are deployed; the agent organisation is bootstrapped and all three signal types have stored records.
-2. [SigNoz account and SLO dashboard](signoz-connected-investigation.md) is ready for review. The owner invitation is pending activation; the dashboard and synthetic interval checks are live.
-3. [Finite Job telemetry](signoz-connected-runtime.md) is ready for review; the producer and evaluator run as digest-pinned Jobs and their safe outcome logs reach SigNoz.
-4. [Seven-day window assessment](signoz-window-coverage.md) is ready for review; synthetic fixtures verify totals and unknown-on-gap behaviour.
-5. [Connected investigation and overhead](signoz-investigation-overhead.md) has a finite live ledger/counter join, outage check and retained overhead runs ready for review. The four overhead runs missed the arrival gate, so the result is inconclusive.
-6. [Merged-release investigation rehearsal](signoz-merged-release-rehearsal.md) closes the instrumented three-target, browser and valid overhead gates after the pending source stack is accepted.
+1. [SigNoz backend and signal transport](signoz-backend-and-investigation.md) is accepted on main. The backend, gateway and log agent are deployed; the agent organisation is bootstrapped and all three signal types have stored records.
+2. [SigNoz account and SLO dashboard](signoz-connected-investigation.md) is accepted on main. The dashboard and synthetic interval checks are installed; account access follows the current operator guide.
+3. [Finite Job telemetry](signoz-connected-runtime.md) is accepted on main; the producer and evaluator run as digest-pinned Jobs and their safe outcome logs reach SigNoz.
+4. [Seven-day window assessment](signoz-window-coverage.md) is accepted on main; synthetic fixtures verify totals and unknown-on-gap behaviour.
+5. [Connected investigation and overhead](signoz-investigation-overhead.md) is accepted on main with a finite live ledger/counter join, outage check and retained overhead runs. The four overhead runs missed the arrival gate, so the result is inconclusive.
+6. [Merged-release investigation rehearsal](signoz-merged-release-rehearsal.md) closes the instrumented three-target, browser and valid overhead gates using a verified instrumented merged-source release.
 7. [Native and cloud validation](native-cloud-validation.md): run the full lifecycle on Apple silicon and Azure/GHES, including New Relic ingestion.
 8. [Azure Key Vault delivery](azure-keyvault-validation.md): prove the unchanged Kubernetes Secret targets with ESO's Azure provider, Workload Identity and real vault policy.
 9. [HTTPS Git clients](https-client-transport.md) are implemented locally. Control, Argo CD and both runners use verified Gitea HTTPS; the search-spike fixture PR remains open.
 10. [HTTPS OCI and host transport](https-oci-transport.md): move registry push/pull and host Git/API tools to verified TLS, then check webhooks and native workstation trust.
 
 Each batch ends with evidence, an updated roadmap and the next detailed plan. Commit it to a branch and submit a PR; merge to `main` only after acceptance. A passing functional check does not establish relevance validity or performance capacity.
+
+Documentation status was checked against Gitea PRs #32–#59: the implementation
+batches listed above are merged. That does not imply their outstanding runtime
+or cloud acceptance criteria passed. GitHub backup status is separate from the
+primary implementation record.
+
+Two editorial checks found implementation gaps: canonical HTTPS control
+routing/session cookies, and unsupported non-empty filters accepted by the
+capture contract. The latter must reject unsupported inputs before recording
+observations; the current generated suites use empty filters. These need
+separate code batches, not stronger wording in the guides.

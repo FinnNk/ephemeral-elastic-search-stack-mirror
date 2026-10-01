@@ -1,12 +1,12 @@
 page,purpose,review_scope,follow_up
 README.md,guide/reference,Reader-path content review,Entry-point corrections in this batch; related operating procedures in D1-D4
 docs/adr/ADR-0001-reconcile-environments-from-git.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
-docs/adr/README.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/adr/README.md,decision,"Structure, opening, navigation and historical/current distinction",D4 corrected; awaiting review. Current status reconciled; historical/formal validation limits preserved.
 docs/adr/template.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/control-runtime.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
 docs/data-evaluation-contracts.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
 docs/delivery.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
-docs/diagrams/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/diagrams/README.md,guide/reference,Reader-path content review,D4 corrected; awaiting review. Current status reconciled; historical/formal validation limits preserved.
 docs/esci-model-installation.md,guide/reference,Reader-path content review,D3 corrected; awaiting review. Runtime/cloud qualification limits retained.
 docs/https-git-transport.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
 docs/https-ingress.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
@@ -16,7 +16,7 @@ docs/keyvault-secrets.md,guide/reference,Reader-path content review,D1 corrected
 docs/nexus.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
 docs/observability-backend.md,guide/reference,Reader-path content review,D3 corrected; awaiting review. Runtime/cloud qualification limits retained.
 docs/observability-foundation.md,guide/reference,Reader-path content review,D3 corrected; awaiting review. Runtime/cloud qualification limits retained.
-docs/plans/README.md,plan,"Structure, opening, navigation and historical/current distinction",Entry-point corrections in this batch; related operating procedures in D1-D4
+docs/plans/README.md,plan,"Structure, opening, navigation and historical/current distinction",D4 corrected; awaiting review. Current status reconciled; historical/formal validation limits preserved.
 docs/plans/azure-keyvault-validation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/catalogue-recipe-delivery.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/comparison-diagnostics.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
@@ -49,7 +49,7 @@ docs/plans/promotion-deployment.md,plan,"Structure, opening, navigation and hist
 docs/plans/reference-ci-cd.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/reference-clarity.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/reference-runtime-consolidation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
-docs/plans/roadmap.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/roadmap.md,plan,"Structure, opening, navigation and historical/current distinction",D4 corrected; awaiting review. Current status reconciled; historical/formal validation limits preserved.
 docs/plans/signoz-backend-and-investigation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/signoz-connected-investigation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/signoz-connected-runtime.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
@@ -63,7 +63,7 @@ docs/plans/variant-gate-operator-validation.md,plan,"Structure, opening, navigat
 docs/plans/variant-managed-gate-rehearsal.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/variant-merge-gate.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/variant-reference-proof.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
-docs/prototype-design.md,guide/reference,"Structure, opening, navigation and historical/current distinction",D1-D4: current-guide remediation
+docs/prototype-design.md,guide/reference,"Structure, opening, navigation and historical/current distinction",D4 corrected; awaiting review. Current status reconciled; historical/formal validation limits preserved.
 docs/relevance-gate.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
 docs/research/esci-synthetic-calibration.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/research/evidence/catalogue-recipe-delivery.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims

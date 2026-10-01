@@ -4,7 +4,10 @@ Open the [diagram gallery](index.html) in a browser, or start with the [system c
 
 ## Reading order
 
-The local deployment view places Traefik in `lab-ingress`, serving browser routes and the [in-cluster HTTPS Git path](../https-git-transport.md). The control API and workers run in `lab-control`; ESO in `lab-secrets` reads Floci Key Vault, and SigNoz runs on a dedicated worker. The [secret guide](../keyvault-secrets.md) identifies bootstrap and short-lived exceptions. The control Pod has created shared, dedicated and historical environments, compared revised independent inputs through their public APIs, and verified schema-changing promotion and rollback through the three local targets. Independent synthetic input production and offline evaluation run as finite Jobs under separate images and artefact contracts; an addendum-backed promotion remains to be exercised. Search and model services export OTel through the gateway; the [backend guide](../observability-backend.md) records the connected checks and dashboards.
+The local deployment places browser ingress in `lab-ingress`, control services
+in `lab-control`, ESO in `lab-secrets` and SigNoz on a dedicated worker. The
+[current operating guides](../../lab/README.md) explain access and procedures;
+the [roadmap](../plans/roadmap.md) records measured proofs and remaining checks.
 
 The gallery groups diagrams by task. The identifiers below remain stable.
 
@@ -28,7 +31,7 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 
 | View | Contents | Editable source |
 | --- | --- | --- |
-| [18 · C4 release delivery](rendered/18-delivery.svg) | Build, artifact verification, reviewed state, Argo deployment and API verification. | [Structurizr DSL](workspace.dsl) |
+| [18 · C4 release delivery](rendered/18-delivery.svg) | Build, artefact verification, reviewed state, Argo deployment and API verification. | [Structurizr DSL](workspace.dsl) |
 | [19 · Promote a release](interactive/release-promotion.html) | Frozen baseline/candidate checks, three targets and full-definition rollback. | [Archify workflow](archify/release-promotion.json) |
 
 ### [Environment lifecycle](index.html#environment-lifecycle)
@@ -39,7 +42,7 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 | [09 · Prepare both environments](interactive/change-to-comparison.html) | Both definitions are verified before the selected check runs. | [Archify workflow](archify/change-to-comparison.json) |
 | [PR to verdict](interactive/pr-to-verdict.html) | A labelled Gitea revision resolves an exact build, two environments, four checks and PR report links. | [Archify workflow](archify/pr-to-verdict.json) |
 | [08 · Reuse a frozen index](interactive/shared-index-reuse.html) | Separate definitions and APIs reference one shared index. | [Archify architecture](archify/shared-index-reuse.json) |
-| [10 · Runtime lifecycle](interactive/environment-lifecycle.html) | Runtime removal retains the definition and its artifacts. | [Archify lifecycle](archify/environment-lifecycle.json) |
+| [10 · Runtime lifecycle](interactive/environment-lifecycle.html) | Runtime removal retains the definition and its artefacts. | [Archify lifecycle](archify/environment-lifecycle.json) |
 
 ### [Schema and index recovery](index.html#schema-and-index-recovery)
 
@@ -71,24 +74,75 @@ The Archify HTML files are standalone interactive viewers with theme, presentati
 
 ## Interpretation and scope
 
-**Lab user** covers search engineers, ML engineers and data scientists. They share the same lab capabilities; the [design document](../prototype-design.md#goal-and-boundaries) records the overlapping roles.
+**Lab user** covers search engineers, ML engineers and data scientists with shared
+lab capabilities. These overlapping roles are not access boundaries.
 
-- **C4 structure:** a container means a runnable application or data store, not necessarily a Docker container. The three container views are focused subsets of one model. Relationships describe calls/dependencies; arrow direction is not necessarily the direction of returned data. The Archify data-flow arrows show data movement.
-- **Deployment:** these views deliberately show placement and persistence without interaction arrows. Instances refer back to the same C4 containers. Experiment boxes are templates repeated per namespace, not a fixed count or a capacity claim. Index-build, evaluation and Gatling jobs are finite. Comparison jobs span both environments and run in a separate lab-owned namespace. The Azure comparison workers reserve load-generator resources. The dataset and workload generator runs on demand to publish synthetic data, traces and compiled workloads; it is not a continuously deployed service.
-- **Evaluation:** the public search API is the black-box surface. Original queries pass through query understanding, retrieval and final reranking before their ordered results are retained. The offline evaluator uses selected synthetic judgements and a pinned specification; revised judgements can rescore existing observations. The separate two-stage workflow pools B and C recall, calls the judgement API for gaps, freezes one set and scores both sides. MLflow supplies an exact version to KServe; the current model abstains. Grey-box traces explain pipeline changes; Elasticsearch `_rank_eval`, profile and explain are optional white-box diagnostics. Collect expensive diagnostic replays separately from latency measurements. The C4 view uses one Search API container type; the Archify comparison expands it into separate baseline and candidate instances.
-- **PR workflow:** the local watcher polls only open PRs carrying `lab-evaluate`; it pins the head SHA and successful build digest, then posts report links and check status. A signed webhook and build callback remain migration options, not part of the measured local path. Functional checks run in one bounded in-cluster evaluator Job per suite. The relevance report pins judgement provenance and shows unjudged IDs; it does not turn synthetic proxy scores into a quality approval.
-- **Release delivery:** a shared Actions workflow publishes Nexus releases. A new deployment pins a catalogue recipe plus query and judgement manifest hashes. The coordinator validates protected promotion PRs against those inputs and current desired state; a reviewer authorises merge. Argo CD deploys, then the coordinator verifies the API. Stable integration/staging/production targets share the local cluster. Delivery previews expire independently and retain frozen indices. The short delivery Gatling probe is not capacity evidence.
-- **Frozen environments:** each comparison records two immutable definitions, B and C. Each pins its API image, query configuration, index, catalogue and engine version. The workflow checks both runtimes against their definitions, then selects one hash-checked query suite and, for relevance, one compatible judgement set. Both APIs receive the same requests; the report retains both fingerprints, selected input hashes and ordered results.
-- **Result regression:** the same comparison runner checks whether a change preserves final ordered product IDs for every query at a pinned depth. RBO, Jaccard and rank moves explain differences. Exact equality passes; any difference fails; missing or invalid responses make the run incomplete. This workflow needs no relevance judgements. The [design contract](../prototype-design.md#result-regression-preserve-ranking-and-membership) defines scope and edge cases.
-- **Performance:** Gatling jobs replay one compiled workload against B and C sequentially, repeating three pairs with alternating order. Warm-up precedes normal, sustained-peak or stress/recovery phases. Normal/peak budgets produce phase verdicts; stress reports sustainable load, the first breach and recovery. Unstable or incomplete runs are inconclusive. Shared indices do not isolate performance. The [Gatling contract](../prototype-design.md#performance-check-the-search-api-with-gatling) defines resources, thresholds and artifacts.
-- **Traffic preparation:** all queries and timestamps are synthetic. A frozen trace feeds a versioned profile recipe; compilation freezes windows, transformations, phases, request bindings and arrival buckets into one artifact used by both APIs. One-second buckets are the initial approximation; exact event timing needs a validated spike. Reports retain planned and actual arrivals. The [traffic contract](../prototype-design.md#frozen-traffic-and-workload-contract) owns these definitions.
-- **Shared-index example:** the boundaries group logical environment references, not storage locations. Definitions remain in retained storage. B and C use different API images and the same index recipe, catalogue and engine. Both API deployments use scoped read-only access to index i1. Its name derives from the recipe hash. The catalogue and index sit outside the environment boundaries. These identifiers are illustrative. A mapping change requires a separate index from the same catalogue.
-- **Fast creation:** API/query/ranking changes reuse a compatible read-only frozen index. Mapping/analyser changes use a dedicated index from the same immutable catalogue. When an exact recipe-marked live copy exists, the control plane can clone it. A configured, verified regular snapshot can restore a missing copy; otherwise the pinned recipe rebuilds it. Engine-version experiments need an exceptional separate cluster, omitted from the normal deployment views. A shared cluster still requires scoped credentials and contention measurements.
-- **Snapshot placement:** the local S3 service runs in host Docker with its own volume, outside the Elasticsearch Pod and data PVC. This survives Elasticsearch cluster recreation on the same host. It does not survive host or Docker-volume loss. The Azure Blob snapshot container in view 06 is proposed and still requires compatibility testing.
-- **Lifecycle:** the diagram shows the normal path and one representative indexing failure/retry path. It is not a complete executable state machine. Explicit deletion must also work before readiness and after failures. A ready environment has a 72-hour lease extended by genuine activity; polling does not extend it. Closing a PR does not immediately delete its environment. The same lifecycle applies independently to baseline and candidate runtimes. Active comparisons renew both leases; manual deletion cancels dependent comparison jobs. Frozen definitions, referenced images/assets, canonical datasets and reports survive removal. Recreating a runtime uses its retained definition; it may reuse or rebuild compatible index artifacts.
-- **Migration:** local Gitea services and the future enterprise services fulfil the same logical source/build contracts. The common Actions workflow runs on Gitea; GHES execution, API adapters and branch-protection mapping still need validation. Nexus can remain the artifact repository; ACR is optional. The Azure view is a placement proposal, not a network, identity, disaster-recovery or production sizing design. The organisation's GitHub Enterprise hosting and registry remain open choices.
+### Read the boundaries
 
-The [design document](../prototype-design.md) owns requirements and target values. The [DSL](workspace.dsl) owns C4 elements and relationships. Archify sources own the complementary process views; edit both when a change affects both. Component-level C4 diagrams should follow the implementation's actual module boundaries once those exist.
+| View convention | Meaning |
+| --- | --- |
+| C4 container | Runnable application or data store, not necessarily a Docker container |
+| C4 relationship | Call or dependency; returned data can travel the other way |
+| Archify data-flow arrow | Direction of data movement |
+| Deployment instance | Placement/persistence of a C4 container; experiment boxes repeat per namespace |
+| Shared-index boundary | Logical environment references, not ownership of the physical catalogue/index |
+| Azure deployment | Proposed placement, not validated cloud networking, identity, sizing or disaster recovery |
+
+Index, capture, scoring, load and notebook Jobs are finite. Producers publish on
+demand; they are not continuously running catalogue services. Comparison Jobs
+operate in lab-owned namespaces across participating environments. Azure load
+generators reserve separate resources; the local host still shares resources.
+
+### Workflow limits
+
+- **Frozen comparisons:** A pairwise workflow verifies B and C definitions.
+  N-way relevance capture verifies every named variant, with one required default
+  and one metric baseline. Each pins image/configuration, index, catalogue and
+  engine; the execution selects one frozen request suite. Compatible elements
+  may be reused without merging the identities.
+- **Relevance:** Final public API rankings are the black-box scoring surface.
+  All selected recall sets can be pooled for missing judgements. Stored labels
+  take precedence; an exact MLflow model version served by KServe may label gaps.
+  The default model abstains. Freeze one set before scoring every variant.
+- **Diagnosis:** Grey-box records explain implemented pipeline stages; absent
+  stages are unavailable. `_rank_eval`, profile, explain and analyser checks are
+  component diagnostics. Collect costly replays separately from latency runs.
+- **Result preservation:** Exact ordered top-10 equality determines unchanged
+  results. RBO/Jaccard explain differences; incomplete responses cannot pass.
+  Relevance judgements are unnecessary for this verdict.
+- **Performance:** Gatling replays a frozen workload sequentially against B/C,
+  normally three pairs in alternating order. Warm-up is excluded from measured
+  percentiles. Normal/peak budgets, stress limits and recovery have separate
+  outcomes. Unstable load or missing evidence is inconclusive; sharing an index
+  does not isolate latency.
+- **Traffic:** Queries and timestamps are synthetic. Compilation pins windows,
+  transformations, phase/request binding and arrival buckets. One-second buckets
+  approximate source timing; exact event replay needs separate validation.
+- **Lifecycle:** Diagrams show representative paths, not executable state
+  machines. A leased runtime expires after 72 hours without genuine activity;
+  polling does not extend it. Removal cancels dependent work but retains
+  definitions, inputs and reports. Delivery targets do not expire.
+- **Recovery:** Compatible API changes reuse indices; mappings create distinct
+  recipes. Recovery selects exact reuse, live clone, regular snapshot, then
+  pinned rebuild. Engine changes use a separate cluster. Host S3 survives
+  Elasticsearch recreation but not host/volume loss.
+- **PR workflow:** The local watcher polls opted-in `lab-evaluate` PRs and pins
+  the exact successful build. Tool completion/status is not a relevance approval.
+  Signed webhooks remain a migration option.
+- **Release delivery:** Nexus retains immutable releases. Protected desired-state
+  PRs require fresh, matching evidence and review. Argo deploys; the coordinator
+  verifies the API. The three local targets share a cluster; a short Gatling
+  delivery probe is not capacity evidence.
+- **Human decisions:** Selected-variant evidence is bound to its source build.
+  A bounded exception retains reason and identity without changing scores.
+  Hard blocks remain blocked; source acceptance does not authorise deployment.
+
+The [design](../prototype-design.md) owns requirements and targets. The
+[variant guide](../variant-evaluation.md), [recovery guide](../index-recovery.md)
+and [Gatling guide](../../lab/gatling/README.md) own the executable workflows.
+The DSL owns C4 elements/relationships; Archify JSON owns process views. Edit
+both sources when their represented relationship changes. This editorial review
+changes explanations, not the model or rendered topology.
 
 ## Rebuild
 
@@ -117,6 +171,6 @@ The Node entry point avoids shell-specific build commands. It has been exercised
 
 ## Validation and provenance
 
-The current batch passed Structurizr validation and rendering for seven C4 views. Each Archify artifact passed 9/9 showcase checks with zero errors and warnings, plus desktop browser checks at 1440×900, 1600×1000, 1920×1080 and 2048×1320. These checks validate the diagrams, not system behaviour. The [visual review record](receipts/visual-review.json) identifies the reviewed artifacts separately from the generated delivery and browser receipts.
+The retained rendering receipts record Structurizr validation for seven C4 views. Each recorded Archify artefact passed 9/9 showcase checks with zero errors and warnings, plus desktop browser checks at 1440×900, 1600×1000, 1920×1080 and 2048×1320. These checks validate the diagrams, not system behaviour. The [visual review record](receipts/visual-review.json) identifies the reviewed artefacts separately from the generated delivery and browser receipts.
 
 Useful upstream references: [Structurizr DSL](https://docs.structurizr.com/dsl/language), [local binaries](https://docs.structurizr.com/binaries), [PNG/SVG export](https://docs.structurizr.com/export/png-and-svg) and [Archify](https://github.com/tt-a1i/archify). Archify's [MIT licence](notices/Archify-LICENSE.txt) and [third-party notices](notices/Archify-third-party.md) accompany the generated viewer code. No external brand marks are selected in these diagrams.

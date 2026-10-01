@@ -6,7 +6,7 @@ An engineer or data scientist can create a search environment from a frozen synt
 
 For the lab, **Lab user** covers search engineers, ML engineers and data scientists with the same workflow and capabilities. Search engineering includes relevancy and general software engineering; data science includes ML engineering and data science. These roles overlap and do not define ownership or access boundaries.
 
-The local demonstration covers the complete source-to-disposal lifecycle. It uses a self-hosted Gitea instance for repositories, pull requests and build automation, with Nexus for new delivery artifacts; no external Git provider is required for the core workflow. The eventual target uses GitHub Enterprise. Provider-specific authentication, event payloads and status reporting must therefore sit behind a small integration boundary.
+The local demonstration covers the complete source-to-disposal lifecycle. It uses a self-hosted Gitea instance for repositories, pull requests and build automation, with Nexus for new delivery artefacts; no external Git provider is required for the core workflow. The eventual target uses GitHub Enterprise. Provider-specific authentication, event payloads and status reporting must therefore sit behind a small integration boundary.
 
 | Scope | Required scale |
 | --- | --- |
@@ -19,7 +19,7 @@ Forty environments are a design and scale-validation requirement, not a promise 
 
 Experiments may change the search API, its query-understanding pipeline, Elasticsearch queries and ranking, mappings or the engine version.
 
-The core checks are **relevance**, **result preservation** and **performance**. Each compares two frozen environment definitions through their public search APIs and retains a separate verdict.
+The core checks are **relevance**, **result preservation** and **performance**. Pairwise checks compare two frozen definitions through their public APIs; N-way relevance evaluation compares every named variant with its selected baseline. Each mode retains its own verdict.
 
 Provisional first-slice targets on a warm local cluster:
 
@@ -27,7 +27,7 @@ Provisional first-slice targets on a warm local cluster:
 - Create an index-changing environment, including reindexing all 10,000 products, in **p95 ≤ 5 minutes**.
 - Go from an accepted Gitea pull-request update through tests, image build and deployment to the first correct candidate search in **p95 ≤ 8 minutes**.
 - Remove an environment on demand, including its dedicated index where applicable, in **p95 ≤ 5 minutes**.
-- Publish a cached CI release in **under 5 minutes**, and verify an approved promotion or rollback in **under 2 minutes** with retained artifacts and a warm compatible index. Promotion performs **zero rebuilds**.
+- Publish a cached CI release in **under 5 minutes**, and verify an approved promotion or rollback in **under 2 minutes** with retained artefacts and a warm compatible index. Promotion performs **zero rebuilds**.
 - Preserve identical ordered top-10 product IDs for every frozen query after a behaviour-preserving change.
 - Sustain **10 search requests/second** for five measured minutes per side with **p95 ≤ 250 ms**, **p99 ≤ 500 ms** and **< 1% failed requests**, under the constant-rate Gatling smoke profile below. Trace-derived normal, peak and stress profiles have separate durations and budgets.
 
@@ -35,192 +35,123 @@ These remain provisional acceptance targets. The [platform research](research/pl
 
 This is a relevance lab, not a production commerce platform. All products, queries, judgements and behavioural events are synthetic. Their modelling assumptions must travel with each dataset release.
 
-## Proposed architecture
+## Architecture
 
-The architecture is maintained as a [Structurizr C4 model](diagrams/workspace.dsl), with complementary Archify workflow, lifecycle and evaluation data-flow views. Open the [diagram gallery](diagrams/index.html) for all twenty-two views, or use the [diagram guide](diagrams/README.md) for their scope, editable sources and rendering commands.
+The local reference runs on Kubernetes. The [diagram gallery](diagrams/index.html) contains seven Structurizr C4 views and fifteen Archify views; [the diagram guide](diagrams/README.md) identifies their sources and scope. Azure placement remains proposed.
 
-![C4 system context: people, search relevance lab and supporting platforms](diagrams/rendered/01-context.svg)
+![C4 system context: lab users and supporting platforms](diagrams/rendered/01-context.svg)
 
-| Architecture view | Contents |
+| Responsibility | Component | Lab code/boundary |
+| --- | --- | --- |
+| Kubernetes | k3d; kind was also tested in the original research | Bootstrap and capacity settings; native Apple silicon still needs verification |
+| Elasticsearch | Self-managed cluster managed by ECK | Recipe-addressed indices, scoped credentials and a separate-cluster path for engine changes |
+| Deployment | Argo CD Git-file ApplicationSets and Helm | Publish reviewed desired state with bounded conflict retries |
+| Environment control | UI/API, lease worker, PR watcher and delivery coordinator in `lab-control` | One active Pod, persistent SQLite state and writer coordination; host bootstrap/recovery |
+| Source/build | Gitea Actions and runner; Nexus images, bundles and receipts | Provider-specific API/status calls; a common Actions subset for later GHES verification |
+| Frozen inputs/reports | Floci Blob locally; Azure Blob target | Independent producer contracts and immutable hashes |
+| Index snapshots | SeaweedFS S3 on host Docker with its own volume | Regular snapshots, separate from Elasticsearch data PVCs and environment leases |
+| Judgement supply | Separate API, MLflow registry and KServe Standard | Stored labels first; pinned inference for gaps; the default model abstains |
+| Scoring | Independent evaluator using established IR metrics | Frozen API observations, selected labels/specification, per-variant reports |
+| Performance | Gatling open-source Java SDK in finite Jobs | Compiled arrival workloads, paired runs and validity/budget comparison |
+| Exploratory analysis | Papermill notebook Job | Selected notebook consumes the retained report; output cannot change the verdict |
+| Observability | OTel SDKs/Collector, scoped stdout collection and SigNoz | Connected signals and dashboards; New Relic exporter/query migration boundary |
+
+Argo CD owns declared environment workloads. The control service owns leases,
+comparison records and desired-state publication. Kubernetes Jobs perform bounded
+indexing, capture, scoring, load tests and notebook execution. Add another workflow
+engine or queue only when measured retries, fan-out or contention justify it.
+
+| View | Question |
 | --- | --- |
-| [Environment control and delivery](diagrams/rendered/02-control.svg) | Environment state and deployment containers |
-| [Frozen data and end-to-end evaluation](diagrams/rendered/03-evaluation.svg) | Data, search and evaluation containers |
-| [Candidate creation](diagrams/rendered/04-create.svg) | Ordered interactions |
-| [Local deployment](diagrams/rendered/05-local.svg) | Persistent and ephemeral workloads |
-| [Azure migration](diagrams/rendered/06-azure.svg) | Proposed deployment on Azure |
-| [Immutable release delivery](diagrams/rendered/18-delivery.svg) | Nexus, promotion coordinator, Argo CD and verification |
+| [Control containers](diagrams/rendered/02-control.svg) | Who owns environment state and deployment? |
+| [Evaluation containers](diagrams/rendered/03-evaluation.svg) | How do independent inputs reach capture and scoring? |
+| [Local deployment](diagrams/rendered/05-local.svg) | Which services persist and where do Jobs run? |
+| [Release delivery](diagrams/rendered/18-delivery.svg) | How does reviewed state reach a verified API? |
+| [Azure deployment](diagrams/rendered/06-azure.svg) | Which local boundaries map to future cloud services? |
 
-The local lab now runs Gitea, Argo CD, ECK, the control UI/API and the lease controller. The Azure deployment remains proposed. The [platform research](research/platform-spike.md) records the original component selection and local bootstrap evidence.
+### Source and release lifecycle
 
-| Need | Existing component | Lab-specific code |
-| --- | --- | --- |
-| Local Kubernetes | k3d provisionally; kind also passed Windows isolation checks; native Apple silicon verification pending | Bootstrap script and configuration |
-| Elasticsearch management | Elastic Cloud on Kubernetes (ECK), installed once | Shared cluster specification and exception path for version experiments |
-| Packaging and environment resources | Argo CD Git-file ApplicationSets, Helm and ordinary Kubernetes resources | A small lab API to record experiments and leases and publish desired state with conflict retries |
-| Azure-compatible object storage | Floci AZ Blob Storage locally; Azure Blob Storage in AKS | Storage endpoint adapter and immutable artifact conventions |
-| Relevance metrics | An established information-retrieval metrics library applied to search API responses; Elasticsearch `_rank_eval` only for retrieval-stage diagnosis | Comparison orchestration, stage evidence, report format and UI |
-| Result preservation | Established ranking-similarity library plus ordered-ID equality | Exact verdict, per-query differences and pinned RBO/Jaccard settings |
-| API performance | Gatling open-source Java SDK, feeders, open injection, assertions and local HTML reports | Synthetic traffic/profile preparation, slot scheduling and baseline/candidate report comparison |
-| Metadata | SQLite for the local lab; a replaceable store interface | Environment records, leases and report references |
-| Self-contained source and build loop | Gitea, Actions runner and Nexus | Portable workflow, immutable release descriptor and provider adapter |
-| Connected observability (in progress) | OpenTelemetry SDKs/Collector and self-hosted SigNoz; New Relic in the eventual target | Search API signals, SigNoz and dashboard installed; finite Gatling arrivals, independent gateway/backend probes and live counter increases joined; a gateway outage left search serving. A verified seven-day window, browser drill-through and valid overhead comparison remain. |
+1. The engineer changes the Search API, configuration or index contract in Gitea.
+2. CI tests the exact source revision and publishes immutable Nexus images,
+   bundles, descriptors and a build receipt.
+3. Leased experiments select an exact successful build and frozen index recipe.
+   Argo reconciles the API and any indexing work; the control service verifies readiness.
+4. A comparison verifies all participating definitions, captures public API
+   results and retains its mode-specific report. Optional analysis runs afterwards.
+5. The source merge gate checks exact-commit signed evidence. A bounded human
+   exception records the decision and reason; it does not edit scores.
+6. After source merge, a separate build produces the merged-source release.
+   Reviewed desired-state PRs promote its same digest through integration,
+   staging and simulated production. Argo deploys; the coordinator verifies.
+7. Rollback selects the previous complete definition and fresh reverse-direction
+   evidence. Leased previews can be deleted or expire; stable targets do not expire.
 
-Argo CD is already used in the target production system and is a design constraint for the prototype.
+See [delivery](delivery.md), [variants and decisions](variant-evaluation.md) and
+[the operator runbook](evaluation-runbook.md) for executable procedures. A passing
+source check does not itself approve a deployment. The three targets share one
+local cluster; they are not separate failure domains.
 
-- **Deployment:** Use Argo CD to reconcile environment workloads.
-- **Desired state:** The [proposed decision](adr/ADR-0001-reconcile-environments-from-git.md) uses Git-file ApplicationSets and a dedicated Gitea repository. The lab API publishes active entries, triggers refresh and retains immutable definitions after deletion. Serialize Git writes with bounded conflict retries; polling recovers missed refreshes.
-- **Lab metadata:** The lab API remains responsible for dataset fingerprints, leases and comparison state.
-- **Finite work:** Kubernetes Jobs cover indexing, evaluation, Gatling load tests and optional exploratory notebooks. Evaluation jobs score relevance, check result preservation and compare retained load reports; separate Gatling jobs generate HTTP traffic. A selected notebook runs after report retention against that frozen report and cannot change the comparison verdict. Comparison jobs run in lab-owned namespaces with scoped access to their inputs.
-- **Workflow complexity:** Do not introduce another operator, workflow engine, queue or service mesh without evidence. Reconsider Argo Workflows only if the observed workflow needs retries, fan-out or auditability beyond Jobs.
-- **Elasticsearch operations:** Use existing Elasticsearch APIs for aliases, bulk indexing, security roles and snapshots rather than implementing equivalents.
+Gitea is the primary remote; GitHub is an offsite backup. Dataset bytes belong in
+object storage, not Git. The original `search-spike` path uses retained Gitea
+registry builds; new reference delivery uses Nexus. Images and input artefacts
+must survive runtime deletion for recreation to work.
 
-The [reference CI/CD](delivery.md) publishes immutable Nexus releases and promotes the same digests through integration, staging and simulated production. All three targets are local namespaces. Protected desired-state PRs require current evaluation evidence and review; Argo CD deploys the approved state, then the coordinator verifies the serving API. Rollback selects the prior image, configuration and index recipe together. [Measured promotion and rollback](research/evidence/promotion-deployment.md) passed with the million-product release and full 1,000-query checks. The [Archify workflow](diagrams/interactive/release-promotion.html) shows both frozen environments and the delivery gates.
+### Isolation and platform selection
 
-[Nexus](nexus.md) stores private images, deployment bundles and release descriptors. Floci retains datasets, recipes and evaluation reports; SeaweedFS retains index snapshots. Historical Gitea registry images remain available. The [detailed batches](plans/reference-ci-cd.md) and [operating guide](delivery.md) record the common Actions subset and provider-specific migration boundary.
+| Change | Runtime/index approach |
+| --- | --- |
+| API/query/ranking | Separate API namespace/credentials; reuse a compatible read-only frozen index |
+| Mapping/analyser | Dedicated index from the same immutable products and a new recipe |
+| Elasticsearch engine | Exceptional separate cluster; slower creation and another licensed cluster where licences are required |
 
-**Control placement:** [batch 7i](plans/kubernetes-control-services.md) placed the UI/API, lease worker, PR watcher and delivery coordinator in `lab-control`. One active Pod and a persistent volume retain SQLite and writer coordination. Internal operations use service addresses and a runtime ServiceAccount. Host-side bootstrap and recovery remain available; Nexus and snapshot storage retain independent lifetimes. The remaining activation and recovery checks are listed in the [roadmap](plans/roadmap.md).
+Namespaces do not isolate Elasticsearch data or performance. Index-level roles,
+scoped credentials, network policy and resource settings enforce the normal
+boundary. Shared-cluster contention must be measured before interpreting latency.
+The lab does not need document-level security or searchable snapshots.
 
-**Observability:** [The Search API foundation](observability-foundation.md) emits traces, unsampled SLI counters and correlated structured logs through an OTel contract. Synthetic fixtures verify that slow successes spend the responsiveness budget. The [SigNoz backend](observability-backend.md) runs on a dedicated local worker behind a stable gateway, with stored search and delivery signals, a provisioned SLO dashboard and a finite independent coverage check. A gateway interruption left search serving. A mock receiver verified the alternate New Relic export profile. The [merged-release rehearsal](plans/signoz-merged-release-rehearsal.md) must demonstrate browser drill-through across instrumented delivery targets and obtain a valid latency-overhead sample.
+The implemented Argo-native approach follows the [platform research](research/platform-spike.md).
+[Okteto/Uffizzi](research/okteto-uffizzi.md) and
+[Lifecycle/Signadot/Coolify](research/lifecycle-signadot-coolify.md) remain dated
+selection studies, not installation choices still awaiting a decision. A future
+Lifecycle fork could replace some lab control code only after demonstrating
+Gitea integration, the lease policy and single Argo deployment ownership.
 
-The [topology and contract assessment](plans/local-reference-boundaries.md) records the remaining local boundaries to demonstrate: installation from explicit durable inputs, interrupted-operation recovery, runtime authority, independent producers/evaluators, artifact retention references and connected observability. Operational SLO accounting does not add statistical relevance-metric validity requirements.
-
-### Self-contained Git and build lifecycle
-
-Gitea produces the tested candidate image. The [comparison workflow](diagrams/interactive/change-to-comparison.html) then resolves and verifies both baseline and candidate environments.
-
-- **Platform services:** Install the upstream Gitea Helm chart in a persistent platform namespace, then run a Gitea Actions runner and publish reference releases to Nexus. The original `search-spike` path retains its Gitea registry images.
-- **Repositories and data:** Bootstrap two repositories: application source (search API, query assets, UI, indexing code and tests) and environment desired state. The canonical dataset remains in Floci AZ, not Git or the registry.
-- **Warm-start boundary:** Keep Gitea, its runner and registry available between environment requests; their bootstrap time is separate from warm environment creation.
-- **Portability:** Pin Gitea, runner and chart versions and verify their images on Windows x64 and Apple silicon.
-
-The source-to-comparison walkthrough is:
-
-1. **Change source.**
-
-   - Create a branch and pull request in Gitea with a search API query-understanding or ranking change.
-   - Make a second change to an index mapping or analyser to demonstrate the slower path.
-
-2. **Build an immutable image.**
-
-   - A local runner tests the change, builds a multi-architecture capable image and pushes it to Nexus for the reference delivery path (Gitea registry in the original spike).
-   - Capture the source commit SHA and pushed image digest. A digest, rather than a mutable branch name or tag, is the version an environment executes.
-   - Retain each build under a unique source-SHA/run/attempt tag and verify digest availability. The spike demonstrated that replacing a SHA tag could leave the older digest unavailable.
-   - Document where the runner obtains base images and build dependencies; mirror or cache them if the lab must also work offline after bootstrap.
-
-3. **Register the candidate.**
-
-   - The local watcher polls opted-in Gitea PRs and verifies the exact revision and successful build. The delivery CLI resolves successful merged-source releases for promotion. Signed webhooks remain a migration option.
-   - The API validates repository, revision and digest, then combines them with a frozen dataset release, query assets and index design into an environment fingerprint.
-   - A user can also create a candidate directly in the UI from a previously built digest, without opening a pull request.
-
-4. **Provision the environment.**
-
-   - The lab records the request and lease, publishes the desired environment to Argo CD, waits for the search API and any indexing job to be ready, and exposes the preview URL.
-   - The search API uses the shared frozen index where compatible; an index change creates its own index from the same immutable dataset.
-
-5. **Compare and retain evidence.**
-
-   - Choose relevance, result preservation or performance. The comparison uses the same frozen inputs for both public APIs; performance runs use the pinned Gatling workload.
-   - Save each verdict and report to Floci AZ and link them to the source revision, image digest and dataset manifest.
-   - Users may extend the three-day lease through genuine use or delete the environment explicitly.
-   - The original leased environment workflow removes namespaced workloads and owned dedicated indices. Delivery previews remove runtime and credentials while retaining recipe-addressed release indices for comparisons and rollback. Both retain immutable datasets and reports.
-
-6. **Close or recreate.**
-
-   - Closing or merging a pull request marks its candidate as no longer current.
-   - The first prototype keeps the environment until explicit deletion or lease expiry so a comparison remains inspectable for its promised lifetime.
-   - Recreating an environment from its pinned inputs must work after removal, subject to retained image and dataset artifacts.
-
-For migration to GitHub Enterprise:
-
-- **Adapter responsibilities:** Use an internal `SourceProvider` boundary for repository identity, pull-request reference, revision lookup, webhook verification and status/URL publication. Implement Gitea first; add a GitHub Enterprise adapter during migration.
-- **Provider independence:** Keep provider-specific event bodies and API calls out of environment IDs, frozen manifests and evaluation reports.
-- **Identifiers and settings:** Treat the source SHA and OCI digest as durable cross-provider identifiers; registry URLs, credentials, webhook configuration, repository IDs and PR URLs are deployment settings or provider metadata.
-- **Migration checks:** When moving to GitHub Enterprise, migrate Git repositories separately from CI workflows and registry images; validate the replacement event and status integration with the same lifecycle walkthrough rather than assuming Gitea Actions is fully portable.
-
-The [Gitea lifecycle and migration note](research/gitea-lifecycle.md) records installation, build-runner and webhook checks. Gitea provides a [Kubernetes Helm installation](https://docs.gitea.com/installation/install-on-kubernetes/), [Actions](https://docs.gitea.com/usage/actions/), [webhooks](https://docs.gitea.com/usage/repository/webhooks) and an [OCI registry](https://docs.gitea.com/usage/packages/container/).
-
-## Research before implementation
-
-The [platform research report](research/platform-spike.md) records the executed probes, tool comparison and proposed decision. It recommends the Argo CD-native path and retains the provisional targets. Native Apple silicon execution, cloud capacity and full controller recovery remain explicit gates; local million-product and 40-API evidence is recorded in the roadmap. The original research scope below explains what was assessed.
-
-| Pattern to assess | What it provides | Why it might or might not fit |
-| --- | --- | --- |
-| Namespace and Helm release per environment | Native Kubernetes lifecycle, RBAC, quotas and policies with little control-plane overhead | Leading option for trusted engineers, but shared nodes and Elasticsearch still need explicit isolation |
-| Argo CD ApplicationSet with Git files or a plugin generator | Reconciles desired environments through the production deployment tool | Git files favour review and audit; a plugin can read active leases from the lab API. Compare creation latency, failure recovery and source-of-truth complexity |
-| vCluster per environment | Separate Kubernetes API and cluster-scoped resources | Worth considering if engineers must install different operators or CRDs; adds a control plane per environment and does not isolate the shared Elasticsearch data plane |
-| Cluster per environment | Strong Kubernetes and Elasticsearch version isolation | Appropriate for rare engine-version tests; likely too slow and resource-heavy as the default for query experiments |
-
-Kubernetes describes namespaces and virtual control planes as the two principal shared-cluster tenancy patterns, and notes that namespace isolation requires RBAC, quotas and network policy. Argo CD's ApplicationSet supports both Git file discovery and an HTTP plugin generator; vCluster provides a separate API and syncs workloads to a host cluster. See [Kubernetes multi-tenancy](https://kubernetes.io/docs/concepts/security/multi-tenancy/), [Argo CD Git generator](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Git/), [Argo CD plugin generator](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Plugin/) and [vCluster architecture](https://www.vcluster.com/docs/vcluster/introduction/architecture/).
-
-### Existing environment platforms to investigate
-
-[Bunnyshell](https://documentation.bunnyshell.com/docs/quickstart-ephemeral-environments) and [Northflank](https://www.northflank.ai/docs/v1/application/release/pipeline/set-up-a-preview-environment) are useful reference products for self-service creation, preview URLs, templates and cleanup, but do not assume they are open source or suitable for a self-hosted lab. Compare the following self-hostable/open source candidates against the Argo CD baseline before building equivalent lifecycle code:
-
-| Candidate | Evidence from its own documentation | Question for this lab |
-| --- | --- | --- |
-| [Lifecycle by GoodRx](https://uselifecycle.com/docs/what-is-lifecycle) | Apache-2.0, self-hosted on Kubernetes; supports API-created environments without pull requests, leases, extension and teardown | Its documented onboarding requires a GitHub App, which conflicts with the self-contained Gitea requirement. Do not select it unless a Gitea integration is demonstrated; also test Argo CD ownership and the 72-hour activity policy. |
-| [Uffizzi](https://github.com/UffizziCloud/uffizzi) | Apache-2.0 self-hosted environment platform; open source edition excludes RBAC, dashboard and sleep/wake | Can it provide on-demand environments and leases while leaving Argo CD as deployment authority and sharing one Elasticsearch cluster? Give this a hands-on spike if the integration is viable. |
-| [Devtron](https://github.com/devtron-labs/devtron) | Apache-2.0 Kubernetes dashboard with Helm management and visibility into Argo CD applications | Does it remove enough UI/lifecycle work without introducing a competing desired-state controller? |
-| [DevSpace](https://github.com/devspace-sh/devspace) | Apache-2.0 CLI for developing and deploying inside Kubernetes | Good candidate for the engineer's edit/debug loop; does it contribute to the lab's create/expire/recreate workflow? |
-| [Okteto open source CLI](https://github.com/okteto/okteto) | Open source CLI supports development containers; preview and garbage-collection features require the separately licensed self-hosted platform | Assess the CLI as a developer workflow tool. Assess the full platform only if its licence and Apple silicon limits are acceptable. |
-
-- [Signadot](https://www.signadot.com/docs/concepts/architecture) is a useful reference for routing a request to a changed search API while reusing baseline services. Its operator runs in the cluster, but its control plane is hosted by Signadot; the free Starter plan is not a self-hosted Community Edition. Evaluate it only if the self-hosting requirement changes.
-- [Coolify](https://coolify.io/docs/applications/) is a self-hosted Docker deployment platform with preview deployments, but it does not provide the Kubernetes/Argo CD environment path being prototyped. Keep it as a possible lightweight UI/API demo host, not a leading environment platform.
-
-Use the same scorecard for each candidate:
-
-- **Project:** self-hosting, licence and maintenance.
-- **Delivery and lifecycle:** Argo CD coexistence, create/recreate/delete API and activity-based 72-hour lease.
-- **Search resources:** shared Elasticsearch, frozen-index reuse and index-changing jobs.
-- **Operations:** isolation, Apple silicon support, observability and 40-environment cost.
-
-Record unsupported capabilities and integration work, not just feature claims. Prefer an existing platform when it satisfies the workflow with less ongoing code and a clear single owner for desired state.
-
-The [Okteto versus Uffizzi desk-research note](research/okteto-uffizzi.md) separates their open source and platform editions and identifies the decisive installation tests.
-
-The [Lifecycle, Signadot and Coolify note](research/lifecycle-signadot-coolify.md) records the stronger Lifecycle case, its integration risks and why the other two rank differently.
-
-The research spike must cover:
-
-- **Lifecycle:** The spike should run the full Gitea branch/PR → build → digest → environment → comparison → deletion path, create and delete two environments from one frozen index, update the candidate API image and query-understanding configuration, then build a second index with a changed analyser.
-- **Isolation and recovery:** Test namespaced RBAC and network access from the wrong environment, cleanup after a forced failure, and whether the selected local cluster enforces NetworkPolicy.
-- **Measurements:** Record wall-clock timings and actual memory/disk use.
-- **Version changes:** Run one deliberate version-changing environment separately.
-- **Platform comparison:** Test a ready-made platform against the Argo CD-native path only if its Gitea integration is credible on the same small workload.
-- **Selection:** Select the least complex pattern that passes the isolation and lifecycle tests; retain a documented escape hatch for vCluster or a dedicated cluster when cluster-scoped changes are genuinely needed.
-
-The normal environment path shares Elasticsearch:
-
-- **Persistent services:** The lab API and UI remain running. An environment has its own namespace and search API deployment, but the normal path uses a **shared Elasticsearch cluster**.
-- **Environment ownership:** Each environment pins its own API image digest and query-understanding assets, and owns uniquely prefixed indices, aliases and a narrowly scoped Elasticsearch credential.
-- **Index reuse:** API-only, query and ranking experiments can reuse a read-only frozen index when its mapping is compatible; index or analyser changes build a separate index from the same canonical dataset.
-- **Engine changes:** Elasticsearch version changes require a separate cluster and therefore take the slower, exceptional path.
-- **Isolation limits:** A namespace alone does not isolate Elasticsearch data or performance: access controls, index naming and resource limits are part of the design, and latency comparisons must account for shared-cluster contention.
-
-ECK's default distribution has a Basic licence, while self-managed Elasticsearch licensing is controlled at cluster level. The enterprise licensing position and permitted feature set must be checked before moving beyond the Basic prototype. The lab must not depend on paid document-level security or searchable snapshots. Index-level roles are the intended isolation mechanism. See [ECK licensing](https://www.elastic.co/docs/deploy-manage/license/manage-your-license-in-eck), [self-managed licensing](https://www.elastic.co/docs/deploy-manage/license) and [Elasticsearch index privileges](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-privileges.html).
+[ADR-0001](adr/ADR-0001-reconcile-environments-from-git.md) records Git-file
+reconciliation. Its recorded formal status remains Proposed; the implementation
+has adopted the approach. The [ADR index](adr/README.md) distinguishes those facts.
+Licensing terms and permitted production features require organisational review;
+sharing indices reduces cluster count, not contractual uncertainty.
 
 ### Azure boundary
 
-Use Floci AZ for Blob Storage:
+| Local contract | Eventual service | Remaining validation |
+| --- | --- | --- |
+| Floci Blob: datasets, traffic, workloads and runs | Azure Blob | Workload Identity, read authorisation and immutable publication |
+| Floci Key Vault → adapter → ESO → Kubernetes Secrets | Azure Key Vault → ESO Azure provider → the same Secret targets | Real identity, permissions and rotation; [secret guide](keyvault-secrets.md) |
+| Traefik and local CA | AKS ingress and certificate issuer | Certificate trust, route and client verification |
+| Gitea APIs/Actions/statuses | GitHub Enterprise | Runner labels, event/status API mapping and branch protection |
+| Nexus | Nexus; ACR optional | Registry transport and target infrastructure |
+| Regular S3 snapshots | Azure Blob snapshot repository | Repository compatibility and restore timings |
+| SigNoz behind OTel gateway | New Relic behind OTel gateway | Tenant ingestion, temporality/resets, dashboards and connected investigation |
 
-| Object prefix | Contents |
-| --- | --- |
-| `datasets/` | Immutable dataset releases |
-| `traffic/` | Synthetic traces |
-| `workloads/` | Compiled replay artifacts |
-| `runs/` | Evaluation results and logs |
-| `snapshots/` | Proposed Azure destination for regular Elasticsearch snapshots; local lab uses a separate S3 store |
+Floci's tested Blob path is useful for the lab. Its snapshot API failed
+Elasticsearch repository verification; it is not the working snapshot store.
+The Key Vault adapter models secret retrieval, not Azure identity enforcement.
+Bootstrap exceptions remain explicit.
 
-Floci supports Blob CRUD and standard client connections. The lab now configures the account URL, dataset container and Pod download URL; local writes and signed reads have passed. The proposed Azure client uses workload identity and user-delegation read SAS, pending an AKS tenant check. The [portability design and open gates](research/portability-azure.md) also separates GHES source from ACR images.
-
-ESO now reads retained lab credentials from Floci Key Vault and reconciles them into Kubernetes Secrets. The [secret operating guide](keyvault-secrets.md) records the selected credentials, bootstrap exceptions and local validation. The Azure target uses the same `ExternalSecret` targets with ESO's Azure Key Vault provider and Workload Identity; real Azure identity and policy remain to be validated. See [Floci AZ](https://github.com/floci-io/floci-az) and its [quick start](https://floci.io/floci-az/getting-started/quick-start/).
-
-Traefik exposes Gitea, Argo CD, the lab control UI, SigNoz and the Nexus UI through a single local HTTPS port. The [HTTPS guide](https-ingress.md) records the CA, routes and remaining HTTP client paths. The AKS ingress and certificate issuer remain proposed and require cloud validation.
+Traefik exposes Gitea, Argo CD, control, SigNoz and Nexus browser routes through
+local HTTPS. The control canonical-URL redirect and non-`Secure` session cookie
+remain an implementation gap; [HTTPS operation](https-ingress.md) records the
+actual boundary. Native Apple silicon and Azure/GHES execution remain unverified.
 
 ## Frozen dataset contract
 
-**Independent inputs:** Catalogues, query suites, judgements and traffic have separate manifests. Environments pin software, catalogue and index inputs; executions pin requests and workloads; evaluations pin observations, judgements and the evaluator specification. A producer Job publishes synthetic inputs; a separate evaluator Job rescores observations without another search or index build. New environments and delivery definitions pin format-2 catalogue recipes. Functional comparisons select hash-checked query and judgement manifests. Historical format-1 recipes remain available through an explicit recipe hash. The Kubernetes control Pod has exercised both paths; see the [runtime evidence](research/evidence/runtime-consolidation-delivery.md).
+Catalogues, query suites, judgements and traffic have independent manifests.
+An environment pins software, catalogue and index inputs. An execution pins
+requests and workload; evaluation pins observations, labels and metric specification.
+Producer and evaluator Jobs use separate images and contracts. Rescoring retained
+observations does not search again or rebuild an index. The
+[input contract](data-evaluation-contracts.md) owns the canonical schemas.
 
 Each independent input has a content-addressed object and manifest. A synthetic source pack groups inputs for generation and provenance; an environment pins the catalogue and index recipe, while an evaluation separately pins queries and judgements. Source metadata records:
 
@@ -246,11 +177,27 @@ Query and judgement rules:
 - **Judgements:** Judgements are graded and keyed by query ID and product ID. Document how synthetic relevance was assigned; evaluations measure agreement with that model, not real customer benefit.
 - **Held-out evaluation:** Keep a held-out query subset so tuning against the visible set does not silently become the only reported outcome.
 
-Each new index recipe pins the catalogue manifest and product bytes, complete mapping and settings, document count, indexer source and image digest, and Elasticsearch version. Its hash gives a new shared index a distinct name, so a schema revision cannot overwrite a historical shared index. API-only candidates reuse the same compatible index. Mapping experiments use dedicated indices. An explicit format-1 recipe can still rebuild its original release-named shared index or a dedicated historical index after the local mapping file changes. Environment records created before recipes were introduced cannot claim this restoration guarantee.
+| Frozen index identity | Pinned inputs |
+| --- | --- |
+| Recipe | Catalogue manifest/product bytes, full mapping/settings, expected count, indexer source/image and Elasticsearch version |
+| Environment | Recipe, API image/configuration and source identities; its fingerprint identifies the complete definition |
+| Snapshot | One index, recipe/product hashes, engine version and ordered ID sample; no restored global state or aliases |
 
-Index recovery now follows the pinned recipe. The control plane first reuses a verified target, then clones an exact recipe-marked live copy, then tries a regular snapshot when `LAB_SNAPSHOT_REPOSITORY` names a configured repository. If no compatible copy is available, it rebuilds from the frozen products and historical indexer. The environment record reports the selected path, seconds and recoverable errors. A partial clone or restore is removed before rebuild. The search API binds to the index only after count, mapping, settings, write block and ordered sample checks. Older unmarked shared indices can still be reused through their existing compatibility check but cannot serve as clone sources.
+A schema change produces a new recipe and index name. It cannot overwrite the
+historical definition. API-only candidates reuse a compatible index; mapping
+experiments use dedicated indices.
 
-Snapshots are named by recipe hash and retained independently of the 72-hour environment lease. The snapshot includes one index, recipe and product hashes, engine version and an ordered ID sample; it excludes global cluster state and aliases on restore. A snapshot is an accelerator, while the immutable release and recipe remain the recovery authority. The shared lab cluster now has a verified `lab-s3` repository in a separate host Docker volume. Snapshot and destination versions must also be compatible. The host-local volume is not an off-host backup, and Azure Blob compatibility remains unverified. See [Elastic snapshot compatibility](https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/restore-snapshot) and the [three recovery workflows](diagrams/index.html#schema-and-index-recovery).
+Recovery selects **verified reuse → exact live clone → compatible regular
+snapshot → pinned rebuild**. Remove a partial failed clone/restore before rebuild.
+The API binds only after count, mapping/settings, write block and ordered sample
+checks. The [recovery guide](index-recovery.md) owns the procedure and diagnostics.
+
+Snapshots survive the 72-hour environment lease. They accelerate restoration;
+the immutable products and recipe remain authoritative. The local `lab-s3`
+repository has passed verification, but its host-local volume is not an offsite
+backup. Engine/snapshot version compatibility and Azure restoration remain
+separate checks. [Recovery diagrams](diagrams/index.html#schema-and-index-recovery)
+show schema evolution, clone and snapshot paths.
 
 ### Frozen traffic and workload contract
 
@@ -272,7 +219,7 @@ A trace contains stable event IDs, elapsed arrival offsets, query IDs and reques
 {"event_id":"e000042","offset_ms":190,"query_id":"q0017","country":"GB","currency":"GBP"}
 ```
 
-- **Request binding:** Query IDs resolve to frozen original request text and any filters or paging parameters.
+- **Request binding:** Query IDs resolve to frozen original text and market context. The current API has no caller-filter or paging contract; non-empty filters are an unsupported-input finding, not applied request context.
 - **Ordering:** Preserve duplicate queries and simultaneous events; event ID breaks equal-timestamp ties deterministically.
 - **Validation:** Validate non-negative ordered offsets and all query references.
 - **Counts:** Record both unique query count and event count: 1,000 unique queries may produce many more load-test requests.
@@ -284,7 +231,7 @@ A trace contains stable event IDs, elapsed arrival offsets, query IDs and reques
 | Profile recipe | Source windows, phase boundaries, warm-up policy, scaling method, duration, bucket width, connection policy, timeouts, budgets and stop conditions |
 | Compilation | Compiler version and seed; immutable request data, per-phase arrivals and a manifest with hashes written to `workloads/` |
 
-Both B and C receive exactly the same compiled artifact; neither samples or regenerates traffic during the run.
+Both B and C receive exactly the same compiled artefact; neither samples or regenerates traffic during the run.
 
 - **Clock:** Use offsets from a monotonic run/phase start to schedule requests. The fixed business clock used for catalogue state remains a separate input.
 - **Initial scheduling:** A timestamp in a Gatling feeder supplies data; it does not schedule traffic. Initially compile one-second buckets into Gatling open injection steps and phase-specific feeder data, preserving bucket counts and query mix with a deterministic within-bucket order and placement.
@@ -300,34 +247,34 @@ Replay accuracy and limits:
 
 ## Environment lifecycle and API
 
-Each baseline or candidate runtime follows the [environment lifecycle](diagrams/interactive/environment-lifecycle.html): provisioning, frozen-index reuse, representative failure/retry and disposal. Its scope notes are in the [diagram guide](diagrams/README.md#interpretation-and-scope).
+Each participating runtime follows the [environment lifecycle](diagrams/interactive/environment-lifecycle.html): provisioning, frozen-index reuse, representative failure/retry and disposal. Its scope notes are in the [diagram guide](diagrams/README.md#interpretation-and-scope).
 
 - **Request inputs:** An environment request names a dataset release, search API image digest, query-understanding asset and configuration revisions, ranking configuration, index design revision and, normally, the shared Elasticsearch version.
-- **Frozen definition:** The immutable environment definition pins these inputs; its fingerprint identifies an exact build. Store that definition with the retained artifacts.
+- **Frozen definition:** The immutable environment definition pins these inputs; its fingerprint identifies an exact build. Store that definition with the retained artefacts.
 - **Runtime instance:** A running namespace is an instance of the definition, with its own state and lease.
-- **Safe reuse:** Creating the same fingerprint twice should be safe and reuse existing immutable index artifacts where possible.
+- **Safe reuse:** Creating the same fingerprint twice should be safe and reuse existing immutable index artefacts where possible.
 - **Metadata:** A namespace label and metadata record carry the owner, fingerprint and expiry.
 
 States: `requested` → `provisioning` → `indexing` → `ready`; any active state may become `failed` or `deleting`.
 
 - **Deletion:** `deleted` is terminal for that runtime instance. Its frozen definition, referenced images and query assets, canonical dataset and saved reports persist.
-- **Recreation:** A new request can name a retained recipe SHA-256 from a previous environment. The lab loads the complete recipe from Blob storage and rebuilds a missing index from its pinned catalogue and indexer. A historical format-1 recipe must already be pinned by an environment. A shared index with a conflicting schema fails closed; dedicated indices can coexist under separate names.
+- **Recreation:** A new request can name a retained recipe SHA-256 from a previous environment. The lab loads the complete recipe from Blob storage and rebuilds a missing index from its pinned catalogue and indexer. A shared index with a conflicting schema fails closed; dedicated indices can coexist under separate names.
 - **State evidence:** The API exposes errors and timings for every state transition.
 
-Initial endpoints:
+Current control endpoints (authenticated unless noted):
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET /datasets` | List immutable releases and their manifests |
-| `POST /environments` | Create or reuse an environment from a release and revisions |
-| `GET /environments` and `GET /environments/{id}` | List state, URL, timings and expiry |
-| `DELETE /environments/{id}` | Remove an environment on demand |
-| `POST /environments/{id}/activity` | Record genuine use and extend expiry |
-| `GET /environments/{id}/search` | Proxy the small search API for the UI |
-| `POST /comparisons` and `GET /comparisons/{id}` | Run and inspect a baseline/candidate comparison; pin mode (`relevance`, `result-regression` or `performance`); performance also pins recipe and compiled-workload hashes |
+| `GET /api/datasets` | List immutable releases and their manifests |
+| `POST /api/environments` | Create or reuse an environment from a release and revisions |
+| `GET /api/environments` and `GET /api/environments/{id}` | List state, URL, timings and expiry |
+| `DELETE /api/environments/{id}` | Remove an environment on demand |
+| `POST /api/environments/{id}/activity` | Record genuine use and extend expiry |
+| `GET /api/environments/{id}/search` | Proxy the small search API for the UI |
+| `POST /api/comparisons` and `GET /api/comparisons/{id}` | Run and inspect a baseline/candidate comparison; pin mode (`relevance`, `result-regression` or `performance`); performance also pins recipe and compiled-workload hashes |
 
 - **Lease:** Expiry starts 72 hours after creation. Genuine activity extends it to 72 hours after the last use; passive health checks and background polling do not.
-- **Cleanup:** A Kubernetes CronJob scans leases, marks expired environments for deletion, removes their namespaced resources and credentials, and reconciles partial failures. Manual deletion uses the same idempotent cleanup path.
+- **Cleanup:** The continuously running lease worker scans leases, marks expired environments for deletion, removes their namespaced resources and credentials, and reconciles partial failures. Manual deletion uses the same idempotent cleanup path.
 - **Job TTL:** Deleting a completed Kubernetes Job with `ttlSecondsAfterFinished` is separate from the environment lease; that native TTL does not expire namespaces or long-running Deployments. See [Kubernetes Job TTL](https://kubernetes.io/docs/concepts/workloads/controllers/job/).
 
 Shared immutable indices may outlive one environment while another uses them. Reference counts must be derived from live environment records before deleting an index. The first implementation may retain shared baseline indices until an explicit garbage-collection operation, provided it reports their storage use.
@@ -342,7 +289,7 @@ Shared immutable indices may outlive one environment while another uses them. Re
 
 ![Named frozen variants produce public API results for one evaluator](diagrams/rendered/evaluation-dataflow.png)
 
-A comparison references **two frozen environment definitions**, baseline B and candidate C. Each pins its API image, query assets and configuration, index definition/artifact, canonical dataset and engine version. Resolve or recreate both runtimes, verify each against its own fingerprint and confirm both APIs are ready before sending evaluation requests. The fingerprints identify each side independently; they do not have to match one another.
+A pairwise check names frozen baseline B and candidate C definitions. N-way relevance capture names two or more variants, one required runtime default and one metric baseline; default and baseline may differ. Each participating definition pins its API image/configuration, index, catalogue and engine. Verify every runtime against its own definition before capture. Variants can share one deployment or compatible index; shared resources do not merge their identities.
 
 The local control UI offers a **quick** 50-query result preflight and a **full** frozen suite. An in-cluster evaluation Job sends each request through both public APIs, records the ordered responses and cleans up after a bounded run. The query inspector shows changed queries, largest relevance losses, ordered results and selected diagnostic records. The complete content-addressed report remains downloadable. A labelled Gitea PR can trigger this sequence against an exact successful build; the [PR-to-verdict workflow](diagrams/interactive/pr-to-verdict.html) shows the local polling, two environments, checks and report links. The PR status reports tooling completion, while relevance interpretation remains a review decision.
 
@@ -356,18 +303,20 @@ Variants can share compatible immutable resources. In the [API-only example](dia
 - **Query understanding:** Candidate API versions may change spelling correction, tokenisation, intent or entity detection, synonym expansion, query rewriting and context handling before Elasticsearch receives a request.
 - **Retrieval and ranking:** Candidates may also change field boosts, filters, rescoring and business signals. A later candidate may change mappings or add a reranking stage.
 - **Versioned assets:** Pin dictionaries and models as versioned assets; avoid hidden calls to external services during a reproducible comparison.
-- **API contract:** The search API returns product IDs, result fields, rank, score, API/configuration fingerprint and elapsed time; it must accept country and currency explicitly even though UK/GBP is the first supported pair.
+- **API contract:** The current API returns ordered IDs, public product fields, total matches and elapsed time, plus selected variant/configuration identity. Rank follows list position; scores are not public fields. It accepts explicit country/currency and supports GB/GBP. Query rewrites and reranking are possible candidate changes, not active stages in the baseline.
 
 Relevance evaluation follows these rules:
 
 - **Inputs:** A relevance evaluation pins one dataset, query suite and judgement release and sends the same original request and context through every named **public search API** variant.
-- **Judgement limits:** The report identifies the frozen synthetic judgement source, hashes, coverage of each returned top ten and unjudged IDs. The million-product pool includes earlier candidate results, so its score is a proxy that may favour those results. The separate resolution workflow can ask a model about gaps in both current recall sets before scoring; the all-abstaining model adds no labels. Coverage below 80% on either side marks the relevance claim insufficient and does not alter the result-change verdict.
+- **Judgement limits:** The report identifies the frozen synthetic judgement source, hashes, coverage of each returned top ten and unjudged IDs. The million-product pool includes earlier candidate results, so its score is a proxy that may favour those results. The separate resolution workflow can ask a model about gaps in all selected recall sets before scoring; the all-abstaining model adds no labels. Coverage below 80% on either side marks the relevance claim insufficient and does not alter the result-change verdict.
 - **Captured response:** The evaluation client records the response actually returned to the caller, including ordered product IDs, zero results, errors and client-observed duration.
 - **Scoring:** Judgements are joined to those final product IDs; an established metrics library calculates end-to-end nDCG@10, MRR, precision/recall at selected cut-offs and per-query regressions.
 - **Coverage:** Report zero-result and failure rates separately so failures cannot disappear from metric denominators. Include category, intent and head/long-tail slices.
 - **Decision metric:** Public API results provide the black-box comparison, including query understanding or reranking changes outside Elasticsearch. The merge gate compares selected variants with the named baseline under one frozen specification and coverage policy; a bounded human exception records the reason without changing measured scores.
 
-Use three clearly labelled evidence layers:
+### Black-box, grey-box and white-box evidence
+
+Use three evidence layers:
 
 | Layer | Observation point | Purpose and examples |
 | --- | --- | --- |
@@ -408,7 +357,7 @@ Use the [unchanged-results workflow](diagrams/interactive/result-regression.html
 
 - **Jaccard:** Jaccard similarity is one minus Jaccard distance; the [SciPy definition](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.jaccard.html) also documents the empty-set convention.
 - **RBO:** RBO has distinct lower-bound and extrapolated estimates; see the [RBO implementation reference](https://github.com/dlukes/rbo) and its linked paper.
-- **Implementation:** Select and pin an established implementation during the build rather than implementing the metric afresh.
+- **Implementation:** The evaluation dependencies pin an established RBO implementation; retain that pin and its settings with each report.
 - **Verdict limits:** A similarity score close to 1 does not establish exact equality. If a later experiment allows tolerances, pin those thresholds and label its verdict **within tolerance**, keeping it distinct from **unchanged**.
 
 Response validity and scope:
@@ -435,18 +384,18 @@ Use the [Gatling workflow](diagrams/interactive/performance-check.html) for late
 - **Coordination:** The initial design needs no Gatling Enterprise service or distributed load coordinator.
 - **Portability:** Verify the runner image natively on amd64 and arm64 during portability testing; cross-architecture emulation is unsuitable for benchmark evidence.
 
-Load-test preparation and artifacts:
+Load-test preparation and artefacts:
 
 - **Preparation:** The [traffic-preparation workflow](diagrams/interactive/traffic-workload.html) freezes a trace and compiles the selected recipe before the lab schedules load jobs through its existing desired-state path.
 - **Execution and comparison:** Gatling creates traffic and per-run evidence; the evaluation job compares the completed reports. Use the upstream runner and report format, with a small versioned adapter for comparison summaries.
-- **Source and artifacts:** Keep simulations, build dependencies and workload manifests in Gitea; retain logs, HTML reports and summaries in Floci, with the same contracts after migration to GitHub Enterprise and Azure Blob Storage.
+- **Source and artefacts:** Keep simulations, build dependencies and workload manifests in Gitea; retain logs, HTML reports and summaries in Floci, with the same contracts after migration to GitHub Enterprise and Azure Blob Storage.
 
 Run the performance check in this order:
 
 1. **Pin the test.**
 
    - Record B/C fingerprints, catalogue and query hashes, original request/context, an immutable request schedule, simulation revision, Gatling/JDK versions, runner image, thresholds and timeouts.
-   - Resolve or compile the frozen workload under the traffic contract above. Both sides replay that same artifact, including head/long-tail, misspelling and zero-result cases.
+   - Resolve or compile the frozen workload under the traffic contract above. Both sides replay that same artefact, including head/long-tail, misspelling and zero-result cases.
    - Use one request per virtual user with an open arrival model so a slow response does not silently reduce offered load.
    - Record actual arrival timing and completion counts.
 
@@ -537,7 +486,7 @@ These thresholds are starting hypotheses for the constant-rate smoke profile.
 
 Performance evidence and verdicts:
 
-- **Retained artifacts:** Retain per-run Gatling logs and HTML/assertion reports, source trace, recipe and compiled-workload hashes, planned/actual arrival records, all fingerprints, machine/node and resource settings, cache/warm-up policy, monitoring evidence and comparison verdict.
+- **Retained artefacts:** Retain per-run Gatling logs and HTML/assertion reports, source trace, recipe and compiled-workload hashes, planned/actual arrival records, all fingerprints, machine/node and resource settings, cache/warm-up policy, monitoring evidence and comparison verdict.
 - **Error evidence:** Preserve timeout/error samples without logging every response body on the load generator.
 - **Validity and saturation:** Missing instrumentation or load-generator exhaustion blocks a performance pass; target-system saturation under a valid offered load breaches an acceptance budget or records a stress capacity limit, according to the pinned phase policy.
 - **Contention experiments:** Intentional contention uses a named, reproducible background-load profile, separate from the isolated comparison.
@@ -558,26 +507,28 @@ The UI has four small views:
 - Side-by-side search.
 - Comparison report with mode selection, per-query inspection and Gatling report links.
 
-The first slice should be usable without a terminal after bootstrap.
+The control UI supports the core paired workflow. Advanced variant capture, pooled judgement resolution and release operation use the documented operator tools; the UI does not yet integrate every standalone path.
 
 ## Startup and scale validation
 
-- **Warm platform:** Keep Kubernetes, ECK, the shared Elasticsearch cluster and Floci running between environment creations. Pre-pull or cache images.
-- **Fast and indexing paths:** API, query-understanding and ranking changes should create a search API deployment that points to an already indexed frozen release; mapping changes run an indexing Job.
-- **Index recovery:** The lifecycle selects exact reuse → live clone → configured regular snapshot → pinned recipe rebuild. Live clone passed a disposable 10,000-product check in 1.219 seconds. A separate local S3 repository now passes verification and analysis on the shared cluster. Three one-million-product lifecycle restores after source deletion took 17.157–17.578 seconds, including index verification; an API environment also used the snapshot path. Floci 0.13.0 failed Elasticsearch repository verification on batch deletion, so it must not be configured as a working snapshot store.
-- **Measured restore research:** An isolated one-node filesystem repository restored a million-product regular snapshot in 15.734–15.922 seconds across three warm trials and 17.922 seconds after a Pod restart. Three clones of the existing million-product index became searchable in 1.188–1.297 seconds, but clones depend on the live source. The S3-backed lifecycle measurements use different conditions, so the figures are not a controlled storage comparison. Both the filesystem PVC and local S3 Docker volume are host-local; Azure Blob remains an unmeasured compatibility and timing gate. See [the selection and limits](research/index-restoration-options.md) and [S3 evidence](research/evidence/durable-snapshot-repository.md).
+Keep Kubernetes, ECK, shared Elasticsearch, storage and registry services warm.
+API-only changes reuse a compatible frozen index; mapping changes run indexing
+or exact restoration. Cache immutable images where practical.
 
-Measure startup and removal separately:
+| Measure | Record |
+| --- | --- |
+| Environment startup | Request → namespace, index build/restore, first correct end-to-end search |
+| Source lifecycle | Accepted source update → tests/build/push → first correct candidate search |
+| Removal | Request → resources/credentials/dedicated index removed |
+| Conditions | Cold/warm state, hardware/architecture, dataset, shard layout, cache policy and competing load |
+| Deployment latency | Git publication, explicit refresh/polling and Argo reconciliation separately |
 
-- **Timing stages:** Measure separately: request → namespace ready, request → searchable, index build or restore, first successful query, and deletion.
-- **Conditions:** Record cold and warm runs, machine resources, CPU architecture, dataset size and Elasticsearch shard layout.
-- **Scale targets:** The first 10,000-product walkthrough has a provisional warm-start target of under five minutes. Set the 1,000,000-product target from observed measurements rather than claiming the same number will hold.
-
-Measure the full source-to-preview path as well:
-
-- **Source-to-search timing:** Also measure source commit → passing image digest and pull-request event → first successful search as end-to-end lifecycle timings. Keep these distinct from the warm environment figures, which start only after a validated image digest exists.
-- **Webhook delivery:** Run Gitea webhook delivery through a cluster-reachable URL and validate its signature.
-- **Argo CD latency:** Argo CD's ordinary Git polling can add minutes; measure a webhook or explicit refresh path before claiming the warm-start targets.
+[Restore research](research/index-restoration-options.md) and
+[S3 lifecycle evidence](research/evidence/durable-snapshot-repository.md) retain
+clone/snapshot timings and their different conditions. A live clone needs its
+source; a regular snapshot does not. Neither host-local repository proves cloud
+restore latency. [The roadmap](plans/roadmap.md) owns current measurements and
+remaining validation.
 
 ### Provisional quantitative targets
 
@@ -622,14 +573,14 @@ Scale gate for the completed prototype:
 
 ## Delivery batches and acceptance
 
-Each batch is committed to a branch for review. After acceptance, merge it to `main`; do not leave uncommitted changes on `main`.
+The [roadmap](plans/roadmap.md) owns implementation status and remaining gates;
+individual plans preserve the intent and acceptance criteria of each review batch.
+The [documentation plan](plans/documentation-authorship.md) tracks the current
+clarity review separately.
 
-1. **Design — merged:** architecture, research shortlist, provisional targets, data contract, lifecycle, scale gates and evidence sources.
-2. **Research spike — for review:** local Gitea/runner, real builds and searches, Git/plugin comparison, namespace and index isolation, failure cleanup, analyser/version probes and measured timings. See the [results and remaining gates](research/platform-spike.md).
-3. **Runnable search slice:** local bootstrap, Gitea, Floci Blob Storage, synthetic 10,000-product release, shared Elasticsearch, baseline search API and UI. Verify a real search end to end.
-4. **Experiments:** isolated environment records and credentials, candidate search API and query-understanding revisions, ranking configurations, side-by-side search, all three comparison modes (including Gatling), frozen synthetic traces and compiled normal/peak/stress profiles, their acceptance examples and three-day lifecycle.
-5. **Index changes and scale:** reproducible index builds, one-million-product release, 1,000 queries, measured startup optimisation and 40-environment control-plane exercise.
-6. **Portability and Azure shape:** Apple silicon verification, AKS manifests and Azure Blob configuration, Gitea-to-GitHub Enterprise integration plan, operations and cost/capacity notes.
+Finish a batch on a branch, commit it, update the roadmap and next detailed plan,
+and open a PR. Merge after acceptance. Local implementation acceptance does not
+close native/cloud, measurement or human-decision checks.
 
 ## Decisions to verify during implementation
 

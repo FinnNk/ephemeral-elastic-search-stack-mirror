@@ -68,3 +68,9 @@ The model guide now separates portable bundle installation from research-author 
 The telemetry guides lead with current HTTPS access and an investigation sequence. Dashboard trends, input-selection shift and coverage-verified SLO verdicts have separate limits. Fixed dashboard IDs, pending-invitation claims and host-capacity history moved out of the current procedure. Four CLI help checks passed. Three pages rendered in Edge with one title, no viewport overflow and no missing images; the backend opening was visually inspected. Related anchors and diff formatting were checked. No dashboards, accounts, models or telemetry services were changed.
 
 A second implementation finding is now tracked: non-empty request filters can be recorded but are not applied by the capture/API path. Empty-filter synthetic suites are unaffected; unsupported inputs need an explicit rejection before capture.
+
+## Follow-up: D4 design and navigation
+
+The design now separates current local topology, proposed Azure services and dated platform selection. Corrected `/api` routes, the continuous lease worker, public response fields and paired/N-way boundaries were checked against code. Historical recipe migration details no longer lead the contract. The quantitative target/scale-gate section was compared with the parent and preserved apart from British spelling.
+
+Diagram scope text was restructured; no represented relationship or rendered asset changed. Four pages rendered in Edge with one title, no overflow and loaded images; the design opening was visually inspected. Local links/anchors and diff formatting passed. Gitea API records confirm PRs #32–#59 merged, so roadmap review-status claims were corrected. Formal ADR acceptance, provider execution and open runtime gates were not inferred from those merges.
