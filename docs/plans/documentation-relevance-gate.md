@@ -1,6 +1,6 @@
 # Documentation relevance gate
 
-Status: implemented and verified locally; source and reference changes await acceptance.
+Status: accepted and activated on source main. README PR #9 has successful build and relevance checks on its rebased commit; its approving review and merge are pending.
 
 ## Intent and constraints
 
@@ -22,18 +22,13 @@ Status: implemented and verified locally; source and reference changes await acc
 | Required gate blocks a failed PR and permits a passing one | Verified on the protected disposable branch |
 | Installer refuses unaccepted source files and retains stronger existing requirements | Verified by focused tests |
 | Existing behavioural and signed-exception checks still pass | Nine existing verifier tests passed |
-| Main requires both checks after reviewed installation | Pending acceptance and activation |
+| Main requires both checks after reviewed installation | Installed and read back; both checks passed on README PR #9 |
 
-## Next batch: activation and README walkthrough
+## Next step: README approval and developer walkthrough
 
-After the source implementation and reference PRs are accepted:
+The source implementation and reference PRs are merged. Main protection is installed, and README PR #9 is rebased onto the accepted source main. Build run 47 and relevance run 48 passed on commit `e6e9852ce89a4e215d5e18d99f32d5decf58268a`; the relevance verdict records only the two allowed README paths.
 
-1. Install the accepted protection with `python lab/setup_relevance_gate.py` from the reference checkout using its existing `.lab` state directory.
-2. Rebase the existing source README PR onto the updated source main, preserving its documentation changes and removing the old workflow from its branch history.
-3. Confirm the current commit has successful build and trusted relevance checks; the latter must record `evaluation_not_required` and the two allowed paths.
-4. Ask for acceptance of the README PR, then resume the developer walkthrough one step at a time.
-
-Main must remain free of merge commits. No source main update or exemption activation is performed before review acceptance. The initial workflow installation requires explicit review because the previous target cannot run the new workflow.
+The existing changes-requested review remains. Ask the owner to review and approve the updated README PR, then merge it using squash. Resume the developer walkthrough one step at a time: open the Search API README, identify its first local test command and explain the expected result before running it together.
 
 ## References
 
