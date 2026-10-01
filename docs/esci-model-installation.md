@@ -117,7 +117,7 @@ canaries or failed qualification evidence.
 
 ## 3. Publish the runtime and API images
 
-The existing [judgement stack](judgement-resolution.md#start-or-verify-the-stack)
+The existing [judgement stack](judgement-resolution.md#install-or-verify)
 must already be installed. Publish the separate CUDA runtime:
 
 ```powershell

@@ -18,7 +18,7 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
-The [documentation authorship review](documentation-authorship.md) is accepted on main. D1, current operating guides, is implemented and ready for review, including two maintained UI/notebook illustrations. The next documentation batch is [D2: evaluation and delivery](documentation-evaluation-delivery.md). Canonical HTTPS control routing and secure session cookies remain a separate implementation gap; other validation gates below remain separate.
+The [documentation authorship review](documentation-authorship.md) is accepted on main. D1, current operating guides, is accepted on main, including two maintained UI/notebook illustrations. [D2: evaluation and delivery](documentation-evaluation-delivery.md) is implemented for review. The next documentation batch is [D3: models and observability](documentation-model-observability.md). Canonical HTTPS control routing and secure session cookies remain a separate implementation gap; other validation gates below remain separate.
 
 The project-side [developer guide and disconnected demo batch](developer-guide-demo.md) is accepted on main. It adds workstation trust instructions, explicit browser access, a separate in-memory search demo and illustrated delivery/evaluation guides. The source code change still needs exact-commit lab evidence before merge; mock demo results cannot satisfy that gate.
 

@@ -26,4 +26,4 @@ Demonstrate the local tooling path from a Gitea pull-request revision to a pinne
 
 - [Comparison implementation](../../lab/control_comparison.py), [control UI](../../lab/control-ui.html), [Gitea source flow](../../lab/deploy_candidate.py)
 - [Million-scale evidence](../research/evidence/million-scale.md)
-- [Evaluation contract](../prototype-design.md#black-box-grey-box-and-white-box-evidence)
+- [Evaluation contract](../prototype-design.md#search-and-comparison)

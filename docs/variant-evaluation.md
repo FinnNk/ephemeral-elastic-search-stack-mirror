@@ -35,6 +35,8 @@ Agree these inputs with the lab operator:
 
 The default and baseline are independent choices. The baseline supplies the comparison; it cannot also be a selected candidate in that gate decision.
 
+For complete operator commands, use the [evaluation runbook](evaluation-runbook.md).
+
 ## Capture and score
 
 ![API observations, pooled judgements and evaluation](diagrams/rendered/judgement-coverage.png)

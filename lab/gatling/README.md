@@ -1,10 +1,30 @@
-# Gatling runner
+# Compare API performance with Gatling
 
-The Java simulation uses Gatling 3.15.1 and Maven plugin 4.21.12 from the [official Java example](https://github.com/gatling/gatling-maven-plugin-demo-java/blob/main/pom.xml). The container image is pinned by digest in [`run_gatling.py`](../run_gatling.py). No host Java installation is required.
+Gatling replays one frozen synthetic workload against baseline and candidate APIs and retains native reports plus a paired verdict. A probe verifies the runner; it is not a capacity result.
 
-From the repository root, generate and compile the frozen wholly synthetic workload, then run a baseline/candidate pair:
+## Choose a route and profile
+
+| Route | Prerequisites |
+| --- | --- |
+| Control UI **Gatling performance** | Installed lab, two ready environments on one frozen catalogue |
+| Kubernetes CLI Jobs | Same lab, frozen APIs, Floci forward/credentials and pinned runner image |
+| Local Docker runner | Docker, baseline/candidate API forwards on 18080/18081; original 10k aliases |
+
+| Profile | Purpose |
+| --- | --- |
+| `probe` | Short wiring/readiness check |
+| `smoke` | Five measured minutes at 10 requests/s |
+| `normal`, `peak`, `stress` | Short runner calibration |
+| `normal-full`, `sustained-peak`, `stress-full` | Longer phases from the 30-minute million-release trace |
+
+No host Java is needed. The pinned simulation uses Gatling's Java SDK and Maven inside its container.
+
+## Run a local pair
+
+Use PowerShell from the repository root. Have the two original 10k API forwards running, then select the retained state directory:
 
 ```powershell
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 python lab/traffic.py generate
 python lab/traffic.py compile --profile probe
 python lab/run_gatling.py probe baseline
@@ -12,8 +32,22 @@ python lab/run_gatling.py probe candidate
 python lab/compare_gatling.py probe
 ```
 
-`run_gatling.py` uses the two local loopback API forwards (`18080` and `18081`) and a CPU/memory-capped Docker container. `run_gatling_job.py` runs the same simulation as a finite Kubernetes Job against the in-cluster service and copies its output from a temporary PVC before removing the Job, ConfigMaps and PVC. It creates each uniquely named workload ConfigMap directly: client-side apply would duplicate a long CSV in an annotation and reject the sustained-peak schedule. The control API performance mode uses the Job runner for selected ready environments.
+The compiler writes schedules/feeders under retained `workloads/`. Each runner writes native HTML and arrival records; the comparator prints the paired result. For a Kubernetes pair over the original aliases:
 
-The compiled schedule and each phase's feeder are under ignored `.lab/workloads/`. Gatling records actual arrivals and makes a native HTML report. The adapter requires every planned event and matching phase count; warm-up and ramp metrics are excluded from measured budgets. Native reports are archived in Floci by hash. The [traffic modelling note](../../docs/research/synthetic-traffic.md) records the assumptions and phase profiles.
+```powershell
+python lab/run_gatling_job.py probe baseline
+python lab/run_gatling_job.py probe candidate
+$baselineRun = Read-Host 'run_id printed by the baseline Job'
+$candidateRun = Read-Host 'run_id printed by the candidate Job'
+python lab/compare_gatling_jobs.py probe $baselineRun $candidateRun
+```
 
-For `retail-gb-1m-v1`, compile a profile with `python lab/traffic.py compile --profile sustained-peak --release retail-gb-1m-v1`. In the control UI, select two ready environments on that release and choose **Gatling performance**. The `smoke` profile measures five minutes at 10 requests/s; `normal-full`, `sustained-peak` and `stress-full` use the separate 30-minute frozen trace. The UI runs the two finite Jobs sequentially and retains both native reports and a paired verdict. The CLI target aliases above refer to the original 10,000-product environments; the [scale evidence](../../docs/research/evidence/million-scale.md) identifies the million-product environments and measured outcomes.
+Use the control UI for arbitrary ready environments and the million release. Its runner resolves the selected in-cluster services. To compile a million-release schedule explicitly, use `python lab/traffic.py compile --profile sustained-peak --release retail-gb-1m-v1`.
+
+## Read the result
+
+Warm-up/ramp intervals are excluded from measured budgets. The adapter checks planned versus actual arrivals and phase counts before evaluating latency/errors. Missing events, unstable baselines or incomplete runs make the result inconclusive; they are not a pass. Shared indices/host resources can cause contention.
+
+Jobs copy reports from a temporary PVC, retain them in Floci by hash, then remove temporary Jobs, ConfigMaps and PVCs. A retained report survives environment removal. If a run fails, inspect its Job/runner error and arrival ledger before retrying with a new run ID.
+
+See [traffic modelling](../../docs/research/synthetic-traffic.md), [performance contract](../../docs/prototype-design.md#performance-check-the-search-api-with-gatling) and [dated measurements](../../docs/research/evidence/gatling.md) for profile assumptions, budgets and evidence limits.

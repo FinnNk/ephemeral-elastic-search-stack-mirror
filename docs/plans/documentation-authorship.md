@@ -20,8 +20,8 @@ Authors and reviewers must apply [technical authorship guidance](../technical-au
 | Batch | Scope | Acceptance |
 | --- | --- | --- |
 | Review and entry points | Repository author/reviewer rules, inventory, findings, root README, variant guide and plan index | Mandatory clarity/structure review recorded; findings and limitations explicit; reader can choose the correct route. Accepted on Gitea main. |
-| D1 — Current operation | Lab/control runtime, identity, secrets, HTTPS, Nexus and index recovery guides; comparison and notebook screenshots | Implemented, awaiting review. Current path, state commands, expected outputs and actual security limits are documented; screenshot sources and limits retained. |
-| D2 — Evaluation and delivery | Source guides, delivery, input publication, judgement resolution, variants and Gatling | Engineer and operator responsibilities explicit; artefact origins, runnable examples, outputs, verdicts and recovery explained. |
+| D1 — Current operation | Lab/control runtime, identity, secrets, HTTPS, Nexus and index recovery guides; comparison and notebook screenshots | Accepted on Gitea main. Current path, state commands, expected outputs and actual security limits are documented; screenshot sources and limits retained. |
+| D2 — Evaluation and delivery | Source guides, delivery, input publication, judgement resolution, variants and Gatling | Implemented, awaiting review. Engineer and operator responsibilities explicit; artefact origins, runnable examples, outputs, verdicts and recovery explained. |
 | D3 — Models and observability | Model packaging/activation and connected investigation guides | Packaging is distinct from serving; access is current; dashboards and metric limits lead to useful actions. |
 | D4 — Design and navigation | Design, diagram guide, roadmap and decision index | Current contracts distinguish proposals and history; status has one owner; diagram sources, terminology and references agree. |
 | D5 — Historical records and final review | Research, plans and evidence; cross-references and rendered reading paths | Historical claims retain their conditions; current-entry links identify dated examples; remaining deep checks are completed or explicitly recorded. |
@@ -65,3 +65,9 @@ The installed control Pod was 4/4 Ready and its read-only smoke check passed. CL
 A CA-verified request to the HTTPS control route returned HTTP 307 to `http://localhost:18082/`. The guides now state this limit and the current cookie behaviour. Canonical HTTPS routing and `Secure` cookies require a separate implementation fix; they were not changed in this documentation batch.
 
 [Capture notes](../screenshots/README.md) record the two maintained screenshots. [D2: evaluation and delivery](documentation-evaluation-delivery.md) is the next detailed batch plan.
+
+## D2 verification
+
+Capture, scoring, retention, finite-Job, judgement, attestation and delivery CLI help were checked. A disposable 12-product/3-query pack was generated and its local manifests published successfully; no live comparison, model activation or promotion was performed. The source README templates are already corrected; delivery-source PR #13 remains open for its separate code/demo change and exact-commit evidence. The guides link a complete operator runbook and explain the capture adapter's current empty-filter limitation.
+
+[D3: models and observability](documentation-model-observability.md) is the next detailed plan. Link and rendered-page checks are recorded in the review.

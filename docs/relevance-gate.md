@@ -19,18 +19,24 @@ The target's `ci/relevance_scope.py` owns the allowlist. A candidate editing tha
 
 The ordinary `pull_request` workflow still runs the candidate's tests and image build on the trusted-contributor lab runner. The relevance workflow holds the evaluation signing keys separately. Neither an exemption nor a passing evaluation approves a deployment.
 
-## Activate in an existing lab
+## Check the installed gate
 
-1. Merge the reviewed source PR containing `.github/workflows/relevance.yaml`, the updated release workflow and the gate scripts into `delivery-source` main. This first installation needs an explicit review because the new target workflow is not yet on main.
-2. From the merged reference implementation's repository root in PowerShell, run:
+On a source PR, confirm **Reference release CI** and **Offline relevance gate** both report on the current head. A README-only change should record `evaluation_not_required` with its changed paths. Any other change needs the signed evidence described in the [operator runbook](evaluation-runbook.md).
 
-   ```powershell
-   $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-   python lab/setup_relevance_gate.py
-   ```
+If a check is missing, inspect the Actions run and branch protection before merging. Do not treat a successful build as a relevance result.
 
-   The command checks that source main contains the accepted gate files before changing protection. It requires both Actions checks, an approval and an up-to-date branch; direct pushes and administrator merge overrides are disabled. Existing additional check requirements are retained. A fresh `setup_delivery.py` installation applies this protection after seeding the source.
-3. Update existing source PR branches from main and rerun their checks. Older PR branches may still contain the previous combined build-and-gate workflow. Confirm both the build and relevance checks appear on the current PR commit before merging.
+## First installation
+
+Fresh `setup_delivery.py` installations seed the gate and configure protection. To activate it on an older installation, first merge the reviewed gate workflow/scripts into `delivery-source` main. The setup command verifies those trusted files before changing protection.
+
+Use PowerShell from the reference repository root with the existing retained state:
+
+```powershell
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
+python lab/setup_relevance_gate.py
+```
+
+Protection requires both checks, review and an up-to-date branch; direct pushes and administrator merge overrides are disabled. Existing additional checks are retained. Update old source branches from main and rerun their checks if they still contain the previous combined workflow.
 
 For GitHub Enterprise, require the corresponding build and `pull_request_target` relevance checks through branch protection or a ruleset. Keep the trusted target protected and the same-repository contributor restriction. Validate the check names on that installation rather than copying Gitea's status-context strings.
 

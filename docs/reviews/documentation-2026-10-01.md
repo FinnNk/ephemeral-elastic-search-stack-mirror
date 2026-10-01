@@ -54,3 +54,9 @@ The next branch rewrites the lab, control, identity, secrets, HTTPS and Nexus op
 The read-only control smoke check passed. A CA-validated control ingress request returned a redirect to HTTP localhost, confirming the documented routing limit. The cookie still lacks `Secure`; that implementation gap remains open. D1 does not claim to fix transport or identity in code.
 
 The branch also resolves the earlier browser-preview limitation using headless Edge and records rendered-page inspection. D2–D5 findings remain open under the [batch plan](../plans/documentation-authorship.md).
+
+## Follow-up: D2 evaluation and delivery
+
+The current guides distinguish source acceptance from deployment, obtain inputs from retained manifests/receipts and supply complete capture, scoring, attestation, exception and promotion commands. The operator runbook replaces ignored historical fixtures. Judgement pooling and Gatling prerequisites/outcomes are explicit. Source templates are corrected; source PR #13 remains open for the separate demo/code change.
+
+CLI help for seven operator tools passed. A disposable 12-product/3-query pack and local manifest publication passed. Seven revised guides were rendered in headless Edge: each had one title, loaded images and no viewport overflow; the delivery opening and diagram were visually inspected. Local links/anchors were checked, including repaired inbound anchors. These checks do not validate a new live comparison, release or human approval. Linux/macOS execution remains untested.

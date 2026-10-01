@@ -3,17 +3,17 @@ README.md,guide/reference,Reader-path content review,Entry-point corrections in 
 docs/adr/ADR-0001-reconcile-environments-from-git.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/adr/README.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/adr/template.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
-docs/control-runtime.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
-docs/data-evaluation-contracts.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/delivery.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/control-runtime.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
+docs/data-evaluation-contracts.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
+docs/delivery.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
 docs/diagrams/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 docs/esci-model-installation.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/https-git-transport.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
-docs/https-ingress.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
-docs/identity-boundary.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
-docs/judgement-resolution.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/keyvault-secrets.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
-docs/nexus.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
+docs/https-git-transport.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
+docs/https-ingress.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
+docs/identity-boundary.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
+docs/judgement-resolution.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
+docs/keyvault-secrets.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
+docs/nexus.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
 docs/observability-backend.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 docs/observability-foundation.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 docs/plans/README.md,plan,"Structure, opening, navigation and historical/current distinction",Entry-point corrections in this batch; related operating procedures in D1-D4
@@ -64,7 +64,7 @@ docs/plans/variant-managed-gate-rehearsal.md,plan,"Structure, opening, navigatio
 docs/plans/variant-merge-gate.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/variant-reference-proof.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/prototype-design.md,guide/reference,"Structure, opening, navigation and historical/current distinction",D1-D4: current-guide remediation
-docs/relevance-gate.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/relevance-gate.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
 docs/research/esci-synthetic-calibration.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/research/evidence/catalogue-recipe-delivery.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/research/evidence/concurrency-isolation.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
@@ -106,12 +106,12 @@ docs/research/okteto-uffizzi.md,research,"Structure, opening, navigation and his
 docs/research/platform-spike.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/research/portability-azure.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/research/synthetic-traffic.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
-docs/variant-evaluation.md,guide/reference,Reader-path content review,Entry-point corrections in this batch; related operating procedures in D1-D4
+docs/variant-evaluation.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
 docs/workstation-access.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-lab/README.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
+lab/README.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
 lab/delivery/bootstrap/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 lab/delivery/bootstrap/gate/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-lab/gatling/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+lab/gatling/README.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
 research/keyvault-eso-spike/README.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 research/platform-spike/README.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 research/snapshot-restore/README.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims

@@ -1,67 +1,75 @@
-# Judgement gap resolution
+# Fill missing relevance labels
 
-This workflow fills gaps exposed by any variant's returned products. All inputs and existing labels are synthetic. The first registered model abstains on every gap, so it exercises the model path without increasing coverage.
+A ranking change may retrieve products outside the existing label pool. This workflow collects missing query/product pairs from **all** variants, asks a separate judgement service for labels and freezes one set before scoring. Stored source labels take precedence.
 
-## Local topology
+The initial model abstains on every pair. It demonstrates inference wiring without improving coverage; a reviewed replacement may supply labels.
 
-| Component | Role | Retained state |
-| --- | --- | --- |
-| MLflow | Registered model versions | PostgreSQL metadata; S3 artefacts under a separate `mlflow/` prefix |
-| KServe Standard | Loads and serves an exact registry version | Initialiser checks the model artefact SHA-256 before readiness |
-| Judgement API | Verifies frozen pairs; returns stored labels or model outcomes | SQLite source labels, model labels and attempt receipts on a PVC |
-| Floci Blob | Provides catalogue, query suite and original labels | Content-addressed manifests and bytes |
-| ESO and Floci Key Vault | Delivers registry, object-store, Blob and Nexus credentials | Kubernetes Secrets refreshed from retained vault entries |
+## Services and outcomes
 
-The API and model run in `lab-models`, outside experiment namespaces. A search environment is not held up by model start-up. The service uses a shared frozen source; 10k source import is retained across Pod restarts. Inference requests contain the original query and selected product record. The service rejects IDs or record bytes that differ from the pinned source. A missing pair is never inferred from a Search API response alone.
+| Component | Responsibility |
+| --- | --- |
+| Judgement API | Verifies the selected frozen query/product pair; returns stored labels or model outcomes |
+| MLflow | Holds numbered model versions; PostgreSQL metadata and separate S3 model artefacts |
+| KServe Standard | Loads the exact model version and checks its artefact digest |
+| Floci Blob | Supplies hash-checked catalogue, queries and source labels |
+| ESO | Supplies retained registry, storage and pull credentials |
 
-## Start or verify the stack
+These services are shared in `lab-models`, outside search experiment namespaces. Each prediction returns its model identity; the judgement service rejects a different identity.
 
-From the repository root, set `LAB_STATE_DIR` to the existing lab state directory if using a separate worktree. Publish the image whose source-derived tag appears in `judgements/kubernetes/*.yaml`, then run:
+| Outcome | Treatment |
+| --- | --- |
+| `labelled` with E/S/C/I | Grade 3/2/1/0 respectively |
+| `abstain` | Unknown; remains unjudged |
+| Inference failure | Recorded separately; evaluation is incomplete |
+
+## Install or verify
+
+Operator prerequisites: bootstrapped lab, Nexus/storage/ESO, Python and the retained state directory. Use PowerShell from the repository root. Image publication and installation are separate from read-only verification.
 
 ```powershell
-python lab/publish_judgement_image.py --platforms amd64
-python lab/setup_judgement_stack.py
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
+$kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
 python lab/setup_judgement_stack.py --verify-only
-python lab/setup_judgement_stack.py --million
 ```
 
-The setup command checks the lab cluster, configures the Nexus image mirror, installs pinned cert-manager, KServe and MLflow Helm charts, syncs credentials through ESO, applies the versioned manifests, registers the all-abstaining model and runs a live smoke check. `--million` also starts a second source-scoped judgement API for the frozen 1M catalogue; it shares MLflow and KServe with the 10k service. On an existing cluster the command reconciles the same resources. Its image pin check fails if source code changes without publishing and updating the manifest tag. The current image is x86; build and check an arm64 or multi-platform image before running on Apple silicon.
+On a new installation, first publish the source-matching image with `python lab/publish_judgement_image.py --platforms amd64`, then run `python lab/setup_judgement_stack.py`. Setup validates its image pin and configures cert-manager, KServe, MLflow, Secrets and the 10k source service. Add `--million` only when the 1M source is required; it shares the registry and predictor. Native arm64 requires its own verified image. Bootstrap refuses to reset an installed replacement model to the original abstaining version.
 
 ## Capture, resolve and score
 
-1. Capture ordered results for a frozen variant set with `evaluation/capture.py` or select a retained `search-variant-observation-set`. Keep the matching catalogue and query manifests.
-2. Forward the cluster-only API for a local run: `kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-models port-forward service/judgement-service 18086:18086`.
-3. Run `judgements/evaluate.py` with `--observations`, `--specification`, `--catalogue`, `--catalogue-manifest`, `--query-manifest`, `--source-judgements`, `--source-manifest`, `--output`, `--resolve-url http://127.0.0.1:18086/v1/judgements:resolve`, and the exact `--model-name`, `--model-version` and `--model-artifact-sha256` from `judgement-model-pin`.
+First prepare `$inputDir`, `$manifestDir`, `$runDir` and the captured `observations.json` using the [evaluation runbook](evaluation-runbook.md). Use matching products, source labels and manifests. In a separate terminal, forward the **10k** service and keep it running:
 
-The output directory contains `frozen/judgements.jsonl`, `frozen/judgement-set.json`, `frozen/resolution.json` and `evaluation.json`. The command prints metric, coverage and input hashes. The frozen set retains every source label, even if that pair was outside the current recall pool. `resolution.json` records each attempted gap, input hash, outcome and per-variant coverage. `evaluation.json` scores every variant against the same set. Inference failure marks that report incomplete; an abstention leaves the pair unknown and lowers judged coverage.
+```powershell
+kubectl --kubeconfig $kubeconfig -n lab-models port-forward service/judgement-service 18086:18086 --address 127.0.0.1
+```
 
-Set `OTEL_EXPORTER_OTLP_ENDPOINT` to the lab gateway when running the evaluator where that service is reachable. It propagates `traceparent` to the judgement API, which propagates it to KServe. The API and predictor export by default in the local manifests. In SigNoz, the [model dashboard](observability-backend.md#model-health-and-input-shift) shows prediction outcomes, failures, batch latency, labelled coverage and query-length input shift. The frozen report contains the exact score and counts; no query text or product body is sent as telemetry. The shift compares frozen observation-query length buckets with the attempted pair mix, rather than with training data. No attempts produce an unknown shift value.
+For a 1M capture, use `service/judgement-service-million` instead. Port `18086` is also used by a host delivery coordinator; do not run that coordinator concurrently. Read the deployed pin, not a registry alias:
 
-Run again with another observation set and a new output directory when recall changes. Existing output bytes are immutable: a conflicting replay fails. This also catches an inference outcome that changed despite the same pinned source and model identity.
+```powershell
+$modelData = kubectl --kubeconfig $kubeconfig -n lab-models get configmap judgement-model-pin -o json | ConvertFrom-Json
+$model = $modelData.data.'model.json' | ConvertFrom-Json
+$catalogue = Get-ChildItem $inputDir -Filter 'products.jsonl*' | Select-Object -ExpandProperty FullName
+python judgements/evaluate.py --observations "$runDir/observations.json" --specification evaluation/specs/proxy-v1.json --catalogue $catalogue --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --source-judgements "$inputDir/judgements.jsonl" --source-manifest "$manifestDir/judgement-set.json" --output "$runDir/resolved" --resolve-url http://127.0.0.1:18086/v1/judgements:resolve --model-name $model.name --model-version $model.version --model-artifact-sha256 $model.artifact_sha256
+```
 
-## Replace the model
+The 10k and million manifests currently share `judgement-model-pin`. Confirm the selected Deployment still references it before using those values. The input pack must contain exactly one product file.
 
-For the selected **Larger v3 + learned score mapping** candidate, follow the
-[installation guide](esci-model-installation.md). It includes a self-contained
-MLflow bundle, a separate CUDA runtime and guarded promotion manifests. Its
-research operating point does not establish accuracy on the synthetic lab data.
-The stack bootstrap refuses to reset an installed replacement to the original
-all-abstaining version.
+| Output under `resolved/` | Purpose |
+| --- | --- |
+| `frozen/judgements.jsonl` | Source labels plus resolved labels; abstentions remain absent |
+| `frozen/judgement-set.json` | Frozen dependencies and provenance |
+| `frozen/resolution.json` | Attempt outcomes, identities and per-variant coverage |
+| `evaluation.json` | Every variant scored against that same frozen set |
 
-Register a new model version in MLflow with the same input/output contract: each pair produces `labelled` plus `E`, `S`, `C` or `I`, or `abstain`. Pin the numbered version and artefact digest in the KServe `storageUri` and judgement-service model ConfigMap. Deploy and verify both pins together. The storage initialiser reuses a complete matching model on restart and refuses changed or partial bytes; every prediction includes the verified identity, which the judgement API checks. A registry alias can select a version for a future deployment, but an evaluation records the exact version and digest.
+The command prints hashes, metrics and completeness. Inspect failures before trusting scores. Changed recall or model identity requires a new output directory. Frozen bytes cannot be overwritten by a conflicting replay.
 
-If the local SeaweedFS container is restarted, rerun `python lab/setup_judgement_secrets.py` to refresh the lab-only `model-artifacts` EndpointSlice to its current Docker IP. Rerun `python lab/setup_nexus.py` if the local Nexus container is restarted for the same reason. On Azure, object storage endpoints are supplied by the platform and do not use these local EndpointSlices.
+## Replace or investigate the model
 
-The numeric grade mapping is `I=0`, `C=1`, `S=2`, `E=3`. No label is inferred from abstention or a failed call. New model labels are cached only under that exact version and frozen source scope. Source labels always take precedence.
+Follow [model installation](esci-model-installation.md) for packaging, qualification, activation and rollback. Change KServe's numbered version/digest and the judgement-service pin together. Source labels always win; inferred labels are cached under that exact model and source scope.
 
-The judgement API defaults to an eight-second predictor timeout. A slower model
-can set `JUDGEMENT_PREDICT_TIMEOUT_SECONDS` (positive, at most 600); use a larger
-`--resolve-timeout` on `judgements/evaluate.py` or `judgements/prepare.py`
-(default 10, at most 900). The candidate guide starts at 120 and 130 seconds
-respectively; these limits still require live throughput validation.
+The predictor timeout defaults to eight seconds. `JUDGEMENT_PREDICT_TIMEOUT_SECONDS` accepts a positive value up to 600; `--resolve-timeout` defaults to ten and accepts up to 900. Slower candidate limits need measured validation, not just larger timeouts.
 
-## Limits of this slice
+The [model dashboard](observability-backend.md#model-health-and-input-shift) shows outcomes, failures, latency and coverage. Input shift compares query-length buckets with the attempted pair mix; it is not training drift or accuracy. Trace context crosses evaluator, judgement API and KServe when the evaluator can reach the OTLP gateway. Telemetry excludes query text and product bodies.
 
-- The existing control UI continues to score its selected judgement manifest. The two-stage workflow is a separate command over retained API observations; its hashes and coverage are directly inspectable.
-- The 10k/50-query and 1M/1,000-query retained comparisons have been exercised through the deployed stack. The 1M run exposed very low coverage under the all-abstaining model; its scores are not relevance evidence. Apple silicon build, Azure identity/storage and a non-abstaining model remain validation work.
-- Local MLflow is memory-heavy; the [measured sample](research/evidence/mlflow-kserve-judgement-coverage.md) is an operating observation, not a capacity claim. Environments should reuse the shared model service instead of starting one registry and predictor per experiment.
+After local storage/container recreation, `lab/setup_judgement_secrets.py` refreshes the model-store EndpointSlice; `lab/setup_nexus.py` refreshes Nexus connectivity. Azure uses platform endpoints and requires separate identity/storage validation.
+
+The control UI still scores its selected frozen labels; automatic gap resolution is this separate workflow. [Dated execution evidence](research/evidence/mlflow-kserve-judgement-coverage.md) records coverage and topology limits.
