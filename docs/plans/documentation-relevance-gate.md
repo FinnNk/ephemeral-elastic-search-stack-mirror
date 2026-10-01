@@ -1,6 +1,6 @@
 # Documentation relevance gate
 
-Status: accepted and activated on source main. README PR #9 has successful build and relevance checks on its rebased commit; its approving review and merge are pending.
+Status: accepted and activated on source main. README PR #9 has successful build and relevance checks on its rebased commit; it is merged to source main.
 
 ## Intent and constraints
 
@@ -28,7 +28,7 @@ Status: accepted and activated on source main. README PR #9 has successful build
 
 The source implementation and reference PRs are merged. Main protection is installed, and README PR #9 is rebased onto the accepted source main. Build run 47 and relevance run 48 passed on commit `e6e9852ce89a4e215d5e18d99f32d5decf58268a`; the relevance verdict records only the two allowed README paths.
 
-The existing changes-requested review remains. Ask the owner to review and approve the updated README PR, then merge it using squash. Resume the developer walkthrough one step at a time: open the Search API README, identify its first local test command and explain the expected result before running it together.
+README PR #9 is merged to source main as `e3d820e4a6cc4521571378be3857c23782ca41ef`. Resume the developer walkthrough one step at a time: open the Search API README, identify its first local test command and explain the expected result before running it together.
 
 ## References
 
