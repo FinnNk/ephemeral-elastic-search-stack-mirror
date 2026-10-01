@@ -33,7 +33,7 @@ Offline evaluation does not allocate online traffic. A recorded exception can ac
 | Result | What it tells you |
 | --- | --- |
 | nDCG@10 | How well the first ten results rank labelled relevant products |
-| Judged top-10 coverage | How much of that result set has labels; low coverage weakens the relevance evidence |
+| Judged coverage | Share of captured query/product results with labels; low coverage weakens the evidence |
 | Delta from baseline | Whether a variant's measured relevance improved or declined |
 | Changed-result fraction | How many queries changed returned IDs or total match count |
 | Retained API observations | The ordered IDs and totals behind each changed query |
@@ -56,7 +56,7 @@ Behavioural changes require evidence. The [README exemption](relevance-gate.md) 
 
 ## Gate outcomes and human decisions
 
-The current policy checks nDCG@10, at least **80% judged top-10 coverage**, delta from baseline and changed-result fraction.
+The current policy checks nDCG@10, at least **80% judged coverage for both baseline and candidate**, delta from baseline and changed-result fraction.
 
 | Outcome | Next action |
 | --- | --- |
