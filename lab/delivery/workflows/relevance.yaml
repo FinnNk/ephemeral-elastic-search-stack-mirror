@@ -1,0 +1,59 @@
+name: Offline relevance gate
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: read
+jobs:
+  relevance:
+    runs-on: lab-delivery
+    steps:
+      - name: Read target code and candidate changes
+        env:
+          SOURCE_URL: ${{ vars.SOURCE_BASE_URL || github.server_url }}/${{ github.repository }}.git
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          SOURCE_USER: ${{ secrets.SOURCE_USER }}
+          SOURCE_TOKEN: ${{ secrets.SOURCE_TOKEN }}
+        run: |
+          set -eu
+          test "$HEAD_REPOSITORY" = "$SOURCE_REPOSITORY"
+          export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader
+          export GIT_CONFIG_VALUE_0="Authorization: Basic $(printf '%s:%s' "$SOURCE_USER" "$SOURCE_TOKEN" | base64 | tr -d '\n')"
+          git init source
+          cd source
+          git remote add origin "$SOURCE_URL"
+          git fetch --no-tags origin "$BASE_SHA" "$SOURCE_SHA"
+          git checkout --detach "$BASE_SHA"
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          mkdir ../gate-input
+          git diff --raw --no-abbrev --no-renames -z "$BASE_SHA...$SOURCE_SHA" > ../gate-input/changes.bin
+          if git cat-file -e "$SOURCE_SHA:gate/selection.json"; then
+            git show "$SOURCE_SHA:gate/selection.json" > ../gate-input/selection.json
+          fi
+      - name: Check relevance or record documentation exemption
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          ARTIFACT_URL: ${{ vars.RELEASE_ARTIFACT_URL }}
+          NEXUS_USER: ${{ secrets.NEXUS_USER }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          LAB_VARIANT_EVIDENCE_KEY: ${{ secrets.LAB_VARIANT_EVIDENCE_KEY }}
+          LAB_VARIANT_APPROVAL_KEY: ${{ secrets.LAB_VARIANT_APPROVAL_KEY }}
+          LAB_VARIANT_POLICY_SHA256: ${{ vars.LAB_VARIANT_POLICY_SHA256 }}
+          LAB_VARIANT_GATE_CODE_SHA256: ${{ vars.LAB_VARIANT_GATE_CODE_SHA256 }}
+        run: |
+          set -eu
+          test "$(sha256sum source/ci/variant_gate.py | cut -d ' ' -f 1)" = "$LAB_VARIANT_GATE_CODE_SHA256"
+          PYTHON_IMAGE='python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844'
+          docker run --rm -v "$PWD/source:/trusted:ro" -v "$PWD/gate-input:/input:ro" \
+            -e SOURCE_SHA -e BASE_SHA -e SOURCE_REPOSITORY -e ARTIFACT_URL -e NEXUS_USER -e NEXUS_PASSWORD \
+            -e LAB_VARIANT_EVIDENCE_KEY -e LAB_VARIANT_APPROVAL_KEY -e LAB_VARIANT_POLICY_SHA256 \
+            "$PYTHON_IMAGE" sh -ec '
+              python /trusted/ci/relevance_gate.py --changes /input/changes.bin \
+                --base-sha "$BASE_SHA" --source-sha "$SOURCE_SHA" \
+                --source-repository "$SOURCE_REPOSITORY" --selection /input/selection.json \
+                --policy /trusted/gate/policy.json'

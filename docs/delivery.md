@@ -32,7 +32,9 @@ The setup creates private repositories and a repository-scoped `lab-delivery` ru
 
 A failing test stops publication. The source PR may still have older successful runs: select a run that matches the current head exactly. The [retained CI evidence](research/evidence/portable-ci.md) demonstrates both successful and failed paths.
 
-For a selected offline variant, the source PR commits `gate/selection.json` without a source SHA. The exact PR build runs first; an independent evaluator then publishes a signed report and attestation to Nexus under that SHA. The release workflow fetches those bytes and checks the versioned policy, named baseline, coverage, metric deltas, changed-result fraction and any signed administrator exception. A missing bundle or a blocked result fails the PR job. An approved exception keeps the measured score and reason in separate fields. The [variant guide](variant-evaluation.md) defines the frozen inputs and decision contract.
+The separate **Offline relevance gate** runs trusted target-branch code. Changes limited to `README.md` and `gate/README.md` pass with a recorded documentation exemption. Every other change needs frozen evaluation evidence, including changes to the gate itself. The [relevance gate guide](relevance-gate.md) explains the rule and installation of the two required checks.
+
+For a behaviour change, the source PR commits `gate/selection.json` without a source SHA. Its exact PR build supplies the image; an independent evaluator then publishes a signed report and attestation to Nexus under that SHA. Rerun the relevance check after publication. It checks the versioned policy, named baseline, coverage, metric deltas, changed-result fraction and any signed administrator exception. A missing bundle or a blocked result fails the gate. An approved exception keeps the measured score and reason in separate fields. The [variant guide](variant-evaluation.md) defines the frozen inputs and decision contract.
 
 ## Retained release contract
 

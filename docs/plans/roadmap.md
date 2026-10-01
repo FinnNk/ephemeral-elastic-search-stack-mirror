@@ -18,6 +18,8 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
+The [documentation relevance gate batch](documentation-relevance-gate.md) is implemented and locally verified, awaiting review. It retains application checks, exempts only the two source README paths and runs the relevance decision from the trusted target revision. After its source and reference PRs are accepted, install main protection and update the existing README PR; confirm both required checks on its current commit. The [evidence](../research/evidence/documentation-relevance-gate.md) records a documentation pass, a candidate-gate tampering failure and protected merge controls.
+
 The [MLflow and KServe judgement coverage plan](mlflow-kserve-judgement-coverage.md) adds a two-stage relevance evaluation: capture both recall sets, resolve their union, freeze one judgement snapshot and score both sides. Its first model abstains on every pair. All five local implementation batches are ready as a review stack; the existing control UI retains its selected-judgement route. The [local evidence](../research/evidence/mlflow-kserve-judgement-coverage.md) records the 1M cache correction and low coverage. This does not close the unrelated gates below.
 
 The next judgement-specific batch is [control UI integration](judgement-control-integration.md): launch the verified resolver as a finite Job from retained observations and show frozen coverage and lineage in the UI.

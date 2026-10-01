@@ -38,7 +38,7 @@ Running the image by itself is not enough to search. A lab deployment supplies a
 ## Make and evaluate a change
 
 1. Create a branch, change the API or ranking settings, and run the tests.
-2. Push the branch and open a pull request. **Reference release CI**, visible in Gitea's **Actions** tab, tests and builds that exact commit. It stores the image and release files in Nexus, the lab's artefact repository.
+2. Push the branch and open a pull request. **Reference release CI**, visible in Gitea's **Actions** tab, tests and builds that exact commit. It stores the image and release files in Nexus, the lab's artefact repository. The separate **Offline relevance gate** checks the evaluation evidence; changes limited to this README and `gate/README.md` receive a recorded documentation exemption.
 3. Deploy the built version to a lab environment and compare it with a baseline using the same frozen products and queries. Frozen inputs are saved versions that stay the same throughout the comparison.
 4. Review the changed results, relevance scores and judgement coverage. Judgements are labels indicating how relevant a product is to a query; coverage tells you how many returned products have those labels. A passing build alone does not show that ranking improved.
 

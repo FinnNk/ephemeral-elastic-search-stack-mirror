@@ -73,6 +73,7 @@ def seed_source(path):
                      encoding='utf-8', newline='\n')
     (path / '.github/workflows').mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/workflows/release.yaml', path / '.github/workflows/release.yaml')
+    shutil.copyfile(ROOT / 'lab/delivery/workflows/relevance.yaml', path / '.github/workflows/relevance.yaml')
     (path / 'contracts').mkdir(exist_ok=True)
     (path / 'gate').mkdir(exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/policies/variant-merge-v1.json',
@@ -96,6 +97,8 @@ def main():
     ensure_repo(DESIRED)
     configure_ci()
     seed_source(source)
+    from setup_relevance_gate import install
+    install()
     print('Delivery repositories and portable workflow ready. Source SHA: ' + git(SOURCE, 'rev-parse', 'HEAD'))
 
 
