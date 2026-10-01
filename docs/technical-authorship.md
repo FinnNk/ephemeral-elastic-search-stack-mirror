@@ -39,6 +39,16 @@ Keep run IDs, dated measurements and migration history in plans or evidence reco
 
 Give shared policy one owner and link to it. Keep source README templates and published copies aligned. Check affected unchanged pages for stale counts, labels, paths, states and claims.
 
+## Use screenshots sparingly
+
+Use an actual application screenshot when it helps the reader recognise a control or understand an output. Keep essential instructions in text and reuse a small set of useful views.
+
+- Capture shareable demonstration data; exclude credentials, private data and irrelevant browser chrome.
+- Preserve the interface and displayed results. Label synthetic fixtures, saved exports and manually selected form states.
+- Add useful alt text and a short caption. Record the application revision, capture date, route, viewport, framing and any redaction with the assets.
+- Inspect the image at normal document size and in the rendered guide. Recapture or remove it when the UI changes.
+- A screenshot illustrates visible state; it does not establish underlying behaviour or prove a check passed.
+
 ## Review the documentation
 
 Apply this procedure when reviewing a PR with documentation changes **or code that changes documented behaviour**:
