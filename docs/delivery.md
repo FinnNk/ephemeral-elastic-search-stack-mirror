@@ -2,6 +2,10 @@
 
 The reference workflow builds an exact source revision, publishes an immutable Nexus release and deploys that release through reviewed Git changes. Gitea runs the local demonstration. Argo CD owns deployments. The [delivery contract](plans/reference-ci-cd.md) defines promotion and evaluation rules.
 
+![Source PR, frozen evaluation and merge gate](diagrams/rendered/variant-merge-gate.png)
+
+A source PR builds a candidate image. Frozen API observations and judgements produce its gate evidence. A passing gate permits review and merge; it does not deploy the candidate.
+
 ## Repositories and services
 
 | Resource | Purpose |
@@ -50,6 +54,10 @@ The current API keeps query logic in `app.py`; its hash is part of the bundle an
 Release verification checks every bundle member and checksum, rejects path traversal and mutable images, and verifies the indexer source against its compatibility contract. A release does not contain credentials, target namespace or dataset selection. Those belong to the deployment definition.
 
 ## Evaluate and promote
+
+![Reviewed promotion through integration, staging and production](diagrams/rendered/release-promotion.png)
+
+Promote the same merged-source release through each target. Argo CD deploys the reviewed desired state; the coordinator verifies the serving API before onward promotion.
 
 The three stable targets are `lab-delivery-integration`, `lab-delivery-staging` and `lab-delivery-production`. Production is a local simulation. They share the cluster and compatible frozen indices; they do not provide separate failure domains or performance isolation.
 
@@ -147,9 +155,13 @@ The [measured walkthrough](research/evidence/promotion-deployment.md) covers pro
 
 ### Offline variant merge gate
 
-A source PR opts in with `gate/selection.json`. The workflow builds the exact PR commit, then runs the pinned Python gate in a disposable container. Nexus retains the report, signed attestation and CI build receipt under the source SHA. The selected variant's captured image must equal the attested build image. Missing or changed evidence fails the job; low judged coverage blocks it. A CI rerun can read evidence issued after the first build without changing the commit. The [managed rehearsal](research/evidence/managed-variant-gate.md) shows a blocked live report and a separate deterministic fixture pass.
+Every behavioural source change commits `gate/selection.json` and needs signed evidence for that exact source SHA. The trusted target workflow matches the captured image to its build receipt and checks policy, coverage and any recorded exception. [The variant guide](variant-evaluation.md) explains the inputs and verdicts; [the managed rehearsal](research/evidence/managed-variant-gate.md) records the live checks.
 
-The environment-state ApplicationSet passes a frozen variant configuration to the Search API as base64 text so Helm's parameter parser does not split JSON commas. The chart decodes it into `SEARCH_VARIANTS_JSON`. The environment fingerprint covers that configuration, image, index and image-pull identity. Existing Gitea image environments use `registry-read`; the Nexus-backed proof uses `nexus-read`.
+| Deployment setting | Effect |
+| --- | --- |
+| Frozen variant configuration | Included in the environment fingerprint with its image and index |
+| ApplicationSet parameter | Carries base64 JSON; the chart decodes it into `SEARCH_VARIANTS_JSON` |
+| Image-pull identity | `registry-read` for Gitea images; `nexus-read` for Nexus images |
 
 ## Gitea to GHES
 

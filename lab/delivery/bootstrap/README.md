@@ -12,7 +12,7 @@ This repository is part of the [ephemeral search lab](https://gitea.localhost:34
 
 ## Run the tests
 
-You need Git and a running Docker installation. The local lab certificate must be trusted to clone over HTTPS. From a terminal, run:
+You need Git and a running Docker installation. Before cloning over HTTPS, follow the [Windows, Linux and macOS certificate instructions](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/workstation-access.md). They explain where to obtain the public lab certificate and how to configure Git and your browser. From a terminal, run:
 
 ```sh
 git clone https://gitea.localhost:34443/elastic-agent/delivery-source.git
@@ -29,13 +29,39 @@ python -m pip install -r app/requirements.lock
 python -m unittest discover -s app -p 'test_*.py' -v
 ```
 
-## Try a search
+## Run without the lab
 
-Open the browser page for a deployed lab environment and try a query such as `running shoes`. The page calls `GET /search?q=running%20shoes`; the response includes the matching product IDs, product details and total match count.
+For a disconnected demo, run this from the repository root with Python 3.13. On Linux and macOS, use `python3` in place of `python` if that is your Python 3.13 command:
 
-Running the image by itself is not enough to search. A lab deployment supplies an existing product index, its read credentials and the Elasticsearch certificate. The [lab guide](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/lab/README.md) explains how to create and access an environment.
+```sh
+python app/demo.py
+```
 
-## Make and evaluate a change
+Open the printed address, normally `http://127.0.0.1:8080/`, and try `running shoes`. The same browser page and API use eight synthetic products in memory. No Python packages, certificates, credentials, Elasticsearch or Kubernetes are needed. Stop with Ctrl+C; use `--port 8081` if port 8080 is occupied.
+
+Alternatively, after building the image above:
+
+```sh
+docker run --rm -p 127.0.0.1:8080:8080 search-api-dev python demo.py --host 0.0.0.0
+```
+
+Image building and dependency installation need connectivity the first time; an existing image or the Python demo runs disconnected. The page and JSON responses identify mock data. The mock matches query tokens and field boosts, but does not reproduce Elasticsearch analysers or scoring. Use the lab for relevance comparisons and merge evidence. The normal image command remains the Elasticsearch-backed API.
+
+## Try a search in the lab
+
+For the walkthrough, use a deployed environment. Select its namespace in the lab control UI. The stable integration target is `lab-delivery-integration`.
+
+Run this in a terminal with kubectl and the lab kubeconfig, replacing `<lab-kubeconfig>` with the absolute path to the lab's `.lab/kubeconfig.yaml`:
+
+```sh
+kubectl --kubeconfig "<lab-kubeconfig>" -n lab-delivery-integration port-forward service/search 18088:8080
+```
+
+Keep that terminal open and visit **http://127.0.0.1:18088/**. kubectl prints `Forwarding from 127.0.0.1:18088 -> 8080` when ready. The lab does not assign a permanent browser address to every environment; the port-forward creates this local address. For a preview, substitute its namespace. Stop with Ctrl+C when finished.
+
+Try `running shoes`. The page calls `GET /search?q=running%20shoes`; the response includes matching product IDs, product details and total match count. The deployment supplies a frozen index, read credentials and the Elasticsearch certificate.
+
+## Contributors guide
 
 1. Create a branch, change the API or ranking settings, and run the tests.
 2. Push the branch and open a pull request. **Reference release CI**, visible in Gitea's **Actions** tab, tests and builds that exact commit. It stores the image and release files in Nexus, the lab's artefact repository. The separate **Offline relevance gate** checks the evaluation evidence; changes limited to this README and `gate/README.md` receive a recorded documentation exemption.

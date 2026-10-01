@@ -10,6 +10,8 @@ The lab exposes five retained web services through one Traefik ingress on loopba
 | SigNoz | `https://signoz.localhost:34443/` | `lab-observability/signoz:8080` |
 | Nexus UI | `https://nexus.localhost:34443/` | `platform/nexus:8081` |
 
+For workstation Git and browser trust on Windows, Linux and macOS, follow [Connect a workstation](workstation-access.md).
+
 ## Install or reconcile
 
 Use Python with [pinned certificate dependency](../lab/requirements-https.txt), Docker, kubectl, k3d and the lab's pinned Helm binary. Set `LAB_STATE_DIR` to the original retained `.lab` directory when running from another worktree.

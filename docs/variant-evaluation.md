@@ -1,24 +1,77 @@
 # Offline evaluation of search variants
 
-A variant is one pinned public Search API behaviour. The variant set names exactly one **default** for requests without a selector and one **baseline** for metric deltas. These roles may name different variants. The proposed production choice is made later by a separate gate decision.
+Compare two or more Search API variants against the same frozen queries and judgements. Review relevance, coverage and changed results before selecting a release.
 
-| Shape | Capture | Production path |
+![Variants, frozen evidence and the merge decision](diagrams/rendered/variant-merge-gate.png)
+
+## Choose the variants
+
+| Role | Meaning |
+| --- | --- |
+| Default | The variant used when a request has no selector; exactly one is required |
+| Baseline | The variant used to calculate metric deltas; it may also be the default |
+| Selected variant | A variant proposed for release and checked by the merge gate |
+
+| Change | Evaluation | Deployment |
 | --- | --- | --- |
-| Replacement release | Current version and proposed version, each selected as its deployment default | Proposed version replaces the current default after promotion; no online flag or traffic split is needed. |
-| Runtime choices | Two or more named configurations served by one or more pinned APIs | A selected configuration may later be activated through the production feature-flag mechanism. The offline run makes no traffic-allocation decision. |
+| Replacement release, such as a dependency update | Current default versus proposed default | The proposed release replaces the current version |
+| Alternative ranking settings | Two or more named variants, across one or more pinned APIs | The selected settings may later be activated through production feature flags |
 
-`SEARCH_VARIANTS_JSON` contains a `default_variant` and a map of named configurations. Each configuration has four bounded `field_boosts`: `title`, `product_type`, `brand` and `description`. An omitted `X-Lab-Variant` selects the default; an explicit header selects a named configuration. The public response echoes `variant_id` and `configuration_sha256`. The digest is SHA-256 of the selected configuration's sorted, compact JSON. A changed or unknown selection fails the capture.
+Offline evaluation does not allocate online traffic. A recorded exception can accept a bounded regression for business reasons.
 
-The frozen `search-variant-set` selects each variant's environment name, environment fingerprint, configuration digest and `default` or `explicit` request selection. A single environment may serve several variants; different API images or index schemas use separate frozen environments. `evaluation/capture.py --variant-set ...` validates the current Argo CD environment definitions and sends the same synthetic query suite to every selected public API. It retains one `search-variant-observation-set` with the deployed image digest and a named result for every query and variant. Any error, missing result or identity mismatch invalidates the capture.
+## Capture and score
 
-`judgements/evaluate.py` forms the union of all variants' result pairs through the requested metric depth. It uses stored labels first, requests missing pairs from the pinned model and freezes one judgement set. `evaluation/offline.py` scores each variant against that same set and reports per-variant metrics, coverage, query-level values and deltas from the named baseline. A model abstention remains unknown; low judged coverage stays visible alongside scores.
+![API observations, pooled judgements and evaluation](diagrams/rendered/judgement-coverage.png)
 
-The variant observation and report contracts are the only inputs to the new offline variant gate. Earlier pair-shaped artefacts remain historical evidence and are rejected by these commands. Recreate an evaluation from the synthetic generators and pinned Search API images when a new decision needs current evidence.
+1. **Freeze the variants.** Pin each image, index and configuration in a `search-variant-set`. Different images or schemas need separate environments; compatible variants can reuse a runtime or index.
+2. **Capture results.** `evaluation/capture.py --variant-set ...` checks the deployed definitions and sends the same query suite to every API. Missing responses or identity mismatches invalidate the capture.
+3. **Fill label gaps.** `judgements/evaluate.py` pools query/product pairs from all variants. Stored labels take precedence; the pinned model supplies missing labels or abstains. Freeze one judgement set for all variants.
+4. **Score.** `evaluation/offline.py` reports metrics, coverage and deltas from the baseline. An abstention remains unknown.
 
-For a proposed release, commit `gate/selection.json` with one or more variant names and intents (`ranking-change` or `preserve-results`). The selection contains no source SHA: the CI event supplies the exact PR commit after it exists. The release CI builds that commit. The separate trusted-target relevance workflow reads `variant-gates/<source SHA>/report.json`, `attestation.json` and `approvals.json` from Nexus. The attestation also pins an immutable Nexus build receipt for that commit. CI matches the selected variant's captured image to the receipt's image; later CI attempts may build different OCI digests from the same source. A missing or changed bundle fails the gate. Policy and gate-code hashes come from protected Actions variables. Evidence can be added after an initial build, then checked by rerunning the relevance job on the unchanged commit. Every behavioural change requires a selection and evidence; only the two exact paths in the [documentation exemption](relevance-gate.md) can pass without them. Application tests and builds still run for exempt PRs.
+## Read the report
 
-The versioned gate policy checks nDCG@10, at least 80% judged top-10 coverage, metric delta from the named baseline and the fraction of queries whose returned IDs or total changed. A passing selected variant needs no exception. A bounded negative or changed-result case returns `decision_required`; a Gitea administrator may issue a signed exception with a substantive reason. Low coverage or a larger regression is `blocked` and cannot be approved. The approval binds the exact report, policy, selection, source commit and selected variant. The resulting verdict retains the measured values and approval digest separately. For a replacement release, the selected variant becomes the deployment default on promotion; the gate does not imply an online experiment.
+| Result | What it tells you |
+| --- | --- |
+| nDCG@10 | How well the first ten results rank labelled relevant products |
+| Judged top-10 coverage | How much of that result set has labels; low coverage weakens the relevance evidence |
+| Delta from baseline | Whether a variant's measured relevance improved or declined |
+| Changed-result fraction | How many queries changed returned IDs or total match count |
+| Retained API observations | The ordered IDs and totals behind each changed query |
 
-The [managed gate rehearsal](research/evidence/managed-variant-gate.md) records a live blocked result and a separate deterministic fixture pass. Fixture judgements test the wiring; they do not measure relevance quality. The [implementation plan](plans/offline-variants-and-gates.md) tracks the review batches. A passing metric is evidence for a decision, not the decision itself.
+Read coverage beside the scores. Synthetic fixtures demonstrate the process, not real search quality. [Result-preservation comparisons](prototype-design.md#result-regression-preserve-ranking-and-membership) also provide RBO and Jaccard diagnostics.
 
-A control UI comparison may also run a selected [exploratory notebook](data-evaluation-contracts.md#exploratory-notebooks-after-a-comparison) against its retained report. For an N-way evaluation, add `python lab/run_notebook.py --report <frozen evaluation.json> --notebook comparison-explorer.ipynb` as the task after `judgements/evaluate.py`. This freezes a copy of the exact report in Blob, runs the packaged notebook and retains the executed notebook and a hash-pinned receipt. Its findings never enter the variant gate policy or change the comparison verdict.
+## Supply merge evidence
+
+| Step | Required record |
+| --- | --- |
+| Declare intent in the source PR | `gate/selection.json`: one or more variant names, each with `ranking-change` or `preserve-results`; no source SHA |
+| Build the exact PR commit | Release CI publishes the image and immutable Nexus build receipt |
+| Evaluate that image | Retain the frozen report, then issue its signed attestation |
+| Publish evidence | `variant-gates/<source SHA>/report.json`, `attestation.json` and `approvals.json` in Nexus |
+| Rerun the relevance job | Trusted target code checks signatures, policy, selection, source SHA and the attested image |
+
+The captured image must match the attested build receipt, even if a later CI attempt builds another image. Missing or mismatched evidence fails. Protected Actions variables pin the policy and verifier.
+
+Behavioural changes require evidence. The [README exemption](relevance-gate.md) skips evaluation only; tests and builds still run.
+
+## Gate outcomes and human decisions
+
+The current policy checks nDCG@10, at least **80% judged top-10 coverage**, delta from baseline and changed-result fraction.
+
+| Outcome | Next action |
+| --- | --- |
+| `pass` | Review the evidence and selected release choice; no exception is needed |
+| `decision_required` | A bounded regression or result change needs an administrator's signed exception with a substantive reason |
+| `approved_exception` | Review the measured result and recorded reason separately |
+| `blocked` | Fix the regression or improve coverage; an exception cannot bypass this result |
+| `invalid` | Correct incomplete, stale or mismatched evidence and rerun the check |
+
+Exceptions bind the report, policy, commit and selected variant without altering scores. A replacement becomes the default on promotion. Deployment still requires approval.
+
+Named configurations live in `SEARCH_VARIANTS_JSON`. Requests use `X-Lab-Variant` to select one, or omit it for the default. Capture checks the echoed variant ID and configuration digest.
+
+Optional [exploratory notebooks](data-evaluation-contracts.md#exploratory-notebooks-after-a-comparison) retain their findings separately from the gate verdict.
+
+- [Managed gate rehearsal](research/evidence/managed-variant-gate.md): a blocked live report and a separate fixture pass.
+- [Gate policy](../lab/delivery/policies/variant-merge-v1.json): thresholds and exception bounds.
+- [Delivery guide](delivery.md): promotion and rollback.

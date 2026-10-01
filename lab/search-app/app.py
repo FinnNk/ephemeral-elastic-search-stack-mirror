@@ -122,21 +122,8 @@ class Handler(BaseHTTPRequestHandler):
             raw_query = params.get('q', [''])[0]
             with telemetry.span('search.query_understanding'):
                 body = query_body(query, country, currency, variant)
-            auth = base64.b64encode((os.environ['ES_USER'] + ':' + os.environ['ES_PASSWORD']).encode()).decode()
-            headers = {'Content-Type': 'application/json', 'Authorization': 'Basic ' + auth}
-            telemetry.inject(headers)
-            request = urllib.request.Request(
-                os.environ['ES_URL'] + '/' + os.environ['ES_INDEX'] + '/_search',
-                data=json.dumps(body).encode(), headers=headers)
             try:
-                with telemetry.span('search.elasticsearch') as dependency_span:
-                    if dependency_span is not None:
-                        dependency_span.set_attribute('db.collection.name', os.environ['ES_INDEX'])
-                    context = ssl.create_default_context(cafile='/es-ca/tls.crt')
-                    es_start = time.monotonic()
-                    with urllib.request.urlopen(request, context=context, timeout=10) as response:
-                        result = json.load(response)
-                    es_ms = (time.monotonic() - es_start) * 1000
+                result, es_ms = self.search_index(body)
             except Exception as error:
                 self.log_error('Elasticsearch request failed: %s', type(error).__name__)
                 telemetry.record(502, (time.monotonic() - start) * 1000,
@@ -158,6 +145,23 @@ class Handler(BaseHTTPRequestHandler):
                              request_id=correlation_id)
             return self.send_json(200, payload)
 
+    def search_index(self, body):
+        """Elasticsearch dependency; the standalone demo supplies an in-memory substitute."""
+        auth = base64.b64encode((os.environ['ES_USER'] + ':' + os.environ['ES_PASSWORD']).encode()).decode()
+        headers = {'Content-Type': 'application/json', 'Authorization': 'Basic ' + auth}
+        telemetry.inject(headers)
+        request = urllib.request.Request(
+            os.environ['ES_URL'] + '/' + os.environ['ES_INDEX'] + '/_search',
+            data=json.dumps(body).encode(), headers=headers)
+        with telemetry.span('search.elasticsearch') as dependency_span:
+            if dependency_span is not None:
+                dependency_span.set_attribute('db.collection.name', os.environ['ES_INDEX'])
+            context = ssl.create_default_context(cafile='/es-ca/tls.crt')
+            started = time.monotonic()
+            with urllib.request.urlopen(request, context=context, timeout=10) as response:
+                result = json.load(response)
+            return result, (time.monotonic() - started) * 1000
+
     def send_json(self, status, value):
         self.send_body(status, json.dumps(value).encode(), 'application/json; charset=utf-8')
 
@@ -172,4 +176,6 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     telemetry.configure()
-    ThreadingHTTPServer(('0.0.0.0', 8080), Handler).serve_forever()
+    server = ThreadingHTTPServer(('0.0.0.0', 8080), Handler)
+    print('Search API listening on port 8080. Browser: http://127.0.0.1:8080/ (local process).', flush=True)
+    server.serve_forever()
