@@ -37,7 +37,7 @@ This is a relevance lab, not a production commerce platform. All products, queri
 
 ## Proposed architecture
 
-The architecture is maintained as a [Structurizr C4 model](diagrams/workspace.dsl), with complementary Archify workflow, lifecycle and evaluation data-flow views. Open the [diagram gallery](diagrams/index.html) for all twenty-one views, or use the [diagram guide](diagrams/README.md) for their scope, editable sources and rendering commands.
+The architecture is maintained as a [Structurizr C4 model](diagrams/workspace.dsl), with complementary Archify workflow, lifecycle and evaluation data-flow views. Open the [diagram gallery](diagrams/index.html) for all twenty-two views, or use the [diagram guide](diagrams/README.md) for their scope, editable sources and rendering commands.
 
 ![C4 system context: people, search relevance lab and supporting platforms](diagrams/rendered/01-context.svg)
 

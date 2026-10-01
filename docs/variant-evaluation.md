@@ -1,6 +1,6 @@
 # Offline evaluation of search variants
 
-Compare two or more Search API variants against the same frozen queries and judgements. Review relevance, coverage and changed results before selecting a release.
+Compare the results returned by two or more Search API configurations. Use the same saved queries and relevance labels for every configuration, then review the scores and changed results before choosing a release. A configuration is called a **variant** in the API and reports.
 
 ![Variants, frozen evidence and the merge decision](diagrams/rendered/variant-merge-gate.png)
 
@@ -19,14 +19,30 @@ Compare two or more Search API variants against the same frozen queries and judg
 
 Offline evaluation does not allocate online traffic. A recorded exception can accept a bounded regression for business reasons.
 
+## Prepare the comparison
+
+For a source PR, start in the Search API repository's `gate/README.md`. Declare which variants you want to release and whether the change should preserve results or change ranking. CI must build the exact PR commit before its image is evaluated.
+
+Agree these inputs with the lab operator:
+
+| Input | Where it comes from |
+| --- | --- |
+| Variant names and default | The Search API configuration in the proposed release |
+| Baseline | An agreed deployed release or a named variant in the comparison |
+| API images and index definitions | CI build receipts and retained environment definitions |
+| Queries, catalogue and labels | Compatible frozen manifests from the [data contracts](data-evaluation-contracts.md) |
+| Model for missing labels | The pinned registry version in the [judgement workflow](judgement-resolution.md) |
+
+The default and baseline are independent choices. The baseline supplies the comparison; it cannot also be a selected candidate in that gate decision.
+
 ## Capture and score
 
 ![API observations, pooled judgements and evaluation](diagrams/rendered/judgement-coverage.png)
 
 1. **Freeze the variants.** Pin each image, index and configuration in a `search-variant-set`. Different images or schemas need separate environments; compatible variants can reuse a runtime or index.
-2. **Capture results.** `evaluation/capture.py --variant-set ...` checks the deployed definitions and sends the same query suite to every API. Missing responses or identity mismatches invalidate the capture.
-3. **Fill label gaps.** `judgements/evaluate.py` pools query/product pairs from all variants. Stored labels take precedence; the pinned model supplies missing labels or abstains. Freeze one judgement set for all variants.
-4. **Score.** `evaluation/offline.py` reports metrics, coverage and deltas from the baseline. An abstention remains unknown.
+2. **Capture results.** The [capture tool](../evaluation/capture.py) checks the deployed definitions and sends the same query suite to every API. Missing responses or identity mismatches invalidate the capture.
+3. **Fill label gaps.** The [judgement workflow](judgement-resolution.md) pools query/product pairs from all variants. Stored labels take precedence; the pinned model supplies missing labels or abstains. Freeze one judgement set for all variants.
+4. **Score.** The [offline evaluator](../evaluation/offline.py) reports metrics, coverage and deltas from the baseline. An abstention remains unknown.
 
 ## Read the report
 
@@ -39,6 +55,8 @@ Offline evaluation does not allocate online traffic. A recorded exception can ac
 | Retained API observations | The ordered IDs and totals behind each changed query |
 
 Read coverage beside the scores. Synthetic fixtures demonstrate the process, not real search quality. [Result-preservation comparisons](prototype-design.md#result-regression-preserve-ranking-and-membership) also provide RBO and Jaccard diagnostics.
+
+The lab operator runs capture, judgement resolution and scoring. The expected output is one frozen report containing every variant, its baseline deltas and the exact inputs used. If capture fails, correct the missing API response or deployment mismatch before scoring. If labels are missing, inspect coverage before treating scores as evidence.
 
 ## Supply merge evidence
 

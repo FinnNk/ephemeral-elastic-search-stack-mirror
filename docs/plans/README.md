@@ -1,9 +1,9 @@
 # Delivery plans
 
-Start with the [current roadmap](roadmap.md). It distinguishes implemented local behaviour from remaining integration and validation gates. The [reference-clarity audit](reference-clarity.md) records where earlier contracts still affect the active path.
+Use the [roadmap](roadmap.md) for current implementation status and remaining validation. The [prototype design](../prototype-design.md) owns the architecture and provisional targets.
 
-The [SigNoz backend and signal transport](signoz-backend-and-investigation.md) and [account and SLO dashboard](signoz-connected-investigation.md) are ready for review. The [connected runtime investigation](signoz-connected-runtime.md) is next; the [backend guide](../observability-backend.md) records installed components, stored signals, dashboard checks and remaining gates. The [runtime consolidation and delivery rehearsal](reference-runtime-consolidation.md) is merged, with [live evidence](../research/evidence/runtime-consolidation-delivery.md). The [catalogue-recipe and delivery evidence](../research/evidence/catalogue-recipe-delivery.md) and [selected-input check](../research/evidence/independent-comparison-inputs.md) record the preceding contract migration.
+Individual batch plans record intent, constraints, acceptance criteria and references. Their original status text describes that batch; it is not a second current-status tracker. Follow their evidence links for measured results.
 
-Earlier batch plans in this directory record the decisions and acceptance checks used during implementation. Their original status text is historical; use the roadmap for current status and each plan's evidence link for measured results. The [prototype design](../prototype-design.md) owns the architecture and provisional targets.
+The [documentation review and remediation plan](documentation-authorship.md) records the current writing-quality findings and follow-up batches. Authors and reviewers must follow the [technical authorship guidance](../technical-authorship.md).
 
-Work in reviewable batches on branches. Update the roadmap and the next detailed plan, commit the batch and open a PR. Merge to `main` after acceptance.
+Work on a branch, commit the batch and open a PR. Update the roadmap and next detailed plan before review. Merge to `main` after acceptance.

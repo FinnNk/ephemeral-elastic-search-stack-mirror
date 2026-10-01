@@ -1,45 +1,47 @@
 # Ephemeral search relevance lab
 
-This project is a home lab for comparing ecommerce search changes against a reproducible baseline. It uses synthetic UK retail data, a self-managed Elasticsearch cluster and short-lived Kubernetes workloads. The first frozen dataset contains 10,000 products and 50 judged queries. A separate frozen release contains 1,000,000 products and 1,000 queries. Scale, load and 40-environment checks have local evidence; native Apple silicon and cloud validation remain open.
+A local Kubernetes lab for developing and comparing ecommerce search changes. It provides a Search API, a browser UI and reproducible evaluations over frozen synthetic UK retail data.
 
-The [prototype design](docs/prototype-design.md) defines the architecture, quantitative targets, frozen datasets, environment lifecycle and three comparison modes: relevance, result preservation and Gatling performance. The design keeps a provider boundary for a later move from Gitea to GitHub Enterprise.
+Use it to compare ranking changes, check that a change preserves results, or measure API performance with Gatling. Comparisons retain the deployed versions, inputs and reports so they can be repeated.
 
-Browse the [architecture diagram gallery](docs/diagrams/index.html) or [diagram guide](docs/diagrams/README.md) for seven Structurizr C4 views and fourteen interactive Archify views, with editable sources and rendering instructions.
+## Start here
 
-The [delivery roadmap](docs/plans/roadmap.md) summarises demonstrated behaviour and remaining gates. See the [scale evidence](docs/research/evidence/million-scale.md), [concurrency evidence](docs/research/evidence/concurrency-isolation.md) and [native/cloud validation plan](docs/plans/native-cloud-validation.md).
+| What you want to do | Guide |
+| --- | --- |
+| Understand the system | [Design](docs/prototype-design.md) and [diagram gallery](docs/diagrams/index.html) |
+| Connect to an existing lab | [Workstation access and certificate trust](docs/workstation-access.md), then [lab workflows](lab/README.md) |
+| Develop the Search API | [Source README](lab/delivery/bootstrap/README.md), also published in the lab's `delivery-source` repository |
+| Compare variants and interpret the decision | [Variant evaluation](docs/variant-evaluation.md) |
+| Build, promote or roll back a release | [Delivery](docs/delivery.md) |
+| Install or operate the control services | [Control runtime](docs/control-runtime.md) |
+| Contribute to this repository | [Contributors guide](CONTRIBUTING.md) |
 
-The control services run in Kubernetes, and synthetic inputs and offline evaluation have separate contracts. The Search API has an OpenTelemetry signal contract, and the control services send signals to a local gateway. SigNoz stores synthetic search traces and metrics plus correlated delivery traces and logs; its [source-controlled dashboard](docs/observability-backend.md#search-slo-dashboard) shows measured local intervals. The [connected runtime investigation](docs/plans/signoz-connected-runtime.md) covers rolling windows, coverage and navigation. The [roadmap](docs/plans/roadmap.md) lists the remaining validation gates.
+The source README includes a disconnected mock demo. Evaluating a change requires the running lab; mock results cannot satisfy the relevance gate.
 
-## Current state
+## What runs in the lab
 
-The [platform guide](research/platform-spike/README.md) runs local Gitea, Argo CD, Elasticsearch and Floci. The [lab guide](lab/README.md) covers browser pages and search APIs over frozen synthetic UK retail inputs. It compares query-understanding and ranking changes through the public APIs, with correlated diagnostics. Kubernetes-hosted control services create, search, compare and remove pinned API environments with durable leases, using either a shared index or a dedicated mapping-change index.
+| Responsibility | Components |
+| --- | --- |
+| Source, CI and deployment | Gitea, Actions runners, Nexus and Argo CD |
+| Search and environment management | Self-managed Elasticsearch, Search API workloads and Kubernetes control services |
+| Frozen inputs and index recovery | Floci Azure storage emulator, index recipes and a local snapshot store |
+| Judgement gaps | Separate judgement API, MLflow model registry and KServe inference |
+| Observability | OpenTelemetry and SigNoz |
+| Secrets and browser access | External Secrets Operator, Floci Key Vault and local HTTPS ingress |
 
-The [secret operating guide](docs/keyvault-secrets.md) covers ESO-backed retained lab credentials and the boundary with bootstrap and short-lived environment Secrets.
-The [local HTTPS guide](docs/https-ingress.md) lists the five TLS browser endpoints and the local CA bootstrap.
-The [judgement resolution guide](docs/judgement-resolution.md) covers MLflow, KServe, stored-label precedence and pooled evaluation gaps.
-The [v3 model installation guide](docs/esci-model-installation.md) packages the selected LoRA and learned score mapping for MLflow, with abstention, serving checks and rollback. GPU activation remains pending.
+The lab supports 10,000-product/50-query and 1,000,000-product/1,000-query frozen releases. [Scale](docs/research/evidence/million-scale.md) and [40-environment isolation](docs/research/evidence/concurrency-isolation.md) checks have local evidence. Synthetic relevance scores demonstrate the workflow; they do not establish customer search quality.
 
-- [Research results](docs/research/platform-spike.md): 20 warm lifecycle trials, API and analyser comparisons, isolation and failure recovery.
-- [Proposed decision](docs/adr/ADR-0001-reconcile-environments-from-git.md): reconcile environments from Git-file ApplicationSets; use k3d provisionally.
-- [Local access](research/platform-spike/README.md#personal-access): named Gitea and Argo CD administrator logins and browser URLs.
-- [Nexus artifact storage](docs/nexus.md): private images, release bundles and your separate administrator login.
-- [Reference CI/CD](docs/delivery.md): Nexus releases, protected promotion PRs, three local targets and verified rollback; [detailed plan](docs/plans/reference-ci-cd.md) and [evidence](docs/research/evidence/promotion-deployment.md).
-- [Lifecycle evidence](docs/research/evidence/lifecycle-measurement/README.md): named owner checks and 20/20 warm removals; nearest-rank deletion p95 53.844 seconds against the five-minute target.
-- [Index-change evidence](docs/research/evidence/index-change.md): separate frozen index, authenticated API comparison, access isolation and cleanup.
-- [Synthetic traffic and Gatling](docs/research/synthetic-traffic.md): frozen query/timestamp pairs, finite Kubernetes Jobs and public-API performance comparisons, including long-duration million-release schedules.
-- [Million-product scale evidence](docs/research/evidence/million-scale.md): deterministic release, shared and mapping-change indices, full 1,000-query result comparisons and measured capacity limits.
-- [Concurrency and isolation evidence](docs/research/evidence/concurrency-isolation.md): three complete environments, two 40-API fleets, access boundaries, cleanup and controlled contention.
-- [Portability and Azure shape](docs/research/portability-azure.md): multi-platform image and Blob checks, C4 deployment updates, GHES/Nexus migration route with optional ACR and remaining native/cloud gates.
+The [roadmap](docs/plans/roadmap.md) records remaining validation. Native Apple silicon, Azure and GitHub Enterprise still need verification. The design targets those environments, but the local namespaces share one host and are not separate failure domains.
 
 ## Repository workflow
 
-Gitea is the primary remote for day-to-day branches and pull requests. The private GitHub repository holds an offsite copy of this project's Git history.
+Gitea is the primary remote. GitHub holds an offsite copy of Git history.
 
-| Remote | Role | Location |
-| --- | --- | --- |
-| `github` | Offsite backup | [FinnNk/ephemeral-elastic-search-stack](https://github.com/FinnNk/ephemeral-elastic-search-stack) |
-| `origin` | Primary Gitea remote | [Local project](http://127.0.0.1:31800/elastic-agent/ephemeral-elastic-search-stack) |
+| Remote | Use |
+| --- | --- |
+| `origin` | Day-to-day branches and PRs in [local Gitea](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack) |
+| `github` | Explicit backup pushes to [GitHub](https://github.com/FinnNk/ephemeral-elastic-search-stack) using the configured GitHub App |
 
-Use `origin` for normal fetch/push operations and `github` explicitly for backup pushes with GitHub App authentication. Back up each completed batch branch; no unattended schedule is configured. Gitea's database, datasets, reports and registry images need separate volume backup and restore arrangements.
+Work in batches on branches, commit each batch and obtain acceptance before merging to `main`. See [contribution and documentation review requirements](CONTRIBUTING.md).
 
-Work in batches on a branch, commit each batch and obtain acceptance before merging to `main`.
+Git backup does not include Gitea's database, datasets, reports or registry images. Those need separate storage backups.

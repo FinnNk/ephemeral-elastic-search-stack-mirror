@@ -1,6 +1,6 @@
 # Architecture diagrams
 
-Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These twenty-one views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
+Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These twenty-two views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
 
 ## Reading order
 
@@ -107,7 +107,7 @@ Prerequisites: Node.js, Git, a working Docker daemon with Linux containers and, 
    node docs/diagrams/render.mjs --browser
    ```
 
-   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders seven C4 SVGs and PNG inspection copies, validates and delivers fourteen Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
+   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders seven C4 SVGs and PNG inspection copies, validates and delivers fifteen Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
 
    For a focused rebuild, use `--c4` or `--archify`, optionally with `--browser`. The script checks the Archify commit before use. Docker pulls the pinned Structurizr image when missing. A Docker connection failure means the daemon must be started before retrying.
 

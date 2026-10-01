@@ -1,0 +1,117 @@
+page,purpose,review_scope,follow_up
+README.md,guide/reference,Reader-path content review,Entry-point corrections in this batch; related operating procedures in D1-D4
+docs/adr/ADR-0001-reconcile-environments-from-git.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/adr/README.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/adr/template.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/control-runtime.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/data-evaluation-contracts.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/delivery.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/diagrams/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/esci-model-installation.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/https-git-transport.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/https-ingress.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/identity-boundary.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/judgement-resolution.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/keyvault-secrets.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/nexus.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/observability-backend.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/observability-foundation.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/plans/README.md,plan,"Structure, opening, navigation and historical/current distinction",Entry-point corrections in this batch; related operating procedures in D1-D4
+docs/plans/azure-keyvault-validation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/catalogue-recipe-delivery.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/comparison-diagnostics.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/concurrency-isolation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/developer-evaluation-loop.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/developer-guide-demo.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/documentation-relevance-gate.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/durable-snapshot-repository.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/environment-lifecycle.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/historical-index-recipes.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/https-client-transport.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/https-oci-transport.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/independent-data-evaluation-contracts.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/index-change.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/judgement-control-integration.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/kubernetes-control-services.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/lifecycle-completion.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/lifecycle-identity-and-measurement.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/local-reference-boundaries.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/million-product-scale.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/mlflow-kserve-judgement-coverage.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/model-observability.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/native-cloud-validation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/nexus-artifacts.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/offline-variants-and-gates.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/otel-observability.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/portability-azure.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/portable-ci.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/promotion-deployment.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/reference-ci-cd.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/reference-clarity.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/reference-runtime-consolidation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/roadmap.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/signoz-backend-and-investigation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/signoz-connected-investigation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/signoz-connected-runtime.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/signoz-investigation-overhead.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/signoz-merged-release-rehearsal.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/signoz-window-coverage.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/snapshot-restoration-integration.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/snapshot-restoration-research.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/synthetic-traffic-gatling.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/variant-gate-operator-validation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/variant-managed-gate-rehearsal.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/variant-merge-gate.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/plans/variant-reference-proof.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/prototype-design.md,guide/reference,"Structure, opening, navigation and historical/current distinction",D1-D4: current-guide remediation
+docs/relevance-gate.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/research/esci-synthetic-calibration.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/catalogue-recipe-delivery.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/concurrency-isolation.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/developer-evaluation-loop.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/documentation-relevance-gate.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/durable-snapshot-repository.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/esci-model-bundle.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/exploratory-notebook.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/gatling.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/historical-index-recipes.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/https-git-transport-2026-09-28.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/independent-comparison-inputs.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/independent-data-evaluation-contracts.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/index-change.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/index-recovery-workflows.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/kubernetes-control-services.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/lifecycle-measurement/README.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/managed-variant-gate.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/million-scale.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/mlflow-kserve-judgement-coverage.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/model-observability-2026-09-29.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/nexus-artifacts.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/offline-variants-million.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/otel-observability-foundation.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/portability-azure.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/portable-ci.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/promotion-deployment.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/runtime-consolidation-delivery.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/signoz-backend-2026-09-27.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/signoz-dashboard-2026-09-28.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/signoz-finite-jobs-2026-09-28.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/signoz-investigation-2026-09-28.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/evidence/signoz-window-2026-09-28.md,evidence,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/gitea-lifecycle.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/index-restoration-options.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/lifecycle-signadot-coolify.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/million-synthetic-release.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/okteto-uffizzi.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/platform-spike.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/portability-azure.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/research/synthetic-traffic.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+docs/variant-evaluation.md,guide/reference,Reader-path content review,Entry-point corrections in this batch; related operating procedures in D1-D4
+docs/workstation-access.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+lab/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+lab/delivery/bootstrap/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+lab/delivery/bootstrap/gate/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+lab/gatling/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+research/keyvault-eso-spike/README.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+research/platform-spike/README.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
+research/snapshot-restore/README.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
