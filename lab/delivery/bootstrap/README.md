@@ -2,7 +2,7 @@
 
 A small ecommerce Search API for experimenting with query understanding and product ranking. It searches an Elasticsearch index of synthetic UK retail products and includes a simple browser page for trying queries.
 
-This repository is part of the [ephemeral search lab](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack). It gives engineers a place to make a change, build it, and compare its search results with a baseline before deciding whether to deploy it. The catalogue uses GBP prices; the data and evaluation examples are for the lab.
+This repository is part of the [ephemeral search lab](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack). It gives engineers and data scientists a place to make a change, build it, and compare its search results with a baseline before deciding whether to deploy it. The catalogue uses GBP prices; the data and evaluation examples are for the lab.
 
 ## Start here
 
