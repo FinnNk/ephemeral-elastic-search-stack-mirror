@@ -1,47 +1,49 @@
-# Nexus artifact storage
+# Use Nexus artefact storage
 
-Nexus stores private container images and immutable release bundles for the reference CI/CD workflow. The existing Gitea registry retains historical images. Frozen datasets and reports remain in Floci Blob; Elasticsearch snapshots remain in SeaweedFS.
+Nexus stores container images, deployment bundles, build receipts and signed merge-gate evidence. The older Gitea registry retains its historical images. Frozen datasets and comparison reports use Floci Blob; Elasticsearch snapshots use the separate snapshot store.
 
-## Start and sign in
+## Open an existing installation
 
-From the repository root in PowerShell, after the [platform bootstrap](../research/platform-spike/README.md):
+Open [Nexus](https://nexus.localhost:34443/) after [trusting the lab certificate](workstation-access.md). Use your personal account, not the CI publisher.
+
+| Account | Access | Credential source |
+| --- | --- | --- |
+| `finnnk` | Personal administrator | `personal.password` in retained `nexus.json` |
+| `elastic-agent` | Setup/maintenance administrator | Retained bootstrap record |
+| `lab-publisher` | Read/publish images and releases; no delete/admin | Scoped CI credential |
+| `lab-reader` | Read repositories and pull images | ESO-backed deployment credential |
+
+These are distinct from Gitea logins. Anonymous access is disabled. Do not commit credentials or generated environment files. The recovery administrator is not used by CI.
+
+## Install or reconnect
+
+Operator prerequisites: the [platform bootstrap](../research/platform-spike/README.md), Docker and Python. Use PowerShell from the repository root; select the existing state directory when working elsewhere.
 
 ```powershell
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 python lab/setup_nexus.py
 ```
 
-Open [Nexus](https://nexus.localhost:34443/) through the [local HTTPS ingress](https-ingress.md). Your administrator login is `finnnk`; its generated password is the `personal.password` entry in ignored `.lab/nexus.json`. Automation uses `elastic-agent`. These are separate from your Gitea credentials.
+Setup creates or reuses the pinned containers, configures repositories/accounts and refreshes cluster endpoint addresses. It refuses to silently change an existing container's image. Check the command's result, open the UI and confirm `lab-images` and `lab-releases` exist. Repeat setup after cluster/container recreation to reconnect endpoints; do not delete retained volumes to resolve an address problem.
 
-| Identity | Access |
+## Storage and transport
+
+| Item | Location |
 | --- | --- |
-| `finnnk` | Personal administrator |
-| `elastic-agent` | Setup and maintenance administrator |
-| `lab-publisher` | Read and publish to `lab-images` and `lab-releases`; no delete or administration |
-| `lab-reader` | Read the two repositories; Kubernetes image pulls |
+| Container images | Hosted `lab-images`; `nexus.localhost:18185`, deployed by digest |
+| Bundles, receipts and gate evidence | Raw hosted `lab-releases`, with content hashes and write-once policy |
+| Browser | HTTPS ingress at `nexus.localhost:34443` |
+| Host API/diagnostic access | HTTP loopback `127.0.0.1:18183` |
+| Cluster API access | HTTP Kubernetes Service on the private lab network |
+| Nexus data | Docker volume `relevance-nexus` |
+| Database | Docker volume `relevance-nexus-db`; no published database port |
 
-Anonymous access is disabled. Do not commit `.lab/nexus.json` or the generated environment files. The local bootstrap account is retained for recovery; it is not used by CI.
+Volumes survive container replacement, not host/disk loss. Back up the database and blob store consistently before upgrades. GitHub Git backup does not include these artefacts. No automatic cleanup runs: keep manifests, layers and bundles required by comparisons and rollback.
 
-## Storage and connectivity
-
-| Item | Location / behaviour |
-| --- | --- |
-| Images | Docker hosted `lab-images`, registry `nexus.localhost:18185`; deploy by digest |
-| Release bundles | Raw hosted `lab-releases`; content hashes and write-once repository policy |
-| Nexus data | Docker volume `relevance-nexus`, mounted at `/nexus-data` |
-| PostgreSQL | Docker volume `relevance-nexus-db`; no published database port |
-| Browser/API | Loopback `127.0.0.1:18183` |
-| Runner and Pods | Private lab network, Kubernetes service and CoreDNS rewrite |
-
-The setup is idempotent and refuses to silently change an existing container's image. Run it again after recreating the cluster or Nexus container to refresh endpoint addresses and registry configuration. Named volumes survive container restarts and replacement; they do not protect against host or disk loss. Back up Nexus's database and blob storage consistently before upgrades. GitHub Git mirroring does not back up these artifacts.
-
-Nexus has a 4 GiB memory cap (1.5 GiB Java heap, 1 GiB direct-memory limit); PostgreSQL has 512 MiB; the Nexus connection pool is capped at 20. This is a local trial allocation. [Sonatype's production sizing](https://help.sonatype.com/en/sonatype-nexus-repository-system-requirements.html) is substantially larger. amd64/arm64 manifests are pinned; native Apple silicon execution remains untested.
+The lab caps Nexus at 4 GiB and PostgreSQL at 512 MiB. This is a local trial allocation, not production sizing. Multi-platform images are pinned; native Apple silicon remains unverified. See the [original installation evidence](research/evidence/nexus-artifacts.md) for measured scope.
 
 ## Edition and migration
 
-- Community Edition supports the hosted Docker and raw repositories used here. Its usage limits are 40,000 components and 100,000 requests per day; monitor these before increasing retention or load. See [edition limits](https://help.sonatype.com/en/nexus-repository-editions.html) and the [feature matrix](https://help.sonatype.com/en/nexus-repository-feature-matrix.html).
-- Setup accepts the [Community Edition EULA](https://links.sonatype.com/products/nxrm/ce-eula) through the documented bootstrap API. Promotion uses Git PRs and Argo CD; it does not require Nexus's paid staging features.
-- No automatic cleanup is configured. Live releases, historical comparisons and rollback targets must retain their image manifests, layers and bundles.
-- Local HTTP stays on loopback/private lab networks. Hosted use requires HTTPS, external secret management, backup/restore and suitable resource sizing.
-- Nexus can remain the artifact service after Gitea moves to GHES. ACR remains an optional Azure image destination; copying there requires verification of the resulting digest and deployment reference.
+Community Edition provides the hosted Docker/raw repositories used here. Check the current [edition limits](https://help.sonatype.com/en/nexus-repository-editions.html) before increasing retention or load. Setup accepts its documented EULA; promotion uses reviewed Git state and Argo CD rather than paid Nexus staging features.
 
-The [delivery plan](plans/reference-ci-cd.md) defines CI and promotion. The [Nexus batch plan](plans/nexus-artifacts.md) lists the required live checks.
+Nexus can remain after migration to GitHub Enterprise. Azure needs verified registry transport, secret management, backups and resource sizing. An optional ACR copy must verify the resulting digest and deployment reference. See [delivery](delivery.md) for publishing and promotion and [OCI transport](plans/https-oci-transport.md) for the remaining local HTTP path.

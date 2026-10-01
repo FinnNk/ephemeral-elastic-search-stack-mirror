@@ -1,13 +1,43 @@
-# Local identity boundary
+# Lab identities and sessions
 
-The loopback control UI verifies a username and password against local Gitea's `/api/v1/user` endpoint. It uses the returned canonical login and administrator flag as the runtime owner and access decision. The password is used for that request only; it is not written to SQLite, Git, reports or the browser response body.
+Sign in to the control UI with your own local Gitea account. The control service asks Gitea to verify the credentials and uses its returned login and administrator flag to decide which environments you can manage.
 
-The control service creates a random 12-hour session token and sends it only in an HttpOnly, SameSite=Strict cookie. The UI clears the password field after sign-in. A non-administrator can read, search, compare, renew or delete only environments they own. An administrator can manage all environments and see their saved reports. Sessions remain valid until logout, service restart or their 12-hour expiry; Gitea account deactivation is not checked again during that window. The control service binds to `127.0.0.1` but requires the browser URL `http://localhost:18082/` so its host-only cookie is not sent to Gitea on `127.0.0.1:31800`. This local HTTP cookie has no `Secure` flag. A hosted deployment requires HTTPS, `Secure` cookies, revocation handling and an identity-aware ingress.
+## Access rules
 
-The [identity adapter](../lab/control_identity.py) returns only `{username, is_admin}` to the [control API](../lab/control_api.py). Replacing Gitea with GitHub Enterprise should change the login flow and adapter, not the environment ownership record or comparison contract. An enterprise implementation should use its approved OAuth/OIDC flow, map stable subject IDs and administrator roles explicitly, and define what happens when a user is renamed or deactivated. The current Gitea login name is suitable for this local lab; it is not an enterprise-stable subject ID.
+| Identity | Control access |
+| --- | --- |
+| Ordinary Gitea user | Read, search, compare, renew and delete their own environments |
+| Gitea administrator | Manage all environments and inspect their retained reports |
+| Automation account | Acts under its own identity; it does not become the human owner |
 
-The [live identity evidence](research/evidence/lifecycle-measurement/identity.json) uses `lab-admin` and the separate `elastic-agent` account to demonstrate owner isolation and administrator cleanup. Gitea also lists `finnnk` as a distinct administrator; that personal account's sign-in was not tested because its password was not available to the lab script. This does not establish enterprise SSO behaviour.
+The password is used only for the Gitea verification request. It is not written to SQLite, Git, reports or the browser response; the UI clears the password field after sign-in.
 
-[Nexus](nexus.md) has separate local accounts: `finnnk` for personal administration, `elastic-agent` for setup, `lab-publisher` for CI publication and `lab-reader` for deployment pulls. Nexus credentials are not Gitea credentials. CI receives no Nexus administrator password; deployment namespaces receive only the read credential.
+| Session behaviour | Current implementation |
+| --- | --- |
+| Lifetime | Random token, held in memory, expires after 12 hours |
+| Cookie | Host-only, `HttpOnly`, `SameSite=Strict`, path `/`; no `Secure` flag |
+| End of session | Logout, expiry or control process restart |
+| Account deactivation | Not rechecked during an existing session |
 
-The [delivery reference](delivery.md) protects `delivery-state/main` with an exact-head validation status, one permitted review, stale-approval dismissal and an up-to-date branch. `finnnk` is the human reviewer; `elastic-agent` proposes and validates. The explicitly invoked demonstration harness uses the separate `lab-admin` account for approvals labelled as automated simulation. That credential is held by the host coordinator, never the build runner. The watcher does not approve or merge PRs. Local administrators can change protection settings; GHES migration must configure the organisation's real reviewer and service identities.
+## Browser and network boundary
+
+The Kubernetes installer binds the API to `0.0.0.0` inside its Pod. A scoped NetworkPolicy permits the configured lab clients and ingress; this is not a host-loopback server. The installer sets `LAB_CONTROL_PUBLIC_URL=http://localhost:18082` and the API checks that Host header.
+
+Use the [loopback port forward](control-runtime.md#connect-and-check) and open `http://localhost:18082/`. A different Host causes a GET redirect to the canonical HTTP address; other requests receive HTTP 421. The configured HTTPS ingress route does not change that canonical URL or add the cookie's `Secure` flag. Do not describe it as an end-to-end HTTPS control session.
+
+The lab's remaining identity limits are canonical HTTPS routing, secure cookies, account revocation and an enterprise identity flow. Documenting these limits does not change the running configuration.
+
+## Separate service accounts
+
+| Service | Human and automation distinction |
+| --- | --- |
+| Gitea/control | Personal account for interactive use; `elastic-agent` for agent work |
+| Nexus | Personal administrator, setup administrator, `lab-publisher` for CI and `lab-reader` for deployment pulls |
+| Delivery review | Human release review is separate from the proposing/validating agent |
+| Demonstration approvals | `lab-admin` is used only by the explicitly invoked simulation harness; those approvals are labelled simulated |
+
+Nexus credentials are not Gitea credentials. CI receives no Nexus administrator password. The delivery watcher does not approve or merge promotion PRs. Local administrators can change protection settings; enterprise migration must apply the organisation's real identities and reviewer policy.
+
+The [adapter](../lab/control_identity.py) returns only `{username, is_admin}` to the [control API](../lab/control_api.py). A GHES implementation should use approved OAuth/OIDC, stable subject IDs and explicit role mapping. A Gitea login name is sufficient for this lab but is not an enterprise-stable subject ID.
+
+The [dated identity checks](research/evidence/lifecycle-measurement/README.md) demonstrate owner isolation and administrator cleanup. They do not establish personal-account sign-in or enterprise SSO.

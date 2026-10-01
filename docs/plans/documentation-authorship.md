@@ -19,8 +19,8 @@ Authors and reviewers must apply [technical authorship guidance](../technical-au
 
 | Batch | Scope | Acceptance |
 | --- | --- | --- |
-| Review and entry points | Repository author/reviewer rules, inventory, findings, root README, variant guide and plan index | Mandatory clarity/structure review recorded; findings and limitations explicit; reader can choose the correct route. Implemented, awaiting review. |
-| D1 — Current operation | Lab/control runtime, identity, secrets, HTTPS and Nexus guides | One current operating path; complete prerequisites and state paths; actual security limits documented; no conflicting host/Kubernetes instructions. |
+| Review and entry points | Repository author/reviewer rules, inventory, findings, root README, variant guide and plan index | Mandatory clarity/structure review recorded; findings and limitations explicit; reader can choose the correct route. Accepted on Gitea main. |
+| D1 — Current operation | Lab/control runtime, identity, secrets, HTTPS, Nexus and index recovery guides; comparison and notebook screenshots | Implemented, awaiting review. Current path, state commands, expected outputs and actual security limits are documented; screenshot sources and limits retained. |
 | D2 — Evaluation and delivery | Source guides, delivery, input publication, judgement resolution, variants and Gatling | Engineer and operator responsibilities explicit; artefact origins, runnable examples, outputs, verdicts and recovery explained. |
 | D3 — Models and observability | Model packaging/activation and connected investigation guides | Packaging is distinct from serving; access is current; dashboards and metric limits lead to useful actions. |
 | D4 — Design and navigation | Design, diagram guide, roadmap and decision index | Current contracts distinguish proposals and history; status has one owner; diagram sources, terminology and references agree. |
@@ -28,7 +28,7 @@ Authors and reviewers must apply [technical authorship guidance](../technical-au
 
 Each batch updates this table and the roadmap, records verification, and creates a PR. Create the next detailed batch plan when completing the preceding one.
 
-## Next batch: D1 — Current operation
+## Completed batch: D1 — Current operation
 
 **Reader:** the lab operator connecting to or managing an existing installation. Fresh installation and disposable research replays need clearly identified routes.
 
@@ -57,3 +57,11 @@ Each batch updates this table and the roadmap, records verification, and creates
 - [Key Vault](../keyvault-secrets.md), [HTTPS ingress](../https-ingress.md), [HTTPS Git](../https-git-transport.md), [workstation access](../workstation-access.md), [Nexus](../nexus.md).
 - `lab/control-runtime/install.py`, `lab/control_api.py`, `lab/control_identity.py`, `lab/https_ingress.py` and their actual CLI help. Resolve file names from the checkout before changing examples.
 - Dated [Kubernetes control evidence](../research/evidence/kubernetes-control-services.md) and [HTTPS transport evidence](../research/evidence/https-git-transport-2026-09-28.md): historical conditions, not current setup defaults.
+
+## D1 verification and remaining implementation gap
+
+The installed control Pod was 4/4 Ready and its read-only smoke check passed. CLI help and current code/configuration were checked. The control UI was inspected in headless Edge, and the notebook illustration uses retained, hash-verified output without rerunning inference or evaluation. The revised pages were rendered and inspected; local links and affected anchors were checked.
+
+A CA-verified request to the HTTPS control route returned HTTP 307 to `http://localhost:18082/`. The guides now state this limit and the current cookie behaviour. Canonical HTTPS routing and `Secure` cookies require a separate implementation fix; they were not changed in this documentation batch.
+
+[Capture notes](../screenshots/README.md) record the two maintained screenshots. [D2: evaluation and delivery](documentation-evaluation-delivery.md) is the next detailed batch plan.

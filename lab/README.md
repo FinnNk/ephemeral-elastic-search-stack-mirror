@@ -1,196 +1,108 @@
-# Runnable search baseline
+# Create and compare search environments
 
-This slice runs a browser page and black-box search API against a frozen UK retail release. It builds the API in local Gitea, deploys the pinned image through Argo CD and reads a dedicated index on the shared Elasticsearch cluster.
+Use the lab control UI to deploy a pinned Search API, compare it with a baseline and remove it when finished. Each comparison keeps the environment definitions, selected inputs and report so it can be reproduced.
 
-The [reference CI/CD guide](../docs/delivery.md) adds a portable Actions workflow, Nexus releases and reviewed promotion in dedicated demonstration repositories. Existing build-run IDs and historical environments remain available here.
+This guide assumes an **installed lab**. Operators should start with [control runtime](../docs/control-runtime.md); first-time platform experiments have a separate [bootstrap guide](../research/platform-spike/README.md). Search API development and the disconnected mock demo are in the [source README](delivery/bootstrap/README.md).
 
-| Item | Current baseline |
+## Open the control UI
+
+Prerequisites: your own Gitea account, access to the lab machine and a ready `lab-control` Pod. The [control access procedure](../docs/control-runtime.md#connect-and-check) selects the retained kubeconfig and starts a port forward.
+
+1. Open [http://localhost:18082/](http://localhost:18082/) after the forward reports ready. The control API currently requires that canonical address; see [identity limits](../docs/identity-boundary.md).
+2. Use **Sign in with local Gitea**. Administrators can manage all environments; other users see their own.
+3. Find a successful build in `elastic-agent/search-spike` → **Actions**. Copy the run ID from `/actions/runs/<id>`, not the PR number. The control UI resolves its commit and image digest.
+
+The control workers already run in Kubernetes. Do not launch host control, lease or watcher processes beside them.
+
+## Create an environment
+
+1. Under **Create an environment**, enter a name beginning `lab-`, such as `lab-ranking-review`, and the **Gitea build run number**.
+2. Select a **Frozen release** and **Index**. Use a shared index for API/query/ranking changes; choose a dedicated mapping for index experiments.
+3. Leave **Historical index recipe SHA-256 (optional)** blank for the current definition. Supply a retained recipe only when recreating an earlier index.
+4. Choose **Create**, then **Refresh status**. Wait for `ready` before searching or comparing. If it fails, read the card's error before choosing **Retry**.
+
+| Release | Intended use |
 | --- | --- |
-| Products | 10,000 wholly synthetic, deterministic UK/GBP products |
-| Queries | 50 synthetic queries; every query returns results through the API |
-| Judgements | 1,433 rules-based positive labels for later evaluation work |
-| Release | `retail-gb-10k-v1`; three hashed JSONL objects and a manifest in Floci |
-| Index | One shard, zero replicas, explicit mapping, write-blocked after indexing |
-| Environment | `retail-baseline` namespace, pinned image digest, scoped index read access |
+| `retail-gb-10k-v1` | Quick local workflows: 10,000 synthetic UK/GBP products and 50 queries |
+| `retail-gb-1m-v1` | Scale demonstrations: 1,000,000 synthetic products and 1,000 queries |
 
-## Run on the current lab
+A new environment retains its source commit, image digest, index recipe and fingerprint. The 72-hour lease extends with genuine activity; status polling does not extend it. **Search** runs a query and **Extend lease** renews it explicitly.
 
-Use PowerShell from the repository root. The [platform research bootstrap](../research/platform-spike/README.md) must have created the named k3d cluster, Gitea runner, Argo CD, Floci, shared Elasticsearch and the two loopback forwards for Floci (`14577`) and Elasticsearch (`19200`). Python needs the Azure Blob SDK installed under `.lab/python-libs`. The scripts use the dedicated `.lab/kubeconfig.yaml` and generated credentials under ignored `.lab` files. Blob settings default to Floci; `LAB_BLOB_ACCOUNT_URL`, `LAB_BLOB_CONTAINER` and `LAB_BLOB_POD_URL` select a different account, dataset container and Pod download endpoint. The [Azure package pins](requirements-azure.txt) and [identity design](../docs/research/portability-azure.md#azure-component-mapping) cover the cloud path.
+To open an environment's browser page, use its name as the Kubernetes namespace in a separate terminal:
 
 ```powershell
-python lab/release.py
-python -m unittest discover -s lab -p 'test_*.py' -v
-python -m unittest discover -s lab/search-app -p 'test_*.py' -v
-python lab/load_release.py
-python lab/deploy_baseline.py
-kubectl --kubeconfig .lab/kubeconfig.yaml -n retail-baseline port-forward svc/search 18080:8080 --address 127.0.0.1
+# PowerShell, repository root. Select the existing retained state directory.
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
+$kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
+$environmentName = Read-Host 'Ready environment name from the control card'
+kubectl --kubeconfig $kubeconfig -n $environmentName port-forward svc/search 18080:8080 --address 127.0.0.1
 ```
 
-Keep the port-forward terminal running. Open [the search page](http://127.0.0.1:18080/) and try `running shoes` or `wireless headphones`. In another terminal:
-
-```powershell
-python lab/verify_baseline.py
-```
-
-`release.py` refuses to replace a differing local release. `load_release.py` uses conditional Blob creates, checks all four objects byte for byte, and verifies the index mapping, product count and write block on repeat runs. On a fresh index it gives a finite Kubernetes Job a 15-minute read SAS for one Blob object and an index-scoped write credential. It revokes the writer and write-blocks the index after indexing. `deploy_baseline.py` publishes the exact app source to the `search-spike` Gitea repository, waits for its test/build run, then commits an environment definition with the source image digest, product hash and index. Argo CD owns the deployment.
-
-The product generator uses unequal category shares, rotating product types and brands, seeded colour/material/availability, bounded category-specific prices and synthetic popularity. The 50 queries span type, colour, brand and material intents. Judgements come from rules applied to available products; they are useful as a repeatable seed, but they are not human relevance labels or exhaustive negatives. No production product or traffic data is used.
-
-The [Kubernetes control runtime](../docs/control-runtime.md) implements 72-hour leases and automatic teardown from `lab-control`. The Gatling runner measures public API latency; its short peak and stress phases calibrate the runner. The [portability design](../docs/research/portability-azure.md) gives Apple silicon and Azure steps, with native runs still open.
-
-### Recreate an index after a schema change
-
-Create a dedicated environment with a versioned `index_kind`. Its content-addressed recipe pins the mapping, settings, product release, engine and indexer. To recreate that historical version after the mapping file changes, enter the old recipe SHA-256 in the control UI and choose the same index kind and release. The recipe must already belong to a recorded lab environment. Build a second environment with the new mapping kind, then compare their public Search APIs with the same frozen queries. The [schema workflow](../docs/diagrams/interactive/schema-evolution.html) shows both indices.
-
-When a requested index is absent, the controller checks for another live, write-blocked index with the **same recipe marker**, mapping, settings, count and ordered product IDs. It clones that index into a dedicated name if available. The [clone workflow](../docs/diagrams/interactive/live-index-clone.html) shows the verification and fallback. Older shared indices without a recipe marker are not clone sources.
-
-To enable local regular snapshots, run `python lab/setup_snapshot_store.py` from the repository root after the shared k3d cluster is ready. This creates or reuses a digest-pinned SeaweedFS S3 container and named Docker volume, stores generated credentials in ignored `.lab/snapshot-s3.json`, configures the ECK secure settings and registers/verifies `lab-s3`. The repository sits at `http://relevance-snapshot-store:8333`, bucket `lab-index-snapshots`, base path `shared-v1`; the S3 endpoint is bound to host loopback port 18333 for inspection. The script runs Elasticsearch repository analysis with 100 blobs. Set `LAB_SNAPSHOT_REPOSITORY=lab-s3` in the control process, then restart that process if it was already running. The controller retains one snapshot per recipe SHA-256, with recipe and release metadata, independently of environment expiry. A missing dedicated index can be restored under its own name; a missing or invalid snapshot falls back to a recipe rebuild. The environment card reports `reuse`, `clone`, `snapshot` or `rebuild`, elapsed index time and any fallback errors.
-
-The named Docker volume is independent of Elasticsearch Pods and data PVCs; it is still on this host and is **not** an off-host backup. Preserve both the volume and `.lab/snapshot-s3.json` credentials across local restarts. The container currently joins the k3d Docker network, so recreate or reconnect it when replacing the entire k3d network. Do not delete the volume as part of environment expiry. Only the controller's Elasticsearch credentials administer snapshots; Search API credentials stay index-scoped. The tested Floci and Azurite Azure emulators failed repository verification, so Azure Blob needs a real test tenant before migration. See the [snapshot workflow](../docs/diagrams/interactive/snapshot-restore.html), [repository choices](../docs/research/index-restoration-options.md) and [measured evidence](../docs/research/evidence/durable-snapshot-repository.md).
-
-The separate [million-product release](../docs/research/million-synthetic-release.md) uses a [versioned ESCI-informed aggregate profile](profiles/esci-informed-uk-v1.json). Its [modelling note](../docs/research/esci-synthetic-calibration.md) separates reference observations from synthetic UK assumptions. It does not change this frozen 10,000-product release.
+After `Forwarding from 127.0.0.1:18080` appears, open [http://127.0.0.1:18080/](http://127.0.0.1:18080/). Keep the terminal running. If comparing browser pages, use a second port such as `18081` for the candidate.
 
 ## Compare a pinned API candidate
 
-This slice demonstrates an API query-understanding change without reindexing. It applies the tracked [candidate patch](candidate/trainers.patch) to a branch in local Gitea's `search-spike` repository, opens a source PR and waits for its exact-SHA image build. Argo CD then deploys `retail-candidate` with a distinct read-only credential and the **same frozen index and product hash** as `retail-baseline`.
+Create a baseline and candidate with the same frozen catalogue. They may share a compatible index while using different API images or settings.
 
-```powershell
-python lab/deploy_candidate.py
-python lab/compare_search.py
-```
+1. Under **Compare frozen environments**, choose the two ready environments as **Baseline** and **Candidate**.
+2. Choose a mode and scope using the table below. Blank manifest fields use the displayed pinned defaults. Alternative manifests must have been published and hash-checked through the [data contracts](../docs/data-evaluation-contracts.md).
+3. Optionally select `comparison-explorer.ipynb` under **Exploratory notebook (optional)**.
+4. Choose **Run comparison**. When the record completes, choose **Open report**. A failed or incomplete run is not evidence that the change is safe.
 
-The comparison combines the original 50 frozen requests with the [extra `trainers` request](comparison-extra.jsonl), stores the 51-request suite in Floci by hash, and sends every request through both public search APIs. It verifies the two environment fingerprints, deployed image digests, shared index and Argo CD health first. The immutable report contains ordered top-ten IDs, totals, equality, Jaccard@10 and finite extrapolated RBO@10 (`p=0.9`) for every query. It does **not** infer relevance from unjudged results or count latency as a result-preservation metric.
+| Mode | Use it to | Interpret the result |
+| --- | --- | --- |
+| Result preservation | Check final ordered product IDs and totals | `unchanged` means preserved; differences need inspection; incomplete responses invalidate the check |
+| Synthetic relevance | Score returned results against saved labels | Read judged coverage beside the scores; unknown labels are not evidence of irrelevance |
+| Gatling performance | Compare public-API latency/errors under one frozen workload | A probe checks wiring; use the intended load profile for a performance decision |
 
-In the measured run, the 50 original requests returned identical ordered top-ten IDs. `trainers` changed from zero baseline results to 494 candidate results; Jaccard@10 and RBO@10 were both zero. Repeating the full run produced the same report SHA-256. The [sanitised evidence](../docs/research/evidence/runnable-comparison/summary.json) points to the full Floci report.
+**Quick · first 50** limits a functional check; **Full suite** uses all selected queries. Performance uses its chosen profile and always retains the workload identity.
 
-To inspect both browser pages, forward the candidate service to a second loopback port while keeping the baseline forward on `18080`:
+![Comparison form with baseline and candidate selectors, three check modes and the optional notebook selector](../docs/screenshots/comparison-controls.png)
 
-```powershell
-kubectl --kubeconfig .lab/kubeconfig.yaml -n retail-candidate port-forward svc/search 18081:8080 --address 127.0.0.1
-```
+*Installed control UI, synthetic lab, 1 October 2026. The notebook is selected for illustration; no comparison was launched during capture.*
 
-Open the [baseline page](http://127.0.0.1:18080/) and [candidate page](http://127.0.0.1:18081/) and search for `trainers`. The local [source candidate PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/2) remains open as review evidence; it is not required to merge into the source repository's main branch.
+The query inspector offers **Changed**, **All** and **Unjudged** filters and side-by-side returned IDs. Use retained diagnostics to explain a rewrite or retrieval change; do not treat Elasticsearch-only diagnostics as the end-to-end verdict.
 
-## Score a ranking change against frozen judgements
+For two or more named variants and a release decision, use [variant evaluation](../docs/variant-evaluation.md). The control form's pair comparison and the source merge gate are distinct workflows. The gate requires evidence for the exact PR commit; an unrelated saved report cannot satisfy it.
 
-Install the pinned open-source evaluation library into the ignored lab dependency directory, then deploy a second API variant and run the evaluation:
+## Download exploratory analysis
 
-```powershell
-python -m pip install --target .lab/python-libs -r lab/requirements-eval.txt
-python lab/deploy_rank_candidate.py
-python lab/evaluate_relevance.py
-```
+When a selected notebook completes, its comparison card shows **Download executed notebook**. Open that `.ipynb` in Jupyter or another notebook viewer to inspect its saved outputs. It reads the frozen report and cannot alter the standard verdict. A notebook failure is reported separately.
 
-The [price-ranking patch](rank-candidate/price-rank.patch) changes only the API's Elasticsearch sort. Gitea builds its source PR at an exact SHA; Argo CD deploys `retail-price-rank` with a distinct read credential over the same write-blocked index and product release as the baseline. The evaluator verifies those pinned definitions and sends the original 50 frozen queries through both public APIs. It uses `ir-measures` for nDCG@10, Judged@10 and reciprocal rank of a grade-2-or-higher result at depth ten. The report includes every ordered result list, query-level scores, judgement counts and unjudged returned IDs. It is stored in Floci under its SHA-256.
+The example counts changed results and summarises scores, deltas and coverage. It is exploratory evidence, not a merge check. See [notebook operation](../docs/data-evaluation-contracts.md#exploratory-notebooks-after-a-comparison) and [dated execution evidence](../docs/research/evidence/exploratory-notebook.md).
 
-| Synthetic judgement-pool metric | Baseline | Price-order candidate |
-| --- | ---: | ---: |
-| nDCG@10 | 0.911474 | 0.170948 |
-| Judged@10 | 0.888 | 0.178 |
-| RR(rel=2)@10 | 1.0 | 0.258690 |
+![Saved notebook output identifying the default, metric baseline and three variants with their scores and coverage](../docs/screenshots/exploratory-notebook-output.png)
 
-These are **proxy scores for this incomplete, positive-only synthetic judgement pool**. Unjudged results have unknown relevance, even though nDCG scores them as zero. The low candidate Judged@10 shows that pool coverage contributes substantially to the apparent difference. The [sanitised evidence](../docs/research/evidence/runnable-relevance/summary.json) identifies the full immutable report. The local [ranking source PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/3) remains open. This evaluation covers the search API's complete returned ranking; human labels, index-change comparisons and performance testing remain separate work.
-
-## Inspect why API results changed
-
-The [diagnostic API source](search-app/app.py) adds a versioned record only when a search includes `diagnostics=1` and a valid `request_id`. It records query normalisation, rewrite decision, Elasticsearch request hash, retrieved IDs and stage times. It marks the absent reranker stage unavailable. The ordinary response does not include diagnostics. A second [source variant](diagnostic-candidate/trainers.patch) names the `trainers` rewrite.
-
-```powershell
-python lab/deploy_diagnostics.py
-python lab/compare_diagnostics.py
-```
-
-The deployment script opens two local `search-spike` source PRs and pins their successful image builds. Both variants read the same frozen index as `retail-baseline`, using separate credentials. The comparison sends all 51 frozen requests through the baseline and both variants. It saves a deterministic functional report in Floci by hash, with ordered API results, correlation IDs, diagnostics, zero-result counts and an explicit completeness/verdict field. Observed stage timings are stored as a separate run artifact; they do not affect the functional report hash. A selected direct Elasticsearch `_profile` probe is stored separately as component evidence, not used for the end-to-end verdict.
-
-The diagnostic-only variant preserved all 51 ordered top-ten lists. The rewrite variant changed only `q051` (`trainers`), from zero baseline results to matching `running shoes` results; the diagnostic record names the rewrite and has a different Elasticsearch request hash. Four live checks confirmed that enabling diagnostics left ordered IDs and totals unchanged for selected requests. The [sanitised evidence](../docs/research/evidence/runnable-diagnostics/summary.json) links the full reports. The [diagnostic source PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/4) and its [rewrite PR](http://127.0.0.1:31800/elastic-agent/search-spike/pulls/5) remain open for review.
-
-## Create and remove a leased environment
-
-Start the loopback control service and independent lease worker from the repository root, then open the [local environment UI](http://localhost:18082/):
-
-```powershell
-python lab/start_control.py
-```
-
-The UI accepts a `lab-` prefixed environment name and the run number of a successful local Gitea `search-spike` build. The service resolves that run to an exact source SHA and image digest, creates a separate read credential over `retail-gb-10k-v1`, commits the definition to the environment-state repository and waits for a real search. It stores the runtime instance and lease in ignored `.lab/lifecycle.sqlite3`. Status refresh leaves expiry unchanged; a successful search or explicit **Extend lease** action moves expiry to 72 hours after that use. **Delete** removes the namespace and credential through an idempotent path.
-
-The service binds only to `127.0.0.1`. Sign in with your local Gitea account; the owner is the verified Gitea login. Mutations and searches require the UI's `X-Lab-Intent` header. [Local identity and its GitHub Enterprise migration boundary](../docs/identity-boundary.md) are documented separately. One live HTTP walkthrough created a pinned environment, searched it, recorded activity and deleted it twice. Its [sanitised evidence](../docs/research/evidence/lifecycle-foundation/summary.json) records the observed timings, not a p95 estimate.
-
-## Compare controlled environments and expire leases
-
-`start_control.py` launches the UI and reconciler as separate background processes and is safe to run again. For foreground diagnosis, run the reconciler separately; it checks expired and interrupted instances every minute:
-
-```powershell
-python lab/reconcile_leases.py
-```
-
-For a single recovery or inspection pass, run this instead:
-
-```powershell
-python lab/reconcile_leases.py --once
-```
-
-The UI now selects two ready environments for **Result preservation** or **Synthetic relevance**. Both modes query the pinned public APIs and save complete reports in Floci by content hash. Result preservation checks exact ordered top tens plus Jaccard/RBO over all 51 requests; relevance scores the 50 judged requests with nDCG@10, Judged@10 and RR@10. An error or missing response produces an incomplete record, never a passing verdict. The UI can reopen saved reports after environments are deleted.
-
-A live baseline-versus-price run changed 50 ordered top tens. The relevance scores matched the earlier frozen evaluation, and repeating that run produced the same report SHA-256. A separate disposable lease was marked expired while the UI was stopped; the independent reconciler removed its namespace in 69 seconds. That exercises the expiry path without claiming that 72 hours elapsed. The [comparison evidence](../docs/research/evidence/lifecycle-comparison/summary.json) and [expiry evidence](../docs/research/evidence/lifecycle-comparison/expiry.json) retain the results. The later [identity and removal measurement](../docs/research/evidence/lifecycle-measurement/README.md) verified named access and measured 20/20 successful warm deletions, with p95 53.844 seconds. The index-change workflow is described below.
+*HTML export of a retained synthetic notebook, with input cells hidden. Its very low coverage makes this a workflow illustration, not a release-quality relevance result. This is saved output, not a running Jupyter session.*
 
 ## Compare a frozen index change
 
-Choose **Dedicated title-keyword-v1 index** in the control UI when creating a candidate. The mapping is versioned in [`mappings/title-keyword-v1.json`](mappings/title-keyword-v1.json); it maps `title` as `keyword` instead of `text`. The lifecycle builds a separate index from the canonical Floci release with a finite indexing Job, verifies its mapping, count and write block, and then deploys the pinned API with an index-scoped read credential. The candidate fingerprint includes the mapping hash. The shared-index option remains the default.
+Choose a dedicated mapping in **Index**. The lab builds a separate index from the same catalogue; shared baselines are never overwritten by a different schema. To recreate a historical version, copy its retained recipe SHA-256, release and index kind into the creation form.
 
-New environments retain an index recipe SHA-256 in their record. The recipe is stored by content hash in the configured Blob container under `index-recipes/`; it includes the complete mapping, settings, frozen release identity, Elasticsearch version and pinned indexer. To recreate a deleted historical definition, use its Gitea build run, release and index kind in **Create an environment**, and paste its recorded **Index recipe** SHA-256. Use a different name if the original name is active. The lab checks the stored recipe and builds a missing dedicated index from the old definition, even if the mapping file has since changed. The same recipe can be passed as `index_recipe_sha256` to `POST /api/environments`.
+| Index path on the card | Meaning |
+| --- | --- |
+| `reuse` | An exact compatible index is already present |
+| `clone` | A verified live index with the same recipe supplied a dedicated copy |
+| `snapshot` | A verified regular snapshot restored the recipe |
+| `rebuild` | The pinned recipe rebuilt products when no verified fast path was available |
 
-The shared baseline is verified against its recipe before use. Its release-named index is never replaced when the schema differs: build schema variants as dedicated indices. An old recipe needs its original Elasticsearch version, or a separate compatible engine cluster. Records created before this feature have no stored recipe; their mapping hash alone does not restore the old definition. Keep the Blob container and lifecycle metadata when archiving the lab.
+Recipes retain mappings, settings, products, engine and indexer identities. A different engine version needs a compatible separate cluster. Preserve recipe objects and snapshot storage when deleting environments. Operators can [configure and recover snapshot storage](../docs/index-recovery.md). [Schema evolution](../docs/diagrams/interactive/schema-evolution.html), [clone](../docs/diagrams/interactive/live-index-clone.html) and [snapshot](../docs/diagrams/interactive/snapshot-restore.html) diagrams show the paths.
 
-To exercise a disposable historical rebuild and schema change against the 10,000-product release, run `python lab/verify_historical_index.py` from the repository root with the platform and Blob port forward running. It builds an old index, deletes and recreates it from its recipe while the current mapping lookup is disabled, builds a changed mapping beside it, then removes both check indices. The shared baseline is retained. [Measured result](../docs/research/evidence/historical-index-recipes.md).
+## Remove environments and retain evidence
 
-Two reproducible walkthroughs exercise the lifecycle directly and through the authenticated control API:
+Choose **Delete** on the environment card. Removal deletes the serving namespace and scoped credentials; a dedicated index follows its lifecycle policy. Deletion during an active comparison is rejected by the controller; wait for it to finish. Automatic expiry uses the same lifecycle.
 
-```powershell
-python lab/verify_index_change.py
-python lab/verify_index_http.py
-```
+Comparison reports, frozen inputs, recipes and referenced release assets remain available. Removing a runtime does not mean those artefacts can be garbage-collected safely.
 
-The direct run compared both public API modes: 20 of 51 ordered top tens changed, and synthetic nDCG@10 moved from 0.911474 to 0.899054. It removed the candidate index and both namespaces; the shared baseline retained 10,000 products and its write block. See the [evidence and limits](../docs/research/evidence/index-change.md). The UI uses the same control API create, compare and delete routes.
+## Operator and research routes
 
-## Compare API performance with Gatling
+| Task | Where to continue |
+| --- | --- |
+| Install/update/back up controls | [Control runtime](../docs/control-runtime.md) |
+| Manage secrets and browser trust | [Key Vault](../docs/keyvault-secrets.md), [workstation access](../docs/workstation-access.md) |
+| Publish/build/promote a release | [Delivery](../docs/delivery.md) |
+| Prepare query/label inputs | [Data contracts](../docs/data-evaluation-contracts.md), [judgement resolution](../docs/judgement-resolution.md) |
+| Run performance Jobs | [Gatling](gatling/README.md) |
+| Review earlier API, relevance and scale experiments | [Developer-loop evidence](../docs/research/evidence/developer-evaluation-loop.md), [million-scale evidence](../docs/research/evidence/million-scale.md) |
 
-The control UI offers **Gatling performance** with probe, smoke, normal, peak and stress/recovery profiles. It runs the two selected ready environments sequentially as finite Kubernetes Jobs, then stores the paired report and native Gatling output in Floci. A probe is useful for checking the path; use the five-minute smoke profile for the initial fixed-load budget. The UI can reopen a comparison after the environments have been removed.
-
-For a command-line pair against `retail-baseline` and `retail-candidate`, use PowerShell from the repository root:
-
-```powershell
-python lab/traffic.py generate
-python lab/run_gatling_job.py probe baseline
-python lab/run_gatling_job.py probe candidate
-python lab/compare_gatling_jobs.py probe <baseline-run-id> <candidate-run-id>
-```
-
-Copy each `run_id` from its Job output into the final command. The runner needs the k3d cluster, pinned API deployments, Floci forward on `14577` and the ignored `.lab` credentials. It uses namespace `lab-evaluation`, a 2 CPU/2 GiB cap, a temporary PVC, and a search NetworkPolicy allowance limited to labelled Gatling pods. It removes the Job, ConfigMaps and PVC after retaining the reports. See the [runner guide](gatling/README.md), [traffic assumptions](../docs/research/synthetic-traffic.md) and [measured evidence](../docs/research/evidence/gatling.md).
-
-## Review a Gitea PR against a frozen baseline
-
-Add the `lab-evaluate` label to an open PR in the local `search-spike` repository. Start the local watcher from the repository root:
-
-```powershell
-python lab/start_pr_watch.py --baseline-run 6
-```
-
-The watcher polls opted-in PRs, resolves each head SHA to its successful Gitea image build, and creates separate 72-hour baseline and candidate environments owned by the PR author. It runs a 50-query result preflight, the full frozen result suite, synthetic relevance and a short Gatling probe. The PR receives one updateable comment per head SHA with pinned report links and hashes, plus a `relevance-lab/evaluation` status. The status confirms that the tooling completed; inspect the relevance and result changes before accepting the source change. A new head SHA gets its own evaluation. The optional `lab-preserve-results` label asks the result check to pass only when ordered results are unchanged.
-
-For one PR, use `python lab/pr_workflow.py --pr <number> --baseline-run 6`. The watcher is local and must remain running; a failed run can be retried with this command. A completed comparison is reused for the same pinned pair, mode and scope. Reports remain available through their content hash after an environment expires. The UI's comparison history links to a query inspector with side-by-side ordered IDs, scores, unjudged IDs and selected diagnostics, as well as the raw report.
-
-Relevance uses the existing frozen synthetic judgements. Reports identify their provenance and each side's top-ten judgement coverage. The million-product judgement pool contains results from an earlier candidate, so a ranking that retrieves different products can have very low coverage. A report with under 80% coverage on either side is marked insufficient for a strong relevance claim; it does not create new labels. The [local end-to-end evidence](../docs/research/evidence/developer-evaluation-loop.md) records the measurements and limits.
-
-## Exercise the million-product release
-
-Generate the deterministic release, then publish and build its write-blocked shared index:
-
-```powershell
-python lab/release_million.py
-python lab/load_million_release.py
-```
-
-The generator streams a gzip product object. Its manifest pins the seed, profile and generator hashes, object hashes, byte counts, 1,000 queries and 20,000 original synthetic assessments. Re-running the loader checks the existing Blob objects and index without replacing them. The control UI can then create API-only environments on the shared index or a dedicated `title-keyword-1m-v1` mapping candidate. Use the **release** selector to choose `retail-gb-1m-v1` for both sides of a comparison. After creating `lab-million-index`, run `python lab/verify_million_access.py` to check counts, write blocks and cross-index access.
-
-The frozen 30-minute synthetic trace supports `normal-full`, `sustained-peak` and `stress-full` as well as the five-minute `smoke` profile. Compile a schedule with `python lab/traffic.py compile --profile sustained-peak --release retail-gb-1m-v1`; the control UI runs the paired finite Jobs. The [scale evidence](../docs/research/evidence/million-scale.md) records measured results and limits.
+Historical build IDs and one-off patch scripts belong to those recorded experiments; they are not required to use the current control UI.

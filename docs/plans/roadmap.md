@@ -18,9 +18,9 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
-The [documentation authorship review](documentation-authorship.md) is ready for review. It adds mandatory clarity and structure checks for authors and reviewers, records findings across the documentation inventory and corrects the README and variant-guide entry points. D1, current operating guides, is the next documentation batch; other workflow and validation gates below remain separate.
+The [documentation authorship review](documentation-authorship.md) is accepted on main. D1, current operating guides, is implemented and ready for review, including two maintained UI/notebook illustrations. The next documentation batch is [D2: evaluation and delivery](documentation-evaluation-delivery.md). Canonical HTTPS control routing and secure session cookies remain a separate implementation gap; other validation gates below remain separate.
 
-The [developer guide and disconnected demo batch](developer-guide-demo.md) is implemented locally and ready for review. It adds workstation trust instructions, explicit browser access, a separate in-memory search demo and illustrated delivery/evaluation guides. The source code change still needs exact-commit lab evidence before merge; mock demo results cannot satisfy that gate.
+The project-side [developer guide and disconnected demo batch](developer-guide-demo.md) is accepted on main. It adds workstation trust instructions, explicit browser access, a separate in-memory search demo and illustrated delivery/evaluation guides. The source code change still needs exact-commit lab evidence before merge; mock demo results cannot satisfy that gate.
 
 The [documentation relevance gate batch](documentation-relevance-gate.md) is accepted and active on source main. It retains application checks, exempts only the two source README paths and runs the relevance decision from the trusted target revision. Main protection requires both checks and review. The rebased README PR passed both checks and is merged to source main. The next step is the developer walkthrough. The [evidence](../research/evidence/documentation-relevance-gate.md) records the protected fixture controls and activation checks.
 

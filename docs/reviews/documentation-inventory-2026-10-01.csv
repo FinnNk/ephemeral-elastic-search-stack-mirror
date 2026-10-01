@@ -3,17 +3,17 @@ README.md,guide/reference,Reader-path content review,Entry-point corrections in 
 docs/adr/ADR-0001-reconcile-environments-from-git.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/adr/README.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/adr/template.md,decision,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
-docs/control-runtime.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/control-runtime.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
 docs/data-evaluation-contracts.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 docs/delivery.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 docs/diagrams/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 docs/esci-model-installation.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/https-git-transport.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/https-ingress.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/identity-boundary.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/https-git-transport.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
+docs/https-ingress.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
+docs/identity-boundary.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
 docs/judgement-resolution.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/keyvault-secrets.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/nexus.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/keyvault-secrets.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
+docs/nexus.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
 docs/observability-backend.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 docs/observability-foundation.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 docs/plans/README.md,plan,"Structure, opening, navigation and historical/current distinction",Entry-point corrections in this batch; related operating procedures in D1-D4
@@ -108,7 +108,7 @@ docs/research/portability-azure.md,research,"Structure, opening, navigation and 
 docs/research/synthetic-traffic.md,research,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/variant-evaluation.md,guide/reference,Reader-path content review,Entry-point corrections in this batch; related operating procedures in D1-D4
 docs/workstation-access.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-lab/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+lab/README.md,guide/reference,Reader-path content review,D1 corrected; awaiting review. Related D2-D4 procedures remain tracked separately.
 lab/delivery/bootstrap/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 lab/delivery/bootstrap/gate/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
 lab/gatling/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation

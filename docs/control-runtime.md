@@ -1,67 +1,117 @@
-# Local Kubernetes control runtime
+# Operate the Kubernetes control services
 
-The lab UI/API, lease reconciler, PR watcher and delivery watcher run as four containers in one `lab-control` Pod. Its image contains the owned `lab/` and `data/` runtime code; research spike scripts are not needed by the Pod. A 2 GiB PVC holds SQLite, frozen releases, Git checkouts and local reports. Gitea, Argo CD, Floci and Elasticsearch use cluster service addresses; Nexus remains on its retained Docker volume and is reached through the `platform` Service. The browser uses a supervised localhost port forward at `http://localhost:18082/`.
+The control UI/API, lease worker, PR watcher and delivery watcher run in one `lab-control` Pod. Use this guide to inspect, update or back up that runtime. Use the [lab workflows](../lab/README.md) to create and compare environments.
 
-The control Pod has one replica and a `Recreate` update strategy. Do not run the host control starters while it is active. The ignored `.lab/control-drain` flag keeps host processes from restarting during the cutover. A failed initial activation restores host processes. Ordinary cluster loss also removes the control UI until the cluster returns.
+The Pod has one replica. Its 2 GiB persistent volume holds SQLite, Git checkouts, frozen inputs and local reports. Do not start host control or watcher processes alongside it: both would write the same logical state.
 
-## Install and check
+## Connect and check
 
-Run from the repository root with the lab cluster and retained services already bootstrapped. The `.lab` directory must contain the dedicated kubeconfig, scoped Gitea and Nexus credentials, and the retained control state. The publisher reads its password from the ignored Nexus credential file; it never prints it.
+Prerequisites: an installed lab, `kubectl`, Python and the retained state directory containing `kubeconfig.yaml`. Commands below use PowerShell from the repository root. In another worktree, set `LAB_STATE_DIR` to the **existing** state directory rather than creating new state.
 
 ```powershell
-python lab/control-runtime/publish.py
-$controlImage = (Get-Content .lab/control-image.json -Raw | ConvertFrom-Json).image
-python lab/control-runtime/install.py stage --image $controlImage --baseline-run 6
-python lab/control-runtime/install.py activate --image $controlImage --baseline-run 6
-kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
+# Replace this with your retained state directory if it is elsewhere.
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
+$labState = $env:LAB_STATE_DIR
+$kubeconfig = Join-Path $labState kubeconfig.yaml
+kubectl --kubeconfig $kubeconfig -n lab-control get deploy,pod,pvc,svc
+kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
 ```
 
-Select a successful Gitea baseline run ID for this installation. `stage` applies the namespace, PVC, scoped credentials and bindings while the host remains active. `activate` drains the host, copies a consistent SQLite backup and selected state into the PVC, rewrites Git remotes to internal Gitea, then starts the Pod. It checks Gitea identity, Elasticsearch, Nexus and restored record counts before enabling the browser route. The control image is selected by a Nexus digest. `lab-indexing` holds temporary indexing Jobs and their credentials; the control ServiceAccount cannot write Secrets or Jobs in `platform`.
+Expect one available Deployment, a Running Pod with four ready containers and a Bound PVC. The smoke check prints JSON containing `cluster: matched`, the Gitea runtime identity, Elasticsearch version, record counts and `nexus: reachable`. It checks connectivity; it does not run a comparison.
 
-The publisher produces one Nexus manifest containing `linux/amd64` and `linux/arm64`. Arm64 construction and its native relevance imports were checked under emulation; a native Apple silicon run remains to be done. Repeating `stage` is safe for an existing installation and reconciles installer-owned control ingress on historical delivery targets.
-
-After initial service bootstrap, run `python lab/keyvault.py migrate` as described in the [secret operating guide](keyvault-secrets.md). ESO then owns the retained control Gitea/Nexus Secrets and image-pull Secret. Repeating `stage` leaves these ESO-owned values intact.
-
-The local browser forward reconnects after Pod replacement. To inspect the runtime:
+To open the UI, run this in a separate terminal and leave it running:
 
 ```powershell
-kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-control get deploy,pod,pvc,svc
-kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-control logs deployment/lab-control -c api --tail=30
-kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-control logs deployment/lab-control -c leases --tail=30
+kubectl --kubeconfig $kubeconfig -n lab-control port-forward svc/lab-control 18082:18082 --address 127.0.0.1
 ```
 
-For an existing installation, publish the new digest, restage its configuration, render the Deployment's image placeholder and apply it:
+When it prints `Forwarding from 127.0.0.1:18082`, open [http://localhost:18082/](http://localhost:18082/). Use `localhost`, because the service checks the Host header. If the port is already occupied by the supervised lab forward, reuse it. After a Pod replacement, restart a manual forward if it exits.
+
+The HTTPS ingress also has a control route, but the installed canonical URL remains HTTP localhost. See the [identity boundary](identity-boundary.md) for its redirect and cookie limits.
+
+| Problem | Check and recovery |
+| --- | --- |
+| Pod unavailable | Inspect `kubectl --kubeconfig $kubeconfig -n lab-control describe pod`; check image pulls and PVC binding before restarting anything. |
+| Smoke check fails | Read the named service error and the API log below; verify that service and its ESO-backed Secret are ready. |
+| UI redirects or refuses a request | Use the canonical `localhost:18082` address; inspect `LAB_CONTROL_PUBLIC_URL` in `lab-control-config`. |
+| Comparisons fail after restart | Inspect retained comparison state and logs. Do not delete SQLite or rerun initial activation. |
 
 ```powershell
+kubectl --kubeconfig $kubeconfig -n lab-control logs deployment/lab-control -c api --tail=30
+kubectl --kubeconfig $kubeconfig -n lab-control logs deployment/lab-control -c leases --tail=30
+```
+
+## Update an existing runtime
+
+Wait for active comparisons and delivery work to finish. The Deployment uses `Recreate`, so an update stops the old Pod before starting the new one and interrupts in-memory work.
+
+1. Obtain a successful **search-spike Actions run ID** for the baseline. Keep the installed value if the baseline is unchanged:
+
+   ```powershell
+   $baselineRun = kubectl --kubeconfig $kubeconfig -n lab-control get configmap lab-control-config -o 'jsonpath={.data.LAB_PR_BASELINE_RUN}'
+   ```
+
+   For a new baseline, use the ID in the successful run's `/actions/runs/<id>` URL. The worker resolves its source commit and image digest. Do not use a PR number or a delivery-source run ID.
+
+2. Publish the image and reconcile configuration:
+
+   ```powershell
+   python lab/control-runtime/publish.py
+   $controlImage = (Get-Content (Join-Path $labState control-image.json) -Raw | ConvertFrom-Json).image
+   python lab/control-runtime/install.py stage --image $controlImage --baseline-run $baselineRun
+   ```
+
+   Publishing requires Docker buildx and the retained Nexus publisher credential. It prints the immutable Nexus image reference and writes `control-image.json`. The manifest contains amd64 and arm64 images; native Apple silicon operation remains unverified. `stage` reconciles installer-owned resources and leaves ESO-owned Secret values intact.
+
+3. Apply that image, wait for readiness and repeat the smoke check:
+
+   ```powershell
+   (Get-Content lab/control-runtime/deployment.yaml -Raw).Replace('__CONTROL_IMAGE__', $controlImage) |
+       kubectl --kubeconfig $kubeconfig apply -f -
+   kubectl --kubeconfig $kubeconfig -n lab-control rollout status deployment/lab-control --timeout=180s
+   kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
+   ```
+
+If rollout fails, inspect Pod events and logs. Keep the previous digest for rollback; do not invoke `activate` on an existing Deployment.
+
+## First activation
+
+This is an operator procedure for a bootstrapped cluster **without** an active control Deployment. The state directory must already contain scoped Gitea/Nexus credentials, kubeconfig and retained control state. Choose a successful search-spike baseline run as described above, then publish the image and run `stage`.
+
+```powershell
+$baselineRun = Read-Host 'Successful search-spike Actions run ID'
 python lab/control-runtime/publish.py
-$labState = if ($env:LAB_STATE_DIR) { $env:LAB_STATE_DIR } else { (Resolve-Path .lab).Path }
 $controlImage = (Get-Content (Join-Path $labState control-image.json) -Raw | ConvertFrom-Json).image
-python lab/control-runtime/install.py stage --image $controlImage --baseline-run 6
-(Get-Content lab/control-runtime/deployment.yaml -Raw).Replace('__CONTROL_IMAGE__', $controlImage) |
-    kubectl --kubeconfig (Join-Path $labState kubeconfig.yaml) apply -f -
-kubectl --kubeconfig (Join-Path $labState kubeconfig.yaml) -n lab-control rollout status deployment/lab-control --timeout=180s
-kubectl --kubeconfig (Join-Path $labState kubeconfig.yaml) -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
+python lab/control-runtime/install.py stage --image $controlImage --baseline-run $baselineRun
+python lab/control-runtime/install.py activate --image $controlImage --baseline-run $baselineRun
 ```
 
-Set `LAB_STATE_DIR` to the retained `.lab` directory when running these commands from an isolated worktree. `Recreate` removes the previous Pod before admitting the next one. Wait for active comparisons before updating; a replacement interrupts their in-memory execution. The browser forward reconnects after replacement. Background workers wait for API health using the canonical Host header.
+`activate` drains legacy host writers, copies consistent retained state to the PVC, rewrites known Git remotes, starts the Pod and runs the smoke check. It refuses an existing control Deployment. A failed initial activation attempts to restore host writers; inspect the failure before retrying. After activation, the PVC is authoritative and the old host SQLite file is stale.
 
-## Retain and restore state
+After the initial credentials exist, reconcile [Key Vault secrets](keyvault-secrets.md). Temporary indexing Jobs use `lab-indexing`; the control ServiceAccount cannot create Secrets or Jobs in `platform`.
 
-Export state to an operator-chosen location before replacing the cluster or its control PVC:
+## Back up and restore control state
+
+Choose a new archive path before replacing the cluster or control PVC:
 
 ```powershell
-$controlImage = (Get-Content .lab/control-image.json -Raw | ConvertFrom-Json).image
-python lab/control-runtime/install.py export --image $controlImage --bundle .lab/control-backup.tar.gz
+$controlImage = (Get-Content (Join-Path $labState control-image.json) -Raw | ConvertFrom-Json).image
+$backupPath = Join-Path $labState ('control-backup-' + (Get-Date -Format yyyyMMdd-HHmmss) + '.tar.gz')
+python lab/control-runtime/install.py export --image $controlImage --bundle $backupPath
 ```
 
-Export rejects an existing output file. It drains requests, waits for active lifecycle/comparison/delivery work to finish, scales the only writer to zero, copies a tar archive from the PVC and resumes the same Deployment. A `.sha256` sidecar records the archive hash. It does not include Gitea/Nexus credentials or the kubeconfig: retain those separately. The exported bundle includes SQLite, Git checkouts, frozen release files, comparison reports and workload records. Nexus, Gitea, Floci, Elasticsearch and the snapshot store each need their own retained data; this archive does not back them up.
+Export rejects an existing path, drains work, stops the sole writer, copies the PVC and resumes the Deployment. It prints the archive path and SHA-256 and writes a `.sha256` sidecar.
 
-In a **fresh checkout** with a new state directory, supply the archive and the separately retained kubeconfig and scoped credentials. Import refuses to overwrite existing state:
+| Included | Retain separately |
+| --- | --- |
+| SQLite, Git checkouts, frozen local inputs, reports and workload records | Kubeconfig, bootstrap credentials and CA keys |
+| Control PVC contents selected by the exporter | Gitea, Nexus, Floci, Elasticsearch and snapshot-store data |
+
+To restore, stop the old writer and use a fresh checkout with a new empty `LAB_STATE_DIR`. Supply the separately retained scoped credentials and kubeconfig, then import the archive:
 
 ```powershell
-python lab/control-runtime/install.py import --bundle D:\backups\control-backup.tar.gz
+$backupPath = Read-Host 'Absolute path to the retained control archive'
+python lab/control-runtime/install.py import --bundle $backupPath
 ```
 
-Then publish the control image and use `stage` / `activate` as above against a cluster without an active control Deployment. `activate --bundle <path>` can import and activate in one command. Import validates archive member paths and types. Keep the old writer stopped before activation. For an explicit return to host controls, first export the Kubernetes state, stop the Deployment, restore the bundle into a separate host state directory with its bootstrap credentials/tools, and start the three host launchers only after verifying there is no control Pod. The state volume is the source of truth after cutover; the old host SQLite file is stale.
-
-This batch verified export, import in a clean checkout and repeated staging against the current cluster. Fresh-checkout activation in disposable control resources and a native installation on another machine remain. The PVC is a k3d local-path volume and is not a cross-host backup.
+Import validates the archive and refuses to overwrite existing state. Then follow first activation against a cluster without an active control Deployment. A local-path PVC is not a cross-host backup. See the [dated runtime checks](research/evidence/kubernetes-control-services.md) and [state-transfer checks](research/evidence/runtime-consolidation-delivery.md) for tested scope.

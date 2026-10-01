@@ -75,7 +75,7 @@ To add a notebook, commit its `.ipynb` file under `lab/notebooks/`, rebuild the 
 
 For a local deployment, publish the multi-architecture runner image with `python lab/notebook/publish.py` after setting `LAB_STATE_DIR` to the existing `.lab` directory. This writes `.lab/notebook-image.json`. `python lab/install_notebooks.py` prepares the fixed namespace, Nexus pull secret and Blob-only network policy; the control-runtime installer also calls it during staging. Publish and install the control image afterwards so the control Pod receives the pinned runner digest. If the runner is unavailable, the standard comparison still completes and records the notebook failure.
 
-The [local verification record](research/evidence/exploratory-notebook.md) pins a successful executed notebook and distinguishes it from a full new-comparison run.
+The [local verification record](research/evidence/exploratory-notebook.md) pins a successful executed notebook and distinguishes it from a full new-comparison run. See [the lab notebook walkthrough](../lab/README.md#download-exploratory-analysis) for the selector and a saved-output illustration.
 
 ## Index and retention boundaries
 

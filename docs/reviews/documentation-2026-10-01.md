@@ -46,3 +46,11 @@ Applied [technical authorship guidance](../technical-authorship.md): reader and 
 - Did not replay historical experiments, activate models, change live services, or validate Linux/macOS execution. This review does not establish cloud portability, relevance quality or historical metric accuracy.
 
 This batch establishes enforceable review instructions and fixes the entry points. It does **not** declare all existing pages compliant. The [remediation plan](../plans/documentation-authorship.md) tracks the remaining reader-facing work in reviewable batches.
+
+## Follow-up: D1 operating guides
+
+The next branch rewrites the lab, control, identity, secrets, HTTPS and Nexus operating guides. It supplies current paths, input origins, expected outcomes and recovery, and moves historical measurements out of the ordinary task flow. Two actual UI/saved-notebook illustrations have [capture notes](../screenshots/README.md).
+
+The read-only control smoke check passed. A CA-validated control ingress request returned a redirect to HTTP localhost, confirming the documented routing limit. The cookie still lacks `Secure`; that implementation gap remains open. D1 does not claim to fix transport or identity in code.
+
+The branch also resolves the earlier browser-preview limitation using headless Edge and records rendered-page inspection. D2–D5 findings remain open under the [batch plan](../plans/documentation-authorship.md).
