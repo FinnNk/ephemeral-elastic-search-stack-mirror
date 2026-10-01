@@ -1,15 +1,44 @@
-# Offline evaluation before merge
+# Pass the offline relevance check
 
-An offline evaluation sends the same saved queries to two or more search variants and scores their results against a saved set of relevance labels. A gate uses that report to check whether selected variants meet the lab's policy before their source pull request is merged.
+Before merging a search change, compare its lab API results with a baseline using the same saved queries and relevance labels. **Offline relevance gate** checks that report against [the merge policy](policy.json).
 
-The separate **Offline relevance gate** runs code from the protected target branch. It passes changes limited to `README.md` and `gate/README.md` with an explicit documentation exemption. Other files, mixed changes and edits to the gate itself require evaluation. The candidate cannot change its own exemption rule. Application tests and release builds still run for documentation changes.
+Application tests and builds run separately. If a PR changes only `README.md`, `gate/README.md`, or both, the relevance check passes with `evaluation_not_required`.
 
-For a behaviour change, `selection.json` names the variants to check. Each selected item names a `variant` and an `intent`: `ranking-change` allows intentional changes to results; `preserve-results` checks a release intended to keep results the same. The selection has kind `variant-gate-selection`, `schema_version: 1` and a non-empty `selected` list. It does not contain its own Git commit SHA. Removing this file cannot bypass the gate.
+## Prepare your PR
 
-CI builds the exact PR commit. After evaluation evidence is published, rerun the relevance check to retrieve `variant-gates/<source SHA>/report.json`, `attestation.json` and any `approvals.json` from Nexus. The attestation is a signed record binding the report to that commit and its build receipt. `ci/variant_gate.py` checks the report, signatures, policy, judgement coverage, metric changes and changes to returned results. Missing, invalid or stale evidence fails the gate.
+1. **Choose what to evaluate.** Edit [selection.json](selection.json) to name the candidate variants and their intent. Use names from your evaluation, excluding its baseline.
 
-CI also matches the selected variant's captured image digest to the attested build receipt. A digest identifies the exact image contents. A later CI rerun can build another image digest without changing which image was evaluated.
+   | Intent | Use it when |
+   | --- | --- |
+   | `ranking-change` | You intend to change the search results |
+   | `preserve-results` | The release should keep the results the same, such as a dependency update |
 
-The lab operator uses `lab/variant_gate_issue.py` in the reference repository to attest the frozen report, then `ci/variant_gate_store.py publish-evidence` to publish it to Nexus. After publication, rerun CI on the same commit. A bounded negative result may need an administrator's signed exception with a reason; `publish-approval` adds that record. The exception keeps the measured scores and the decision reason visible separately. A result blocked by policy cannot be approved this way.
+   For example, to check that `ranker-a` preserves results:
 
-The lab uses synthetic products, queries and judgements. Its fixture reports demonstrate how the checks work; their scores do not establish real search quality. Read the [variant evaluation guide](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/variant-evaluation.md) for the full workflow and policy.
+   ```json
+   {
+     "kind": "variant-gate-selection",
+     "schema_version": 1,
+     "selected": [{"variant": "ranker-a", "intent": "preserve-results"}]
+   }
+   ```
+
+2. **Push the branch and open a PR.** In Gitea's **Actions** tab, wait for **Reference release CI** to build that exact commit. An initial relevance-check failure is expected until its report is available.
+3. **Evaluate the built image in the lab.** Use frozen inputs: saved versions of the products, queries and labels that stay unchanged during the comparison. Review relevance scores, label coverage and changed results.
+4. **Publish the evidence.** Give the frozen report and build receipt to the lab operator. The operator signs and publishes them to Nexus, the artefact repository. The signed record binds the report to the exact source commit and evaluated image.
+5. **Rerun Offline relevance gate on the same commit.** If you change the source commit, obtain evidence for the new commit. A passing build alone does not satisfy this check.
+
+## Read the outcome
+
+| Outcome | What to do |
+| --- | --- |
+| `evaluation_not_required` | Review the documentation; no relevance report is needed |
+| `pass` | Review the report and proposed release choice |
+| `decision_required` | Ask an administrator to review the bounded regression or changed results and record a reason if accepting them |
+| `approved_exception` | Review the measured results and administrator's recorded reason separately |
+| `blocked` | Address the regression or insufficient label coverage; an exception cannot bypass this result |
+| `invalid` | Check for missing evidence, mismatched commits/images or an incomplete report, then rerun after correcting it |
+
+An exception preserves the scores and binds the decision to the report, source commit, policy and selected variant. It does not approve deployment. Merge still requires an approving PR review and the passing build check.
+
+The [variant evaluation guide](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/variant-evaluation.md) explains report fields and evidence publication. Synthetic fixture scores demonstrate the workflow, not real search quality.
