@@ -22,7 +22,7 @@ Authors and reviewers must apply [technical authorship guidance](../technical-au
 | Review and entry points | Repository author/reviewer rules, inventory, findings, root README, variant guide and plan index | Mandatory clarity/structure review recorded; findings and limitations explicit; reader can choose the correct route. Accepted on Gitea main. |
 | D1 — Current operation | Lab/control runtime, identity, secrets, HTTPS, Nexus and index recovery guides; comparison and notebook screenshots | Accepted on Gitea main. Current path, state commands, expected outputs and actual security limits are documented; screenshot sources and limits retained. |
 | D2 — Evaluation and delivery | Source guides, delivery, input publication, judgement resolution, variants and Gatling | Implemented, awaiting review. Engineer and operator responsibilities explicit; artefact origins, runnable examples, outputs, verdicts and recovery explained. |
-| D3 — Models and observability | Model packaging/activation and connected investigation guides | Packaging is distinct from serving; access is current; dashboards and metric limits lead to useful actions. |
+| D3 — Models and observability | Model packaging/activation and connected investigation guides | Implemented, awaiting review. Packaging is distinct from serving; access is current; dashboards and metric limits lead to useful actions. |
 | D4 — Design and navigation | Design, diagram guide, roadmap and decision index | Current contracts distinguish proposals and history; status has one owner; diagram sources, terminology and references agree. |
 | D5 — Historical records and final review | Research, plans and evidence; cross-references and rendered reading paths | Historical claims retain their conditions; current-entry links identify dated examples; remaining deep checks are completed or explicitly recorded. |
 
@@ -71,3 +71,11 @@ A CA-verified request to the HTTPS control route returned HTTP 307 to `http://lo
 Capture, scoring, retention, finite-Job, judgement, attestation and delivery CLI help were checked. A disposable 12-product/3-query pack was generated and its local manifests published successfully; no live comparison, model activation or promotion was performed. The source README templates are already corrected; delivery-source PR #13 remains open for its separate code/demo change and exact-commit evidence. The guides link a complete operator runbook and explain the capture adapter's current empty-filter limitation.
 
 [D3: models and observability](documentation-model-observability.md) is the next detailed plan. Link and rendered-page checks are recorded in the review.
+
+## D3 verification and implementation findings
+
+The three model/observability guides were checked against CLI definitions, Kubernetes container names, signal code, dashboard sources and retained evidence. Current HTTPS access replaces stale port-forward-only instructions. Model activation has complete save/update/qualification/rollback commands; they were reviewed, not executed. Live GPU qualification, seven-day coverage and complete browser investigation remain external/runtime checks.
+
+The capture schema also permits non-empty caller filters although the worker and API do not implement them. Generated suites use empty filters. A separate implementation correction should reject unsupported filters before capture so retained requests cannot imply they were applied; adding filtering is a separate feature.
+
+[D4: design and navigation](documentation-design-navigation.md) is the next detailed plan.

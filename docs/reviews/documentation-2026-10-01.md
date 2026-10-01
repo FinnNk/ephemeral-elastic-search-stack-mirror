@@ -60,3 +60,11 @@ The branch also resolves the earlier browser-preview limitation using headless E
 The current guides distinguish source acceptance from deployment, obtain inputs from retained manifests/receipts and supply complete capture, scoring, attestation, exception and promotion commands. The operator runbook replaces ignored historical fixtures. Judgement pooling and Gatling prerequisites/outcomes are explicit. Source templates are corrected; source PR #13 remains open for the separate demo/code change.
 
 CLI help for seven operator tools passed. A disposable 12-product/3-query pack and local manifest publication passed. Seven revised guides were rendered in headless Edge: each had one title, loaded images and no viewport overflow; the delivery opening and diagram were visually inspected. Local links/anchors were checked, including repaired inbound anchors. These checks do not validate a new live comparison, release or human approval. Linux/macOS execution remains untested.
+
+## Follow-up: D3 models and observability
+
+The model guide now separates portable bundle installation from research-author inputs, registration from serving, and numerical qualification from accuracy. Complete commands preserve API replicas and live resources, update the actual 10k/1M container names, and restore previous pins/images after failure. They were checked against code/manifests, not executed on a GPU.
+
+The telemetry guides lead with current HTTPS access and an investigation sequence. Dashboard trends, input-selection shift and coverage-verified SLO verdicts have separate limits. Fixed dashboard IDs, pending-invitation claims and host-capacity history moved out of the current procedure. Four CLI help checks passed. Three pages rendered in Edge with one title, no viewport overflow and no missing images; the backend opening was visually inspected. Related anchors and diff formatting were checked. No dashboards, accounts, models or telemetry services were changed.
+
+A second implementation finding is now tracked: non-empty request filters can be recorded but are not applied by the capture/API path. Empty-filter synthetic suites are unaffected; unsupported inputs need an explicit rejection before capture.

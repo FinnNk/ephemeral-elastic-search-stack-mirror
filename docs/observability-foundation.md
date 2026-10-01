@@ -1,34 +1,52 @@
-# OpenTelemetry search and SLO foundation
+# Search telemetry and SLO contract
 
-The first observability slice instruments the public Search API and defines the normal-load search SLIs. It produces OpenTelemetry traces and metrics through OTLP/HTTP, plus structured completion logs with matching trace/span IDs. The [SigNoz backend guide](observability-backend.md) covers collection and the current investigation status.
+The Search API exports OpenTelemetry traces and unsampled metrics through OTLP/HTTP. Structured completion logs carry the same trace/span IDs. Use [SigNoz](observability-backend.md#investigate-a-search-or-model-problem) to investigate an event; use verified counters and independent coverage evidence to assess an SLO.
 
-## Search signal contract
+## Search signals
 
 | Signal | Contents | Boundary |
 | --- | --- | --- |
-| Trace | `search.request` parent, `search.query_understanding` and `search.elasticsearch` child spans; W3C context extracted from the incoming request and injected into the Elasticsearch HTTP call | No query text, product body or credentials in span attributes |
-| Metrics | Unsampled `lab.search.eligible`, `lab.search.success_good`, `lab.search.responsive_good` counters and `lab.search.server_duration` histogram in milliseconds | Valid accepted `/search` requests at the server; connection failures before the server need a separate client-side SLI |
-| Log | One `search.completed` JSON event with UTC time, outcome, duration, bounded traffic class, optional request ID and trace/span IDs | Standard output is the sole log source for this event; the scoped log agent collects it |
-| Resource | `service.name=search-api`, `service.namespace=relevance-lab`, version and deployment tier | Release/tier values are configured at deployment; per-query IDs and hashes stay out of metric dimensions |
+| Trace | `search.request`, with `search.query_understanding` and `search.elasticsearch` children; incoming W3C context continues into the Elasticsearch call | No query text, product bodies or credentials |
+| Metrics | `lab.search.eligible`, `lab.search.success_good`, `lab.search.responsive_good`; `lab.search.server_duration` in milliseconds | Valid accepted `/search` requests; pre-server connection failures need client-side accounting |
+| Log | One `search.completed` JSON stdout event with UTC time, outcome, duration, traffic class and trace/span IDs; optional request ID | The scoped log agent collects stdout; no duplicate SDK log export |
+| Resource | `service.name=search-api`, `service.namespace=relevance-lab`, version and deployment tier | Per-query identifiers and hashes stay out of metric dimensions |
 
-The server counts an HTTP 200 with a contract-valid response as **success good**. It counts that same response as **responsive good** only at or below 250 ms. A 502 spends both budgets. Empty results are valid. Invalid requests rejected before acceptance and health checks are outside these search SLIs. The traffic class is one of `normal`, `warmup`, `peak`, `stress`, `recovery` or `probe`; any other value becomes `unspecified`. The normal-load dashboard will filter to `normal` without hiding stress outcomes in their own cohort.
+| Accepted outcome | Success budget | Responsiveness budget |
+| --- | --- | --- |
+| Contract-valid HTTP 200, including empty results, ≤250 ms | Good | Good |
+| Contract-valid HTTP 200, >250 ms | Good | Bad |
+| HTTP 502 | Bad | Bad |
+| Health check or invalid request rejected before acceptance | Outside this SLI | Outside this SLI |
 
-The Search API enables OTel only when `OTEL_EXPORTER_OTLP_ENDPOINT` points to a Collector. Exporters use bounded trace queues and two-second timeouts; search execution does not wait for telemetry delivery. The release image pins OpenTelemetry Python 1.44.0. The version and package role follow the [Python instrumentation](https://opentelemetry.io/docs/languages/python/instrumentation/) and [OTLP exporter](https://opentelemetry.io/docs/languages/python/exporters/) guidance. Python trace and metric SDKs are stable; the log SDK remains in development, so this slice uses correlated structured stdout instead.
+Traffic class is `normal`, `warmup`, `peak`, `stress`, `recovery` or `probe`; other values become `unspecified`. Normal-load SLOs use the `normal` cohort. Inspect stress and other cohorts separately.
 
-## SLO accounting fixture
+## Seven-day objectives
 
-[`lab/observability/policies/search-slo-v1.json`](../lab/observability/policies/search-slo-v1.json) defines a rolling seven-day normal-load window: 99% search success and 95% responsive search. [`slo.py`](../lab/observability/slo.py) checks the arithmetic on complete synthetic fixture events. It reports eligible/good/bad counts, fractional allowance, remaining budget and consumption. Zero events are **no data**; a fixture without verified coverage is **unverified**. The fixture analyser cannot detect dropped or duplicated telemetry and is not the dashboard data source. The eventual dashboard must use unsampled OTel counters and show collection gaps.
+The [policy](../lab/observability/policies/search-slo-v1.json) defines:
 
-The OTel metric exporter defaults to cumulative temporality. The Collector/New Relic profile must verify and, where needed, convert temporality before comparing counts. The metric definitions, units, cohort rules and thresholds stay stable; backend queries and links are platform-specific. See the [OTLP metric exporter specification](https://opentelemetry.io/docs/specs/otel/metrics/sdk_exporters/otlp/) and [OTLP configuration](https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/).
+- A rolling seven-day normal-load window and minimum 100 accepted requests.
+- 99% success and 95% responsiveness within 250 ms.
+- Independent coverage verification before a verdict. Missing data cannot count as good requests.
 
-## Local checks and capacity
+For each objective, allowed bad requests are `eligible × (1 − target)`. Remaining budget subtracts observed bad requests; budget consumption divides bad requests by the allowance. Slow successful responses consume the responsiveness budget.
 
-`docker build -t relevance-search-otel-foundation:local lab/search-app` runs the Search API tests in the pinned image. The checked-in OTLP probe can be piped into that image with Docker networking disabled:
+[`slo.py`](../lab/observability/slo.py) checks synthetic event arithmetic. Zero events are **no data**; unverified coverage is **unverified**. It cannot detect telemetry loss and is not the dashboard's data source. The [backend guide](observability-backend.md#assess-a-seven-day-window) describes the independent ledger/counter check and its remaining live-coverage limit.
+
+## Export behaviour
+
+OTel is enabled when `OTEL_EXPORTER_OTLP_ENDPOINT` identifies a Collector. Bounded trace queues and two-second timeouts keep search execution independent of export delivery. The release pins OpenTelemetry Python 1.44.0. Metrics use cumulative temporality by default; the New Relic gateway profile converts counters to delta. Verify resets and totals on the destination backend before making budget decisions.
+
+The stdout log path supplies correlation without using the experimental Python log SDK. Collector sanitisation, queue limits and provider boundaries are in the [backend reference](observability-backend.md#transport-and-provider-boundaries).
+
+## Check the local contract
+
+Prerequisites: Docker, a checkout and its Search API build context. Use PowerShell from the repository root:
 
 ```powershell
+docker build -t relevance-search-otel-foundation:local lab/search-app
 Get-Content lab/observability/probe_otlp.py -Raw | docker run --rm -i --network none --entrypoint python relevance-search-otel-foundation:local -
 ```
 
-The [foundation evidence](research/evidence/otel-observability-foundation.md) records the original trace/metric and log checks. The [backend guide](observability-backend.md) records the third k3d worker, pinned SigNoz installation and current ingestion state. A separate SigNoz Docker deployment belongs to other local work and is not the lab backend.
+The build runs API tests; the disconnected probe checks emitted OTLP and correlated logs. Neither sends data to SigNoz or establishes live SLO compliance. A non-zero exit needs investigation before publishing that image.
 
-`lab/observability/probe_collector_outage.py` exercises one public API search with OTLP pointed at an absent Collector. The response still completed; SDK retries occurred afterwards. This checks fail-open serving for one request, not overhead under a Gatling workload.
+The [foundation evidence](research/evidence/otel-observability-foundation.md) preserves the original probe and absent-Collector checks. A single request surviving an exporter outage is not a measured overhead result.

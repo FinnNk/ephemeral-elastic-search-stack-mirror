@@ -1,76 +1,118 @@
-# Local observability backend
+# Investigate the lab with SigNoz
 
-SigNoz Community, ClickHouse and the SigNoz collector run in `lab-observability` on a dedicated k3d worker. Applications send vendor-neutral OTLP/HTTP to `lab-otel-gateway.lab-observability.svc.cluster.local:4318`. A single DaemonSet reads selected structured Kubernetes stdout events, attaches trace IDs and sends them through the same gateway. The gateway batches and forwards all three signals to SigNoz.
+SigNoz stores the lab's metrics, traces and selected structured logs. Applications send OTLP/HTTP to `lab-otel-gateway.lab-observability.svc.cluster.local:4318`; the gateway forwards to SigNoz. A scoped DaemonSet collects Kubernetes stdout through the same gateway.
 
-## Placement and pins
+## Access and check ingestion
 
-| Item | Local choice |
-| --- | --- |
-| Capacity | Host measured at 95.6 GiB RAM, 36.9 GiB free and 32 logical cores before installation; Docker VM had 46.9 GiB. A third `k3d-observability-0` worker has a 12 GiB limit. Existing two lab nodes and unrelated containers stayed running. |
-| Backend | SigNoz Community chart `0.143.0` (application `v0.143.0`), archive SHA-256 `e3ec7144de45404b10837ef80e86c6cec4960cde41e914f4782d9205c739adad`. The chart and every running image are digest-pinned in [values](../lab/observability/signoz-values.yaml). The ClickHouse histogram UDF archive is SHA-256 checked for amd64 and arm64. The test-hook BusyBox image is not run during installation. |
-| Gateway and log agent | OpenTelemetry Collector Contrib `0.161.0`, multi-architecture digest `fd328de2552466ad78385e1b1289c3f2402b1c45f265b252aab1955b42845ac1`. Its manifests include linux/amd64 and linux/arm64. Native Apple silicon remains an external validation task. |
-| Storage | Local-path PVCs: ClickHouse 20 GiB, ZooKeeper 8 GiB and SigNoz state 1 GiB. Helm upgrades retain the PVCs; cluster removal or a normal uninstall is **not** a backup. Export configuration and copy persistent data before destructive recovery. |
-| Retention | Chart defaults are seven days for traces/logs and 30 days for metrics. The earlier 72-hour/7-day draft needs configuration and verification after organisation setup. |
-
-The [upstream local Kubernetes guide](https://signoz.io/docs/install/kubernetes/local/) calls for at least 8 GB memory, four cores and 30 GB storage and documents arm64 support. The extra worker keeps SigNoz within its own node limit while the Elasticsearch and delivery workloads continue on the existing nodes. These are lab allocations, not AKS sizing.
-
-## Install and access
-
-1. Create or label a worker `lab.relevance/role=observability` with enough capacity. For this Windows lab, the worker was added with `k3d node create observability --cluster relevance-lab --role agent --memory 12g --k3s-node-label lab.relevance/role=observability`.
-2. From the repository root in PowerShell, point the installer at the existing `.lab` state directory containing `kubeconfig.yaml` and the bundled Helm executable, then run it:
+1. Trust the [lab certificate](workstation-access.md), then open [SigNoz](https://signoz.localhost:34443) with your personal account. Keep human and agent identities separate. An administrator can supply a manual invitation link when SMTP is unavailable; an expired link needs a new invitation.
+2. From the repository root in PowerShell, select the installed state and inspect the backend:
 
    ```powershell
    $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-   python lab/observability/install.py
+   $kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
+   kubectl --kubeconfig $kubeconfig get pods,pvc -n lab-observability
+   kubectl --kubeconfig $kubeconfig -n lab-observability logs deployment/lab-otel-gateway --tail=30
    ```
 
-   The installer downloads chart `0.143.0` when absent, checks its SHA-256, verifies the labelled worker and installs the backend, gateway and log agent. Re-running it upgrades the existing deployment and retains its PVCs.
-3. Start `kubectl --kubeconfig "$env:LAB_STATE_DIR\kubeconfig.yaml" -n lab-observability port-forward svc/signoz 18090:8080` and open `http://127.0.0.1:18090`. In this lab, the approved [agent-root overlay](../lab/observability/signoz-agent-root-values.yaml) bootstrapped organisation `relevance-lab` with administrator `elastic-agent@lab.local`. Its password is in the ignored `.lab/secrets/signoz-agent-root.password` file and Kubernetes Secret `lab-signoz-root`; never commit or print it. Apply the overlay with `python lab/observability/install.py --agent-root` after creating that Secret. The separate `finn@lab.local` administrator has a pending invitation; its short-lived manual link is held in ignored `.lab/secrets/signoz-owner-invite.url`. SigNoz needs no SMTP for manual invite links.
-4. Confirm `kubectl --kubeconfig "$env:LAB_STATE_DIR\kubeconfig.yaml" get pods,pvc -n lab-observability`. A healthy Pod is not proof of ingestion. Check the active collector pipelines and send the [connected synthetic probe](../lab/observability/probe_connected.py). Before organisation setup, this SigNoz version configured `nop` pipelines and refused OTLP; after bootstrap, the pipelines export to ClickHouse.
+3. In SigNoz, choose the service, deployment tier and time interval of a known instrumented request. Confirm a stored metric, trace or completion event rather than relying on Pod readiness. Organisation bootstrap is required: before bootstrap this version can configure `nop` pipelines and refuse OTLP.
 
-The UI is accessible only through a local port-forward at present. Terminating the forwarding process closes that local entry point; the in-cluster services and PVCs continue running.
+For local diagnosis or tools using the default API URL, keep this forward running in another terminal:
 
-## Search SLO dashboard
+```powershell
+kubectl --kubeconfig $kubeconfig -n lab-observability port-forward svc/signoz 18090:8080
+```
 
-The [v2 dashboard JSON](../lab/observability/dashboards/search-slo-v1.json) is the deployment input. Regenerate it from the [dashboard builder](../lab/observability/dashboard.py) and the [search SLO policy](../lab/observability/policies/search-slo-v1.json) with `python lab/observability/dashboard.py --write-json`. For an administrator session, set `SIGNOZ_ACCESS_TOKEN` outside Git and run `python lab/observability/dashboard.py --apply`. Reapplication updates the named dashboard in place. The current lab dashboard is at `http://127.0.0.1:18090/dashboard/01a0e51c-1043-79cb-94a8-9511cb0c665b` while the port-forward runs.
+Open `http://127.0.0.1:18090` while it runs. Stopping the forward closes that diagnostic entry point; the backend continues running.
 
-It shows normal-cohort eligible, successful and responsive counters; percentages, remaining allowances and burn; and accepted operation success/deadline trends by operation kind. A text panel states the seven-day policy window, 100-request minimum, and no-data rule. The plotted values are per-interval increases selected by the time picker. They are **not** a verified rolling seven-day verdict or collection-coverage measurement. The [seven-day companion](../lab/observability/window.py) computes a verdict from hourly counter increases, an independent request ledger and collector-probe outcomes; it remains unknown when any interval or source verification is missing. The [dashboard evidence](research/evidence/signoz-dashboard-2026-09-28.md) gives the validated local interval and remaining gates.
+## Investigate a search or model problem
 
-## Model health and input shift
+1. Open the search SLO or model-health dashboard. Select the relevant time range, service/version, tier and traffic cohort. Note whether the issue is slow success, an error, low coverage or missing telemetry.
+2. Find a trace for that service and time. A search trace has `search.request` → `search.query_understanding` / `search.elasticsearch`. Compare stage durations to locate the delay.
+3. For judgement inference, follow `judgement.evaluate` → `judgement.resolve` → `judgement.http` → `kserve.predict` → `model.http` → `model.predict`. The evaluator continues W3C context through both HTTP hops.
+4. Find the completion log with the same trace ID. Read its outcome and retained observation/report references. A sampled-out trace may have only a log; a missing span is not proof the operation succeeded.
+5. Open the retained report for relevance, coverage or deployment decisions. A later offline score is a separate operation, linked by observation hashes rather than one long-lived trace.
 
-The [model dashboard](../lab/observability/dashboards/model-health-v1.json) is built by `python lab/observability/model_dashboard.py --write-json` and applied by `python lab/observability/model_dashboard.py --apply` with the same short-lived administrator token used for the search dashboard. It shows inference outcomes and request failures, mean batch latency, labelled coverage, model label mix and query-length input shift. In SigNoz, open a `judgement.evaluate` trace and follow `judgement.resolve` → `judgement.http` → `kserve.predict` → `model.http` → `model.predict`. The evaluator propagates W3C `traceparent` through both HTTP hops.
+The [investigation diagram](diagrams/interactive/observability-investigation.html) shows these relationships. Backend queries and UI links are provider-specific. Local evidence confirms stored trace/log correlation; the complete browser drill-through and instrumented three-target release rehearsal remain in the [validation plan](plans/signoz-merged-release-rehearsal.md).
 
-The local dashboard is at `http://127.0.0.1:18090/dashboard/01a0ea97-de6a-74fb-bbc2-319512f4a8d2` while the SigNoz port-forward runs. The [live proof](research/evidence/model-observability-2026-09-29.md) includes a connected trace and observed dashboard values.
+## Interpret dashboards
 
-The input-shift value is Jensen–Shannon divergence in the range 0–1. Its reference is one occurrence of each query in the frozen observation set; its observed side is the query-length mix of query-product pairs sent to the model. It measures **selection into inference**, which can change when recall or stored-label coverage changes. It is not a comparison with a model training distribution. A run with no model attempts has no divergence value. The frozen resolution and evaluation artefacts contain the score and source counts; the metric has only the numbered model version and fixed feature name as dimensions.
-
-The initial model abstains on every gap. It can demonstrate latency, availability, abstention and coverage, but has no model-label mix, accuracy or output-label drift to assess. No data on those panels is unknown. The judgement and predictor services send OTLP/HTTP through the lab gateway, which can later forward the same signals to New Relic. Telemetry carries no query or product body and cannot block a successful inference.
-
-The current Search API source and deployment chart also send OTLP and allow gateway egress. A disposable deployment confirmed `search.request` → `search.query_understanding` and `search.elasticsearch` under an incoming W3C parent. Some retained search environments still run older images and NetworkPolicies; redeploy them from current source before expecting those spans. A frozen capture and its later offline evaluation are separate operations, linked by immutable observation hashes rather than one long-lived trace.
-
-## Seven-day companion assessment
-
-The [policy](../lab/observability/policies/search-slo-v1.json) sets a seven-day normal-traffic window, a 100-request minimum, 99% success and 95% responsiveness within 250 ms. `python lab/observability/window.py --buckets <file>` reads a JSON document with `window_start`, `window_end`, `interval_seconds`, `source_verified` and one bucket per aligned interval. Each bucket has `start`, `collector_ok`, `expected_requests`, `eligible`, `success_good` and `responsive_good`.
-
-`eligible`, `success_good` and `responsive_good` must be unsampled per-interval counter increases from SigNoz. `expected_requests` is the independently retained load-driver request ledger; it counts each HTTP attempt, including retries. `collector_ok` comes from a collector probe for that interval. Set `source_verified` true only after checking both sources for the complete window. A missing interval, failed probe, ledger mismatch or sample count below 100 yields `unverified` or `no-data`, even when the calculated percentage meets its target. The output includes eligible/good/bad counts, target, allowed bad, remaining budget and burn for each objective. During a gap, the displayed totals are observed lower bounds and cannot support a verdict.
-
-The analyser has deterministic seven-day fixtures for fast, slow HTTP 200, error, deadline and retry attempts. For a finite Gatling run, `lab/observability/coverage_probe.py` records independent gateway/backend readiness every ten seconds and `lab/observability/export_window.py` joins those samples, actual normal-phase arrivals and SigNoz v5 counter increases. Pass each retained probe file with a separate `--probes` option; overlapping timestamps are deduplicated. The output includes a run-segment check and leaves the seven-day verdict unverified. Metric export can shift counts into adjacent minute buckets, so a matching run total is recorded as `matched-total-only`, never as verified minute coverage. There is no continuously retained seven-day ledger yet. See the [fixture evidence](research/evidence/signoz-window-2026-09-28.md) and [live run evidence](research/evidence/signoz-investigation-2026-09-28.md).
-
-## Signal contract
-
-| Source | Signal | Correlation |
+| View | Useful for | Limits and next action |
 | --- | --- | --- |
-| Search API | `search.request`, query-understanding and Elasticsearch spans; unsampled eligible/good counters and duration histogram | `service.version`, deployment tier, traffic class and `request_id`; completion stdout carries trace/span IDs. The request and product bodies are excluded. |
-| Control API and workers | HTTP server spans and `lab.operation.*` counters; operation completion events in the rebuilt image | Environment/comparison ID, fingerprint and immutable hashes appear only in spans and logs. Metric dimensions use a bounded operation kind. A failed operation emits an error type, not its exception message. |
-| Finite data and evaluation Jobs | One `lab.operation.completed` stdout event per Job outcome | The producer records its source release and manifest hashes; the evaluator records input and report hashes. The shared event helper admits only these safe fields. Jobs retain Blob-only egress and do not send OTLP directly. |
-| Selected Kubernetes stdout | One filelog agent per node; structured events only | The log parser promotes `trace_id`/`span_id` into OTel log context. It starts at the end of each file and excludes unrelated project containers and raw platform logs. |
+| Search SLO | Normal-cohort eligible/good counts, percentages, allowance and burn; lifecycle success/deadline trends | Plots are interval increases selected by the time picker. Use the companion below for a coverage-verified seven-day verdict. |
+| Model health | Inference errors, outcomes, batch latency, labelled coverage and label mix | The default model abstains on every gap. No model-label mix or accuracy result exists; inspect source/model counts in the frozen report. |
+| Query-length input shift | Changes in which query-product pairs reach inference | Measures selection into inference, not drift against training data. Inspect recall and existing-label coverage before attributing a change to the model. |
 
-The gateway deletes common query, product-body and authorisation attributes, has a 384 MiB memory limit, a 512-batch in-memory queue and a 30-second retry horizon. Export loss is possible; do not infer good requests from missing data. Search and lifecycle work must remain usable when the gateway or backend is down. The collector endpoint is an application contract; replacing SigNoz with New Relic changes gateway export configuration and dashboard/query definitions, not application SDK calls. The local [New Relic mapping plan](plans/otel-observability.md#new-relic-migration-boundary) remains to be verified against a tenant.
+Input shift is Jensen–Shannon divergence, bounded 0–1. The reference has one occurrence of each frozen query; the observed side is the query-length mix of inferred pairs. No inference attempts means no divergence value. The metric dimensions are the numbered model version and fixed feature name; detailed counts remain in frozen artefacts.
 
-The [New Relic gateway profile](../lab/observability/gateway-newrelic.yaml) uses OTLP/HTTP over TLS with an `api-key` header sourced from a Secret and converts cumulative counters to delta at the gateway. The [local probe](../lab/observability/probe_newrelic_profile.py) sent synthetic traces and delta metrics through the pinned Collector to a mock OTLP/HTTP receiver with a dummy key. No tenant data was sent. Real deployment must choose the correct regional HTTPS endpoint, test counter resets and compare budget totals before using it for decisions. [New Relic OTLP guidance](https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/).
+Older retained Search API images or NetworkPolicies may lack OTLP instrumentation/egress. Deploy an instrumented release before expecting search spans; do not reinterpret an old frozen release as the new implementation.
 
-## Investigation and evidence status
+Dashboard definitions are source-controlled: [search](../lab/observability/dashboards/search-slo-v1.json) and [model](../lab/observability/dashboards/model-health-v1.json). An operator can regenerate them from the repository root:
 
-The [Archify investigation view](diagrams/interactive/observability-investigation.html) shows the intended path from a bad SLO event to the same service/time/cohort, trace, related log and immutable report. A slow HTTP 200 counts against responsiveness; failed restore and deployment verification retain operation and artifact references. The underlying frozen report remains authoritative for promotion.
+```powershell
+python lab/observability/dashboard.py --write-json
+python lab/observability/model_dashboard.py --write-json
+```
 
-The backend ingests traces, metrics and selected structured logs. A real diagnostic Search API request has stored spans and a completion log sharing one trace ID. A sampled-out synthetic probe has a stored failure-to-meet-responsiveness log but no stored span; it is excluded from the normal SLO cohort. The [backend](research/evidence/signoz-backend-2026-09-27.md), [dashboard](research/evidence/signoz-dashboard-2026-09-28.md) and [connected investigation](research/evidence/signoz-investigation-2026-09-28.md) evidence record the checks. The independent producer and evaluator emit safe completion events through the same scoped log agent. Both updated multi-architecture images ran as digest-pinned Jobs on application nodes; SigNoz stored their completion hashes. A gateway outage left search serving and produced failed coverage samples. Browser drill-through, rolling seven-day coverage, three delivery-target instrumentation and the ≤5% p95 overhead hypothesis remain open. The [next rehearsal](plans/signoz-merged-release-rehearsal.md) describes their required evidence.
+To update the installed dashboards, supply a short-lived administrator session token in `SIGNOZ_ACCESS_TOKEN` outside Git, start the diagnostic forward above, then run:
+
+```powershell
+python lab/observability/dashboard.py --apply
+python lab/observability/model_dashboard.py --apply
+Remove-Item Env:SIGNOZ_ACCESS_TOKEN
+```
+
+Reapplication updates the named dashboards. A failed API call requires checking session expiry, organisation access and the forward; it is not a successful update.
+
+## Assess a seven-day window
+
+Prerequisites: unsampled interval counter increases, an independently retained HTTP-attempt ledger (including retries), and readiness probes covering the same complete window. There is no continuously retained seven-day ledger in the lab yet.
+
+Prepare a JSON file with `window_start`, `window_end`, `interval_seconds`, `source_verified` and one aligned bucket per interval. Each bucket has `start`, `collector_ok`, `expected_requests`, `eligible`, `success_good` and `responsive_good`. Set `source_verified` only after verifying both sources for the whole window. From the repository root in PowerShell:
+
+```powershell
+$buckets = Read-Host 'Absolute path to the verified seven-day bucket JSON'
+python lab/observability/window.py --buckets $buckets
+```
+
+| Result | Meaning |
+| --- | --- |
+| Complete coverage and sufficient events | Objective counts, allowance, remaining budget and burn can support the verdict |
+| Missing interval, failed probe or ledger mismatch | `unverified`; observed totals are lower bounds |
+| Fewer than 100 eligible events or no events | Insufficient data for the policy; not a passing SLO |
+
+Finite Gatling checks use `coverage_probe.py` during the run and `export_window.py` afterwards. The latter joins retained probes, actual normal-phase arrivals and SigNoz v5 counter increases. Its run total can be `matched-total-only`: metric export can shift counts between adjacent minute buckets. That does **not** verify minute coverage or the whole seven-day window. The [finite-run evidence](research/evidence/signoz-investigation-2026-09-28.md) and [window fixtures](research/evidence/signoz-window-2026-09-28.md) retain their input conditions.
+
+## Install and preserve the backend
+
+Use an existing Kubernetes worker labelled `lab.relevance/role=observability`, retained lab state, Helm and adequate capacity. The local worker has a 12 GiB limit; this is a lab allocation, not AKS sizing. Installation from the repository root:
+
+```powershell
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
+python lab/observability/install.py
+```
+
+The installer checks the labelled worker and chart hash, then installs/upgrades the backend, gateway and log agent. Organisation bootstrap uses `--agent-root` only after the bootstrap Secret exists; subsequent credentials follow the [Key Vault boundary](keyvault-secrets.md). Do not create another bootstrap account for routine access.
+
+| Dependency | Pin/storage |
+| --- | --- |
+| SigNoz Community | Chart/application 0.143.0; archive and image hashes in [values](../lab/observability/signoz-values.yaml) |
+| Gateway and log agent | Collector Contrib 0.161.0, amd64/arm64 digest-pinned manifests; native Apple silicon remains unverified |
+| Local-path PVCs | ClickHouse 20 GiB, ZooKeeper 8 GiB, SigNoz state 1 GiB |
+| Retention | Chart defaults: seven days traces/logs, 30 days metrics; the earlier draft is not the deployed retention policy |
+
+Upgrades retain PVCs; deleting a cluster or uninstalling services is not a backup. Export configuration and back up persistent data before destructive recovery. [Installation evidence](research/evidence/signoz-backend-2026-09-27.md) preserves the measured host capacity and original bootstrap conditions.
+
+## Transport and provider boundaries
+
+| Source | Correlation and limits |
+| --- | --- |
+| Search API | Version/tier/traffic class; stdout completion trace/span IDs; no request or product bodies |
+| Control/workers | Bounded `lab.operation.*` metrics; environment IDs and hashes only in spans/logs; errors use types, not raw exception messages |
+| Finite producer/evaluator Jobs | Safe completion events include source/input/report hashes; Blob-only egress, no direct OTLP |
+| Scoped stdout agent | One per node, starts at file end, promotes trace/span IDs; excludes unrelated containers and raw platform logs |
+
+The gateway removes common body/authorisation attributes. Its 384 MiB memory limit, 512-batch in-memory queue and 30-second retry horizon permit export loss. Missing data cannot imply good requests. Search and lifecycle operations must remain usable during an outage.
+
+The [New Relic profile](../lab/observability/gateway-newrelic.yaml) uses OTLP/HTTP over TLS, an `api-key` from a Secret and cumulative-to-delta counter conversion. Applications retain their SDK contract; exporter settings, queries and dashboards change. A [local mock-endpoint probe](research/evidence/signoz-investigation-2026-09-28.md) checked synthetic traces/delta metrics with a dummy key. Real tenant ingestion, regional endpoints, counter resets and budget totals remain [external validation](plans/native-cloud-validation.md).
+
+Current local proofs include stored traces/metrics/logs, digest-pinned Job completion hashes and search serving during a gateway outage. The four retained overhead runs missed the arrival gate; they are inconclusive. Continuous seven-day coverage, full browser drill-through, all delivery-target instrumentation and the ≤5% p95 overhead hypothesis remain open.

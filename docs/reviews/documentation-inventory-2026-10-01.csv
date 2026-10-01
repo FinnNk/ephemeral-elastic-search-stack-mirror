@@ -7,15 +7,15 @@ docs/control-runtime.md,guide/reference,Reader-path content review,D1 corrected;
 docs/data-evaluation-contracts.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
 docs/delivery.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
 docs/diagrams/README.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/esci-model-installation.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/esci-model-installation.md,guide/reference,Reader-path content review,D3 corrected; awaiting review. Runtime/cloud qualification limits retained.
 docs/https-git-transport.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
 docs/https-ingress.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
 docs/identity-boundary.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
 docs/judgement-resolution.md,guide/reference,Reader-path content review,D2 corrected; awaiting review. Operator runbook added; live release/evaluation not replayed.
 docs/keyvault-secrets.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
 docs/nexus.md,guide/reference,Reader-path content review,D1 corrected; accepted on Gitea main. Related D2-D4 procedures remain tracked separately.
-docs/observability-backend.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
-docs/observability-foundation.md,guide/reference,Reader-path content review,D1-D4: current-guide remediation
+docs/observability-backend.md,guide/reference,Reader-path content review,D3 corrected; awaiting review. Runtime/cloud qualification limits retained.
+docs/observability-foundation.md,guide/reference,Reader-path content review,D3 corrected; awaiting review. Runtime/cloud qualification limits retained.
 docs/plans/README.md,plan,"Structure, opening, navigation and historical/current distinction",Entry-point corrections in this batch; related operating procedures in D1-D4
 docs/plans/azure-keyvault-validation.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
 docs/plans/catalogue-recipe-delivery.md,plan,"Structure, opening, navigation and historical/current distinction",D5: historical-purpose and cross-reference review; preserve recorded claims
