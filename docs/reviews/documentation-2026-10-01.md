@@ -74,3 +74,22 @@ A second implementation finding is now tracked: non-empty request filters can be
 The design now separates current local topology, proposed Azure services and dated platform selection. Corrected `/api` routes, the continuous lease worker, public response fields and paired/N-way boundaries were checked against code. Historical recipe migration details no longer lead the contract. The quantitative target/scale-gate section was compared with the parent and preserved apart from British spelling.
 
 Diagram scope text was restructured; no represented relationship or rendered asset changed. Four pages rendered in Edge with one title, no overflow and loaded images; the design opening was visually inspected. Local links/anchors and diff formatting passed. Gitea API records confirm PRs #32–#59 merged, so roadmap review-status claims were corrected. Formal ADR acceptance, provider execution and open runtime gates were not inferred from those merges.
+
+## Follow-up: D5 historical records and final review
+
+Research and evidence indexes now group the studies/results and route to current procedures. Nine historical entry points clarify scope where an unbuilt service, host process, HTTP route or pending account could be mistaken for current operation. Each original body was compared before/after insertion and preserved. The thirty-one evidence-page openings and nine modelling/selection-note openings were reviewed for scope; three research-harness openings were also reviewed. Individual historical commands and measurements were not replayed or revalidated.
+
+Six representative pages, including the root/lab/variant reading path, rendered in headless Edge with one title, loaded images and no viewport overflow. The historical promotion opening was visually inspected. Local Markdown targets/anchors and diff formatting passed. Current guides received reader-path/content review; the wider historical inventory received structure/context/navigation review. The inventory includes new remediation pages and retains these different depths. Existing screenshot sources and captions remain explicit; no new screenshot was needed for these corrections.
+
+### Editorial outcome and open findings
+
+D1–D5 corrections are complete as reviewable batches; D1 is accepted, D2–D5 await acceptance. This closes the recorded editorial findings, not every implementation or validation gate. The original review remains below its recorded baseline; follow-ups describe the corrected revision.
+
+| Remaining item | Required work |
+| --- | --- |
+| Control HTTPS canonical route/session | Align canonical URL and Host handling with ingress; use secure cookies; verify authentication and redirects in a separate code batch |
+| Non-empty caller filters | Reject unsupported inputs before capture; the current API/worker does not implement them. Empty-filter generated suites are unaffected. [Detailed next plan](../plans/reference-request-contract.md). |
+| Source demo PR #13 | Separate exact-commit code evaluation/review; templates are corrected but the code change remains open |
+| Runtime/external validation | GPU numerical/accuracy qualification, real human exception rehearsal, full browser drill-through, continuous seven-day coverage, valid overhead samples, native Apple silicon and Azure/GHES/New Relic |
+
+No compatibility adapter, live service change, human approval or stronger metric claim was introduced by this documentation sequence.

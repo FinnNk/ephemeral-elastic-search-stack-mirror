@@ -1,5 +1,7 @@
 # Platform research harness
 
+**Historical experimental recipe.** The current lab is operated through [lab/README.md](../../lab/README.md). The commands below reproduce isolated probes; they are not the maintained control-service installer.
+
 These scripts exercise Gitea builds, Argo CD environments and real Elasticsearch searches against a 10,000-product synthetic fixture. Read the [results](../../docs/research/platform-spike.md) before using the timings.
 
 **Status:** tested as individual experiments on Windows x64. This is an experimental, sequential research recipe, not an idempotent lab installer. Run it in a fresh `relevance-lab` cluster and empty research repositories. Do not rerun initialisation over the retained review environment: some probes deliberately create and remove named indices.

@@ -1,5 +1,7 @@
 # OTel foundation: local evidence
 
+**Historical foundation check — 27 September 2026.** SigNoz was installed in later batches. The absence/capacity statements below describe this run; use the [current backend guide](../../observability-backend.md) for access and interpretation.
+
 Measured on 27 September 2026, Windows x64 with the two-node k3d relevance lab. This is a signal-contract demonstration, not a SigNoz dashboard or a production SLO result.
 
 | Check | Observation |

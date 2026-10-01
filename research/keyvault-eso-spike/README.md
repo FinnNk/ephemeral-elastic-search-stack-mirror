@@ -1,5 +1,7 @@
 # Floci Key Vault to Kubernetes Secret proof
 
+**Historical isolated proof — 28 September 2026.** ESO and the adapter were subsequently adopted for lab credentials. Use the [Key Vault guide](../../docs/keyvault-secrets.md) for current reconciliation and rotation; this proof does not migrate application secrets.
+
 This isolated check tests whether External Secrets Operator (ESO) can adapt the lab's Floci Key Vault endpoint to the Kubernetes Secret contract already used by workloads. It does not migrate any application credential or select ESO for the wider lab.
 
 ## Setup

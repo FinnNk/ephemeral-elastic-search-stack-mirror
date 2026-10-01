@@ -45,3 +45,7 @@ Gitea is the primary remote. GitHub holds an offsite copy of Git history.
 Work in batches on branches, commit each batch and obtain acceptance before merging to `main`. See [contribution and documentation review requirements](CONTRIBUTING.md).
 
 Git backup does not include Gitea's database, datasets, reports or registry images. Those need separate storage backups.
+
+Research decisions and recorded experiments are indexed under
+[research](docs/research/README.md) and [local evidence](docs/research/evidence/README.md).
+Use their conditions to interpret results; use the guides above for current procedures.

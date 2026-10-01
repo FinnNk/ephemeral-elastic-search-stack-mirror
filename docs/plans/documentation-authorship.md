@@ -24,7 +24,7 @@ Authors and reviewers must apply [technical authorship guidance](../technical-au
 | D2 — Evaluation and delivery | Source guides, delivery, input publication, judgement resolution, variants and Gatling | Implemented, awaiting review. Engineer and operator responsibilities explicit; artefact origins, runnable examples, outputs, verdicts and recovery explained. |
 | D3 — Models and observability | Model packaging/activation and connected investigation guides | Implemented, awaiting review. Packaging is distinct from serving; access is current; dashboards and metric limits lead to useful actions. |
 | D4 — Design and navigation | Design, diagram guide, roadmap and decision index | Implemented, awaiting review. Current contracts distinguish proposals and history; status has one owner; diagram sources, terminology and references agree. |
-| D5 — Historical records and final review | Research, plans and evidence; cross-references and rendered reading paths | Historical claims retain their conditions; current-entry links identify dated examples; remaining deep checks are completed or explicitly recorded. |
+| D5 — Historical records and final review | Research, plans and evidence; cross-references and rendered reading paths | Implemented, awaiting review. Historical claims retain their conditions; current-entry links identify dated examples; review coverage and remaining code/runtime findings are explicit. |
 
 Each batch updates this table and the roadmap, records verification, and creates a PR. Create the next detailed batch plan when completing the preceding one.
 
@@ -85,3 +85,9 @@ The capture schema also permits non-empty caller filters although the worker and
 The design's current topology, endpoint table, lease-worker description and API response fields were checked against the implementation. Platform-selection chronology moved to linked research; current contracts now distinguish paired and N-way evaluation. Quantitative target tables and performance validity rules remain provisional. The diagram explanations were reorganised without changing or regenerating model assets. Gitea confirms PRs #32–#59 merged; formal ADR status and runtime/cloud gates remain separate.
 
 [D5: historical records and final review](documentation-historical-final-review.md) is the next detailed plan.
+
+## D5 completion and next work
+
+Research/evidence indexes route to current procedures. Nine ambiguous historical entry points now identify their recorded scope; original bodies and measurements were preserved. The inventory distinguishes full reader-path review from structural/context review. Representative pages and the combined reading path were rendered; links/anchors and formatting checked. Existing screenshots were reused, not expanded decoratively.
+
+Editorial D1–D5 work is complete for review. Remaining code findings are canonical HTTPS control routing/secure cookies and [unsupported request filters](reference-request-contract.md). GPU qualification, real human decisions, seven-day telemetry coverage, valid overhead measurements and native/cloud execution remain validation work; documentation does not close those gates.

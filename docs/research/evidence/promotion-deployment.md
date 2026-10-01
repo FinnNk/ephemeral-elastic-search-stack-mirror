@@ -1,5 +1,7 @@
 # Promotion and deployment evidence
 
+**Historical run — 27 September 2026.** Host-process placement, HTTP transport, target state and unmerged project PRs below describe this demonstration. Later batches moved control into Kubernetes and added HTTPS. Use the [current delivery guide](../../delivery.md) for operation.
+
 Executed on 27 September 2026 against local Gitea, Nexus, Argo CD and the shared Elasticsearch cluster. All products, queries and traffic were synthetic. The desired-state PRs below belong to the isolated `delivery-state` demonstration repository; project implementation PRs remain unmerged.
 
 ## Measured walkthrough

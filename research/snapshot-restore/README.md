@@ -1,5 +1,7 @@
 # Repeat the local snapshot research
 
+**Isolated research replay.** The ordinary restore path is in the [index recovery guide](../../docs/index-recovery.md). This recipe creates and removes separate probe resources; its timing results do not establish cloud restore performance.
+
 Run these commands in PowerShell from the repository root after the [platform research bootstrap](../platform-spike/README.md) and both frozen releases are available. The probe uses synthetic data only. It creates a **separate** ECK cluster named `lab-fs-probe` and a local repository PVC; the shared cluster is not reconfigured. Allow approximately 3 GiB of Pod memory and 6 GiB of requested PVC capacity for the probe. Do not apply its manifest over an existing resource of the same name.
 
 1. Check that the temporary names are free, then create the probe:

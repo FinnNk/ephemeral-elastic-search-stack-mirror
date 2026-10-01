@@ -1,5 +1,7 @@
 # Self-contained Git lifecycle with Gitea
 
+For the implemented build/promotion path, use [delivery](../delivery.md). The checklist below records the original research scope, including registry and webhook alternatives.
+
 Desk research on 26 September 2026. The prototype uses local Gitea so that a branch, pull request, build, container image, environment, relevance/result/performance comparison and teardown can all be shown on the lab machine or cluster. The target organisation later uses GitHub Enterprise. This is a design and spike checklist, not a claim that the stack has already run.
 
 ## Component fit

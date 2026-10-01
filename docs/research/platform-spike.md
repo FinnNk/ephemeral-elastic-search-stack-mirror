@@ -1,5 +1,7 @@
 # Platform research: results and recommendation
 
+**Historical research — 26 September 2026.** Statements about unbuilt services describe this harness run. The control API, UI and comparison workflows were implemented later; use the [lab guide](../../lab/README.md) and [roadmap](../plans/roadmap.md) for current operation/status.
+
 **26 September 2026 · Windows x64 · experimental harness**
 
 Use **Argo CD Git-file ApplicationSets**, a namespace per environment and a **shared, read-only Elasticsearch index** for API and ranking changes. Use **k3d provisionally** for the local bootstrap. Keep kind as a tested alternative and require a native Apple silicon run before confirming portability.

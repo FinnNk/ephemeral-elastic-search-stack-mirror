@@ -1,5 +1,7 @@
 # SigNoz account and dashboard: local verification
 
+**Historical account/dashboard check — 27–28 September 2026.** Invitation expiry and dashboard IDs describe this run, not current account access. Use the [backend guide](../../observability-backend.md) and request a new invitation if needed.
+
 Measured on 27–28 September 2026 in the Windows x64 k3d lab. The dashboard has live metric-query checks; no browser navigation or rolling seven-day verdict is claimed.
 
 | Check | Observation |
