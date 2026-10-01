@@ -31,6 +31,7 @@ that was completed later.
 
 ## Development, evaluation and models
 
+- [Search filter verification — 1 October 2026](search-request-filters.md)
 - [Local developer evaluation loop](developer-evaluation-loop.md)
 - [Local judgement gap resolution evidence — 29 September 2026](mlflow-kserve-judgement-coverage.md)
 - [Three-variant synthetic million-product proof](offline-variants-million.md)

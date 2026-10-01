@@ -16,7 +16,8 @@ def source_commit():
     assert (SOURCE / '.git').exists(), 'Run the platform research bootstrap first'
     assert not git('status', '--porcelain', cwd=SOURCE), 'Local search source has changes'
     git('switch', 'main', cwd=SOURCE)
-    for name in ('app.py', 'index.html', 'test_app.py', 'Dockerfile'):
+    for name in ('app.py', 'telemetry.py', 'variants.py', 'search_filters.py', 'index.html',
+                 'demo.py', 'test_app.py', 'test_demo.py', 'test_filters.py', 'requirements.lock', 'Dockerfile'):
         shutil.copy2(APP / name, SOURCE / name)
     shutil.copy2(APP / '.gitea/workflows/build.yaml', SOURCE / '.gitea/workflows/build.yaml')
     if git('status', '--porcelain', cwd=SOURCE):

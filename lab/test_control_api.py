@@ -3,6 +3,7 @@ import hashlib
 import threading
 import urllib.error
 import urllib.request
+import urllib.parse
 import unittest
 from http.server import ThreadingHTTPServer
 from pathlib import Path
@@ -107,6 +108,33 @@ class LocalControlApi(unittest.TestCase):
         self.assertEqual(Handler.controller.last_comparison[3]['query_manifest_sha'], 'a' * 64)
         self.assertEqual(Handler.controller.last_comparison[3]['judgement_manifest_sha'], 'b' * 64)
         self.assertEqual(Handler.controller.last_comparison[3]['notebook'], 'comparison-explorer.ipynb')
+
+    def test_search_proxy_preserves_filters_and_rejects_mismatched_echo(self):
+        cookie = self.login()
+        filters = {'category': ['clothing'], 'price_minor': {'lte': 2500}}
+        url = self.base + '/api/environments/known/search?' + urllib.parse.urlencode(
+            {'q': 'shirt', 'filters': json.dumps(filters)})
+        request = urllib.request.Request(url, headers={'Cookie': cookie, 'X-Lab-Intent': '1'})
+        with patch('control_api.search', return_value={'ids': [], 'filters': filters}) as search, \
+                patch.object(Handler.controller, 'activity', create=True) as activity:
+            with urllib.request.urlopen(request) as response:
+                self.assertEqual(json.load(response)['filters'], filters)
+            search.assert_called_once_with('lab-demo', 'shirt', filters=filters)
+            activity.assert_called_once_with('known')
+            activity.reset_mock()
+            search.return_value = {'ids': [], 'filters': {}}
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(request)
+            self.assertEqual(error.exception.code, 502)
+            activity.assert_not_called()
+            search.reset_mock()
+            for suffix in ('&country=US', '&filters=null'):
+                invalid = urllib.request.Request(url + suffix,
+                    headers={'Cookie': cookie, 'X-Lab-Intent': '1'})
+                with self.assertRaises(urllib.error.HTTPError) as error:
+                    urllib.request.urlopen(invalid)
+                self.assertEqual(error.exception.code, 400)
+            search.assert_not_called()
 
     def test_executed_notebook_download_checks_owner_and_hash(self):
         cookie = self.login('alice')

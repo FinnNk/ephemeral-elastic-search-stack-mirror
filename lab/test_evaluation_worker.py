@@ -19,7 +19,7 @@ class EvaluatorContract(unittest.TestCase):
                                      'LAB_SPAN_ID': 'b' * 16}):
             self.assertIsNone(evaluation_worker.traceparent())
         row = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP'}
-        answer = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP',
+        answer = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP', 'filters': {},
                   'ids': ['p1'], 'total': 1}
         with patch.dict(os.environ, {'LAB_TRACE_ID': 'a' * 32,
                                      'LAB_SPAN_ID': 'b' * 16}), \

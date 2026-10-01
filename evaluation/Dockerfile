@@ -7,6 +7,7 @@ RUN apk add --no-cache libstdc++ && \
 
 WORKDIR /app
 COPY evaluation/*.py /app/
+COPY lab/search-app/search_filters.py /app/search_filters.py
 COPY contracts/job_event.py /app/job_event.py
 COPY evaluation/specs/ /app/specs/
 USER 10001:10001

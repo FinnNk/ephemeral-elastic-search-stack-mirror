@@ -7,6 +7,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'lab/search-app'))
+from search_filters import validate_filters
+
 sys.path.insert(0, 'data')
 sys.path.insert(0, 'lab')
 sys.path.insert(0, 'research/platform-spike')
@@ -28,6 +31,8 @@ def capture(variant_set_path, query_path, query_manifest_path, catalogue_manifes
     if not queries or len(queries) != query_manifest['record_count'] or \
             len({row['query_id'] for row in queries}) != len(queries):
         raise ValueError('Query suite is empty, duplicated or incomplete.')
+    for query in queries:
+        validate_filters(query.get('filters', {}))
     variant_set_bytes = Path(variant_set_path).read_bytes()
     variant_set = json.loads(variant_set_bytes)
     variants = variant_set.get('variants')

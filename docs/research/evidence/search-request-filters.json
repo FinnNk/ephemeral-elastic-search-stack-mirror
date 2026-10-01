@@ -1,0 +1,81 @@
+{
+  "api": "current HTTP Handler; host-side TLS transport to the disposable index",
+  "backend": "real local Elasticsearch",
+  "checks": [
+    {
+      "expected_ids": [
+        "demo-01",
+        "demo-02"
+      ],
+      "filters": {},
+      "paired": "passed",
+      "three_variants": "passed"
+    },
+    {
+      "expected_ids": [
+        "demo-01"
+      ],
+      "filters": {
+        "category": [
+          "footwear"
+        ],
+        "price_minor": {
+          "lte": 6500
+        }
+      },
+      "paired": "passed",
+      "three_variants": "passed"
+    },
+    {
+      "expected_ids": [
+        "demo-02"
+      ],
+      "filters": {
+        "price_minor": {
+          "gte": 7900,
+          "lte": 7900
+        }
+      },
+      "paired": "passed",
+      "three_variants": "passed"
+    },
+    {
+      "expected_ids": [],
+      "filters": {
+        "category": [
+          "home"
+        ]
+      },
+      "paired": "passed",
+      "three_variants": "passed"
+    },
+    {
+      "expected_ids": [
+        "demo-01",
+        "demo-02"
+      ],
+      "filters": {
+        "category": [
+          "home",
+          "footwear"
+        ],
+        "colour": [
+          "blue",
+          "black"
+        ],
+        "material": [
+          "cotton"
+        ],
+        "price_minor": {
+          "gte": 6500,
+          "lte": 7900
+        }
+      },
+      "paired": "passed",
+      "three_variants": "passed"
+    }
+  ],
+  "fixture_products": 10,
+  "kind": "search-filter-verification",
+  "limits": "Host-run workers; no Argo deployment, relevance gate approval or capacity claim."
+}

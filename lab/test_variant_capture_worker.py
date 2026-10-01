@@ -24,7 +24,7 @@ class VariantCaptureTests(unittest.TestCase):
         row = {'query_id': 'q1', 'query': 'lamp', 'country': 'GB', 'currency': 'GBP'}
         target = {'environment': 'lab-ranker', 'selection': 'explicit',
                   'configuration_sha256': 'a' * 64}
-        payload = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP',
+        payload = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP', 'filters': {},
                    'variant_id': 'ranker-b', 'configuration_sha256': 'a' * 64,
                    'ids': ['p1'], 'total': 1}
         with patch.object(worker.urllib.request, 'urlopen',
@@ -36,7 +36,7 @@ class VariantCaptureTests(unittest.TestCase):
         row = {'query_id': 'q1', 'query': 'lamp', 'country': 'GB', 'currency': 'GBP'}
         target = {'environment': 'lab-ranker', 'selection': 'default',
                   'configuration_sha256': 'a' * 64}
-        payload = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP',
+        payload = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP', 'filters': {},
                    'variant_id': 'ranker-b', 'configuration_sha256': 'b' * 64,
                    'ids': ['p1'], 'total': 1}
         with patch.object(worker.urllib.request, 'urlopen',
@@ -48,7 +48,7 @@ class VariantCaptureTests(unittest.TestCase):
         row = {'query_id': 'q1', 'query': 'lamp', 'country': 'GB', 'currency': 'GBP'}
         target = {'environment': 'lab-ranker', 'selection': 'default',
                   'configuration_sha256': 'a' * 64}
-        payload = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP',
+        payload = {'query': 'lamp', 'country': 'GB', 'currency': 'GBP', 'filters': {},
                    'variant_id': 'ranker-a', 'configuration_sha256': 'a' * 64,
                    'ids': ['p' + str(i) for i in range(20)], 'total': 240}
         with patch.object(worker.urllib.request, 'urlopen',

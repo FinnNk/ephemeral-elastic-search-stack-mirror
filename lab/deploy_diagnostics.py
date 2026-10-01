@@ -22,7 +22,9 @@ def source(branch, base, message, title, body):
     if not git('branch', '--list', branch, cwd=SOURCE):
         git('switch', '-c', branch, cwd=SOURCE)
         if branch == DIAGNOSTIC_BRANCH:
-            for name in ('app.py', 'variants.py', 'test_app.py'):
+            for name in ('app.py', 'telemetry.py', 'variants.py', 'search_filters.py', 'index.html',
+                         'demo.py', 'test_app.py', 'test_demo.py', 'test_filters.py',
+                         'requirements.lock', 'Dockerfile'):
                 shutil.copy2(ROOT / 'lab/search-app' / name, SOURCE / name)
         else:
             patch = STATE / 'retail-diagnostic-trainers.patch'
@@ -33,7 +35,7 @@ def source(branch, base, message, title, body):
         result = subprocess.run([sys.executable, '-B', '-m', 'unittest', 'discover', '-p', 'test_*.py', '-v'],
                                 cwd=SOURCE, capture_output=True, text=True)
         assert result.returncode == 0, result.stderr
-        git('add', 'app.py', 'variants.py', 'test_app.py', cwd=SOURCE)
+        git('add', '.', cwd=SOURCE)
         if branch == REWRITE_BRANCH:
             git('add', 'test_rewrite.py', cwd=SOURCE)
         git('commit', '-m', message, cwd=SOURCE)

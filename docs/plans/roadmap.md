@@ -18,7 +18,7 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
-The [documentation authorship review](documentation-authorship.md) is accepted on main. D1, current operating guides, is accepted on main, including two maintained UI/notebook illustrations. [D2: evaluation and delivery](documentation-evaluation-delivery.md) is implemented for review. [D3: models and observability](documentation-model-observability.md) is implemented for review. [D4: design and navigation](documentation-design-navigation.md) is implemented for review. [D5: historical records and final review](documentation-historical-final-review.md) is implemented for review. The editorial sequence is complete; [request-contract correction](reference-request-contract.md) is the next detailed implementation plan. Canonical HTTPS control routing and secure session cookies remain a separate implementation gap; other validation gates below remain separate.
+The [documentation authorship review](documentation-authorship.md) is accepted on main. D1, current operating guides, is accepted on main, including two maintained UI/notebook illustrations. [D2: evaluation and delivery](documentation-evaluation-delivery.md) is implemented for review. [D3: models and observability](documentation-model-observability.md) is implemented for review. [D4: design and navigation](documentation-design-navigation.md) is implemented for review. [D5: historical records and final review](documentation-historical-final-review.md) is implemented for review. The editorial sequence is complete. [Filtered requests and capture](reference-request-contract.md) are implemented for review, including browser, demo, diagnostic replay and Gatling context. The next detailed batch is [canonical HTTPS control sessions](reference-https-control-session.md); other validation gates below remain separate.
 
 The project-side [developer guide and disconnected demo batch](developer-guide-demo.md) is accepted on main. It adds workstation trust instructions, explicit browser access, a separate in-memory search demo and illustrated delivery/evaluation guides. The source code change still needs exact-commit lab evidence before merge; mock demo results cannot satisfy that gate.
 
@@ -50,8 +50,8 @@ batches listed above are merged. That does not imply their outstanding runtime
 or cloud acceptance criteria passed. GitHub backup status is separate from the
 primary implementation record.
 
-Two editorial checks found implementation gaps: canonical HTTPS control
-routing/session cookies, and unsupported non-empty filters accepted by the
-capture contract. The latter must reject unsupported inputs before recording
-observations; the current generated suites use empty filters. These need
-separate code batches, not stronger wording in the guides.
+The filter-support batch closes the unsupported-request finding: current capture
+forwards and verifies category, colour, material and price filters. Current
+workloads compile full frozen request context into new content-addressed feeders.
+Historical schema and measurement artefacts remain unchanged. Canonical HTTPS
+control routing/session cookies remain the next implementation gap.

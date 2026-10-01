@@ -13,7 +13,7 @@
     form{display:flex;gap:.65rem;background:white;padding:.5rem;border:1px solid #d7dfdc;border-radius:15px;box-shadow:0 8px 28px #21413a0e;max-width:770px}
     input{min-width:0;flex:1;padding:.85rem .95rem;border:0;font:inherit;font-size:1.05rem;outline:0}input:focus-visible{box-shadow:inset 0 -2px #147f72}
     button{font:inherit;font-weight:700;border:0;border-radius:10px;background:#006d61;color:white;padding:.8rem 1.4rem;cursor:pointer}button:hover{background:#00574e}button:focus-visible,.chip:focus-visible{outline:3px solid #c9a350;outline-offset:2px}
-    .meta{display:flex;align-items:center;gap:1rem;color:#637277;font-size:.85rem;margin:1rem 0}.chiprow{display:flex;flex-wrap:wrap;gap:.55rem;margin:1.6rem 0 2.7rem}.chip{background:#e5ece8;color:#17564e;border:1px solid #c9dcd5;border-radius:999px;padding:.52rem .82rem;font-size:.82rem;font-weight:650}
+    .filters{max-width:770px;margin-top:1rem}.filtergrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.65rem;padding:.8rem 0}.filtergrid label{font-size:.8rem;color:#53636a}.filtergrid input{display:block;width:100%;background:white;border:1px solid #d7dfdc;border-radius:8px;font-size:.9rem;padding:.6rem}.meta{display:flex;align-items:center;gap:1rem;color:#637277;font-size:.85rem;margin:1rem 0}.chiprow{display:flex;flex-wrap:wrap;gap:.55rem;margin:1.6rem 0 2.7rem}.chip{background:#e5ece8;color:#17564e;border:1px solid #c9dcd5;border-radius:999px;padding:.52rem .82rem;font-size:.82rem;font-weight:650}
     .resultbar{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;border-bottom:1px solid #d7dfdc;margin-bottom:1rem}.resultbar h3{font-size:1.15rem;margin:0 0 .9rem;letter-spacing:-.02em}.resultbar span{color:#65747a;font-size:.85rem}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:1rem}.card{background:#fff;border:1px solid #dde4e0;border-radius:14px;padding:1.2rem;min-height:182px;display:flex;flex-direction:column;box-shadow:0 2px 10px #183f4708}.category{font-size:.69rem;color:#35756c;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.card h4{font-size:1.08rem;line-height:1.28;letter-spacing:-.025em;margin:.55rem 0 .3rem}.brand{font-size:.84rem;color:#68757a}.cardfooter{display:flex;align-items:end;justify-content:space-between;margin-top:auto;padding-top:1.4rem}.price{font-size:1.22rem;font-weight:800;letter-spacing:-.03em}.id{font-size:.68rem;color:#849094;font-variant-numeric:tabular-nums}
     .empty{padding:2rem;background:#fff;border:1px dashed #cbd8d3;border-radius:14px;color:#53636a}.error{color:#9b2f29;margin-top:.8rem;min-height:1.3rem}
@@ -28,6 +28,13 @@
     <h2>Explore the baseline search.</h2>
     <p class="intro">Search a reproducible retail catalogue. Products, prices and brands are synthetic; every result comes through the search API.</p>
     <form id="search-form"><input id="query" name="q" type="search" autocomplete="off" maxlength="150" placeholder="Try wireless headphones" aria-label="Search products" required><button type="submit">Search</button></form>
+    <details class="filters"><summary>Filter results</summary><div class="filtergrid">
+      <label>Categories (comma-separated)<input id="category-filter" form="search-form" placeholder="clothing, footwear"></label>
+      <label>Colours (comma-separated)<input id="colour-filter" form="search-form" placeholder="black, blue"></label>
+      <label>Materials (comma-separated)<input id="material-filter" form="search-form" placeholder="cotton"></label>
+      <label>Minimum price (pence)<input id="price-min" form="search-form" type="number" min="0" max="2147483647" step="1"></label>
+      <label>Maximum price (pence)<input id="price-max" form="search-form" type="number" min="0" max="2147483647" step="1"></label>
+    </div><small>Exact values; either value within a field, all selected fields together. £25 = 2500 pence.</small></details>
     <p class="error" id="error" role="alert"></p>
     <div class="meta"><span>United Kingdom · GBP</span><span>Available products only</span></div>
     <div class="chiprow" aria-label="Example queries"><button type="button" class="chip">wireless headphones</button><button type="button" class="chip">running shoes</button><button type="button" class="chip">black desk lamp</button><button type="button" class="chip">ceramic mug</button></div>
@@ -48,10 +55,26 @@
       const id=document.createElement('span');id.className='id';id.textContent=item.product_id;
       footer.append(price,id);article.append(category,title,brand,footer);return article;
     }
-    async function search(query){
+    function filters(){
+      const selected={};
+      for(const field of ['category','colour','material']){
+        const text=document.getElementById(field+'-filter').value.trim();
+        if(text)selected[field]=text.split(',').map(value=>value.trim());
+      }
+      const bounds={};
+      for(const [id,key] of [['price-min','gte'],['price-max','lte']]){
+        const value=document.getElementById(id).value;
+        if(value!=='')bounds[key]=Number(value);
+      }
+      if(Object.keys(bounds).length)selected.price_minor=bounds;
+      return selected;
+    }
+    async function search(query,selected=filters()){
       error.textContent='';heading.textContent='Searching…';timing.textContent='';results.replaceChildren();
       try{
-        const response=await fetch('/search?'+new URLSearchParams({q:query,country:'GB',currency:'GBP'}));
+        const params=new URLSearchParams({q:query,country:'GB',currency:'GBP',filters:JSON.stringify(selected)});
+        history.replaceState(null,'','?'+params);
+        const response=await fetch('/search?'+params);
         const data=await response.json();if(!response.ok)throw new Error(data.error||'Search failed.');
         heading.textContent=`${data.total.toLocaleString('en-GB')} results for “${data.query}”`;
         timing.textContent=`${data.elapsed_ms.toFixed(0)} ms · first ${data.results.length} shown`;
@@ -59,9 +82,19 @@
         else{const empty=document.createElement('p');empty.className='empty';empty.textContent='No products matched this query. Try a broader term.';results.replaceChildren(empty);}
       }catch(err){heading.textContent='Search results';error.textContent=err.message;}
     }
-    form.addEventListener('submit',event=>{event.preventDefault();const query=input.value.trim();if(query){history.replaceState(null,'','?q='+encodeURIComponent(query));search(query);}});
-    document.querySelectorAll('.chip').forEach(chip=>chip.addEventListener('click',()=>{input.value=chip.textContent;search(input.value);}));
-    const initial=new URLSearchParams(location.search).get('q');if(initial){input.value=initial;search(initial);}
+    form.addEventListener('submit',event=>{event.preventDefault();const query=input.value.trim();if(query){search(query);}});
+    document.querySelectorAll('.chip').forEach(chip=>chip.addEventListener('click',()=>{input.value=chip.textContent;form.requestSubmit();}));
+    const params=new URLSearchParams(location.search),initial=params.get('q');
+    try{
+      if(params.getAll('filters').length>1)throw new Error('Supply filters once.');
+      const selected=JSON.parse(params.get('filters')||'{}');
+      for(const field of ['category','colour','material'])if(selected[field])document.getElementById(field+'-filter').value=selected[field].join(', ');
+      if(selected.price_minor){
+        document.getElementById('price-min').value=selected.price_minor.gte??'';
+        document.getElementById('price-max').value=selected.price_minor.lte??'';
+      }
+      if(initial){input.value=initial;search(initial,selected);}
+    }catch(err){error.textContent='Invalid filters in the page address.';}
   </script>
 </body>
 </html>

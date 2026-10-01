@@ -8,7 +8,7 @@ from pathlib import Path
 
 from common import STATE
 from blob_config import service
-from search_probe import search
+from search_probe import search, parse_filters
 from lifecycle import ActiveComparisonError, DATASET, RELEASES, local_lifecycle, parse_stamp, utcnow
 from index_candidate import available_kinds
 from input_selection import DEFAULTS
@@ -160,15 +160,29 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send_json(409, {'error': 'Environment is not ready.'})
                 if utcnow() >= parse_stamp(row['expires_at']):
                     return self.send_json(409, {'error': 'Environment lease has expired.'})
-                query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('q', [''])[0]
+                params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query, keep_blank_values=True)
+                query = params.get('q', [''])[0]
                 if not query.strip() or len(query) > 150:
                     return self.send_json(400, {'error': 'Enter a search term of 1–150 characters.'})
                 try:
-                    answer = search(row['name'], query)
+                    encoded = params.get('filters', ['{}'])
+                    if len(encoded) != 1:
+                        raise ValueError('Supply filters once.')
+                    filters = parse_filters(encoded[0])
+                    country = params.get('country', ['GB'])
+                    currency = params.get('currency', ['GBP'])
+                    if country != ['GB'] or currency != ['GBP']:
+                        raise ValueError('This catalogue supports GB and GBP only.')
+                except ValueError as error:
+                    return self.send_json(400, {'error': str(error)})
+                try:
+                    answer = search(row['name'], query, filters=filters)
                 except RuntimeError:
                     answer = None
                 if answer is None:
                     return self.send_json(502, {'error': 'Search API did not return a result.'})
+                if answer.get('filters') != filters:
+                    return self.send_json(502, {'error': 'Search API returned different filters.'})
                 try:
                     self.controller.activity(row['id'])
                 except ValueError:

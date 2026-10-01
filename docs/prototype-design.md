@@ -219,7 +219,7 @@ A trace contains stable event IDs, elapsed arrival offsets, query IDs and reques
 {"event_id":"e000042","offset_ms":190,"query_id":"q0017","country":"GB","currency":"GBP"}
 ```
 
-- **Request binding:** Query IDs resolve to frozen original text and market context. The current API has no caller-filter or paging contract; non-empty filters are an unsupported-input finding, not applied request context.
+- **Request binding:** Query IDs resolve to frozen original text and market context. Caller filters follow the [Search API filter contract](search-request.md) and are forwarded unchanged to every variant. Capture verifies the echoed filters. Pagination remains outside the request contract.
 - **Ordering:** Preserve duplicate queries and simultaneous events; event ID breaks equal-timestamp ties deterministically.
 - **Validation:** Validate non-negative ordered offsets and all query references.
 - **Counts:** Record both unique query count and event count: 1,000 unique queries may produce many more load-test requests.

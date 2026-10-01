@@ -27,7 +27,7 @@ New-Item -ItemType Directory -Path $runDir | Out-Null
 
 A variant-set file has `kind: search-variant-set`, `schema_version: 1`, `default_variant`, `baseline_variant` and a `variants` object. Each named entry has `environment`, `environment_fingerprint`, `configuration_sha256` and `selection` (`default` or `explicit`). Obtain the fingerprint from its retained environment definition and configuration digest from that deployed API's echoed response. The names must match the API's variant IDs, including when two releases use separate deployments. Do not fill these fields with illustrative hashes.
 
-The current capture adapter sends query, country and currency; use empty filter objects. Non-empty request filters need an adapter change before this workflow can evaluate them faithfully.
+Capture forwards the frozen query, country, currency and filters to every variant. The API must echo the same filters; a missing or different echo makes the capture incomplete. See the [filter contract and query-suite example](search-request.md).
 
 Prepare configurations in the environment-state definition and let Argo reconcile them before capture. Capture verifies those definitions and the API responses; it cannot deploy a variant-set file by itself.
 

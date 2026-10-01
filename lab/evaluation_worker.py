@@ -8,6 +8,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'search-app'))
+from search_filters import encode_filters, validate_filters
 
 
 def traceparent():
@@ -21,8 +25,9 @@ def traceparent():
 
 
 def request(name, row):
+    filters = validate_filters(row.get('filters', {}))
     query = urllib.parse.urlencode({'q': row['query'], 'country': row['country'],
-                                    'currency': row['currency']})
+                                    'currency': row['currency'], 'filters': encode_filters(filters)})
     url = f'http://search.{name}.svc.cluster.local:8080/search?' + query
     for attempt in range(3):
         try:
@@ -41,6 +46,8 @@ def request(name, row):
             time.sleep(0.2 * (attempt + 1))
     if (value.get('query'), value.get('country'), value.get('currency')) != (row['query'], row['country'], row['currency']):
         raise ValueError('Search API did not echo the frozen request.')
+    if value.get('filters') != filters:
+        raise ValueError('Search API did not echo the frozen filters.')
     ids = value['ids'][:10]
     if len(ids) != len(set(ids)) or len(ids) != min(value['total'], 10):
         raise ValueError('Search API returned an invalid ordered result list.')

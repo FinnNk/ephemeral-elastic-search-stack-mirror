@@ -9,11 +9,16 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'search-app'))
+from search_filters import encode_filters, validate_filters
 
 
 def request(variant, target, row):
+    filters = validate_filters(row.get('filters', {}))
     query = urllib.parse.urlencode({'q': row['query'], 'country': row['country'],
-                                    'currency': row['currency']})
+                                    'currency': row['currency'], 'filters': encode_filters(filters)})
     url = f"http://search.{target['environment']}.svc.cluster.local:8080/search?{query}"
     headers = {'X-Lab-Traffic-Class': 'probe'}
     trace_id, span_id = os.environ.get('LAB_TRACE_ID', ''), os.environ.get('LAB_SPAN_ID', '')
@@ -38,6 +43,8 @@ def request(variant, target, row):
     if (value.get('query'), value.get('country'), value.get('currency')) != (
             row['query'], row['country'], row['currency']):
         raise ValueError('Search API did not echo the frozen request.')
+    if value.get('filters') != filters:
+        raise ValueError('Search API did not echo the frozen filters.')
     ids = value.get('ids')
     if value.get('variant_id') != variant or \
             value.get('configuration_sha256') != target['configuration_sha256']:

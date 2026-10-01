@@ -1,7 +1,8 @@
 --- a/app.py
 +++ b/app.py
-@@ -30 +30,3 @@
--    return query, 'none'
+@@ -38,3 +38,5 @@
+ def understand(query):
+     """Return the Elasticsearch query and a named rewrite decision."""
 +    if query.casefold() == 'trainers':
 +        return 'running shoes', 'trainers-to-running-shoes'
-+    return query, 'none'
+     return query, 'none'

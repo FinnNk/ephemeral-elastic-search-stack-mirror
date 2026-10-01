@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 class SearchContract(unittest.TestCase):
     def test_market_and_query_validation(self):
-        self.assertEqual(app.validated_query('/search?q=+running++shoes+'), ('running shoes', 'GB', 'GBP'))
+        self.assertEqual(app.validated_query('/search?q=+running++shoes+'), ('running shoes', 'GB', 'GBP', {}))
         with self.assertRaises(ValueError):
             app.validated_query('/search?q=running+shoes&country=US&currency=USD')
         with self.assertRaises(ValueError):

@@ -60,8 +60,9 @@ public class SyntheticSearchSimulation extends Simulation {
           })
           .exec(http(name).get("/search")
               .header("X-Lab-Traffic-Class", trafficClass(name))
-              .queryParam("q", "#{query}").queryParam("country", "GB").queryParam("currency", "GBP")
-              .check(status().is(200), jsonPath("$.ids").exists()));
+              .queryParam("q", "#{query}").queryParam("country", "#{country}").queryParam("currency", "#{currency}")
+              .queryParam("filters", "#{filters}")
+              .check(status().is(200), jsonPath("$.ids").exists(), jsonPath("$.filters").exists()));
       List<OpenInjectionStep> steps = new ArrayList<>();
       int previous = 0;
       for (int[] bucket : phase.getValue()) {

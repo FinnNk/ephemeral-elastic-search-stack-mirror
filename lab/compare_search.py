@@ -88,9 +88,11 @@ def immutable_blob(container, name, payload):
 
 
 def response(name, row):
-    result = search(name, row['query'])
+    result = search(name, row['query'], filters=row.get('filters', {}),
+                    country=row['country'], currency=row['currency'])
     assert result is not None, f'{name} did not return {row["query_id"]}'
     assert result['query'] == row['query']
+    assert result['filters'] == row.get('filters', {}), 'Search API did not echo the frozen filters.'
     assert (result['country'], result['currency']) == (row['country'], row['currency'])
     ids = result['ids'][:DEPTH]
     assert len(ids) == len(set(ids))

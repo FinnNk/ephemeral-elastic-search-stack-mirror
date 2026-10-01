@@ -44,6 +44,15 @@ python lab/compare_gatling_jobs.py probe $baselineRun $candidateRun
 
 Use the control UI for arbitrary ready environments and the million release. Its runner resolves the selected in-cluster services. To compile a million-release schedule explicitly, use `python lab/traffic.py compile --profile sustained-peak --release retail-gb-1m-v1`.
 
+## Frozen request context
+
+Phase feeders contain `planned_ms`, `query_id`, `query`, `country`, `currency`
+and `filters`. The compiler resolves these from the frozen query suite; the
+simulation sends them to the API. Filters use the [current contract](../../docs/search-request.md).
+Recompile with the current compiler before a run. Changed feeder bytes get a new
+workload hash; old native reports remain historical evidence. There is no reader
+for older feeder layouts.
+
 ## Read the result
 
 Warm-up/ramp intervals are excluded from measured budgets. The adapter checks planned versus actual arrivals and phase counts before evaluating latency/errors. Missing events, unstable baselines or incomplete runs make the result inconclusive; they are not a pass. Shared indices/host resources can cause contention.

@@ -141,8 +141,12 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
             for side, environment in (('baseline', baseline), ('candidate', candidate)):
                 try:
                     answer = search(environment['name'], row['query'],
-                                    request_id=row['query_id'] + '-' + side)
-                    if answer and answer.get('ids', [])[:10] == row[side]['ids']:
+                                    request_id=row['query_id'] + '-' + side,
+                                    filters=request_by_id[row['query_id']].get('filters', {}),
+                                    country=request_by_id[row['query_id']]['country'],
+                                    currency=request_by_id[row['query_id']]['currency'])
+                    if answer and answer.get('ids', [])[:10] == row[side]['ids'] and \
+                            answer.get('filters') == request_by_id[row['query_id']].get('filters', {}):
                         detail = answer.get('diagnostics')
                         if detail:
                             row[side]['diagnostics'] = {key: value for key, value in detail.items()

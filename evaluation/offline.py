@@ -8,6 +8,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'lab/search-app'))
+from search_filters import validate_filters
+
 import ir_measures
 
 SCHEMA = 1
@@ -67,6 +70,7 @@ def validate_observations(value):
                    for key in ('query', 'country', 'currency')) or \
                 not isinstance(request.get('filters'), dict):
             raise ValueError('Observation does not retain the original request.')
+        validate_filters(request['filters'])
         answers = row.get('results')
         if not isinstance(answers, dict) or set(answers) != set(variants):
             raise ValueError('Observation does not cover every frozen variant.')

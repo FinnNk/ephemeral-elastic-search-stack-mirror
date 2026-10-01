@@ -15,6 +15,7 @@ IMAGE = ('python:3.13.7-alpine3.22@sha256:'
 NAME = re.compile(r'lab-[a-z0-9-]{1,48}\Z')
 SOURCE = ROOT / 'lab/evaluation_worker.py'
 VARIANT_SOURCE = ROOT / 'lab/variant_capture_worker.py'
+FILTER_SOURCE = ROOT / 'lab/search-app/search_filters.py'
 
 
 def run(suite_bytes, baseline, candidate):
@@ -30,7 +31,8 @@ def run(suite_bytes, baseline, candidate):
     apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NAMESPACE}})
     source = SOURCE.read_text(encoding='utf-8')
     payload = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': config, 'namespace': NAMESPACE},
-               'data': {'worker.py': source, 'queries.jsonl': suite_bytes.decode('utf-8')}}
+               'data': {'worker.py': source, 'search_filters.py': FILTER_SOURCE.read_text(encoding='utf-8'),
+                        'queries.jsonl': suite_bytes.decode('utf-8')}}
     job = {'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': job_name, 'namespace': NAMESPACE},
            'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': 300,
                     'template': {'metadata': {'labels': {'lab': 'evaluator'}},
@@ -59,7 +61,8 @@ def run(suite_bytes, baseline, candidate):
         if not isinstance(rows, list) or [row['query_id'] for row in rows] != expected:
             raise ValueError('Evaluator output does not match the frozen query order.')
         return rows, {'execution': 'in-cluster evaluator Job', 'seconds': round(time.monotonic() - started, 3),
-                      'worker_sha256': hashlib.sha256(source.encode()).hexdigest(), 'worker_image': IMAGE,
+                      'worker_sha256': hashlib.sha256(source.encode()).hexdigest(),
+                      'request_contract_sha256': hashlib.sha256(FILTER_SOURCE.read_text(encoding='utf-8').encode()).hexdigest(), 'worker_image': IMAGE,
                       'worker_count': 8, 'job_name': job_name}
     finally:
         k('delete', 'job/' + job_name, '-n', NAMESPACE, '--ignore-not-found', '--wait=true', check=False)
@@ -82,7 +85,8 @@ def run_variants(suite_bytes, variants):
     apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NAMESPACE}})
     k('create', '-f', '-', body={'apiVersion': 'v1', 'kind': 'ConfigMap',
         'metadata': {'name': config, 'namespace': NAMESPACE},
-        'data': {'worker.py': source, 'queries.jsonl': suite_bytes.decode('utf-8'),
+        'data': {'worker.py': source, 'search_filters.py': FILTER_SOURCE.read_text(encoding='utf-8'),
+                 'queries.jsonl': suite_bytes.decode('utf-8'),
                  'variants.json': json.dumps(variants, sort_keys=True)}})
     job = {'apiVersion': 'batch/v1', 'kind': 'Job',
            'metadata': {'name': job_name, 'namespace': NAMESPACE},
@@ -112,6 +116,7 @@ def run_variants(suite_bytes, variants):
         return rows, {'execution': 'in-cluster variant capture Job',
                       'seconds': round(time.monotonic() - started, 3),
                       'worker_sha256': hashlib.sha256(source.encode()).hexdigest(),
+                      'request_contract_sha256': hashlib.sha256(FILTER_SOURCE.read_text(encoding='utf-8').encode()).hexdigest(),
                       'worker_image': IMAGE, 'worker_count': 8, 'job_name': job_name}
     finally:
         k('delete', 'job/' + job_name, '-n', NAMESPACE, '--ignore-not-found',

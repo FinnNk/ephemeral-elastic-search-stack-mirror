@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from app import Handler
+from search_filters import matches
 
 PRODUCTS = [
     ('demo-01', 'Stride running shoes', 'Stride', 'footwear', 'running shoes', 6500),
@@ -24,11 +25,17 @@ def mock_search(body):
     """Approximate weighted token matches, not Elasticsearch scoring semantics."""
     request = body['query']['bool']['must'][0]['multi_match']
     terms = set(re.findall(r'\w+', request['query'].casefold()))
+    filters = {}
+    for clause in body['query']['bool']['filter']:
+        filters.update(clause.get('terms', {}))
+        filters.update(clause.get('range', {}))
     hits = []
     for product_id, title, brand, category, product_type, price in PRODUCTS:
         product = dict(product_id=product_id, title=title, brand=brand, category=category,
                        product_type=product_type, price_minor=price, country='GB',
-                       currency='GBP', available=True, description=f'{title} for everyday use')
+                       currency='GBP', available=True, colour='black', material='cotton', description=f'{title} for everyday use')
+        if not matches(product, filters):
+            continue
         score = 0
         for field in request['fields']:
             name, _, boost = field.partition('^')

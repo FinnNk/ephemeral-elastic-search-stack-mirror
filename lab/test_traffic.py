@@ -1,12 +1,41 @@
 import csv
 import json
 import unittest
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 from pathlib import Path
 
 from traffic import ROOT, compile_profile, generate_trace, generate_million_trace, generate_million_trace_extended
+import traffic
 
 
 class FrozenTrafficContract(unittest.TestCase):
+    def test_feeders_bind_market_and_filters_to_frozen_queries(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            trace = root / 'trace.csv'
+            queries = root / 'queries.jsonl'
+            recipes = root / 'recipes.json'
+            trace.write_bytes(b'timestamp,query_id,query\n2026-01-01T00:00:00Z,q1,shirt\n')
+            filters = {'category': ['clothing'], 'price_minor': {'lte': 2500}}
+            queries.write_text(json.dumps({'query_id': 'q1', 'query': 'shirt',
+                'country': 'GB', 'currency': 'GBP', 'filters': filters}) + '\n', encoding='utf-8')
+            recipes.write_text(json.dumps({'profiles': {'probe': [{'name': 'probe',
+                'seconds': 1, 'source_start': 0, 'rate': 2}]}}), encoding='utf-8')
+            (root / 'source-manifest-v1.json').write_text(json.dumps({
+                'trace_sha256': traffic.sha(trace.read_bytes()),
+                'query_sha256': traffic.sha(queries.read_bytes())}), encoding='utf-8')
+            with patch.multiple(traffic, ROOT=root, TRACE=trace, RECIPES=recipes,
+                                QUERY_PATH=queries, OUTPUT=root / 'workloads'):
+                compiled = compile_profile('probe')
+                with (Path(compiled['directory']) / 'probe.csv').open(encoding='utf-8', newline='') as handle:
+                    rows = list(csv.DictReader(handle))
+                self.assertEqual(len(rows), 2)
+                self.assertEqual(rows[0]['country'], 'GB')
+                self.assertEqual(rows[0]['currency'], 'GBP')
+                self.assertEqual(json.loads(rows[0]['filters']), filters)
+                self.assertEqual(compiled, compile_profile('probe'))
+
     def test_trace_and_smoke_schedule_are_reproducible(self):
         trace = generate_trace()
         self.assertEqual(trace['events'], 4399)

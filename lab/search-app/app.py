@@ -13,6 +13,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from telemetry import telemetry
 from variants import BASE, select
+from search_filters import clauses, parse_filters
 
 MAX_QUERY_LENGTH = 150
 DIAGNOSTIC_SCHEMA = 1
@@ -27,7 +28,11 @@ def validated_query(path):
         raise ValueError('Enter a search term of 1–150 characters.')
     if (country, currency) != ('GB', 'GBP'):
         raise ValueError('This release supports GB and GBP.')
-    return query, country, currency
+    params = urllib.parse.parse_qs(urllib.parse.urlparse(path).query, keep_blank_values=True)
+    selected = params.get('filters', ['{}'])
+    if len(selected) != 1:
+        raise ValueError('Supply filters once.')
+    return query, country, currency, parse_filters(selected[0])
 
 
 def understand(query):
@@ -35,7 +40,7 @@ def understand(query):
     return query, 'none'
 
 
-def query_body(query, country, currency, variant=None):
+def query_body(query, country, currency, variant=None, filters=None):
     understood_query, _decision = understand(query)
     boosts = (variant or {'field_boosts': BASE})['field_boosts']
     return {
@@ -45,7 +50,7 @@ def query_body(query, country, currency, variant=None):
             'must': [{'multi_match': {'query': understood_query,
                                      'fields': [field if boosts[field] == 1 else
                                                 f'{field}^{boosts[field]}' for field in BASE]}}],
-            'filter': [{'term': {'country': country}}, {'term': {'currency': currency}}, {'term': {'available': True}}],
+            'filter': [{'term': {'country': country}}, {'term': {'currency': currency}}, {'term': {'available': True}}] + clauses(filters if filters is not None else {}),
         }},
         'sort': [{'_score': 'desc'}, {'product_id': 'asc'}],
     }
@@ -78,7 +83,7 @@ def diagnostic_record(raw_query, query, body, result, correlation_id, api_ms, es
     }
 
 
-def api_response(query, country, currency, elastic_response, elapsed_ms):
+def api_response(query, country, currency, elastic_response, elapsed_ms, filters=None):
     hits = elastic_response['hits']
     products = []
     for hit in hits['hits']:
@@ -88,6 +93,7 @@ def api_response(query, country, currency, elastic_response, elapsed_ms):
         )})
     return {
         'query': query, 'country': country, 'currency': currency,
+        'filters': filters if filters is not None else {},
         'total': hits['total']['value'], 'results': products,
         'ids': [product['product_id'] for product in products],
         'elapsed_ms': round(elapsed_ms, 3),
@@ -109,7 +115,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def handle_search(self, start):
         try:
-            query, country, currency = validated_query(self.path)
+            query, country, currency, filters = validated_query(self.path)
             correlation_id = diagnostic_options(self.path)
             variant_id, variant, configuration_sha256 = select(self.headers)
         except ValueError as error:
@@ -121,7 +127,7 @@ class Handler(BaseHTTPRequestHandler):
             params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             raw_query = params.get('q', [''])[0]
             with telemetry.span('search.query_understanding'):
-                body = query_body(query, country, currency, variant)
+                body = query_body(query, country, currency, variant, filters)
             try:
                 result, es_ms = self.search_index(body)
             except Exception as error:
@@ -131,7 +137,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(502, {'error': 'Search is temporarily unavailable.'})
             api_ms = (time.monotonic() - start) * 1000
             try:
-                payload = api_response(query, country, currency, result, api_ms)
+                payload = api_response(query, country, currency, result, api_ms, filters)
                 payload['variant_id'] = variant_id
                 payload['configuration_sha256'] = configuration_sha256
             except (KeyError, TypeError, ValueError) as error:

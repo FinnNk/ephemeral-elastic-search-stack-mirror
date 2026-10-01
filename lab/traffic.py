@@ -1,6 +1,7 @@
 """Freeze synthetic query/timestamp traffic and compile Gatling arrival schedules."""
 import argparse
 import csv
+import sys
 import hashlib
 import io
 import json
@@ -22,6 +23,8 @@ MILLION_QUERIES = STATE / 'releases/retail-gb-1m-v1/queries.jsonl'
 MILLION_TRACE_EXT = ROOT / 'source-trace-million-v2.csv'
 MILLION_RECIPES_EXT = ROOT / 'recipes-million-v2.json'
 OUTPUT = STATE / 'workloads'
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'search-app'))
+from search_filters import encode_filters
 FIXED_TIME = datetime(2026, 1, 1, tzinfo=timezone.utc)
 
 
@@ -167,6 +170,10 @@ def compile_profile(profile, release_id='retail-gb-10k-v1'):
     manifest = json.loads(source_manifest.read_text(encoding='utf-8'))
     if sha(trace_bytes) != manifest['trace_sha256'] or sha(query_path.read_bytes()) != manifest['query_sha256']:
         raise ValueError('Source trace or frozen query release hash differs.')
+    frozen_queries = {row['query_id']: row for row in
+                      (json.loads(line) for line in query_path.read_bytes().splitlines())}
+    for row in frozen_queries.values():
+        encode_filters(row.get('filters', {}))
     buckets = source_buckets(trace_path)
     schedule = []
     requests = defaultdict(list)
@@ -181,12 +188,17 @@ def compile_profile(profile, release_id='retail-gb-10k-v1'):
             schedule.append({'phase': name, 'offset_second': offset, 'count': count})
             for slot in range(count):
                 query = source[slot * len(source) // count]
+                context = frozen_queries[query['query_id']]
+                if context['query'] != query['query']:
+                    raise ValueError('Traffic text differs from its frozen query.')
                 requests[name].append({'planned_ms': offset * 1000 + round((slot + .5) * 1000 / count),
-                                       'query_id': query['query_id'], 'query': query['query']})
+                                       'query_id': query['query_id'], 'query': query['query'],
+                                       'country': context['country'], 'currency': context['currency'],
+                                       'filters': encode_filters(context.get('filters', {}))})
             offset += 1
     files = {'schedule.csv': csv_bytes(['phase', 'offset_second', 'count'], schedule)}
     for phase, rows in requests.items():
-        files[phase + '.csv'] = csv_bytes(['planned_ms', 'query_id', 'query'], rows)
+        files[phase + '.csv'] = csv_bytes(['planned_ms', 'query_id', 'query', 'country', 'currency', 'filters'], rows)
     identity = sha(json.dumps({'profile': profile, 'source_sha256': sha(trace_bytes),
         'recipe_sha256': sha(recipe_bytes), 'files': {name: sha(data) for name, data in files.items()}},
         sort_keys=True, separators=(',', ':')).encode())
@@ -199,16 +211,8 @@ def compile_profile(profile, release_id='retail-gb-10k-v1'):
                 'files': {name: sha(data) for name, data in files.items()},
                 'directory': str(directory)}
     manifest_path = directory / 'manifest.json'
-    if manifest_path.exists():
-        previous = json.loads(manifest_path.read_text(encoding='utf-8'))
-        # Older manifests recorded a host-specific absolute directory. The
-        # workload identity and every content hash must still agree.
-        if {key: value for key, value in previous.items() if key != 'directory'} != \
-                {key: value for key, value in compiled.items() if key != 'directory'}:
-            raise ValueError(f'Frozen workload manifest differs: {manifest_path}')
-    else:
-        portable = {**compiled, 'directory': 'workloads/' + identity}
-        freeze(manifest_path, (json.dumps(portable, sort_keys=True, indent=2) + '\n').encode())
+    portable = {**compiled, 'directory': 'workloads/' + identity}
+    freeze(manifest_path, (json.dumps(portable, sort_keys=True, indent=2) + '\n').encode())
     return {**compiled, 'source_path': str(trace_path), 'recipe_path': str(recipe_path)}
 
 

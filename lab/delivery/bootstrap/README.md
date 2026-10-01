@@ -86,3 +86,12 @@ The lab also supports named ranking variants: alternative settings evaluated aga
 - [Reference CI/CD](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/delivery.md): build, deployment, promotion and rollback.
 - [Offline variant evaluation](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/variant-evaluation.md): compare ranking choices and interpret their evidence.
 - [Lab architecture](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/prototype-design.md): how the services and frozen data fit together.
+
+## Filter results
+
+Open **Filter results** in the browser to select exact category, colour or material
+values and price bounds in pence. Values within a field use OR; fields use AND.
+The API accepts a JSON `filters` query parameter and echoes it in the response.
+Unknown fields or invalid bounds return HTTP 400. Captures and load workloads
+retain the same filters for every variant. See the
+[filter contract](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/search-request.md).
