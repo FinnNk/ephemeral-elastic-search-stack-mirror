@@ -1,0 +1,12 @@
+{"version":"evaluation-throughput-20261002-original","name":"search.query_understanding","spans":16100,"errors":0,"mean_ms":0.09}
+{"version":"evaluation-throughput-20261002-cached-tls","name":"search.request","spans":6000,"errors":0,"mean_ms":179.34}
+{"version":"evaluation-throughput-20261002-pooled-es","name":"search.request","spans":16000,"errors":0,"mean_ms":386.37}
+{"version":"evaluation-throughput-20261002-original","name":"search.elasticsearch","spans":16100,"errors":0,"mean_ms":223.48}
+{"version":"evaluation-throughput-20261002-pooled-both","name":"search.query_understanding","spans":34064,"errors":0,"mean_ms":0.07}
+{"version":"evaluation-throughput-20261002-cached-tls","name":"search.elasticsearch","spans":6000,"errors":0,"mean_ms":160.95}
+{"version":"evaluation-throughput-20261002-original","name":"search.request","spans":16100,"errors":0,"mean_ms":254.64}
+{"version":"evaluation-throughput-20261002-pooled-es","name":"search.elasticsearch","spans":16000,"errors":0,"mean_ms":366.38}
+{"version":"evaluation-throughput-20261002-cached-tls","name":"search.query_understanding","spans":6000,"errors":0,"mean_ms":0.05}
+{"version":"evaluation-throughput-20261002-pooled-both","name":"search.elasticsearch","spans":34058,"errors":0,"mean_ms":254.38}
+{"version":"evaluation-throughput-20261002-pooled-both","name":"search.request","spans":34057,"errors":0,"mean_ms":270.22}
+{"version":"evaluation-throughput-20261002-pooled-es","name":"search.query_understanding","spans":16000,"errors":0,"mean_ms":0.08}

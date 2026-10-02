@@ -1,0 +1,13 @@
+{
+  "kind": "capture-deadline-check",
+  "deadline_seconds": 3,
+  "condition": {
+    "lastProbeTime": "2026-10-02T05:07:56Z",
+    "lastTransitionTime": "2026-10-02T05:07:56Z",
+    "message": "Job was active longer than specified deadline",
+    "reason": "DeadlineExceeded",
+    "status": "True",
+    "type": "Failed"
+  },
+  "successful_capture_output": false
+}

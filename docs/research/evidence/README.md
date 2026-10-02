@@ -52,6 +52,8 @@ that was completed later.
 
 ## Performance and observability
 
+- [Offline evaluation throughput — 2 October 2026](evaluation-throughput.md)
+
 - [Gatling performance calibration evidence](gatling.md)
 - [OTel foundation: local evidence](otel-observability-foundation.md)
 - [SigNoz backend: local verification](signoz-backend-2026-09-27.md)

@@ -1,5 +1,9 @@
 # Shorter offline evaluations
 
+Experiment batch complete for review. Read the [results](../research/evidence/evaluation-throughput.md)
+and [next adoption batch](evaluation-throughput-adoption.md). The rules below were
+declared before measurement.
+
 ## Intent
 
 Find the simplest combination of transport, scheduling and concurrency changes

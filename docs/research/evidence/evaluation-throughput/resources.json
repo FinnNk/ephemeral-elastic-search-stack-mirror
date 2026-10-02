@@ -1,0 +1,30 @@
+{
+  "kind": "evaluation-throughput-resource-summary",
+  "host": {
+    "os": "Windows 11 Pro",
+    "cpu": "Intel Core i9-13980HX",
+    "cores": 24,
+    "logical_processors": 32,
+    "visible_memory_kib": 100267516,
+    "docker_memory_bytes": 50310340608,
+    "docker_architecture": "x86_64",
+    "docker_version": "29.6.2"
+  },
+  "samples": 250,
+  "ledger_sha256": "4391ee360eccfcbcc4fe065663ecd4fb5af190eaa127a0a11e6a5d66e2d2dd6d",
+  "first": {
+    "epoch": 1790916388.7988944,
+    "nodes": "NAME                         CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   \nk3d-observability-0          530m         1%       7469Mi          59%         \nk3d-relevance-lab-agent-0    177m         0%       1578Mi          37%         \nk3d-relevance-lab-server-0   1472m        4%       5115Mi          81%         \n",
+    "pods": "NAME                          CPU(cores)   MEMORY(bytes)   \ncached-tls-68d86b6c54-rx8kx   2m           30Mi            \ncapture-67b5070994-6whvb      48m          60Mi            \noriginal-64c4bf58c5-t9gzp     251m         39Mi            \npooled-both-94dbd8dfc-zwmtj   1m           32Mi            \npooled-es-67975f48c6-87hrd    2m           32Mi            \n"
+  },
+  "last": {
+    "epoch": 1790918987.7540276,
+    "nodes": "NAME                         CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   \nk3d-observability-0          407m         1%       7564Mi          60%         \nk3d-relevance-lab-agent-0    49m          0%       1725Mi          41%         \nk3d-relevance-lab-server-0   275m         0%       5202Mi          82%         \n",
+    "pods": "NAME                          CPU(cores)   MEMORY(bytes)   \ncached-tls-68d86b6c54-rx8kx   2m           30Mi            \njudge-57b55c4fc4-rhvph        1m           108Mi           \noriginal-64c4bf58c5-t9gzp     1m           33Mi            \npooled-both-94dbd8dfc-zwmtj   2m           33Mi            \npooled-es-67975f48c6-87hrd    1m           33Mi            \n"
+  },
+  "search_captures": 57,
+  "fresh_search_requests": 116100,
+  "search_retries": 20,
+  "search_errors": 0,
+  "limits": "Resource samples are supporting observations. Other lab/platform services remained running; source/image builds were not run during timed captures."
+}
