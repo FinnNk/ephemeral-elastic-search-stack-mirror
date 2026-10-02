@@ -1,0 +1,32 @@
+[
+  {
+    "file": "observations.json",
+    "content_sha256": "5b9107b2b9070dcb03d9e210b609fd63b979e09497573b903241327bf192b452",
+    "archive_sha256": "cccf5ed05b51dd34c2c1d4562cf1e1a4d96040a0b68165117e0eda4305e7dd33",
+    "blob": "runs/source-merge-readiness/cccf5ed05b51dd34c2c1d4562cf1e1a4d96040a0b68165117e0eda4305e7dd33-observations.json.gz"
+  },
+  {
+    "file": "report.json",
+    "content_sha256": "954b97a076f7e4b73816192d94839b497c9653a0911011349acedffb6a52b7da",
+    "archive_sha256": "b47d55bc5d3222c3e94f3589dd122fd705f8b39bc937ee5b1d0a3a849ca75d0a",
+    "blob": "runs/source-merge-readiness/b47d55bc5d3222c3e94f3589dd122fd705f8b39bc937ee5b1d0a3a849ca75d0a-report.json.gz"
+  },
+  {
+    "file": "environments.json",
+    "content_sha256": "f637275e3c5ae9bbd18217e7b35e0a1ebd0c1428c04cb84d5fdeff36a7038ee1",
+    "archive_sha256": "1ffeeb7a475ff320699d137eb7ec24aee1ef75ab6c604babf3b029b9ad184917",
+    "blob": "runs/source-merge-readiness/1ffeeb7a475ff320699d137eb7ec24aee1ef75ab6c604babf3b029b9ad184917-environments.json.gz"
+  },
+  {
+    "file": "variant-set.json",
+    "content_sha256": "47ca384d77100bf267089a659792ac5c5bd98fd054c3d84683f5370acfadf4b6",
+    "archive_sha256": "81aeb199c6e8e5da5386d324018f2cbabe5df8922a3bff87783e84c4c068ce41",
+    "blob": "runs/source-merge-readiness/81aeb199c6e8e5da5386d324018f2cbabe5df8922a3bff87783e84c4c068ce41-variant-set.json.gz"
+  },
+  {
+    "file": "build-receipt.json",
+    "content_sha256": "11eb87a7d4ff83417b9e94db2c1f8118b1d9f5827e63c17a93854f365b0b846d",
+    "archive_sha256": "033cca5a2fb12f9e54b2ca37843d1d755f7868cc5e1aa66b62360d0a40499a5f",
+    "blob": "runs/source-merge-readiness/033cca5a2fb12f9e54b2ca37843d1d755f7868cc5e1aa66b62360d0a40499a5f-build-receipt.json.gz"
+  }
+]

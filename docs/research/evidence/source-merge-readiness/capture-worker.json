@@ -1,0 +1,6 @@
+{
+  "revision": "ef73f88^",
+  "source": "lab/variant_capture_worker.py",
+  "source_sha256": "eb3bbc49b88c62c0f7e95139857146922c28e0373b851d895a98aaba5ca46024",
+  "scope": "Historical no-filter source image comparisons only; current runtime and contracts unchanged"
+}
