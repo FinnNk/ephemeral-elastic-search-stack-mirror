@@ -34,7 +34,8 @@ Invoke-RestMethod "http://127.0.0.1:18088/search?q=running%20shoes&country=GB&cu
 
 The API returns only matching products and a filtered total. No matches is a
 successful response with empty `ids` and `results`, and `total: 0`. In the browser,
-open **Filter results**, enter exact values and price bounds, then search. The
+open **Filter results**, enter exact values and price bounds in pounds, then search.
+The page converts pounds to integer pence for the API. The
 page address retains the selected filters.
 
 ## Freeze a filtered evaluation
@@ -59,3 +60,15 @@ The shared contract lives in [search_filters.py](../lab/search-app/search_filter
 It is included in Search API images, evaluator images and finite capture Jobs.
 There is no compatibility reader for older API responses or feeder formats.
 See the [verification record](research/evidence/search-request-filters.md).
+
+## Catalogue size
+
+`GET /catalogue` returns the product count for GB/GBP in the environment's index,
+including unavailable products. It does not apply the current search or filters.
+The storefront shows this count; search results include only available products.
+A failed count returns HTTP 502, and the page shows that the size is unavailable.
+The standalone demo returns its eight sample products through the same endpoint.
+
+```json
+{"products":1000000,"country":"GB","currency":"GBP","mode":"lab"}
+```

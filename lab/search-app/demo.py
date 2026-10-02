@@ -3,8 +3,6 @@ import argparse
 import re
 import time
 from http.server import ThreadingHTTPServer
-from pathlib import Path
-from urllib.parse import urlparse
 
 from app import Handler
 from search_filters import matches
@@ -51,15 +49,8 @@ class DemoHandler(Handler):
         started = time.monotonic()
         return mock_search(body), (time.monotonic() - started) * 1000
 
-    def do_GET(self):
-        if urlparse(self.path).path == '/':
-            page = Path(__file__).with_name('index.html').read_text(encoding='utf-8')
-            page = re.sub(r'(<div class="eyebrow">).*?(</div>)', r'\1Standalone demo - 8 mock products\2', page)
-            page = page.replace('Explore the baseline search.', 'Explore the mock search.')
-            page = page.replace('Search a reproducible retail catalogue.',
-                                'Offline demo with in-memory search. Elasticsearch and the lab are not connected.')
-            return self.send_body(200, page.encode(), 'text/html; charset=utf-8')
-        return super().do_GET()
+    def catalogue(self):
+        return {'products': len(PRODUCTS), 'country': 'GB', 'currency': 'GBP', 'mode': 'standalone-demo'}
 
     def send_json(self, status, value):
         return super().send_json(status, {**value, 'data_source': 'standalone-mock'})

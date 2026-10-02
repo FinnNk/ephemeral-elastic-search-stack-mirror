@@ -18,6 +18,10 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
+The [lab storefront](lab-storefront.md) simplifies the search page and replaces its
+hard-coded size with the current catalogue count. Review it before resuming the
+[developer walkthrough](developer-walkthrough.md).
+
 [Automatic preview URLs](automatic-preview-urls.md) replaces per-preview port
 selection with wildcard DNS and HTTPS ingress, and supplies the existing fixed
 platform names without hosts-file changes. The next implementation batch remains

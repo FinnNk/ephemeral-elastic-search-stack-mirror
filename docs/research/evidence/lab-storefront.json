@@ -1,0 +1,106 @@
+{
+  "baseline": {
+    "event_kind": "push",
+    "format": 1,
+    "image": "nexus.localhost:18185/search-api@sha256:f628c92516ff41640db08dc281455e04348aeb89c2aeff95d91b67fe500f470d",
+    "release_id": "565a882477388a69f338530ac841d95aacd676b47acee5d61a9d0bd9e126910b",
+    "run_attempt": "1",
+    "run_id": "70",
+    "source_repository": "elastic-agent/delivery-source",
+    "source_sha": "2e177570c393469060df5335168d59e0d0d74037"
+  },
+  "capture_score_retain_seconds": 50.46899999998277,
+  "capture_worker_scope": "Current reference capture worker; fresh searches for both releases",
+  "coverage": {
+    "ranker-a": {
+      "fraction": 1.0,
+      "judged": 10000,
+      "returned": 10000
+    },
+    "ranker-baseline": {
+      "fraction": 1.0,
+      "judged": 10000,
+      "returned": 10000
+    }
+  },
+  "kind": "storefront-normal-proof",
+  "limits": "Fresh 1M catalogue / 1000-query preservation proof with synthetic pooled labels; not independent human relevance evidence.",
+  "metrics": {
+    "ranker-a": {
+      "Judged@10": 1.0,
+      "RR@10:rel=2": 0.98,
+      "nDCG@10": 0.979894
+    },
+    "ranker-baseline": {
+      "Judged@10": 1.0,
+      "RR@10:rel=2": 0.98,
+      "nDCG@10": 0.979894
+    }
+  },
+  "namespace_candidates": [
+    "lab-storefront-baseline-3812406b",
+    "lab-storefront-candidate-6f78a040"
+  ],
+  "preview_url": "https://lab-storefront-candidate-6f78a040.preview.relevance.test:34443/",
+  "query_count": 1000,
+  "report_blob": "runs/storefront/ba8356a29be50e8965d5d7488ec9c0fb9499ccc65b401dc00c469428963484fe-normal-report.json",
+  "report_sha256": "ba8356a29be50e8965d5d7488ec9c0fb9499ccc65b401dc00c469428963484fe",
+  "source": {
+    "event_kind": "pull_request",
+    "format": 1,
+    "image": "nexus.localhost:18185/search-api@sha256:2aea8fc47d7f3af81ad75e463f1b5dd21d9d8554f04442139092ab275ea1f5a2",
+    "release_id": "17ef9a8de1730d6d6d7a85044d558c3312e70ef5cb8259fbba6adb03329ddeb5",
+    "run_attempt": "1",
+    "run_id": "77",
+    "source_repository": "elastic-agent/delivery-source",
+    "source_sha": "2b4a95da1db3d4ca3f4d5a4aed0f300f63e718c8"
+  },
+  "state_revision": "96188246bb42588cfe04dd5ad81671b24ed80b74",
+  "verdict": {
+    "kind": "variant-gate-verdict",
+    "policy_sha256": "5de3b5608a76d7ceda663e60b9ceb6ea7f8fac2788d32c427bcf804ff0979077",
+    "report_sha256": "ba8356a29be50e8965d5d7488ec9c0fb9499ccc65b401dc00c469428963484fe",
+    "schema_version": 1,
+    "selection_sha256": "334332c7b185e4377e68377510582d8af16270e32a9040ef576182accb87109e",
+    "source_sha": "2b4a95da1db3d4ca3f4d5a4aed0f300f63e718c8",
+    "state": "pass",
+    "variants": [
+      {
+        "approval_sha256": null,
+        "baseline": "ranker-baseline",
+        "changed_query_fraction": 0.0,
+        "delta": 0.0,
+        "intent": "preserve-results",
+        "judged_fraction": 1.0,
+        "metric": "nDCG@10",
+        "state": "pass",
+        "value": 0.979894,
+        "variant": "ranker-a"
+      }
+    ]
+  },
+  "worker_source_sha256": "e9049e9fbb00039d103ef8d580f988b68a5379f68461db76ab9b6c2ce3466377",
+  "catalogue_sha256": "a6c78afb7df078016828a8a9a93b88b2d1db6a16ef64080a37dc33c23c2cc1d6",
+  "frozen_environments": {
+    "lab-storefront-baseline-3812406b": {
+      "dataset_sha256": "a6c78afb7df078016828a8a9a93b88b2d1db6a16ef64080a37dc33c23c2cc1d6",
+      "engine": "9.5.4",
+      "environment": "lab-storefront-baseline-3812406b",
+      "fingerprint": "e67faf54cec80945d4f486b202ea02ba7f67fa699beb88179c81bf37a5985d77",
+      "image": "nexus.localhost:18185/search-api@sha256:f628c92516ff41640db08dc281455e04348aeb89c2aeff95d91b67fe500f470d",
+      "image_pull_secret": "nexus-read",
+      "index": "retail-gb-1m-v1",
+      "variant_config_b64": "eyJkZWZhdWx0X3ZhcmlhbnQiOiJyYW5rZXItYmFzZWxpbmUiLCJ2YXJpYW50cyI6eyJyYW5rZXItYmFzZWxpbmUiOnsiZmllbGRfYm9vc3RzIjp7ImJyYW5kIjoyLCJkZXNjcmlwdGlvbiI6MSwicHJvZHVjdF90eXBlIjozLCJ0aXRsZSI6NH19fX0="
+    },
+    "lab-storefront-candidate-6f78a040": {
+      "dataset_sha256": "a6c78afb7df078016828a8a9a93b88b2d1db6a16ef64080a37dc33c23c2cc1d6",
+      "engine": "9.5.4",
+      "environment": "lab-storefront-candidate-6f78a040",
+      "fingerprint": "655eaa921c786740fca140fa250f905d3f520ea900e8d0cde328ffb37c6d0db0",
+      "image": "nexus.localhost:18185/search-api@sha256:2aea8fc47d7f3af81ad75e463f1b5dd21d9d8554f04442139092ab275ea1f5a2",
+      "image_pull_secret": "nexus-read",
+      "index": "retail-gb-1m-v1",
+      "variant_config_b64": "eyJkZWZhdWx0X3ZhcmlhbnQiOiJyYW5rZXItYSIsInZhcmlhbnRzIjp7InJhbmtlci1hIjp7ImZpZWxkX2Jvb3N0cyI6eyJicmFuZCI6MiwiZGVzY3JpcHRpb24iOjEsInByb2R1Y3RfdHlwZSI6MywidGl0bGUiOjR9fSwicmFua2VyLWIiOnsiZmllbGRfYm9vc3RzIjp7ImJyYW5kIjoyLCJkZXNjcmlwdGlvbiI6MSwicHJvZHVjdF90eXBlIjozLCJ0aXRsZSI6Mn19LCJyYW5rZXItYyI6eyJmaWVsZF9ib29zdHMiOnsiYnJhbmQiOjEsImRlc2NyaXB0aW9uIjoxLCJwcm9kdWN0X3R5cGUiOjMsInRpdGxlIjo3fX19fQ=="
+    }
+  }
+}

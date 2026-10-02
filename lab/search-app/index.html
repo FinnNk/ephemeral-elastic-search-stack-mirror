@@ -3,57 +3,56 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Search relevance lab</title>
+  <title>Lab storefront</title>
   <style>
-    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#182630;background:#f4f5f2}
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#182630;background:#faf9f6}
     *{box-sizing:border-box}body{margin:0;min-height:100vh}header{background:#183f47;color:#fff;padding:1.25rem max(1.5rem,calc((100vw - 1100px)/2))}
-    header span{display:block;color:#a8d6d0;font-size:.72rem;font-weight:750;letter-spacing:.16em;text-transform:uppercase}header h1{margin:.3rem 0 0;font-size:1.45rem;letter-spacing:-.03em}
-    main{max-width:1100px;margin:auto;padding:2.7rem 1.5rem 5rem}.eyebrow{color:#30766e;font-size:.73rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em}
+    header{display:flex;justify-content:space-between;align-items:center;gap:1rem}header span{display:block;color:#a8d6d0;font-size:.72rem;font-weight:750;letter-spacing:.16em;text-transform:uppercase}header h1{margin:.3rem 0 0;font-size:1.45rem;letter-spacing:-.03em}
+    main{max-width:1100px;margin:auto;padding:2.7rem 1.5rem 5rem}
     h2{font-size:clamp(2rem,4vw,3.3rem);line-height:1.05;letter-spacing:-.055em;max-width:670px;margin:.65rem 0 .9rem}.intro{max-width:660px;color:#53636a;line-height:1.55;margin:0 0 1.7rem}
-    form{display:flex;gap:.65rem;background:white;padding:.5rem;border:1px solid #d7dfdc;border-radius:15px;box-shadow:0 8px 28px #21413a0e;max-width:770px}
+    form{display:flex;gap:.65rem;background:white;padding:.5rem;border:1px solid #d7dfdc;border-radius:6px;box-shadow:0 8px 28px #21413a0e;max-width:1100px}
     input{min-width:0;flex:1;padding:.85rem .95rem;border:0;font:inherit;font-size:1.05rem;outline:0}input:focus-visible{box-shadow:inset 0 -2px #147f72}
     button{font:inherit;font-weight:700;border:0;border-radius:10px;background:#006d61;color:white;padding:.8rem 1.4rem;cursor:pointer}button:hover{background:#00574e}button:focus-visible,.chip:focus-visible{outline:3px solid #c9a350;outline-offset:2px}
-    .filters{max-width:770px;margin-top:1rem}.filtergrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.65rem;padding:.8rem 0}.filtergrid label{font-size:.8rem;color:#53636a}.filtergrid input{display:block;width:100%;background:white;border:1px solid #d7dfdc;border-radius:8px;font-size:.9rem;padding:.6rem}.meta{display:flex;align-items:center;gap:1rem;color:#637277;font-size:.85rem;margin:1rem 0}.chiprow{display:flex;flex-wrap:wrap;gap:.55rem;margin:1.6rem 0 2.7rem}.chip{background:#e5ece8;color:#17564e;border:1px solid #c9dcd5;border-radius:999px;padding:.52rem .82rem;font-size:.82rem;font-weight:650}
+    .filters{max-width:1100px;margin-top:1rem}.filtergrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.65rem;padding:.8rem 0}.filtergrid label{font-size:.8rem;color:#53636a}.filtergrid input{display:block;width:100%;background:white;border:1px solid #d7dfdc;border-radius:8px;font-size:.9rem;padding:.6rem}.meta{color:#637277;font-size:.85rem;margin:1rem 0}.chiprow{display:flex;flex-wrap:wrap;gap:.55rem;margin:1rem 0 2rem}.chip:hover{background:#cbded6}.chip{background:#e5ece8;color:#17564e;border:1px solid #c9dcd5;border-radius:999px;padding:.52rem .82rem;font-size:.82rem;font-weight:650}
     .resultbar{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;border-bottom:1px solid #d7dfdc;margin-bottom:1rem}.resultbar h3{font-size:1.15rem;margin:0 0 .9rem;letter-spacing:-.02em}.resultbar span{color:#65747a;font-size:.85rem}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:1rem}.card{background:#fff;border:1px solid #dde4e0;border-radius:14px;padding:1.2rem;min-height:182px;display:flex;flex-direction:column;box-shadow:0 2px 10px #183f4708}.category{font-size:.69rem;color:#35756c;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.card h4{font-size:1.08rem;line-height:1.28;letter-spacing:-.025em;margin:.55rem 0 .3rem}.brand{font-size:.84rem;color:#68757a}.cardfooter{display:flex;align-items:end;justify-content:space-between;margin-top:auto;padding-top:1.4rem}.price{font-size:1.22rem;font-weight:800;letter-spacing:-.03em}.id{font-size:.68rem;color:#849094;font-variant-numeric:tabular-nums}
-    .empty{padding:2rem;background:#fff;border:1px dashed #cbd8d3;border-radius:14px;color:#53636a}.error{color:#9b2f29;margin-top:.8rem;min-height:1.3rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:1rem}.card{background:#fff;border:1px solid #dde4e0;border-radius:6px;padding:1.2rem;min-height:182px;display:flex;flex-direction:column;box-shadow:0 2px 10px #183f4708}.category{font-size:.8rem;color:#35756c;text-transform:capitalize}.card h4{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;height:3.84em;font-size:1.08rem;line-height:1.28;letter-spacing:-.025em;margin:.55rem 0 .3rem}.brand{font-size:.84rem;color:#68757a}.cardfooter{display:flex;align-items:end;justify-content:space-between;margin-top:auto;padding-top:1.4rem}.price{font-size:1.22rem;font-weight:800;letter-spacing:-.03em}
+    .empty{padding:2rem;background:#fff;border:1px dashed #cbd8d3;border-radius:6px;color:#53636a}.error{color:#9b2f29;margin-top:.8rem;min-height:1.3rem}
     footer{border-top:1px solid #d7dfdc;padding:1.3rem max(1.5rem,calc((100vw - 1100px)/2));font-size:.75rem;color:#68767b}
     @media(max-width:530px){main{padding-top:2rem}form{display:block}input,form button{width:100%}form button{margin-top:.3rem}.resultbar{display:block}}
   </style>
 </head>
 <body>
-  <header><span>Relevance lab · UK catalogue</span><h1>Search explorer</h1></header>
+  <header><h1>Lab storefront</h1><span>United Kingdom · £ GBP</span></header>
   <main>
-    <div class="eyebrow">Frozen synthetic release · 10,000 products</div>
-    <h2>Explore the baseline search.</h2>
-    <p class="intro">Search a reproducible retail catalogue. Products, prices and brands are synthetic; every result comes through the search API.</p>
-    <form id="search-form"><input id="query" name="q" type="search" autocomplete="off" maxlength="150" placeholder="Try wireless headphones" aria-label="Search products" required><button type="submit">Search</button></form>
+    <h2>Shop the catalogue</h2>
+    <p class="intro" id="catalogue" aria-live="polite">Synthetic products for the search lab.</p>
+    <form id="search-form"><input id="query" name="q" type="search" autocomplete="off" maxlength="150" placeholder="Search products" aria-label="Search products" required><button type="submit">Search</button></form>
     <details class="filters"><summary>Filter results</summary><div class="filtergrid">
-      <label>Categories (comma-separated)<input id="category-filter" form="search-form" placeholder="clothing, footwear"></label>
-      <label>Colours (comma-separated)<input id="colour-filter" form="search-form" placeholder="black, blue"></label>
-      <label>Materials (comma-separated)<input id="material-filter" form="search-form" placeholder="cotton"></label>
-      <label>Minimum price (pence)<input id="price-min" form="search-form" type="number" min="0" max="2147483647" step="1"></label>
-      <label>Maximum price (pence)<input id="price-max" form="search-form" type="number" min="0" max="2147483647" step="1"></label>
-    </div><small>Exact values; either value within a field, all selected fields together. £25 = 2500 pence.</small></details>
+      <label>Categories<input id="category-filter" form="search-form" placeholder="clothing, footwear"></label>
+      <label>Colours<input id="colour-filter" form="search-form" placeholder="black, blue"></label>
+      <label>Materials<input id="material-filter" form="search-form" placeholder="cotton"></label>
+      <label>Min price (£)<input id="price-min" form="search-form" type="number" min="0" max="21474836.47" step="0.01"></label>
+      <label>Max price (£)<input id="price-max" form="search-form" type="number" min="0" max="21474836.47" step="0.01"></label>
+    </div><small>Separate values with commas, for example black, blue.</small></details>
     <p class="error" id="error" role="alert"></p>
-    <div class="meta"><span>United Kingdom · GBP</span><span>Available products only</span></div>
+
     <div class="chiprow" aria-label="Example queries"><button type="button" class="chip">wireless headphones</button><button type="button" class="chip">running shoes</button><button type="button" class="chip">black desk lamp</button><button type="button" class="chip">ceramic mug</button></div>
-    <div class="resultbar"><h3 id="heading">Search results</h3><span id="timing"></span></div>
-    <div id="results" class="grid"><p class="empty">Enter a query to explore the catalogue.</p></div>
+    <div class="resultbar"><h3 id="heading">Products</h3></div>
+    <div id="results" class="grid"><p class="empty">Search above or try one of the suggestions.</p></div>
+    <details class="meta"><summary>Search details</summary><p id="timing">Only available products appear in results.</p></details>
   </main>
-  <footer>Search relevance lab · Dataset and query judgements are synthetic</footer>
+  <footer>A lab storefront for testing search. Products and prices are synthetic.</footer>
   <script>
     const form=document.querySelector('#search-form'),input=document.querySelector('#query'),results=document.querySelector('#results'),heading=document.querySelector('#heading'),error=document.querySelector('#error'),timing=document.querySelector('#timing');
     const money=pence=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(pence/100);
     function card(item){
       const article=document.createElement('article');article.className='card';
       const category=document.createElement('div');category.className='category';category.textContent=item.category;
-      const title=document.createElement('h4');title.textContent=item.title;
+      const title=document.createElement('h4');title.textContent=item.title;title.title=item.title;
       const brand=document.createElement('div');brand.className='brand';brand.textContent=item.brand;
       const footer=document.createElement('div');footer.className='cardfooter';
       const price=document.createElement('span');price.className='price';price.textContent=money(item.price_minor);
-      const id=document.createElement('span');id.className='id';id.textContent=item.product_id;
-      footer.append(price,id);article.append(category,title,brand,footer);return article;
+      footer.append(price);article.append(category,title,brand,footer);return article;
     }
     function filters(){
       const selected={};
@@ -64,7 +63,7 @@
       const bounds={};
       for(const [id,key] of [['price-min','gte'],['price-max','lte']]){
         const value=document.getElementById(id).value;
-        if(value!=='')bounds[key]=Number(value);
+        if(value!=='')bounds[key]=Math.round(Number(value)*100);
       }
       if(Object.keys(bounds).length)selected.price_minor=bounds;
       return selected;
@@ -76,22 +75,29 @@
         history.replaceState(null,'','?'+params);
         const response=await fetch('/search?'+params);
         const data=await response.json();if(!response.ok)throw new Error(data.error||'Search failed.');
-        heading.textContent=`${data.total.toLocaleString('en-GB')} results for “${data.query}”`;
-        timing.textContent=`${data.elapsed_ms.toFixed(0)} ms · first ${data.results.length} shown`;
+        heading.textContent=`${data.total.toLocaleString('en-GB')} ${data.total===1?'result':'results'} for “${data.query}”`;
+        timing.textContent=`${data.elapsed_ms.toFixed(0)} ms · showing ${data.results.length} of ${data.total.toLocaleString('en-GB')} matches. Only available products appear in results.`;
         if(data.results.length)results.replaceChildren(...data.results.map(card));
-        else{const empty=document.createElement('p');empty.className='empty';empty.textContent='No products matched this query. Try a broader term.';results.replaceChildren(empty);}
+        else{const empty=document.createElement('p');empty.className='empty';empty.textContent='No products found. Try another search.';results.replaceChildren(empty);}
       }catch(err){heading.textContent='Search results';error.textContent=err.message;}
     }
     form.addEventListener('submit',event=>{event.preventDefault();const query=input.value.trim();if(query){search(query);}});
     document.querySelectorAll('.chip').forEach(chip=>chip.addEventListener('click',()=>{input.value=chip.textContent;form.requestSubmit();}));
+    fetch('/catalogue').then(response=>{if(!response.ok)throw new Error();return response.json();}).then(data=>{
+      document.querySelector('#catalogue').textContent=`${data.products.toLocaleString('en-GB')} products in the catalogue`;
+      if(data.mode==='standalone-demo'){
+        document.querySelector('header h1').textContent='Lab storefront · standalone demo';
+        document.querySelector('footer').textContent='An offline demo with synthetic products. Search uses sample data, without Elasticsearch.';
+      }
+    }).catch(()=>{document.querySelector('#catalogue').textContent='Catalogue size is temporarily unavailable.';});
     const params=new URLSearchParams(location.search),initial=params.get('q');
     try{
       if(params.getAll('filters').length>1)throw new Error('Supply filters once.');
       const selected=JSON.parse(params.get('filters')||'{}');
       for(const field of ['category','colour','material'])if(selected[field])document.getElementById(field+'-filter').value=selected[field].join(', ');
       if(selected.price_minor){
-        document.getElementById('price-min').value=selected.price_minor.gte??'';
-        document.getElementById('price-max').value=selected.price_minor.lte??'';
+        document.getElementById('price-min').value=selected.price_minor.gte===undefined?'':selected.price_minor.gte/100;
+        document.getElementById('price-max').value=selected.price_minor.lte===undefined?'':selected.price_minor.lte/100;
       }
       if(initial){input.value=initial;search(initial,selected);}
     }catch(err){error.textContent='Invalid filters in the page address.';}

@@ -107,9 +107,33 @@ class Handler(BaseHTTPRequestHandler):
         if route == '/':
             body = Path(__file__).with_name('index.html').read_bytes()
             return self.send_body(200, body, 'text/html; charset=utf-8')
+        if route == '/catalogue':
+            return self.handle_catalogue()
         if route != '/search':
             return self.send_json(404, {'error': 'Not found'})
         return self.handle_search(start)
+
+    def handle_catalogue(self):
+        with telemetry.span('catalogue.request', self.headers):
+            try:
+                return self.send_json(200, self.catalogue())
+            except Exception as error:
+                self.log_error('Catalogue request failed: %s', type(error).__name__)
+                return self.send_json(502, {'error': 'Catalogue information is temporarily unavailable.'})
+
+    def catalogue(self):
+        """Count all UK products, including those unavailable for search."""
+        headers = {}
+        with telemetry.span('catalogue.elasticsearch'):
+            telemetry.inject(headers)
+            response = self.server.elasticsearch.post('/' + os.environ['ES_INDEX'] + '/_count',
+                json={'query': {'bool': {'filter': [
+                    {'term': {'country': 'GB'}}, {'term': {'currency': 'GBP'}}]}}}, headers=headers)
+            response.raise_for_status()
+            result = response.json()
+            if result.get('_shards', {}).get('failed', 0):
+                raise ValueError('Incomplete catalogue count')
+            return {'products': result['count'], 'country': 'GB', 'currency': 'GBP', 'mode': 'lab'}
 
     def handle_search(self, start):
         try:

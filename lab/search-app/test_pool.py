@@ -24,12 +24,14 @@ class ElasticFixture(BaseHTTPRequestHandler):
 
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
-        type(self).calls.append({'port': self.client_address[1], 'body': body,
+        type(self).calls.append({'port': self.client_address[1], 'body': body, 'path': self.path,
             'authorization': self.headers.get('Authorization'), 'traceparent': self.headers.get('traceparent')})
         product = {'product_id': 'fresh-' + str(len(type(self).calls)), 'title': 'Lamp',
                    'brand': 'Lumen', 'category': 'home', 'price_minor': 3200,
                    'currency': 'GBP', 'available': True}
         payload = json.dumps({'hits': {'total': {'value': 1}, 'hits': [{'_source': product}]}}).encode()
+        if self.path.endswith('/_count'):
+            payload = json.dumps({'count': 1000000, '_shards': {'failed': 0}}).encode()
         self.send_response(type(self).status)
         self.send_header('Content-Length', str(len(payload)))
         self.end_headers()
@@ -88,6 +90,17 @@ class PoolContract(unittest.TestCase):
         self.assertEqual(error.exception.code, 502)
         self.assertEqual(len(ElasticFixture.calls), 1)
         self.assertNotIn('synthetic-password', error.exception.read().decode())
+
+    def test_catalogue_count_is_unfiltered_and_uses_the_frozen_index(self):
+        with urllib.request.urlopen(self.url.split('/search')[0] + '/catalogue') as reply:
+            self.assertEqual(json.load(reply), {'products': 1000000, 'country': 'GB', 'currency': 'GBP', 'mode': 'lab'})
+        self.assertEqual(ElasticFixture.calls[0]['path'], '/frozen-fixture/_count')
+        self.assertEqual(ElasticFixture.calls[0]['body'], {'query': {'bool': {'filter': [
+            {'term': {'country': 'GB'}}, {'term': {'currency': 'GBP'}}]}}})
+        ElasticFixture.status = 503
+        with self.assertRaises(urllib.error.HTTPError) as error:
+            urllib.request.urlopen(self.url.split('/search')[0] + '/catalogue')
+        self.assertEqual(error.exception.code, 502)
 
     def test_missing_trust_material_prevents_startup(self):
         with patch.object(app.ssl, 'create_default_context', side_effect=ssl.SSLError('bad trust material')):

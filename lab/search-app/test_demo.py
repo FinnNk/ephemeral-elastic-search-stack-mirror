@@ -21,7 +21,11 @@ class DemoContract(unittest.TestCase):
             with patch.dict(os.environ, {key: value for key, value in os.environ.items() if not key.startswith('ES_')}, clear=True), \
                  patch('app.Handler.search_index', side_effect=AssertionError('Real backend called')):
                 with urllib.request.urlopen(url + '/?q=running+shoes') as response:
-                    self.assertIn('Standalone demo', response.read().decode())
+                    self.assertIn('Lab storefront', response.read().decode())
+                with urllib.request.urlopen(url + '/catalogue') as response:
+                    catalogue = json.load(response)
+                self.assertEqual(catalogue['products'], 8)
+                self.assertEqual(catalogue['mode'], 'standalone-demo')
                 with urllib.request.urlopen(url + '/search?q=running+shoes&diagnostics=1') as response:
                     result = json.load(response)
                 self.assertEqual(result['data_source'], 'standalone-mock')

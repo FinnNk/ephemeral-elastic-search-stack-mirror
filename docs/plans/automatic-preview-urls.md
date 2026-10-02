@@ -55,5 +55,6 @@ Implemented and deployed for review. Direct UDP/TCP DNS, two isolated HTTPS
 fixture routes, service/namespace cleanup, scoped RBAC and the real integration
 Search API health check passed. The updated multi-platform control image passed
 its installed smoke check. Source README PR #17 passed its build and relevance
-checks. Native Windows DNS awaits administrator installation; macOS/Linux
-workstation integration has not been executed.
+checks. The user installed Windows resolver rules successfully; subsequent native DNS,
+HTTPS verification and Git access passed. macOS/Linux workstation integration
+has not been executed.

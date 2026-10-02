@@ -67,7 +67,8 @@ Keep the terminal open and visit **http://127.0.0.1:18088/** after kubectl print
 `Forwarding from 127.0.0.1:18088 -> 8080`. For a preview, substitute its namespace.
 Stop with Ctrl+C when finished.
 
-Try `running shoes`. The page calls `GET /search?q=running%20shoes`; the response includes matching product IDs, product details and total match count. The deployment supplies a frozen index, read credentials and the Elasticsearch certificate.
+The **Lab storefront** shows the catalogue size. Open **Search details** below
+the results for request timing. Try `running shoes`. The page calls `GET /search?q=running%20shoes`; the response includes matching product IDs, product details and total match count. The deployment supplies a frozen index, read credentials and the Elasticsearch certificate.
 
 ## Contributors guide
 
@@ -98,7 +99,7 @@ The lab also supports named ranking variants: alternative settings evaluated aga
 ## Filter results
 
 Open **Filter results** in the browser to select exact category, colour or material
-values and price bounds in pence. Values within a field use OR; fields use AND.
+values and price bounds in pounds. The API uses integer pence. Values within a field use OR; fields use AND.
 The API accepts a JSON `filters` query parameter and echoes it in the response.
 Unknown fields or invalid bounds return HTTP 400. Captures and load workloads
 retain the same filters for every variant. See the
