@@ -1,6 +1,6 @@
 # Ephemeral search relevance lab
 
-A local Kubernetes lab for developing and comparing ecommerce search changes. It provides a Search API, a browser UI and reproducible evaluations over frozen synthetic UK retail data.
+A local Kubernetes lab for developing and comparing ecommerce search changes. It provides a Search API, a browser UI and reproducible evaluations over frozen ESCI retail data, with GBP lab prices.
 
 Use it to compare ranking changes, check that a change preserves results, or measure API performance with Gatling. Comparisons retain the deployed versions, inputs and reports so they can be repeated.
 
@@ -33,7 +33,7 @@ It lets the lab use these service APIs without an Azure subscription.
 | Observability | OpenTelemetry and SigNoz |
 | Secrets and browser access | External Secrets Operator, Azure Key Vault and local HTTPS ingress |
 
-The lab supports 10,000-product/50-query and 1,000,000-product/1,000-query frozen releases. [Scale](docs/research/evidence/million-scale.md) and [40-environment isolation](docs/research/evidence/concurrency-isolation.md) checks have local evidence. Synthetic relevance scores demonstrate the workflow; they do not establish customer search quality.
+The default catalogue contains 1,215,854 English ESCI products and 1,000 test queries. A configurable 10,000-product demo subset uses the same source. See [catalogue setup and pricing](docs/esci-catalogue.md). [Scale](docs/research/evidence/million-scale.md) and [40-environment isolation](docs/research/evidence/concurrency-isolation.md) checks have local evidence. Published labels support offline comparisons; their coverage and the lab pricing assumptions do not establish customer search quality.
 
 The [roadmap](docs/plans/roadmap.md) records remaining validation. Native Apple silicon, Azure and GitHub Enterprise still need verification. The design targets those environments, but the local namespaces share one host and are not separate failure domains.
 

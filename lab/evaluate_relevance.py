@@ -1,10 +1,11 @@
-"""Score two pinned public APIs against the frozen synthetic judgements."""
+"""Score two pinned public APIs against the frozen judgements."""
 import hashlib
 import json
 from collections import defaultdict
 import ir_measures
 
 from common import guard, record
+from catalogue import DEFAULT_RELEASE
 from compare_search import definition, immutable_blob, response
 from input_selection import select
 
@@ -38,7 +39,7 @@ def evaluate():
     assert baseline['index'] == candidate['index']
     assert baseline['engine'] == candidate['engine']
     assert baseline['image'] != candidate['image']
-    selected = select('retail-gb-10k-v1', baseline['dataset_sha256'], relevance=True)
+    selected = select(DEFAULT_RELEASE, baseline['dataset_sha256'], relevance=True)
     queries, judgements = selected['queries'], selected['judgements']
     judged = defaultdict(set)
     for row in judgements:
@@ -68,9 +69,9 @@ def evaluate():
         'judgement_manifest_sha256': selected['judgement_manifest_sha256'],
         'query_count': len(queries), 'judgement_count': len(judgements),
         'evaluation_library': 'ir-measures==0.4.3',
-        'interpretation': 'Rules-based positive-only synthetic qrels are incomplete. Unjudged results are unknown, '
+        'interpretation': 'Published judgements cover only a subset of possible results. Unjudged results are unknown, '
                           'although nDCG treats them as zero. Report Judged@10 alongside nDCG; scores are a '
-                          'repeatable proxy for this judgement pool, not human or production relevance.',
+                          'repeatable proxy for this judgement pool, not production relevance.',
         'aggregate': aggregate, 'changed_query_ids': changed_query_ids, 'queries': query_rows}
     payload = (json.dumps(report, indent=2, sort_keys=True) + '\n').encode()
     digest = hashlib.sha256(payload).hexdigest()

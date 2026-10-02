@@ -1,4 +1,4 @@
-"""Capture an explicitly selected synthetic query suite across frozen variants."""
+"""Capture an explicitly selected frozen query suite across frozen variants."""
 
 import argparse
 import hashlib

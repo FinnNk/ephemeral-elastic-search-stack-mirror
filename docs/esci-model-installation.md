@@ -18,7 +18,7 @@ cohort, this operating point accepted **37.17%** of pairs at **96.59%** accuracy
 (9,694 total pairs; query-bootstrap accuracy interval **95.54–97.51%**). All accepted
 labels were Exact; **12 Irrelevant pairs were accepted as Exact**. The threshold
 was examined retrospectively. These figures do not establish greater than 95%
-accuracy on the lab's synthetic UK catalogue.
+accuracy on the lab's GBP catalogue.
 
 The mapping transforms the four Decider probabilities with clipped logarithms,
 standardisation and a multinomial logistic model. Only its numerical parameters

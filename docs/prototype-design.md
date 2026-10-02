@@ -2,7 +2,7 @@
 
 ## Goal and boundaries
 
-An engineer or data scientist can create a search environment from a frozen synthetic dataset, change query/ranking behaviour or index design, compare it with a known baseline, and remove or recreate it on demand. The lab runs locally on Kubernetes and should have a clear path to self-managed Elasticsearch on Azure Kubernetes Service (AKS).
+An engineer or data scientist can create a search environment from a frozen dataset, change query/ranking behaviour or index design, compare it with a known baseline, and remove or recreate it on demand. The lab runs locally on Kubernetes and should have a clear path to self-managed Elasticsearch on Azure Kubernetes Service (AKS).
 
 For the lab, **Lab user** covers search engineers, ML engineers and data scientists with the same workflow and capabilities. Search engineering includes relevancy and general software engineering; data science includes ML engineering and data science. These roles overlap and do not define ownership or access boundaries.
 
@@ -10,8 +10,8 @@ The local demonstration covers the complete source-to-disposal lifecycle. It use
 
 | Scope | Required scale |
 | --- | --- |
-| First usable slice | 10,000 UK products; 50–100 judged queries |
-| Completed prototype | Measured solution shape for 1,000,000 products and 1,000 queries |
+| Default catalogue | 1,215,854 English ESCI products; 1,000 test queries |
+| Optional demo subset | Configurable; initially 10,000 products and 50 test queries |
 | Local demonstration | Two or three concurrent environments |
 | Control-plane validation | Evidence for at least 40 concurrent environments |
 
@@ -24,7 +24,7 @@ The core checks are **relevance**, **result preservation** and **performance**. 
 Provisional first-slice targets on a warm local cluster:
 
 - Create an API, query-understanding or ranking-only environment against an existing frozen index in **p50 ≤ 60 seconds and p95 ≤ 120 seconds**.
-- Create an index-changing environment, including reindexing all 10,000 products, in **p95 ≤ 5 minutes**.
+- Create an index-changing environment, including reindexing the selected demo catalogue (initially 10,000 products), in **p95 ≤ 5 minutes**.
 - Go from an accepted Gitea pull-request update through tests, image build and deployment to the first correct candidate search in **p95 ≤ 8 minutes**.
 - Remove an environment on demand, including its dedicated index where applicable, in **p95 ≤ 5 minutes**.
 - Publish a cached CI release in **under 5 minutes**, and verify an approved promotion or rollback in **under 2 minutes** with retained artefacts and a warm compatible index. Promotion performs **zero rebuilds**.
@@ -33,7 +33,7 @@ Provisional first-slice targets on a warm local cluster:
 
 These remain provisional acceptance targets. The [platform research](research/platform-spike.md) measured warm creation at p50 7.54 seconds / p95 8.16 seconds over 20 diagnostic trials. The [roadmap](plans/roadmap.md) links later million-product, lifecycle, 40-environment and delivery measurements; a single successful run does not establish p95. The detailed target table defines their conditions.
 
-This is a relevance lab, not a production commerce platform. All products, queries, judgements and behavioural events are synthetic. Their modelling assumptions must travel with each dataset release.
+This is a relevance lab, not a production commerce platform. Products, queries and labels use published ESCI data, enriched with ESCI-S metadata. Prices retain their numeric USD amount but use GBP; missing prices, stock and popularity use documented lab assumptions. Traffic timing is synthetic. Source hashes and augmentation rules travel with each frozen release. See [catalogue setup](esci-catalogue.md).
 
 ## Architecture
 
@@ -153,28 +153,28 @@ Producer and evaluator Jobs use separate images and contracts. Rescoring retaine
 observations does not search again or rebuild an index. The
 [input contract](data-evaluation-contracts.md) owns the canonical schemas.
 
-Each independent input has a content-addressed object and manifest. A synthetic source pack groups inputs for generation and provenance; an environment pins the catalogue and index recipe, while an evaluation separately pins queries and judgements. Source metadata records:
+Each independent input has a content-addressed object and manifest. A source pack groups inputs for import and provenance; an environment pins the catalogue and index recipe, while an evaluation separately pins queries and judgements. Source metadata records:
 
-- Generator source revision, generator version, seed and deterministic ID scheme.
-- Schema version, country `GB`, locale `en-GB`, currency `GBP` and a fixed effective timestamp.
+- Source revisions/checksums, importer hash, selection rules and deterministic augmentation seeds.
+- Schema version, country `GB`, source locale `en-US` and currency `GBP`.
 - Product and query counts; file paths, byte sizes and SHA-256 hashes.
-- Product modelling assumptions and distributions, including categories, brands, prices, availability, popularity, spelling variants and synonyms.
-- Query intents and frequencies, original request text and context, graded relevance judgements, judgement-generation method and known biases. Keep original input separate from any API-produced normalisation or rewrite.
+- Source field provenance and any generated prices, stock or popularity assumptions.
+- Original query text/context, selected test split, published graded labels and known coverage limits. Keep original input separate from any API-produced normalisation or rewrite.
 - Optional synthetic click, add-to-basket and purchase events with an explicit behavioural model.
 
-The million-product generator uses the versioned [ESCI-informed synthetic profile](research/esci-synthetic-calibration.md) as a modelling reference. It uses aggregate catalogue shape and judgement depth while generating all product and query records anew. The 10,000-product `retail-gb-10k-v1` release remains unchanged.
+The default importer preserves English ESCI product text, queries and labels, and joins ESCI-S metadata by ASIN and source market. [The source lock](../data/esci-sources.json) pins revisions and checksums. Missing prices and stock use the documented [lab rules](esci-catalogue.md).
 
 Product and release rules:
 
 - **Product fields:** Product records have stable IDs and realistic fields: title, description, brand, category hierarchy, attributes, price with currency, availability, popularity and country.
 - **Price and market:** Prices are integer minor units. Country and currency remain explicit fields even though the first release is UK/GBP.
 - **Determinism:** Fixed time and seed prevent stock, promotions and popularity from drifting between runs.
-- **Release immutability:** The generator must not regenerate a release in place: a changed input produces a new manifest and hashes.
+- **Release immutability:** The importer must not regenerate a release in place: a changed input produces a new manifest and hashes.
 
 Query and judgement rules:
 
 - **Query coverage:** Use a mixture of common head queries, long-tail attribute queries, category browsing, misspellings, synonyms, ambiguous terms and zero-result cases.
-- **Judgements:** Judgements are graded and keyed by query ID and product ID. Document how synthetic relevance was assigned; evaluations measure agreement with that model, not real customer benefit.
+- **Judgements:** Judgements are graded and keyed by query ID and product ID. Record published label provenance and any inferred label lineage; offline agreement does not establish customer benefit.
 - **Held-out evaluation:** Keep a held-out query subset so tuning against the visible set does not silently become the only reported outcome.
 
 | Frozen index identity | Pinned inputs |
@@ -211,7 +211,7 @@ Each is versioned independently of the frozen catalogue, references its inputs b
 
 ![Synthetic traffic is frozen, transformed into a workload and replayed against baseline and candidate](diagrams/rendered/traffic-workload.png)
 
-The existing dataset generator also produces traces and compiles workload recipes as separate batch commands. Its trace model covers head/long-tail frequency, repeated queries, bursts, quiet periods, daily peaks, changing category popularity, misspellings and zero-result searches. Query text and timestamps are entirely synthetic and compatible with the synthetic catalogue. A future generator may use approved aggregate traffic statistics as modelling inputs; the lab does not ingest production request records.
+The traffic compiler assigns synthetic timestamps and frequencies to selected ESCI queries. Recipes cover head/long-tail frequency, repeated queries, bursts, quiet periods and peak load. It preserves query text and request context. A future generator may use approved aggregate traffic statistics as modelling inputs; the lab does not ingest production request records.
 
 A trace contains stable event IDs, elapsed arrival offsets, query IDs and request context. An illustrative event is:
 
@@ -295,7 +295,7 @@ The local control UI offers a **quick** 50-query result preflight and a **full**
 
 Both APIs receive the same frozen original queries and request context. Relevance comparisons score their final results against the same frozen judgements; result-regression comparisons check whether those results changed; performance comparisons replay the same workload separately against each API. The comparison record retains both definition fingerprints, runtime IDs, evaluation-input hashes, responses and diagnostics. Creating a comparison must not silently substitute the latest baseline or candidate.
 
-For standalone variant evaluation, capture every named Search API result list before resolving judgements. The variant set requires one runtime default and one evaluation baseline; they may differ. Pool distinct query–product pairs across all variants through the deepest metric cut-off. The independent judgement service returns stored synthetic labels first and asks a pinned MLflow model served by KServe about gaps. The first model abstains on every gap. Freeze the resulting judgement set and attempt receipt, then score every variant against that one set. A changed recall set gets a new snapshot and report. An abstention is unknown, whereas `I` is an explicit irrelevant judgement. [The contract](judgement-resolution.md#capture-resolve-and-score) records the hashes and coverage.
+For standalone variant evaluation, capture every named Search API result list before resolving judgements. The variant set requires one runtime default and one evaluation baseline; they may differ. Pool distinct query–product pairs across all variants through the deepest metric cut-off. The independent judgement service returns stored published labels first and asks a pinned MLflow model served by KServe about gaps. The first model abstains on every gap. Freeze the resulting judgement set and attempt receipt, then score every variant against that one set. A changed recall set gets a new snapshot and report. An abstention is unknown, whereas `I` is an explicit irrelevant judgement. [The contract](judgement-resolution.md#capture-resolve-and-score) records the hashes and coverage.
 
 Variants can share compatible immutable resources. In the [API-only example](diagrams/interactive/shared-index-reuse.html), separate API deployments read one frozen index. One API can also serve several pinned ranking configurations. A mapping change builds a different index from the same dataset. The [variant evaluation](diagrams/interactive/evaluation-dataflow.html) shows the named result paths; the [merge gate](diagrams/interactive/variant-merge-gate.html) shows source-bound evidence and the recorded release decision.
 
@@ -308,7 +308,7 @@ Variants can share compatible immutable resources. In the [API-only example](dia
 Relevance evaluation follows these rules:
 
 - **Inputs:** A relevance evaluation pins one dataset, query suite and judgement release and sends the same original request and context through every named **public search API** variant.
-- **Judgement limits:** The report identifies the frozen synthetic judgement source, hashes, coverage of each returned top ten and unjudged IDs. The million-product pool includes earlier candidate results, so its score is a proxy that may favour those results. The separate resolution workflow can ask a model about gaps in all selected recall sets before scoring; the all-abstaining model adds no labels. Coverage below 80% on either side marks the relevance claim insufficient and does not alter the result-change verdict.
+- **Judgement limits:** The report identifies the published or inferred judgement source, hashes, coverage of each returned top ten and unjudged IDs. Published labels cover the selected query/product pool, not every possible retrieved result. The separate resolution workflow can ask a model about gaps in all selected recall sets before scoring; the all-abstaining model adds no labels. Coverage below 80% on either side marks the relevance claim insufficient and does not alter the result-change verdict.
 - **Captured response:** The evaluation client records the response actually returned to the caller, including ordered product IDs, zero results, errors and client-observed duration.
 - **Scoring:** Judgements are joined to those final product IDs; an established metrics library calculates end-to-end nDCG@10, MRR, precision/recall at selected cut-offs and per-query regressions.
 - **Coverage:** Report zero-result and failure rates separately so failures cannot disappear from metric denominators. Include category, intent and head/long-tail slices.
@@ -320,7 +320,7 @@ Use three evidence layers:
 
 | Layer | Observation point | Purpose and examples |
 | --- | --- | --- |
-| **Black box — decision metric** | Original request → public search API → final customer-visible response | Final ranked product IDs against frozen judgements; nDCG@10, MRR, recall/precision, zero-result and error rates, client-observed latency. This layer determines relevance under the synthetic judgement model, or result preservation using exact ordered-ID equality, RBO and Jaccard. |
+| **Black box — decision metric** | Original request → public search API → final customer-visible response | Final ranked product IDs against frozen judgements; nDCG@10, MRR, recall/precision, zero-result and error rates, client-observed latency. This layer determines relevance under the selected frozen labels, or result preservation using exact ordered-ID equality, RBO and Jaccard. |
 | **Grey box — stage diagnosis** | Correlated, versioned API trace or structured diagnostic record for the same request | Query normalisation, detected intent/entities, rewrite and synonym choices, filters, Elasticsearch request or template fingerprint, pre/post-retrieval candidate IDs, reranker input/output, stage durations and fallbacks. Stage-level recall or loss can explain where a regression appeared; a trace is never substituted for the final API response. |
 | **White box — component diagnosis** | Direct, pinned Elasticsearch request against a known index and mapping | `_rank_eval`, `_profile`, `_explain` and analyser inspection where useful. These answer questions about retrieval and ranking *inside Elasticsearch*; they do not measure API query understanding, result merging, application filters or reranking. Run costly diagnostics separately or on a selected query sample so they do not distort black-box latency. |
 
@@ -410,7 +410,7 @@ Run the performance check in this order:
 3. **Warm and measure each side separately.**
 
    - Select a constant-rate or trace-derived profile from the table below.
-   - The constant-rate smoke profile retains a 30-second ramp, 60-second warm-up and 300 seconds of steady traffic at 10 requests/second against 10,000 products, returning top 10.
+   - The constant-rate smoke profile retains a 30-second ramp, 60-second warm-up and 300 seconds of steady traffic at 10 requests/second against the full ESCI catalogue, returning top 10.
    - Warm each side immediately before measuring it.
    - Use distinct request names for warm-up and measured traffic within the same process, and scope assertions to measured requests.
    - Keep a fixed connection/reuse policy and let outstanding requests finish within a pinned drain timeout.
@@ -480,7 +480,7 @@ These thresholds are starting hypotheses for the constant-rate smoke profile.
 
 - **Smoke duration:** Its full six-run check takes roughly 39 minutes of ramp, warm-up and measurement, plus readiness, settling, drain and reporting; the 15-minute functional-comparison target does not apply.
 - **Trace-profile duration:** Trace-profile duration is calculated from its compiled phases, repetitions and drain policy.
-- **Scale validation:** At 1,000,000 products and 1,000 unique queries, rerun the fixed-load profile before increasing offered load in a separate capacity sweep.
+- **Scale validation:** At 1,215,854 products and 1,000 unique queries, rerun the fixed-load profile before increasing offered load in a separate capacity sweep.
 - **Query counts:** A query suite contains unique inputs; a load test repeats them according to its pinned frequency model.
 - **Calibration:** Calibrate thresholds from measured hardware evidence rather than assuming production capacity from a laptop result.
 
@@ -546,10 +546,10 @@ These are **design hypotheses, not measured performance or service promises**.
 | API/query/ranking-only environment, 10,000 products | p50 ≤ 60 s; p95 ≤ 120 s | Shared index already present; local machine; request to first correct search |
 | Gitea PR build → first correct candidate search, 10,000 products | p95 ≤ 8 min | Warm runner and cluster; start at accepted PR update, include test, image build/push and environment start; record build and provision phases separately |
 | Index-changing environment, 10,000 products | p95 ≤ 5 min | New mapping and full reindex; request to first correct search |
-| API/query/ranking-only environment, 1,000,000 products | p95 ≤ 2 min | Shared million-product index already present; suitable test cluster |
-| Index-changing environment, 1,000,000 products | ≤ 20 min per run | Full reindex from frozen objects on a documented test cluster; revise after first bulk-index measurement |
+| API/query/ranking-only environment, 1,215,854 products | p95 ≤ 2 min | Shared million-product index already present; suitable test cluster |
+| Index-changing environment, 1,215,854 products | ≤ 20 min per run | Full reindex from frozen objects on a documented test cluster; revise after first bulk-index measurement |
 | Complete 1,000-query functional comparison | ≤ 15 min per run | Two ready versions queried through their public APIs; final top 10, relevance or result-preservation metrics and persisted report; exclude index build, performance load tests and optional white-box diagnostics |
-| API performance, constant-rate smoke | 10 requests/s for 300 measured seconds; p95 ≤ 250 ms, p99 ≤ 500 ms, failures < 1%; median paired p95 increase ≤ 10% | 10,000 products, three controlled B/C pairs, valid generator and stable baseline; see the Gatling profile above |
+| API performance, constant-rate smoke | 10 requests/s for 300 measured seconds; p95 ≤ 250 ms, p99 ≤ 500 ms, failures < 1%; median paired p95 increase ≤ 10% | Full ESCI catalogue, three controlled B/C pairs, valid generator and stable baseline; see the Gatling profile above |
 | On-demand removal | p95 ≤ 5 min | Request to namespace resources and dedicated indices gone; shared frozen index deliberately retained |
 | Lease expiry | Start cleanup within 10 min of expiry; finish within 15 min | 72 h after last genuine use; no extension from polling or health checks |
 | Control-plane capacity | 40 simultaneous API/query-only environments, ≥ 95% ready within 5 min of their requests | Suitable multi-node test cluster; all 40 must run a real search; record p95, errors, CPU, memory and API load |
@@ -564,7 +564,7 @@ For the 40-environment exercise, keep API/query-only workloads small and share t
 
 Scale gate for the completed prototype:
 
-1. Generate, hash, store and reload a 1,000,000-product release with 1,000 judged queries.
+1. Generate, hash, store and reload a 1,215,854-product release with 1,000 judged queries.
 2. Build both a baseline and a mapping-changing candidate index; run relevance and result-preservation checks, plus compiled normal, sustained-peak and stress/recovery Gatling profiles; record duration, disk, memory and metrics. Use separate expected outcomes for each mode; an intentional ranking change need not preserve results.
 3. Prove two or three environments on the local machine, including on-demand deletion, expiry and activity extension.
 4. Exercise 40+ **lightweight environment control records and Kubernetes deployments** on a suitable test cluster or capacity model, then document measured API and reconciliation behaviour. Do not present metadata-only simulation as proof that forty full search workloads fit.

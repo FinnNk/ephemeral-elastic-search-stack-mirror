@@ -62,15 +62,15 @@ spec:
         kubernetes.io/hostname: k3d-observability-0
       initContainers:
         - name: fetch-source
-          image: nexus.localhost:18185/relevance-judge:j1-b6a821a49492315e-amd64
+          image: nexus.localhost:18185/relevance-judge:j1-f869662ec1c2f0af@sha256:bd58a58b8586c6cbbee9b828a6d134200b4b2cd754d3f91ca07b1678190e2b9a
           command: [python, /app/fetch_source.py]
           args:
             - --judgement-manifest-sha256
-            - f30d8e10880e774d2987555450d71b3f0186c2736b534238d0a2c90d2373c69d
+            - b7cc9cae682ddbcc38c2aeab196ffb52822bd2e9c2205444f3f01bf1b29172ca
             - --catalogue-manifest-sha256
-            - e65c481acbb0f9917526841fd7ee51573104fb76e190805150c000d44f646c6a
+            - 3c5d12a14c9bbd0821cd3b7f5cdf800261439b998ce61692f8fd9081b618ae59
             - --query-manifest-sha256
-            - 144c51398442422cb638b6ef0f9df8c890e54afa6f3cad9383fbd1f93ad495fa
+            - ffb4814a08ba8d95eb24cfae091512fcc610b42f5fbb16c5b3da3c9739ad3fe3
             - --output
             - /inputs
           env:
@@ -91,7 +91,7 @@ spec:
               mountPath: /inputs
       containers:
         - name: judgement-service
-          image: nexus.localhost:18185/relevance-judge:j1-b6a821a49492315e-amd64
+          image: nexus.localhost:18185/relevance-judge:j1-f869662ec1c2f0af@sha256:bd58a58b8586c6cbbee9b828a6d134200b4b2cd754d3f91ca07b1678190e2b9a
           command: [python, /app/service.py]
           args:
             - --database
@@ -112,7 +112,7 @@ spec:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://lab-otel-gateway.lab-observability.svc.cluster.local:4318
             - name: LAB_SOURCE_PROFILE
-              value: 10k
+              value: esci-demo
           ports:
             - name: http
               containerPort: 18086

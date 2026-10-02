@@ -1,4 +1,4 @@
-"""Fetch a pinned synthetic judgement set from Blob for the judgement API."""
+"""Fetch a pinned judgement set from Blob for the judgement API."""
 
 import argparse
 import hashlib

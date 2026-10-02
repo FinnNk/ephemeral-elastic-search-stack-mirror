@@ -1,4 +1,5 @@
 """Opt-in Gitea PR revision to frozen candidate and three check reports."""
+from catalogue import DEFAULT_RELEASE, RELEASES
 import argparse
 import json
 import os
@@ -58,7 +59,7 @@ def verdict_comment(pr, sha, baseline, candidate, checks, ready_seconds, check_s
         lines.append(f'- **{label}: {row.get("verdict") or row["state"]}** · {details} · [inspect report]({link})')
         if row.get('report_sha256'):
             lines.append(f'  - Report SHA-256 `{row["report_sha256"]}`')
-    lines.extend(['', 'Relevance scores use selected frozen synthetic judgements. Coverage and unjudged IDs are in the report. A measured relevance result requires human review.'])
+    lines.extend(['', 'Relevance scores use selected frozen judgements. Coverage and unjudged IDs are in the report. A measured relevance result requires human review.'])
     if stale:
         lines.extend(['', '**The PR head changed during evaluation. This report belongs to the earlier SHA; rerun the new head.**'])
     return '\n'.join(lines)
@@ -79,7 +80,7 @@ def publish_verdict(number, sha, body, passed, stale=False):
 
 
 @operation('pr.evaluate')
-def process(number, baseline_run, release_id='retail-gb-10k-v1', profile='probe'):
+def process(number, baseline_run, release_id=DEFAULT_RELEASE, profile='probe'):
     guard()
     triggered = time.monotonic()
     pr = api(REPO + f'/pulls/{number}')
@@ -91,7 +92,7 @@ def process(number, baseline_run, release_id='retail-gb-10k-v1', profile='probe'
     if candidate_build['source_sha'] != sha:
         raise ValueError('Successful build does not match the PR head SHA.')
     controller = local_lifecycle()
-    suffix = '1m' if release_id == 'retail-gb-1m-v1' else '10k'
+    suffix = release_id
     owner = pr['user']['login']
     baseline = controller.create(f'lab-pr-{number}-base-{baseline_build["source_sha"][:8]}-{suffix}',
                                  baseline_run, owner=owner, release_id=release_id)
@@ -164,8 +165,8 @@ if __name__ == '__main__':
     configure_telemetry('lab-pr-watcher')
     parser = argparse.ArgumentParser()
     parser.add_argument('--baseline-run', type=int, required=True)
-    parser.add_argument('--release', default='retail-gb-10k-v1',
-                        choices=('retail-gb-10k-v1', 'retail-gb-1m-v1'))
+    parser.add_argument('--release', default=DEFAULT_RELEASE,
+                        choices=RELEASES)
     parser.add_argument('--profile', default='probe', choices=('probe', 'smoke'))
     parser.add_argument('--pr', type=int)
     parser.add_argument('--watch', action='store_true')

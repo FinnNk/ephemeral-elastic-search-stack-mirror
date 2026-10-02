@@ -37,13 +37,13 @@ def main():
         if product is not None and missing is not None:
             break
     if product is None or missing is None:
-        raise AssertionError('Synthetic source has no stored and missing pair.')
+        raise AssertionError('Frozen source has no stored and missing pair.')
     pair = {'query_id': first['query_id'], 'product_id': first['product_id'],
             'request': {key: query[key] for key in ('query', 'country', 'currency')},
             'product': product}
     pair['request']['filters'] = query.get('filters', {})
     labelled = post(context, [pair])['results'][0]
-    assert labelled['outcome'] == 'labelled' and labelled['source'] == 'synthetic'
+    assert labelled['outcome'] == 'labelled' and labelled['source'] == 'stored'
     gap = {**pair, 'product_id': missing['product_id'], 'product': missing}
     unknown = post(context, [gap])['results'][0]
     assert unknown['outcome'] == 'unjudged' and unknown['reason'] == 'model_abstained'

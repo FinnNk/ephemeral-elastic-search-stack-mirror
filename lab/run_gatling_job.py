@@ -1,7 +1,11 @@
 """Run a finite Gatling Job in the lab cluster with no Kubernetes API credential."""
+from catalogue import DEFAULT_RELEASE, RELEASES
 import hashlib
 import json
 import os
+from pathlib import Path
+import shutil
+import tempfile
 import time
 import uuid
 
@@ -10,6 +14,7 @@ from compare_search import definition, immutable_blob
 from gatling_report import summarise
 from run_gatling import IMAGE, SIMULATION, archive, retain_workload
 from traffic import compile_profile
+from input_selection import DEFAULTS, fetch_manifest
 
 NAMESPACE = 'lab-evaluation'
 OWNED_LABEL = {'app.kubernetes.io/managed-by': 'lab-control-gatling'}
@@ -38,13 +43,16 @@ def cleanup_orphans():
     return True
 
 
-def run(profile, target, environment=None, release_id='retail-gb-10k-v1', owner='control'):
+def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='control'):
     guard()
     if owner not in ('control', 'delivery'):
         raise ValueError('Unknown Gatling Job owner.')
     owned_label = OWNED_LABEL if owner == 'control' else DELIVERY_LABEL
     environment = environment or TARGETS[target]
     pinned = definition(environment)
+    catalogue = fetch_manifest('catalogue', DEFAULTS[release_id]['catalogue'])
+    if pinned['dataset_sha256'] != catalogue['content']['sha256']:
+        raise ValueError('Gatling workload and environment must use the same frozen catalogue.')
     workload = compile_profile(profile, release_id)
     short = uuid.uuid4().hex[:8]
     name = 'gatling-' + short
@@ -114,10 +122,17 @@ def run(profile, target, environment=None, release_id='retail-gb-10k-v1', owner=
                    'volumes': [{'name': 'results', 'persistentVolumeClaim': {'claimName': claim}}]}})
         k('wait', '--for=condition=ready', 'pod/' + reader, '-n', NAMESPACE, '--timeout=120s')
         # kubectl cp treats a Windows drive-letter colon as a remote separator.
-        k('cp', '-n', NAMESPACE, reader + ':/results/report',
-          local_copy_target(run_dir / 'report'))
-        k('cp', '-n', NAMESPACE, reader + ':/results/arrivals.csv',
-          local_copy_target(run_dir / 'arrivals.csv'))
+        if IN_CLUSTER:
+            k('cp', '-n', NAMESPACE, reader + ':/results/report', str(run_dir / 'report'))
+            k('cp', '-n', NAMESPACE, reader + ':/results/arrivals.csv', str(run_dir / 'arrivals.csv'))
+        else:
+            # Stage beside this checkout when retained state is on another drive.
+            with tempfile.TemporaryDirectory(prefix='gatling-copy-', dir=ROOT) as temporary:
+                staging = Path(temporary)
+                k('cp', '-n', NAMESPACE, reader + ':/results/report', local_copy_target(staging / 'report'))
+                k('cp', '-n', NAMESPACE, reader + ':/results/arrivals.csv', local_copy_target(staging / 'arrivals.csv'))
+                shutil.copytree(staging / 'report', run_dir / 'report')
+                shutil.copy2(staging / 'arrivals.csv', run_dir / 'arrivals.csv')
         reports = list((run_dir / 'report').glob('syntheticsearchsimulation-*'))
         if len(reports) != 1:
             raise RuntimeError('Expected one copied Gatling native report.')
@@ -169,6 +184,7 @@ if __name__ == '__main__':
     parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress',
                                             'normal-full', 'sustained-peak', 'stress-full'))
     parser.add_argument('target', choices=TARGETS)
-    parser.add_argument('--release', default='retail-gb-10k-v1')
+    parser.add_argument('--release', choices=RELEASES, default=DEFAULT_RELEASE)
+    parser.add_argument('--environment', help='Ready namespace to test; baseline/candidate identifies the report side')
     args = parser.parse_args()
-    print(json.dumps(run(args.profile, args.target, release_id=args.release), indent=2))
+    print(json.dumps(run(args.profile, args.target, release_id=args.release, environment=args.environment), indent=2))

@@ -25,7 +25,7 @@
   <header><h1>Lab storefront</h1><span>United Kingdom · £ GBP</span></header>
   <main>
     <h2>Shop the catalogue</h2>
-    <p class="intro" id="catalogue" aria-live="polite">Synthetic products for the search lab.</p>
+    <p class="intro" id="catalogue" aria-live="polite">Products for the search lab.</p>
     <form id="search-form"><input id="query" name="q" type="search" autocomplete="off" maxlength="150" placeholder="Search products" aria-label="Search products" required><button type="submit">Search</button></form>
     <details class="filters"><summary>Filter results</summary><div class="filtergrid">
       <label>Categories<input id="category-filter" form="search-form" placeholder="clothing, footwear"></label>
@@ -41,7 +41,7 @@
     <div id="results" class="grid"><p class="empty">Search above or try one of the suggestions.</p></div>
     <details class="meta"><summary>Search details</summary><p id="timing">Only available products appear in results.</p></details>
   </main>
-  <footer>A lab storefront for testing search. Products and prices are synthetic.</footer>
+  <footer>A lab storefront for testing search. ESCI products with GBP lab prices.</footer>
   <script>
     const form=document.querySelector('#search-form'),input=document.querySelector('#query'),results=document.querySelector('#results'),heading=document.querySelector('#heading'),error=document.querySelector('#error'),timing=document.querySelector('#timing');
     const money=pence=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(pence/100);

@@ -1,4 +1,4 @@
-"""Recreate pinned independent manifests from frozen synthetic source bytes."""
+"""Recreate pinned independent manifests from frozen source bytes."""
 
 import argparse
 import json
@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'data'))
 from publish import publish
-from blob_config import settings
+from blob_config import settings, service
 from common import STATE
 from input_selection import DEFAULTS
 
@@ -20,7 +20,9 @@ def main():
     result = {}
     for release, expected in DEFAULTS.items():
         published = publish(args.source_root / release, args.output_root / release,
-                            'synthetic-retail-v2', release, blob_url=settings()[0])
+                            'esci-import-v1', release, blob_url=settings()[0],
+                            container=settings()[1], blob_service=service(),
+                            provenance=json.loads((args.source_root / release / 'manifest.json').read_text(encoding='utf-8'))['producer'])
         actual = {kind: entry['manifest_sha256'] for kind, entry in published.items()}
         if actual != expected:
             raise ValueError('Published independent manifests differ from pinned defaults: ' + release)

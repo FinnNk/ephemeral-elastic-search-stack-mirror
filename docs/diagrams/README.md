@@ -116,7 +116,7 @@ generators reserve separate resources; the local host still shares resources.
   percentiles. Normal/peak budgets, stress limits and recovery have separate
   outcomes. Unstable load or missing evidence is inconclusive; sharing an index
   does not isolate latency.
-- **Traffic:** Queries and timestamps are synthetic. Compilation pins windows,
+- **Traffic:** Queries come from the selected frozen ESCI suite; timestamps and frequencies are synthetic. Compilation pins windows,
   transformations, phase/request binding and arrival buckets. One-second buckets
   approximate source timing; exact event replay needs separate validation.
 - **Lifecycle:** Diagrams show representative paths, not executable state

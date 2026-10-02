@@ -7,7 +7,7 @@ spec:
   accessModes: [ReadWriteOnce]
   resources:
     requests:
-      storage: 2Gi
+      storage: 8Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -44,7 +44,7 @@ spec:
               memory: 512Mi
             limits:
               cpu: '1'
-              memory: 2Gi
+              memory: 8Gi
           volumeMounts:
             - name: data
               mountPath: /app/data

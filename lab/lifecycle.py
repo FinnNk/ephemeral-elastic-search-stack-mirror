@@ -1,4 +1,5 @@
 """Durable 72-hour leases and idempotent local lab environment reconciliation."""
+from catalogue import DEFAULT_RELEASE, RELEASES
 import json
 import re
 import sqlite3
@@ -26,16 +27,15 @@ from operation_telemetry import correlation, operation
 
 LEASE = timedelta(hours=72)
 NAME_PATTERN = re.compile(r'lab-[a-z0-9](?:[a-z0-9-]{0,42}[a-z0-9])?\Z')
-DATASET = 'retail-gb-10k-v1'
-INDEX = 'retail-gb-10k-v1'
-RELEASES = (DATASET, 'retail-gb-1m-v1')
+DATASET = DEFAULT_RELEASE
+INDEX = DEFAULT_RELEASE
 
 
 def wait_correct_search(name, search_fn=search, timeout_seconds=60):
     deadline = time.monotonic() + timeout_seconds
     while time.monotonic() < deadline:
         answer = search_fn(name, 'running shoes')
-        if answer is not None and len(answer.get('ids', [])) >= 10:
+        if answer is not None and 'ids' in answer and 'total' in answer and len(answer['ids'][:10]) == min(answer['total'], 10):
             return answer
         time.sleep(1)
     raise TimeoutError('Environment did not return a correct search after becoming healthy.')
@@ -200,6 +200,12 @@ class ActiveComparisonError(ValueError):
     """An environment is pinned by a running comparison."""
 
 
+def delete_orphan_namespace(name):
+    # Provisioning can create access before Argo creates an Application.
+    if not k('get', 'application/' + name, '-n', 'argocd', '--ignore-not-found', '-o', 'name').stdout.strip():
+        k('delete', 'namespace/' + name, '--ignore-not-found', '--wait=false')
+
+
 class LabBackend:
     def build(self, run_id):
         return build_record(run_id)
@@ -303,6 +309,7 @@ class LabBackend:
         if definition.exists():
             definition.unlink()
             publish('Delete ' + name)
+        delete_orphan_namespace(name)
         deadline = time.monotonic() + 180
         while time.monotonic() < deadline:
             if heartbeat:
@@ -331,6 +338,8 @@ class LabBackend:
                 definition.unlink()
         if git('status', '--porcelain'):
             publish('Delete ' + str(len(rows)) + ' search environments')
+        for row in rows:
+            delete_orphan_namespace(row['name'])
         pending = {row['name'] for row in rows}
         deadline = time.monotonic() + 180
         while pending and time.monotonic() < deadline:

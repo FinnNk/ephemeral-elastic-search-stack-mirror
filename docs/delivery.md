@@ -50,7 +50,7 @@ $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 $kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
 kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py status
 $candidateRun = Read-Host 'Successful merged-source push build run ID from delivery-source Actions'
-$dataset = 'retail-gb-1m-v1'
+$dataset = 'esci-gb-v1'
 $recipe = Read-Host 'Compatible retained index recipe SHA-256'
 $intent = 'preserve-results'
 ```

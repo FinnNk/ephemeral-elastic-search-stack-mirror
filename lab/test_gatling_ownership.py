@@ -34,6 +34,14 @@ class GatlingOwnershipContract(unittest.TestCase):
                          '../../gatling-jobs/run/report')
         self.assertEqual(run_gatling_job.local_copy_target(target, root, True), str(target))
 
+    def test_workload_cannot_run_against_a_different_catalogue(self):
+        with patch('run_gatling_job.guard'), patch('run_gatling_job.definition', return_value={'dataset_sha256': 'a' * 64}), \
+             patch('run_gatling_job.fetch_manifest', return_value={'content': {'sha256': 'b' * 64}}), \
+             patch('run_gatling_job.apply') as apply:
+            with self.assertRaisesRegex(ValueError, 'same frozen catalogue'):
+                run_gatling_job.run('probe', 'baseline', 'lab-other')
+        apply.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

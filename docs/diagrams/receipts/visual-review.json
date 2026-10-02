@@ -256,5 +256,11 @@
       "18-delivery.svg": "08ccf3fde0521281e5e3365d3248d327f31722eaf933a2686dbf047942b9fb08"
     },
     "reviewed_on": "2026-10-02"
+  },
+  "esci_catalogue_2026_10_02": {
+    "reviewed_on": "2026-10-02",
+    "scope": "Changed context view inspected as PNG; eight C4 views regenerated. Archify workflows retain catalogue-independent contracts.",
+    "result": "Context labels are legible; the implied DNS self-edge and overlapping evaluation routes were removed from this view.",
+    "context_svg_sha256": "4854b1c0910c7b336644c1e726832d75a0ca1a68e0a5ad77d82d1e20abab8737"
   }
 }

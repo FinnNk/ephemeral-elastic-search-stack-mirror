@@ -53,23 +53,23 @@ class EvaluatorContract(unittest.TestCase):
     def test_comparison_reuses_exact_pair_mode_scope_and_profile(self):
         row = {'id': 'report', 'baseline_id': 'a', 'candidate_id': 'b', 'mode': 'result-regression',
                'scope': 'quick', 'profile': None, 'state': 'complete',
-               'query_manifest_sha256': DEFAULTS['retail-gb-10k-v1']['query-suite'],
+               'query_manifest_sha256': DEFAULTS['esci-gb-v1']['query-suite'],
                'judgement_manifest_sha256': None}
         class Store:
             def all_comparisons(self):
                 return [row]
         class Controller:
             store = Store()
-        self.assertEqual(matching_comparison(Controller(), {'id': 'a', 'release_id': 'retail-gb-10k-v1'}, {'id': 'b'},
+        self.assertEqual(matching_comparison(Controller(), {'id': 'a', 'release_id': 'esci-gb-v1'}, {'id': 'b'},
                                              'result-regression', 'quick'), row)
-        self.assertIsNone(matching_comparison(Controller(), {'id': 'a', 'release_id': 'retail-gb-10k-v1'}, {'id': 'b'},
+        self.assertIsNone(matching_comparison(Controller(), {'id': 'a', 'release_id': 'esci-gb-v1'}, {'id': 'b'},
                                               'result-regression', 'full'))
         row['query_manifest_sha256'] = 'f' * 64
-        self.assertIsNone(matching_comparison(Controller(), {'id': 'a', 'release_id': 'retail-gb-10k-v1'}, {'id': 'b'},
+        self.assertIsNone(matching_comparison(Controller(), {'id': 'a', 'release_id': 'esci-gb-v1'}, {'id': 'b'},
                                               'result-regression', 'quick'))
 
     def test_comment_links_exact_revision_and_report(self):
-        environment = {'fingerprint': 'f' * 64, 'release_id': 'retail-gb-10k-v1'}
+        environment = {'fingerprint': 'f' * 64, 'release_id': 'esci-gb-v1'}
         row = {'id': 'a' * 36, 'state': 'complete', 'verdict': 'changed',
                'report_sha256': 'b' * 64, 'summary': {'query_count': 50, 'completed_query_count': 50}}
         body = verdict_comment({}, 'c' * 40, environment, environment,

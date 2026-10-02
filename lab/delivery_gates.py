@@ -135,7 +135,7 @@ def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):
     if baseline['fingerprint'] == candidate['fingerprint']:
         raise ValueError('Select two distinct frozen release definitions.')
     if baseline['fields']['dataset_release'] != candidate['fields']['dataset_release']:
-        raise ValueError('Both environments must use the same synthetic dataset.')
+        raise ValueError('Both environments must use the same frozen catalogue.')
     if baseline['fields']['dataset_sha256'] != candidate['fields']['dataset_sha256']:
         raise ValueError('Both environments must use the same frozen catalogue.')
     selected = deployment_inputs(candidate)

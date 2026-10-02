@@ -1,0 +1,25 @@
+{
+  "amazon_commit": "7916cdf6ab75a462e77f20ab40428a10923998d5",
+  "esci_s_commit": "99e849f387b6618a5e8641f28d7847f7cd6cf8ac",
+  "licence": "Apache-2.0",
+  "files": [
+    {
+      "file": "products.parquet",
+      "url": "https://media.githubusercontent.com/media/amazon-science/esci-data/7916cdf6ab75a462e77f20ab40428a10923998d5/shopping_queries_dataset/shopping_queries_dataset_products.parquet",
+      "sha256": "25124442d064d64b26f74082d6fa09438d679efc0c183cf28d19064a2b65a265",
+      "bytes": 1108857465
+    },
+    {
+      "file": "examples.parquet",
+      "url": "https://media.githubusercontent.com/media/amazon-science/esci-data/7916cdf6ab75a462e77f20ab40428a10923998d5/shopping_queries_dataset/shopping_queries_dataset_examples.parquet",
+      "sha256": "4a735b693b4a424a6fc67f5be6e4c811495c488bbf66d02a602d308b2744263a",
+      "bytes": 51286808
+    },
+    {
+      "file": "esci-s.json.zst",
+      "url": "https://esci-s.s3.amazonaws.com/esci.json.zst",
+      "sha256": "14bca728ebd02862bf7b47a8ae8e54b3febcd4817a1c9f4b387e11845edb62bb",
+      "bytes": 3620467456
+    }
+  ]
+}

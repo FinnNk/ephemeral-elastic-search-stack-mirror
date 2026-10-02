@@ -1,4 +1,5 @@
 """Operate portable release previews and reviewed local delivery targets."""
+from catalogue import DEFAULT_RELEASE, RELEASES
 import argparse
 import json
 from pathlib import Path
@@ -21,14 +22,14 @@ def parser():
     for name in ('bootstrap', 'preview'):
         cmd = commands.add_parser(name)
         cmd.add_argument('--run', type=int, required=True)
-        cmd.add_argument('--dataset', default='retail-gb-10k-v1')
+        cmd.add_argument('--dataset', default=DEFAULT_RELEASE)
         cmd.add_argument('--recipe', help='Pinned index recipe SHA-256; blank uses the current shared recipe')
         cmd.add_argument('--query-manifest', help='Selected query-suite manifest SHA-256')
         cmd.add_argument('--judgement-manifest', help='Matching judgement-set manifest SHA-256')
     cmd = commands.add_parser('evaluate')
     cmd.add_argument('--baseline-run', type=int, required=True)
     cmd.add_argument('--candidate-run', type=int, required=True)
-    cmd.add_argument('--dataset', default='retail-gb-10k-v1')
+    cmd.add_argument('--dataset', default=DEFAULT_RELEASE)
     cmd.add_argument('--baseline-recipe')
     cmd.add_argument('--candidate-recipe')
     cmd.add_argument('--query-manifest', help='Query-suite manifest for both public API checks')
@@ -49,7 +50,7 @@ def parser():
     cmd = commands.add_parser('promote')
     cmd.add_argument('target', choices=TARGETS)
     cmd.add_argument('--run', type=int, required=True)
-    cmd.add_argument('--dataset', default='retail-gb-10k-v1')
+    cmd.add_argument('--dataset', default=DEFAULT_RELEASE)
     cmd.add_argument('--recipe')
     cmd.add_argument('--query-manifest')
     cmd.add_argument('--judgement-manifest')
@@ -113,7 +114,7 @@ def execute(args):
                 raise ValueError('A retained deployment already pins its dataset, recipe and evaluation inputs.')
             candidate = historical(args.target, args.fingerprint)
         else:
-            candidate = resolve(args.run, args.dataset or 'retail-gb-10k-v1', args.recipe,
+            candidate = resolve(args.run, args.dataset or DEFAULT_RELEASE, args.recipe,
                                 query_manifest_sha=args.query_manifest,
                                 judgement_manifest_sha=args.judgement_manifest)
         return recorded_evaluation(baseline, candidate, args.intent, args.profile)

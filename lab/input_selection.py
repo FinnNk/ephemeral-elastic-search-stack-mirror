@@ -1,4 +1,4 @@
-"""Resolve selected synthetic input manifests from immutable Blob objects."""
+"""Resolve selected input manifests from immutable Blob objects."""
 
 import hashlib
 import json

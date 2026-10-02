@@ -1,4 +1,5 @@
 """Start the opt-in local Gitea PR watcher without a visible console."""
+from catalogue import DEFAULT_RELEASE, RELEASES
 import argparse
 import json
 import os
@@ -41,7 +42,7 @@ def start(baseline_run, release):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--baseline-run', type=int, required=True)
-    parser.add_argument('--release', choices=('retail-gb-10k-v1', 'retail-gb-1m-v1'),
-                        default='retail-gb-10k-v1')
+    parser.add_argument('--release', choices=RELEASES,
+                        default=DEFAULT_RELEASE)
     args = parser.parse_args()
     print(json.dumps(start(args.baseline_run, args.release)))

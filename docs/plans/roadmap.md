@@ -70,3 +70,6 @@ forwards and verifies category, colour, material and price filters. Current
 workloads compile full frozen request context into new content-addressed feeders.
 Historical schema and measurement artefacts remain unchanged. Canonical HTTPS
 control routing/session cookies remain the next implementation gap.
+
+
+The [ESCI catalogue batch](esci-catalogue.md) replaces normal generated retail inputs with the full English ESCI catalogue and an explicit configurable demo subset. Historical synthetic measurements retain their original conditions. The implementation and local verification are complete for review; [evidence](../research/evidence/esci-catalogue.md) records the scope. Source PR #19 remains blocked at 29.7% published-label coverage against its 80% minimum. The next batch is [coverage and gates](esci-coverage-gates.md), followed by the developer walkthrough.

@@ -2,7 +2,7 @@
 
 Products, queries, labels and traffic are supplied independently of the Search API. Their manifests identify the exact bytes and dependencies. Evaluation captures public API results once, then scores those saved observations without issuing another search request.
 
-All lab inputs are synthetic. Missing labels mean **unknown**; grade zero explicitly means non-relevant.
+The default products, queries and labels come from ESCI, with ESCI-S metadata and documented lab augmentations. Arrival times and the independent example pack are synthetic. [Catalogue setup](esci-catalogue.md) describes source selection and pricing. Missing labels mean **unknown**; grade zero explicitly means non-relevant.
 
 ## Contracts
 
@@ -17,7 +17,7 @@ All lab inputs are synthetic. Missing labels mean **unknown**; grade zero explic
 | Report | Observation, label, specification and evaluator hashes; scores and coverage | Comparison history and decision policy |
 | Decision policy | Required evidence, coverage, thresholds, age and permitted exceptions | Trusted gate or promotion validator |
 
-Input envelopes contain `kind`, `schema_version`, `content`, `dependencies`, `producer` and `record_count`. `content.object` names hash-addressed source bytes. Label and traffic manifests reference the original query hash; labels also reference the catalogue hash. A catalogue can contain multiple countries with one currency per country.
+Input envelopes contain `kind`, `schema_version`, `content`, `dependencies`, `producer` and `record_count`. `producer.synthetic` states whether the pack is wholly synthetic; published packs must include `producer.sources`. Published labels retain E/S/C/I assessments and grades 3/2/1/0. `content.object` names hash-addressed source bytes. Label and traffic manifests reference the original query hash; labels also reference the catalogue hash. A catalogue can contain multiple countries with one currency per country.
 
 The `data/` package generates and validates inputs without importing search or control code. `judgements/` resolves missing labels. `evaluation/` scores captured results. Delivery owns release policy separately.
 
@@ -45,7 +45,7 @@ python data/publish.py --input-dir $pack --output $manifests --producer independ
 
 Keep the operator's Blob Storage emulator port-forward on port `14577` running. Existing objects must match; a conflict fails rather than replacing them. Clear `DATA_BLOB_CONNECTION_STRING` when finished. Azure publication uses an HTTPS account URL and workload identity instead of the emulator credential.
 
-For the 1M catalogue, obtain source bytes with `python lab/release_million.py`, then use its release directory as `--input-dir`, a new manifest directory, producer `synthetic-million-v1` and source release `retail-gb-1m-v1`. Add `--traffic lab/traffic/source-trace-million-v2.csv` if publishing its trace. Generation is substantial work; existing retained source packs can be reused after validation.
+For the default catalogue, follow [ESCI catalogue setup](esci-catalogue.md). The importer retains source checksums, selection rules and augmentation counts. Publication carries that provenance into each independent manifest.
 
 `lab/default_inputs.json` owns control/delivery defaults. `lab/publish_default_inputs.py` republishes those exact source manifests and checks their expected hashes; a different producer does not automatically replace those defaults.
 

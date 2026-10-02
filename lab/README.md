@@ -23,8 +23,10 @@ The control workers already run in Kubernetes. Do not launch host control, lease
 
 | Release | Intended use |
 | --- | --- |
-| `retail-gb-10k-v1` | Quick local workflows: 10,000 synthetic UK/GBP products and 50 queries |
-| `retail-gb-1m-v1` | Scale demonstrations: 1,000,000 synthetic products and 1,000 queries |
+| `esci-gb-v1` | Default: 1,215,854 English ESCI products, GBP lab prices and 1,000 test queries |
+| `esci-gb-demo-v1` | Optional demo subset: 10,000 products and 50 test queries |
+
+See [catalogue setup](../docs/esci-catalogue.md) to configure the demo size. Normal workflows reuse the full frozen catalogue.
 
 A new environment retains its source commit, image digest, index recipe and fingerprint. The 72-hour lease extends with genuine activity; status polling does not extend it. **Search** runs a query and **Extend lease** renews it explicitly.
 

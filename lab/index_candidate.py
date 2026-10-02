@@ -1,4 +1,4 @@
-"""Build and remove a dedicated frozen index from the canonical synthetic release."""
+"""Build and remove a dedicated frozen index from the canonical frozen catalogue."""
 import hashlib
 import json
 import re
@@ -17,21 +17,14 @@ MAPPINGS = Path(__file__).with_name('mappings')
 
 
 def available_kinds(release_id=RELEASE):
-    names = []
-    for path in MAPPINGS.glob('*.json'):
-        name = path.stem
-        if '-1m-' not in name and re.fullmatch(r'[a-z0-9-]+-v[0-9]+', name) and \
-                (release_id != 'retail-gb-1m-v1' or
-                 (MAPPINGS / (name.replace('-v', '-1m-v') + '.json')).exists()):
-            names.append(name)
-    return sorted(names)
+    return sorted(path.stem for path in MAPPINGS.glob('*.json')
+                  if re.fullmatch(r'[a-z0-9-]+-v[0-9]+', path.stem))
 
 
 def mapping_contract(release_id=RELEASE, index_kind=KIND):
     if index_kind not in available_kinds(release_id):
         raise ValueError('No versioned mapping exists for this release and index kind.')
-    filename = (index_kind.replace('-v', '-1m-v') if release_id == 'retail-gb-1m-v1'
-                else index_kind) + '.json'
+    filename = index_kind + '.json'
     path = MAPPINGS / filename
     mapping = json.loads(path.read_text(encoding='utf-8'))
     canonical = json.dumps(mapping, sort_keys=True, separators=(',', ':')).encode()

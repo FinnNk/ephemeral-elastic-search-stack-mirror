@@ -8,7 +8,7 @@ from azure.core.exceptions import ResourceExistsError
 
 from blob_config import service, settings
 from load_release import BASELINE_MAPPING, INDEXER_IMAGE
-from load_million_release import MAPPING as MILLION_MAPPING
+from catalogue_mapping import MAPPING
 from input_selection import fetch_manifest
 
 
@@ -27,7 +27,7 @@ def catalogue_digest(value):
 
 def current_recipe(release_id, index_kind, release_manifest, engine_version, mapping=None):
     if mapping is None:
-        mapping = MILLION_MAPPING if release_manifest.get('compression') == 'gzip' else BASELINE_MAPPING
+        mapping = MAPPING
     product_name = 'products.jsonl.gz' if release_manifest.get('compression') == 'gzip' else 'products.jsonl'
     worker = (Path(__file__).resolve().parent.parent / 'lab/index_job.py').read_text(encoding='utf-8')
     return {
@@ -50,7 +50,7 @@ def catalogue_recipe(release_id, index_kind, catalogue_manifest, engine_version,
     if content['format'] != 'jsonl' or content['compression'] not in ('gzip', 'none'):
         raise ValueError('Unsupported catalogue encoding for the indexer.')
     if mapping is None:
-        mapping = MILLION_MAPPING if content['compression'] == 'gzip' else BASELINE_MAPPING
+        mapping = MAPPING
     worker = (Path(__file__).resolve().parent.parent / 'lab/index_job.py').read_text(encoding='utf-8')
     recipe = {'format': 2, 'release_id': release_id, 'index_kind': index_kind,
               'catalogue_manifest_sha256': catalogue_digest(catalogue_manifest),

@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from common import STATE
+from catalogue import DEFAULT_RELEASE, RELEASES
 
 ROOT = Path(__file__).with_name('traffic')
 TRACE = ROOT / 'source-trace-v1.csv'
@@ -153,15 +154,38 @@ def phase_rate(phase, position, source_count):
     return max(1, round(source_count * phase['source_multiplier']))
 
 
-def compile_profile(profile, release_id='retail-gb-10k-v1'):
-    if release_id == 'retail-gb-1m-v1':
-        trace_path, recipe_path, query_path = MILLION_TRACE_EXT, MILLION_RECIPES_EXT, MILLION_QUERIES
-        source_manifest = ROOT / 'source-manifest-million-v2.json'
-    elif release_id == 'retail-gb-10k-v1':
-        trace_path, recipe_path, query_path = TRACE, RECIPES, QUERY_PATH
-        source_manifest = ROOT / 'source-manifest-v1.json'
-    else:
+def generate_catalogue_trace(release_id):
+    query_path = STATE / 'releases' / release_id / 'queries.jsonl'
+    queries = [json.loads(line) for line in query_path.read_bytes().splitlines()]
+    if not queries:
+        raise ValueError('A non-empty frozen suite is required for traffic generation.')
+    rng = random.Random(20261002)
+    events = []
+    head = max(1, len(queries)//20)
+    for second in range(1800):
+        count = max(2, round(7 + 3*math.sin(second*math.pi/150) + (5 if second%180 < 10 else 0)))
+        for slot in range(count):
+            query = queries[rng.randrange(head) if rng.random()<.7 else rng.randrange(len(queries))]
+            moment = FIXED_TIME + timedelta(milliseconds=second*1000+round((slot+.5)*1000/count))
+            events.append({'timestamp':moment.isoformat().replace('+00:00','Z'),
+                           'query_id':query['query_id'],'query':query['query']})
+    directory = STATE / 'traffic' / release_id
+    trace = directory / 'source.csv'
+    payload = csv_bytes(['timestamp','query_id','query'],events)
+    freeze(trace,payload)
+    manifest = {'kind':'synthetic arrival times over published queries','schema_version':1,
+                'trace_sha256':sha(payload),'query_sha256':sha(query_path.read_bytes()),
+                'seed':20261002,'seconds':1800,'events':len(events),
+                'assumptions':['70% head-query selection; timestamps and frequencies are synthetic, not production traffic']}
+    freeze(directory/'manifest.json',(json.dumps(manifest,sort_keys=True,indent=2)+'\n').encode())
+    return trace,directory/'manifest.json',query_path
+
+
+def compile_profile(profile, release_id=DEFAULT_RELEASE):
+    if release_id not in RELEASES:
         raise ValueError('Unsupported frozen traffic release.')
+    trace_path,source_manifest,query_path = generate_catalogue_trace(release_id)
+    recipe_path = MILLION_RECIPES_EXT
     recipe_bytes = recipe_path.read_bytes()
     recipes = json.loads(recipe_bytes)
     if profile not in recipes['profiles']:
@@ -220,9 +244,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('command', choices=('generate', 'generate-million', 'generate-million-extended', 'compile'))
     parser.add_argument('--profile', default='probe')
-    parser.add_argument('--release', default='retail-gb-10k-v1')
+    parser.add_argument('--release', choices=RELEASES, default=DEFAULT_RELEASE)
     args = parser.parse_args()
-    print(json.dumps(generate_trace() if args.command == 'generate' else
+    print(json.dumps({'source': [str(p) for p in generate_catalogue_trace(args.release)]} if args.command == 'generate' else
                      generate_million_trace() if args.command == 'generate-million' else
                      generate_million_trace_extended() if args.command == 'generate-million-extended' else
                      compile_profile(args.profile, args.release), indent=2))

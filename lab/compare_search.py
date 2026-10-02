@@ -1,4 +1,5 @@
 """Compare two pinned environments through their public search APIs."""
+from catalogue import DEFAULT_RELEASE, RELEASES
 import hashlib
 import json
 from pathlib import Path
@@ -52,23 +53,15 @@ def definition(name):
     return entry
 
 
-def frozen_suite(release_id='retail-gb-10k-v1'):
+def frozen_suite(release_id=DEFAULT_RELEASE):
     release = STATE / 'releases' / release_id
     original = (release / 'queries.jsonl').read_bytes()
     manifest = json.loads((release / 'manifest.json').read_text())
     assert hashlib.sha256(original).hexdigest() == manifest['sha256']['queries.jsonl']
-    if release_id == 'retail-gb-10k-v1':
-        extra_rows = [json.loads(line) for line in (ROOT / 'lab/comparison-extra.jsonl').read_text().splitlines()]
-        extra = ''.join(json.dumps(row, sort_keys=True, separators=(',', ':')) + '\n'
-                        for row in extra_rows).encode()
-    else:
-        extra = b''
-    payload = original + extra
+    payload = original
     rows = [json.loads(line) for line in payload.splitlines()]
-    assert len(rows) == manifest['query_count'] + (1 if extra else 0)
+    assert len(rows) == manifest['query_count']
     assert len({row['query_id'] for row in rows}) == len(rows)
-    if extra:
-        assert rows[-1]['query_id'] == 'q051'
     return rows, payload, hashlib.sha256(payload).hexdigest(), manifest
 
 
@@ -120,15 +113,13 @@ def compare():
             'jaccard_at_10': round(jaccard(left['ids'], right['ids']), 6),
             'rbo_at_10_p_0_9': round(rbo(left['ids'], right['ids']), 6)})
     changed = [row['query_id'] for row in results if not row['equal_top_10']]
-    assert changed == ['q051'], f'Unexpected result changes: {changed}'
-    assert results[-1]['baseline']['ids'] == [] and len(results[-1]['candidate']['ids']) == 10
     report = {
         'kind': 'black-box-result-comparison', 'complete': True,
         'baseline': baseline, 'candidate': candidate,
         'suite_sha256': suite_sha, 'suite_blob': suite_blob,
         'query_count': len(rows), 'original_query_sha256': manifest['sha256']['queries.jsonl'],
         'judgement_sha256': manifest['sha256']['judgements.jsonl'],
-        'judgement_usage': 'Not used for this result-preservation check; q051 is unjudged.',
+        'judgement_usage': 'Not used for this result-preservation check.',
         'metrics': {'depth': DEPTH, 'rbo_persistence': RBO_P,
                     'changed_query_ids': changed, 'unchanged_count': len(rows) - len(changed)},
         'queries': results,

@@ -29,10 +29,10 @@ Operator prerequisites: bootstrapped lab, Nexus/storage/ESO, Python and the reta
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 $kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
-python lab/setup_judgement_stack.py --verify-only
+python lab/setup_judgement_stack.py --verify-only --million
 ```
 
-On a new installation, first publish the source-matching image with `python lab/publish_judgement_image.py --platforms amd64`, then run `python lab/setup_judgement_stack.py`. Setup validates its image pin and configures cert-manager, KServe, MLflow, Secrets and the 10k source service. Add `--million` only when the 1M source is required; it shares the registry and predictor. Native arm64 requires its own verified image. Bootstrap refuses to reset an installed replacement model to the original abstaining version.
+On a new installation, first publish the source-matching image with `python lab/publish_judgement_image.py --platforms amd64`, then run `python lab/setup_judgement_stack.py --million`. Setup validates its image pin and configures cert-manager, KServe, MLflow, Secrets and the 10k source service. Add `--million` only when the 1M source is required; it shares the registry and predictor. Native arm64 requires its own verified image. Bootstrap refuses to reset an installed replacement model to the original abstaining version.
 
 ## Capture, resolve and score
 
@@ -51,7 +51,7 @@ $catalogue = Get-ChildItem $inputDir -Filter 'products.jsonl*' | Select-Object -
 python judgements/evaluate.py --observations "$runDir/observations.json" --specification evaluation/specs/proxy-v1.json --catalogue $catalogue --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --source-judgements "$inputDir/judgements.jsonl" --source-manifest "$manifestDir/judgement-set.json" --output "$runDir/resolved" --resolve-url http://127.0.0.1:18086/v1/judgements:resolve --model-name $model.name --model-version $model.version --model-artifact-sha256 $model.artifact_sha256
 ```
 
-The 10k and million manifests currently share `judgement-model-pin`. Confirm the selected Deployment still references it before using those values. The input pack must contain exactly one product file.
+The demo and full ESCI manifests currently share `judgement-model-pin`. Confirm the selected Deployment still references it before using those values. The input pack must contain exactly one product file.
 
 | Output under `resolved/` | Purpose |
 | --- | --- |

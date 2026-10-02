@@ -182,7 +182,7 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
               if mode == 'relevance' else None,
               'judgement_coverage': coverage,
               'judgement_coverage_status': coverage_status,
-              'judgement_usage': ('Selected synthetic labels; unjudged products remain unknown.'
+              'judgement_usage': ('Selected published labels; unjudged products remain unknown.'
                                   if mode == 'relevance' else 'Not used for result preservation.'),
               'query_count': len(suite), 'completed_query_count': len(results), 'zero_result_counts': zero_counts,
               'changed_query_ids': changed, 'metrics': metrics, 'errors': errors, 'queries': results}

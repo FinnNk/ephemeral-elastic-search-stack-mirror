@@ -1,4 +1,4 @@
-"""Publish a synthetic release to Floci and freeze its dedicated Elasticsearch index."""
+"""Publish a frozen catalogue to Azure Blob Storage and load its Elasticsearch index."""
 import hashlib
 import json
 import secrets
@@ -12,21 +12,13 @@ from data_contract import elastic
 from blob_config import service, settings, signed_read_url
 from azure.core.exceptions import ResourceExistsError
 
-RELEASE = 'retail-gb-10k-v1'
+from catalogue import DEFAULT_RELEASE
+from catalogue_mapping import MAPPING
+
+RELEASE = DEFAULT_RELEASE
 INDEX = RELEASE
 DATA = STATE / 'releases' / RELEASE
-BASELINE_MAPPING = {
-    'settings': {'number_of_shards': 1, 'number_of_replicas': 0},
-    'mappings': {'properties': {
-        'product_id': {'type': 'keyword'}, 'sku': {'type': 'keyword'},
-        'title': {'type': 'text'}, 'description': {'type': 'text'},
-        'brand': {'type': 'text'}, 'product_type': {'type': 'text'},
-        'category': {'type': 'keyword'}, 'colour': {'type': 'keyword'},
-        'material': {'type': 'keyword'}, 'country': {'type': 'keyword'},
-        'currency': {'type': 'keyword'}, 'price_minor': {'type': 'integer'},
-        'available': {'type': 'boolean'}, 'popularity': {'type': 'float'},
-    }},
-}
+BASELINE_MAPPING = MAPPING
 INDEXER_IMAGE = ('python:3.13.7-alpine3.22@sha256:'
                  '9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844')
 
@@ -65,19 +57,6 @@ def publish_blobs(manifest, data_dir=DATA):
             remote_bytes += len(chunk)
         assert remote_bytes == source.stat().st_size and remote_hash.hexdigest() == local_hash, f'Blob differs: {path}'
     return f'{release}/{product_name}'
-
-
-def create_index():
-    mapping = BASELINE_MAPPING
-    try:
-        elastic('/' + INDEX, 'PUT', mapping)
-        return True
-    except urllib.error.HTTPError as error:
-        if error.code != 400:
-            raise
-        existing = elastic('/' + INDEX)
-        assert existing[INDEX]['mappings'] == mapping['mappings'], 'Existing index mapping differs'
-        return False
 
 
 def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer',
@@ -141,28 +120,22 @@ def index_job(blob_path, digest, index=INDEX, role='retail-baseline-indexer',
 
 
 def main():
+    import argparse
+    from catalogue import RELEASES
+    from index_recipe import catalogue_recipe, publish as publish_recipe
+    from input_selection import DEFAULTS, fetch_manifest
+    from shared_index import ensure_shared_index
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--release', choices=RELEASES, default=RELEASE)
+    args = parser.parse_args()
     guard()
-    manifest = json.loads((DATA / 'manifest.json').read_text())
-    assert manifest['release'] == RELEASE and manifest['count'] == 10000
-    blob_path = publish_blobs(manifest)
-    started = time.monotonic()
-    created = create_index()
-    if created:
-        try:
-            index_job(blob_path, manifest['sha256']['products.jsonl'])
-            elastic('/' + INDEX + '/_settings', 'PUT', {'index.blocks.write': True})
-        except Exception:
-            elastic('/' + INDEX, 'DELETE')
-            raise
-    settings = elastic('/' + INDEX + '/_settings')[INDEX]['settings']['index']
-    assert settings['blocks']['write'] == 'true', 'Index is not frozen'
-    count = elastic('/' + INDEX + '/_count')['count']
-    assert count == manifest['count'], (count, manifest['count'])
-    evidence = {'release': RELEASE, 'index': INDEX, 'count': count,
-        'products_sha256': manifest['sha256']['products.jsonl'],
-        'query_count': manifest['query_count'], 'judgement_count': manifest['judgement_count'],
-        'frozen': True, 'created': created, 'elapsed_seconds': round(time.monotonic() - started, 3)}
-    record('retail-release', evidence)
+    catalogue = fetch_manifest('catalogue', DEFAULTS[args.release]['catalogue'])
+    recipe = catalogue_recipe(args.release, 'shared', catalogue, elastic('/')['version']['number'])
+    recipe_sha = publish_recipe(recipe)
+    result = ensure_shared_index(args.release, recipe['product_sha256'], recipe_sha)
+    evidence = {**result, 'release': args.release, 'products_sha256': recipe['product_sha256'],
+                'index_recipe_sha256': recipe_sha, 'frozen': True}
+    record('catalogue-release', evidence)
     print(json.dumps(evidence, indent=2))
 
 

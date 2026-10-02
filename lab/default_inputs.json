@@ -1,12 +1,12 @@
 {
-  "retail-gb-10k-v1": {
-    "catalogue": "e65c481acbb0f9917526841fd7ee51573104fb76e190805150c000d44f646c6a",
-    "query-suite": "144c51398442422cb638b6ef0f9df8c890e54afa6f3cad9383fbd1f93ad495fa",
-    "judgement-set": "f30d8e10880e774d2987555450d71b3f0186c2736b534238d0a2c90d2373c69d"
+  "esci-gb-v1": {
+    "catalogue": "f227ec73d131c087dc5ec4dc0fe8419200c3ccb84203254b36b0d516a12647d7",
+    "query-suite": "e3da6abc3081137cf9e3c01d33d74e278a3abb2844c68a39088f6c4c49bfe0ce",
+    "judgement-set": "4630c6ed3d3cbd9be4a54821a4fc0801b0fb1c7bfa67d423a700e37286c001b0"
   },
-  "retail-gb-1m-v1": {
-    "catalogue": "83686fb7afb11d3a5e4f691a950a8ed4e9fc0dc23343c78f54849659cf9393f5",
-    "query-suite": "158e982e64a245ae2faf558284550c3dafefa5fd45e5634c488cc1e34929f868",
-    "judgement-set": "690476679424fd789d5ed9021cdba7e4641117b19a255d6b790568deb02400c7"
+  "esci-gb-demo-v1": {
+    "catalogue": "3c5d12a14c9bbd0821cd3b7f5cdf800261439b998ce61692f8fd9081b618ae59",
+    "query-suite": "ffb4814a08ba8d95eb24cfae091512fcc610b42f5fbb16c5b3da3c9739ad3fe3",
+    "judgement-set": "b7cc9cae682ddbcc38c2aeab196ffb52822bd2e9c2205444f3f01bf1b29172ca"
   }
 }

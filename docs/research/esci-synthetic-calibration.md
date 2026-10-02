@@ -1,5 +1,7 @@
 # ESCI-informed synthetic data profile
 
+Historical synthetic-release research. Current workflows use the [ESCI catalogue](../esci-catalogue.md); the measurements and frozen inputs below retain their original conditions.
+
 The [million-product release](million-synthetic-release.md) is wholly synthetic. [ESCI-S](https://github.com/shuttie/esci-s) and the [original ESCI dataset](https://github.com/amazon-science/esci-data) supplied **aggregate modelling references** for its generator profile. The `retail-gb-10k-v1` release remains frozen and unchanged. No ESCI product, query, identifier, image, review or judgement is copied into a lab release.
 
 The machine-readable [profile](../../lab/profiles/esci-informed-uk-v1.json) records the source URLs, sample hash, observations and generator decisions. [The calibration script](../../lab/calibrate_esci.py) reduces the ESCI-S sample to aggregates; it does not emit source records.

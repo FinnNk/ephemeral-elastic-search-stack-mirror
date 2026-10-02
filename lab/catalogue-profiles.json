@@ -1,0 +1,13 @@
+{
+  "default": "esci-gb-v1",
+  "releases": {
+    "esci-gb-v1": {
+      "queries": 1000,
+      "products": null
+    },
+    "esci-gb-demo-v1": {
+      "queries": 50,
+      "products": 10000
+    }
+  }
+}

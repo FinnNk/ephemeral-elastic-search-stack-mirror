@@ -82,6 +82,16 @@ class PrepareTests(unittest.TestCase):
         self.assertEqual(json.loads((self.root / 'snapshot-two/judgement-set.json').read_bytes())
                          ['dependencies'], self.dependencies)
 
+    def test_resolution_retains_published_source_provenance(self):
+        producer = self.source_manifest['producer']
+        producer.update(synthetic=False, sources=[{'repository': 'published-fixture', 'sha256': 'a' * 64}])
+        self.write('source-manifest.json', self.source_manifest)
+        self.run_case('p2', 'published-snapshot', lambda items: [{'outcome': 'abstain'} for _ in items])
+        derived = json.loads((self.root / 'published-snapshot/judgement-set.json').read_bytes())['producer']
+        self.assertFalse(derived['synthetic'])
+        self.assertEqual(derived['sources'], producer['sources'])
+        self.assertEqual(derived['name'], 'pooled-judgement-resolution')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -48,16 +48,19 @@ Object.assign(styles.find(s => s.tag === 'Deployment Node'), {background:'#f4f7f
 
 const context = workspace.views.systemContextViews[0];
 position(context, {'Lab user':[100,100],'Platform engineer':[100,1050],
-  'Synthetic input production':[950,100],'Search relevance lab':[950,650],
+  'Input production':[950,100],'Search relevance lab':[950,650],
   'Offline evaluation':[1900,1850],'Source and build platform':[1900,100],
   'Judgement supply':[1900,650],'Deployment platform':[1900,1250]});
 // The context focuses on explicit system contracts; detailed ECK control is in the model.
 context.relationships = context.relationships.filter(r => {
-  const m=relationships.get(r.id); return !edgeRoute(r) &&
+  const m=relationships.get(r.id); return m.sourceId!==m.destinationId && m.description!=='Resolves local lab names' && !edgeRoute(r) &&
     !(name(m.sourceId)==='Deployment platform' && name(m.destinationId)==='Search relevance lab');
 });
 route(context,'Lab user','Source and build platform',[[650,80],[1910,80]],70);
 route(context,'Source and build platform','Search relevance lab',[[1630,650]],50);
+route(context,'Search relevance lab','Offline evaluation',[[1500,1100],[1500,1800],[2110,1800]],80);
+route(context,'Offline evaluation','Judgement supply',[[2450,1980],[2450,780]],65);
+route(context,'Offline evaluation','Search relevance lab',[[1650,1980],[1650,980],[1370,980]],30);
 
 const control = workspace.views.containerViews.find(v=>v.key==='02-control');
 control.elements = control.elements.filter(e=>name(e.id)!=='Lab user');

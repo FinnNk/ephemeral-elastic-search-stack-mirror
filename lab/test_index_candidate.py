@@ -19,7 +19,7 @@ class CandidateIndexRecovery(unittest.TestCase):
              patch('index_candidate.index_job') as job, \
              patch('index_candidate.elastic', return_value={'version': {'number': '9.5.4'}}):
             built = ensure_candidate_index('lab-cloned', manifest['sha256']['products.jsonl'],
-                                           recipe_sha256=digest(recipe))
+                                           release_id='retail-gb-10k-v1', recipe_sha256=digest(recipe))
         self.assertEqual(built['materialisation'], 'clone')
         self.assertEqual(built['build_seconds'], 1.2)
         restored.assert_not_called()
@@ -39,7 +39,7 @@ class CandidateIndexRecovery(unittest.TestCase):
              patch('index_candidate.elastic', side_effect=lambda path, *args: \
                    {'version': {'number': '9.5.4'}} if path == '/' else None):
             built = ensure_candidate_index('lab-rebuilt', manifest['sha256']['products.jsonl'],
-                                           recipe_sha256=digest(recipe))
+                                           release_id='retail-gb-10k-v1', recipe_sha256=digest(recipe))
         self.assertEqual(built['materialisation'], 'rebuild')
         self.assertEqual(len(built['recovery_errors']), 2)
         self.assertIn('snapshot mismatch', built['recovery_errors'][1])
@@ -54,7 +54,7 @@ class CandidateIndexRecovery(unittest.TestCase):
              patch('index_candidate.index_job', side_effect=RuntimeError('job failed')), \
              patch('index_candidate.elastic') as es:
             with self.assertRaisesRegex(RuntimeError, 'job failed'):
-                ensure_candidate_index('lab-failed', digest)
+                ensure_candidate_index('lab-failed', digest, release_id='retail-gb-10k-v1')
             es.assert_any_call('/lab-failed-idx', 'DELETE')
 
     def test_pinned_recipe_builds_without_reading_evolved_mapping_file(self):
@@ -73,7 +73,7 @@ class CandidateIndexRecovery(unittest.TestCase):
              patch('index_candidate.elastic', side_effect=lambda path, *args: \
                    {'version': {'number': '9.5.4'}} if path == '/' else None) as es:
             built = ensure_candidate_index('lab-pinned', manifest['sha256']['products.jsonl'],
-                                           recipe_sha256=recipe_sha)
+                                           release_id='retail-gb-10k-v1', recipe_sha256=recipe_sha)
         self.assertEqual(built['mapping_sha256'], digest(recipe['index_definition']))
         definition = next(call.args[2] for call in es.call_args_list if call.args[:2] == ('/lab-pinned-idx', 'PUT'))
         self.assertEqual(definition['mappings']['_meta']['index_recipe_sha256'], recipe_sha)

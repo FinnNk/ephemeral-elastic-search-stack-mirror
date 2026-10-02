@@ -1,5 +1,7 @@
 # Synthetic search traffic workload
 
+Historical synthetic-release research. Current workflows use the [ESCI catalogue](../esci-catalogue.md); the measurements and frozen inputs below retain their original conditions.
+
 The [frozen trace](../../lab/traffic/source-trace-v1.csv) has 4,399 synthetic `(timestamp, query)` pairs across ten minutes. Its [manifest](../../lab/traffic/source-manifest-v1.json) pins the source SHA-256, 50-query release hash, seed, time range and modelling assumptions. It contains no production traffic.
 
 The million-product release has a separate [30-minute trace](../../lab/traffic/source-trace-million-v2.csv) with 13,099 wholly synthetic events drawn from its 1,000 frozen queries; 976 occur at least once. Its [manifest](../../lab/traffic/source-manifest-million-v2.json) pins the query object and source hashes. The longer [recipes](../../lab/traffic/recipes-million-v2.json) use distinct source seconds for warm-up, measured load and recovery. The original ten-minute [million trace](../../lab/traffic/source-trace-million-v1.csv) and [recipes](../../lab/traffic/recipes-million-v1.json) remain versioned for reproducibility.

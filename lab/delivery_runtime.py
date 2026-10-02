@@ -1,4 +1,5 @@
 """Frozen release deployment through Argo CD; no CI process applies search workloads."""
+from catalogue import DEFAULT_RELEASE, RELEASES
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 import hashlib
@@ -55,13 +56,13 @@ def compatible(release, recipe):
         raise ValueError('Release is incompatible with the frozen index recipe.')
 
 
-def resolve(run_id, dataset='retail-gb-10k-v1', recipe_sha=None, merged=True,
+def resolve(run_id, dataset=DEFAULT_RELEASE, recipe_sha=None, merged=True,
             query_manifest_sha=None, judgement_manifest_sha=None, variant_config=None):
     receipt, release, _files = from_run(run_id)
     if merged and receipt['event_kind'] != 'push':
         raise ValueError('Promotion requires a successful merged-source push build.')
-    if dataset not in ('retail-gb-10k-v1', 'retail-gb-1m-v1'):
-        raise ValueError('Select one of the two frozen synthetic datasets.')
+    if dataset not in RELEASES:
+        raise ValueError('Select a configured frozen catalogue.')
     engine = elastic('/')['version']['number']
     recipe = (load_recipe(recipe_sha) if recipe_sha else catalogue_recipe(dataset, 'shared',
               fetch_manifest('catalogue', DEFAULTS[dataset]['catalogue']), engine))

@@ -6,7 +6,7 @@ from common import ROOT, STATE, apply, guard, k
 from gitea import api
 from delivery_provider import SOURCE, DESIRED, endpoint, ensure_repo, git
 from load_release import BASELINE_MAPPING, INDEXER_IMAGE
-from load_million_release import MAPPING as MILLION_MAPPING
+from catalogue_mapping import MAPPING
 from nexus import REGISTRY, credentials
 from delivery.ci.release import canonical, digest
 from keyvault import floci_forward, vault_request
@@ -79,7 +79,7 @@ def seed_source(path):
     shutil.copyfile(ROOT / 'lab/delivery/policies/variant-merge-v1.json',
                     path / 'gate/policy.json')
     worker = (ROOT / 'lab/index_job.py').read_text(encoding='utf-8').encode()
-    contract = {'engine_version': '9.5.4', 'definitions': [BASELINE_MAPPING, MILLION_MAPPING],
+    contract = {'engine_version': '9.5.4', 'definitions': [MAPPING],
                 'indexer_image': INDEXER_IMAGE, 'indexer_source_sha256': digest(worker)}
     (path / 'contracts/index.json').write_bytes(canonical(contract))
     (path / 'contracts/indexer.py').write_bytes(worker)

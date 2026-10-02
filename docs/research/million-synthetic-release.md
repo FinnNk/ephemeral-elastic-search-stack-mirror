@@ -1,5 +1,7 @@
 # Million-product synthetic UK release
 
+Historical synthetic-release research. Current workflows use the [ESCI catalogue](../esci-catalogue.md); the measurements and frozen inputs below retain their original conditions.
+
 `retail-gb-1m-v1` contains 1,000,000 original synthetic products, 1,000 distinct synthetic requests and 20,000 rule-based graded assessments. The [generator](../../lab/release_million.py) streams a deterministic gzip product object; the [profile](../../lab/profiles/esci-informed-uk-v1.json) and [calibration note](esci-synthetic-calibration.md) record the ESCI aggregate references used to choose its shape. The generator copies no ESCI products, queries, labels, identifiers, images or reviews.
 
 | Frozen property | Value |

@@ -4,7 +4,7 @@ Use this operator procedure to compare deployed Search API variants and supply e
 
 ## Prepare inputs
 
-Prerequisites: running lab/control services, ready Argo-managed search environments, compatible published synthetic inputs, Python and the Azure/evaluation dependency files under `lab/`. Use PowerShell from the repository root. Select the retained state directory when working in another checkout.
+Prerequisites: running lab/control services, ready Argo-managed search environments, compatible published inputs, Python and the Azure/evaluation dependency files under `lab/`. Use PowerShell from the repository root. Select the retained state directory when working in another checkout.
 
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path

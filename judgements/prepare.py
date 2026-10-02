@@ -125,7 +125,7 @@ def prepare(observation_path, specification_path, catalogue_path, catalogue_mani
     immutable(receipt_path, canonical(attempts))
     manifest = envelope('judgement-set', rows_path, 'pooled-judgement-resolution',
                         source_manifest['dependencies'], len(frozen),
-                        {'source_release': source_manifest['producer']['source_release'],
+                        {**{key: value for key, value in source_manifest['producer'].items() if key != 'name'},
                          'source_judgement_sha256': source_manifest['content']['sha256'],
                          'observation_sha256': digest(observation_bytes),
                          'resolution_sha256': digest(canonical(attempts)),

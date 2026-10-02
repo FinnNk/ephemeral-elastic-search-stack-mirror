@@ -1,0 +1,298 @@
+{
+  "release": "esci-gb-v1",
+  "count": 1215854,
+  "build_runs": [
+    77,
+    82
+  ],
+  "source_shas": [
+    "2b4a95da1db3d4ca3f4d5a4aed0f300f63e718c8",
+    "3a09c51c92e3045f1558ac11f95ad35bd82eb11c"
+  ],
+  "index": "esci-gb-v1-rc5f6d204c4467d4c49f842e3",
+  "recipe_sha256": "c5f6d204c4467d4c49f842e32e37e2ccd442a2211b02268440ad213cd784fa4c",
+  "query_count": 1000,
+  "result_changes": {
+    "ranker-a": {
+      "changed_queries": 0,
+      "fraction": 0.0
+    },
+    "ranker-baseline": {
+      "changed_queries": 0,
+      "fraction": 0.0
+    }
+  },
+  "coverage": {
+    "ranker-a": {
+      "judged": 2946,
+      "returned": 9915,
+      "fraction": 0.297126
+    },
+    "ranker-baseline": {
+      "judged": 2946,
+      "returned": 9915,
+      "fraction": 0.297126
+    }
+  },
+  "metrics": {
+    "ranker-a": {
+      "nDCG@10": 0.322184,
+      "Judged@10": 0.296956,
+      "RR@10:rel=2": 0.527769
+    },
+    "ranker-baseline": {
+      "nDCG@10": 0.322184,
+      "Judged@10": 0.296956,
+      "RR@10:rel=2": 0.527769
+    }
+  },
+  "capture_and_score_seconds": 52.032,
+  "observation": {
+    "sha256": "4c39eef75cd73e73076d9c74e4dde37e6e9986ec9c8f4930eb9933c31b4d4f10",
+    "blob": "datasets/4c39eef75cd73e73076d9c74e4dde37e6e9986ec9c8f4930eb9933c31b4d4f10/observations.json",
+    "query_count": 1000,
+    "default_variant": "ranker-a",
+    "baseline_variant": "ranker-baseline",
+    "variants": {
+      "ranker-a": {
+        "environment_fingerprint": "89444e7fedfb38914492ef329602710461ecc3c96364c3e142f6eb938f43212c",
+        "configuration_sha256": "047f11df6c57b60a0f424e185042bb91039c3c29436091f227eaafed38ed3acc",
+        "image": "nexus.localhost:18185/search-api@sha256:48aa5277bfd1f6bf317d4fdb94e5027eac6dad78f7a33ba14099d0f9996899b0"
+      },
+      "ranker-baseline": {
+        "environment_fingerprint": "e854ed8694d87544c8769ba83a5884bf98efbde9f62ce667ca36dff3aca6d62d",
+        "configuration_sha256": "047f11df6c57b60a0f424e185042bb91039c3c29436091f227eaafed38ed3acc",
+        "image": "nexus.localhost:18185/search-api@sha256:2aea8fc47d7f3af81ad75e463f1b5dd21d9d8554f04442139092ab275ea1f5a2"
+      }
+    }
+  },
+  "sample_ids": [
+    "B07YDWFN1C",
+    "B07H29DYTZ",
+    "B084Z3KB8L",
+    "B07SK1G8PK",
+    "B07BKZ8D15",
+    "B07G3DC612",
+    "B07FZWJ9VT",
+    "B07FZX6BJH",
+    "B07FZZRP9M",
+    "B08CXQP5BG",
+    "B07RLHV4ZR",
+    "B07M85GS94",
+    "B07V2KWK1J",
+    "B00JU9YYH2",
+    "B00YFS73O4",
+    "B07Y6YWX13",
+    "B085HVQM4X",
+    "B082GTPLV5",
+    "B07WNNDRZS",
+    "B07WSLCKQK"
+  ],
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\esci-verification-ed3dec16",
+  "gatling_probe": {
+    "baseline": {
+      "profile": "probe",
+      "workload_sha256": "a6911c9469c43c710e73d00fa299322cfd4b6e7714fd45bfead6629521406ca1",
+      "source_sha256": "2ae92f360bf3cd8080b22b76582727634a6404c25179093f809920edc4b5a3c8",
+      "recipe_sha256": "a0ceb9c429f987b87dd8bafbbc60b19c14796515378ec602ae55aa97472f2ba7",
+      "duration_seconds": 15,
+      "phases": {
+        "warmup": {
+          "requests": 10,
+          "ok": 10,
+          "failed": 0,
+          "failed_percent": 0.0,
+          "gatling_reported_rps_over_whole_run": 0.67,
+          "p95_ms": 101,
+          "p99_ms": 101,
+          "offered_rps": 2.0,
+          "planned_seconds": 5
+        },
+        "normal": {
+          "requests": 20,
+          "ok": 20,
+          "failed": 0,
+          "failed_percent": 0.0,
+          "gatling_reported_rps_over_whole_run": 1.33,
+          "p95_ms": 108,
+          "p99_ms": 108,
+          "offered_rps": 2.0,
+          "planned_seconds": 10
+        }
+      },
+      "arrival": {
+        "planned_count": 30,
+        "actual_count": 30,
+        "complete": true,
+        "arrival_drift_p95_ms": 9.0,
+        "arrival_drift_max_ms": 35.0,
+        "valid": true
+      },
+      "complete": true,
+      "valid": true,
+      "run_id": "ed554fb7",
+      "target": "baseline",
+      "environment": "lab-esci-before-ed3dec16",
+      "release_id": "esci-gb-v1",
+      "fingerprint": "e854ed8694d87544c8769ba83a5884bf98efbde9f62ce667ca36dff3aca6d62d",
+      "index": "esci-gb-v1-rc5f6d204c4467d4c49f842e3",
+      "image": "nexus.localhost:18185/search-api@sha256:2aea8fc47d7f3af81ad75e463f1b5dd21d9d8554f04442139092ab275ea1f5a2",
+      "runner_image": "maven:3.9.11-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237",
+      "gatling_version": "3.15.1",
+      "maven_plugin": "4.21.12",
+      "simulation_sha256": "89806e1d909ea65b27577211c0c8a382c85e5006df1495836330d3c09cd66b56",
+      "duration_wall_seconds": 47.203,
+      "runner_exit_code": 0,
+      "runner_limits": {
+        "cpu": 2,
+        "memory": "2Gi"
+      },
+      "host": "Windows 11 / local k3d",
+      "execution": "finite Kubernetes Job",
+      "job_name": "gatling-ed554fb7",
+      "workload_archive_sha256": "39fa3c95f963524d085bc2f8dbe123f92d2e2333a38c49f254ffc345986af9f9",
+      "workload_archive_blob": "runs/39fa3c95f963524d085bc2f8dbe123f92d2e2333a38c49f254ffc345986af9f9/compiled-workload.zip",
+      "native_report_sha256": "7f3434cba8813bb3ca3d9c05a6b8f918f8262bb2cbb1e97b0d0aeadcf26a6b77",
+      "native_report_blob": "runs/7f3434cba8813bb3ca3d9c05a6b8f918f8262bb2cbb1e97b0d0aeadcf26a6b77/gatling-report.zip"
+    },
+    "candidate": {
+      "profile": "probe",
+      "workload_sha256": "a6911c9469c43c710e73d00fa299322cfd4b6e7714fd45bfead6629521406ca1",
+      "source_sha256": "2ae92f360bf3cd8080b22b76582727634a6404c25179093f809920edc4b5a3c8",
+      "recipe_sha256": "a0ceb9c429f987b87dd8bafbbc60b19c14796515378ec602ae55aa97472f2ba7",
+      "duration_seconds": 15,
+      "phases": {
+        "warmup": {
+          "requests": 10,
+          "ok": 10,
+          "failed": 0,
+          "failed_percent": 0.0,
+          "gatling_reported_rps_over_whole_run": 0.67,
+          "p95_ms": 135,
+          "p99_ms": 135,
+          "offered_rps": 2.0,
+          "planned_seconds": 5
+        },
+        "normal": {
+          "requests": 20,
+          "ok": 20,
+          "failed": 0,
+          "failed_percent": 0.0,
+          "gatling_reported_rps_over_whole_run": 1.33,
+          "p95_ms": 99,
+          "p99_ms": 99,
+          "offered_rps": 2.0,
+          "planned_seconds": 10
+        }
+      },
+      "arrival": {
+        "planned_count": 30,
+        "actual_count": 30,
+        "complete": true,
+        "arrival_drift_p95_ms": 7.0,
+        "arrival_drift_max_ms": 22.0,
+        "valid": true
+      },
+      "complete": true,
+      "valid": true,
+      "run_id": "87822e60",
+      "target": "candidate",
+      "environment": "lab-esci-after-ed3dec16",
+      "release_id": "esci-gb-v1",
+      "fingerprint": "89444e7fedfb38914492ef329602710461ecc3c96364c3e142f6eb938f43212c",
+      "index": "esci-gb-v1-rc5f6d204c4467d4c49f842e3",
+      "image": "nexus.localhost:18185/search-api@sha256:48aa5277bfd1f6bf317d4fdb94e5027eac6dad78f7a33ba14099d0f9996899b0",
+      "runner_image": "maven:3.9.11-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237",
+      "gatling_version": "3.15.1",
+      "maven_plugin": "4.21.12",
+      "simulation_sha256": "89806e1d909ea65b27577211c0c8a382c85e5006df1495836330d3c09cd66b56",
+      "duration_wall_seconds": 42.703,
+      "runner_exit_code": 0,
+      "runner_limits": {
+        "cpu": 2,
+        "memory": "2Gi"
+      },
+      "host": "Windows 11 / local k3d",
+      "execution": "finite Kubernetes Job",
+      "job_name": "gatling-87822e60",
+      "workload_archive_sha256": "39fa3c95f963524d085bc2f8dbe123f92d2e2333a38c49f254ffc345986af9f9",
+      "workload_archive_blob": "runs/39fa3c95f963524d085bc2f8dbe123f92d2e2333a38c49f254ffc345986af9f9/compiled-workload.zip",
+      "native_report_sha256": "89b1b3abca33c9498516aca711846f13f068c7cc8d3640947f95c250701bbc0d",
+      "native_report_blob": "runs/89b1b3abca33c9498516aca711846f13f068c7cc8d3640947f95c250701bbc0d/gatling-report.zip"
+    }
+  },
+  "snapshot_restore": {
+    "source": "snapshot",
+    "repository": "lab-s3",
+    "snapshot": "frozen-c5f6d204c4467d4c49f842e32e37e2ccd442a2211b02268440ad213cd784fa4c",
+    "seconds": 45.39,
+    "count": 1215854,
+    "ordered_sample": [
+      "0000306045",
+      "0002159511",
+      "0003002764",
+      "0004126475",
+      "0004127579",
+      "0004133269",
+      "0006485596",
+      "0006530818",
+      "0006551289",
+      "0007121768"
+    ]
+  },
+  "judgement_services": {
+    "judgement-service": {
+      "forged_record": "rejected",
+      "gap": "unjudged",
+      "stored": "E"
+    },
+    "judgement-service-million": {
+      "forged_record": "rejected",
+      "gap": "unjudged",
+      "stored": "C"
+    }
+  },
+  "normal_control_creation": {
+    "state": "ready",
+    "seconds": 12.582,
+    "build_run": 25,
+    "repository": "elastic-agent/search-spike",
+    "release": "esci-gb-v1",
+    "materialisation": "existing shared index",
+    "disposal_seconds": 61.868
+  },
+  "source_gate": {
+    "pr": 19,
+    "run": 83,
+    "verdict": "blocked",
+    "minimum_judged_fraction": 0.8,
+    "observed_judged_fraction": 0.297126
+  },
+  "scope": {
+    "date": "2026-10-02",
+    "platform": "Windows / Docker Desktop / k3d",
+    "native_apple_silicon": false,
+    "azure": false,
+    "floci_memory_limit": "8Gi",
+    "initial_index_seconds": 272.609
+  },
+  "tests": {
+    "lab": 143,
+    "data": 10,
+    "evaluation": 6,
+    "judgement_core_service_and_resolution": 17,
+    "esci_model_qualification": "not run: host MLflow dependency unavailable"
+  },
+  "runtime_images": {
+    "control": "nexus.localhost:18185/lab-control@sha256:1deb61abc18013bcc6015bd04f8b8081bc6e346b176e034cb787d2b546611c8c",
+    "judgements": {
+      "image": "nexus.localhost:18185/relevance-judge:j1-f869662ec1c2f0af",
+      "manifest_sha256": "sha256:bd58a58b8586c6cbbee9b828a6d134200b4b2cd754d3f91ca07b1678190e2b9a",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "source_sha256": "f869662ec1c2f0afc22891b3421c0973d252688efd222453ac055d6c12339f71"
+    }
+  }
+}

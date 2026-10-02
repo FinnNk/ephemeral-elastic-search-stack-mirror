@@ -66,7 +66,7 @@ spec:
         - name: pr-watcher
           image: __CONTROL_IMAGE__
           imagePullPolicy: IfNotPresent
-          command: [sh, -c, 'until wget -q -O /dev/null --header="Host: localhost:18082" http://127.0.0.1:18082/api/health; do sleep 2; done; exec python lab/pr_workflow.py --watch --baseline-run "$LAB_PR_BASELINE_RUN" --release retail-gb-10k-v1']
+          command: [sh, -c, 'until wget -q -O /dev/null --header="Host: localhost:18082" http://127.0.0.1:18082/api/health; do sleep 2; done; exec python lab/pr_workflow.py --watch --baseline-run "$LAB_PR_BASELINE_RUN"']
           envFrom:
             - configMapRef:
                 name: lab-control-config

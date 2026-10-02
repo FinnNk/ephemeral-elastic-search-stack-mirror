@@ -73,11 +73,11 @@ def wait_ready(million=False):
             raise ValueError(deployment + ' does not run the pinned source image.')
     result = k('exec', '-n', 'lab-models', 'deployment/judgement-service', '-c',
                'judgement-service', '--', 'python', '/app/smoke.py')
-    checks = {'ten_thousand': json.loads(result.stdout)}
+    checks = {'demo': json.loads(result.stdout)}
     if million:
         result = k('exec', '-n', 'lab-models', 'deployment/judgement-service-million',
                    '-c', 'judgement-service-million', '--', 'python', '/app/smoke.py')
-        checks['million'] = json.loads(result.stdout)
+        checks['full'] = json.loads(result.stdout)
     return checks
 
 
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--verify-only', action='store_true')
     parser.add_argument('--million', action='store_true',
-                        help='Also deploy or check the million-product source profile')
+                        help='Also deploy or check the full ESCI source profile')
     args = parser.parse_args()
     print(json.dumps(wait_ready(args.million) if args.verify_only else install(args.million),
                      sort_keys=True))

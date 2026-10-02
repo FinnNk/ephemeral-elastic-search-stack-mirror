@@ -1,6 +1,6 @@
 # Compare API performance with Gatling
 
-Gatling replays one frozen synthetic workload against baseline and candidate APIs and retains native reports plus a paired verdict. A probe verifies the runner; it is not a capacity result.
+Gatling replays one frozen workload with synthetic arrival times against baseline and candidate APIs and retains native reports plus a paired verdict. A probe verifies the runner; it is not a capacity result.
 
 ## Choose a route and profile
 
@@ -8,41 +8,42 @@ Gatling replays one frozen synthetic workload against baseline and candidate API
 | --- | --- |
 | Control UI **Gatling performance** | Installed lab, two ready environments on one frozen catalogue |
 | Kubernetes CLI Jobs | Same lab, frozen APIs, Blob Storage emulator port-forward/credentials and pinned runner image |
-| Local Docker runner | Docker, baseline/candidate API forwards on 18080/18081; original 10k aliases |
+| Local Docker runner | Docker, baseline/candidate API forwards on 18080/18081; ready API environments |
 
 | Profile | Purpose |
 | --- | --- |
 | `probe` | Short wiring/readiness check |
 | `smoke` | Five measured minutes at 10 requests/s |
 | `normal`, `peak`, `stress` | Short runner calibration |
-| `normal-full`, `sustained-peak`, `stress-full` | Longer phases from the 30-minute million-release trace |
+| `normal-full`, `sustained-peak`, `stress-full` | Longer phases from the 30-minute ESCI-query trace |
 
 No host Java is needed. The pinned simulation uses Gatling's Java SDK and Maven inside its container.
 
 ## Run a local pair
 
-Use PowerShell from the repository root. Have the two original 10k API forwards running, then select the retained state directory:
+Use PowerShell from the repository root. Have the two API forwards running, then select the retained state directory:
 
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-python lab/traffic.py generate
+$baselineEnvironment = Read-Host 'Ready baseline namespace using the ESCI catalogue'
+$candidateEnvironment = Read-Host 'Ready candidate namespace using the same catalogue'
 python lab/traffic.py compile --profile probe
-python lab/run_gatling.py probe baseline
-python lab/run_gatling.py probe candidate
+python lab/run_gatling.py probe baseline --environment $baselineEnvironment
+python lab/run_gatling.py probe candidate --environment $candidateEnvironment
 python lab/compare_gatling.py probe
 ```
 
-The compiler writes schedules/feeders under retained `workloads/`. Each runner writes native HTML and arrival records; the comparator prints the paired result. For a Kubernetes pair over the original aliases:
+The compiler writes schedules/feeders under retained `workloads/`. Each runner writes native HTML and arrival records; the comparator prints the paired result. For a Kubernetes pair over the configured baseline/candidate aliases:
 
 ```powershell
-python lab/run_gatling_job.py probe baseline
-python lab/run_gatling_job.py probe candidate
+python lab/run_gatling_job.py probe baseline --environment $baselineEnvironment
+python lab/run_gatling_job.py probe candidate --environment $candidateEnvironment
 $baselineRun = Read-Host 'run_id printed by the baseline Job'
 $candidateRun = Read-Host 'run_id printed by the candidate Job'
 python lab/compare_gatling_jobs.py probe $baselineRun $candidateRun
 ```
 
-Use the control UI for arbitrary ready environments and the million release. Its runner resolves the selected in-cluster services. To compile a million-release schedule explicitly, use `python lab/traffic.py compile --profile sustained-peak --release retail-gb-1m-v1`.
+Use the control UI for arbitrary ready environments and either configured catalogue. Its runner resolves the selected in-cluster services. To compile a default catalogue schedule explicitly, use `python lab/traffic.py compile --profile sustained-peak --release esci-gb-v1`.
 
 ## Frozen request context
 

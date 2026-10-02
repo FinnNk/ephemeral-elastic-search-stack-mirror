@@ -69,6 +69,19 @@ class InputContractTests(unittest.TestCase):
             upload(Client(ExistingBlob(b'forged!! synthetic input\n')), 'datasets',
                    'catalogue/' + digest, payload, digest, len(payload))
 
+    def test_repeat_publication_does_not_send_existing_catalogue(self):
+        from unittest.mock import Mock
+        payload = b'catalogue'
+        digest = hashlib.sha256(payload).hexdigest()
+        blob = Mock()
+        blob.get_blob_properties.return_value = type('Properties', (), {
+            'size': len(payload), 'metadata': {'sha256': digest}})()
+        client = Mock()
+        client.get_blob_client.return_value = blob
+        upload(client, 'datasets', 'catalogue/' + digest, payload, digest, len(payload))
+        blob.upload_blob.assert_not_called()
+        blob.download_blob.assert_not_called()
+
     def test_country_cannot_switch_currency_within_catalogue(self):
         files = input_files(self.release)
         altered = self.release / 'altered-products.jsonl'

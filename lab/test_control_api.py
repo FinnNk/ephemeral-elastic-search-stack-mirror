@@ -96,7 +96,7 @@ class LocalControlApi(unittest.TestCase):
         cookie = self.login('admin')
         inputs = urllib.request.Request(self.base + '/api/input-sets', headers={'Cookie': cookie})
         with urllib.request.urlopen(inputs) as response:
-            self.assertIn('retail-gb-10k-v1', json.load(response))
+            self.assertIn('esci-gb-v1', json.load(response))
         request = urllib.request.Request(self.base + '/api/comparisons', method='POST',
             data=json.dumps({'baseline_id': 'known', 'candidate_id': 'other',
                              'mode': 'relevance', 'query_manifest_sha256': 'a' * 64,

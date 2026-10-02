@@ -1,4 +1,5 @@
 """Run one pinned Gatling profile against a pinned public API in a local container."""
+from catalogue import DEFAULT_RELEASE, RELEASES
 import argparse
 import hashlib
 import io
@@ -13,6 +14,7 @@ from common import ROOT, STATE, record
 from compare_search import definition, immutable_blob
 from gatling_report import summarise
 from traffic import compile_profile
+from input_selection import DEFAULTS, fetch_manifest
 
 IMAGE = 'maven:3.9.11-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237'
 TARGETS = {'baseline': ('retail-baseline', 18080), 'candidate': ('retail-candidate', 18081)}
@@ -46,11 +48,15 @@ def retain_workload(workload):
             'workload_archive_blob': immutable_blob('runs', digest + '/compiled-workload.zip', payload)}
 
 
-def run(profile, target, release_id='retail-gb-10k-v1'):
+def run(profile, target, release_id=DEFAULT_RELEASE, environment=None):
     if target not in TARGETS:
         raise ValueError('Target must be baseline or candidate.')
-    environment, port = TARGETS[target]
+    alias, port = TARGETS[target]
+    environment = environment or alias
     pinned = definition(environment)
+    catalogue = fetch_manifest('catalogue', DEFAULTS[release_id]['catalogue'])
+    if pinned['dataset_sha256'] != catalogue['content']['sha256']:
+        raise ValueError('Gatling workload and environment must use the same frozen catalogue.')
     workload = compile_profile(profile, release_id)
     run_id = uuid.uuid4().hex[:12]
     run_dir = STATE / 'gatling-runs' / run_id
@@ -103,6 +109,7 @@ if __name__ == '__main__':
     parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress',
                                             'normal-full', 'sustained-peak', 'stress-full'))
     parser.add_argument('target', choices=TARGETS)
-    parser.add_argument('--release', default='retail-gb-10k-v1')
+    parser.add_argument('--release', choices=RELEASES, default=DEFAULT_RELEASE)
+    parser.add_argument('--environment', help='Ready namespace behind the side-specific API forward')
     args = parser.parse_args()
-    print(json.dumps(run(args.profile, args.target, args.release), indent=2))
+    print(json.dumps(run(args.profile, args.target, args.release, args.environment), indent=2))

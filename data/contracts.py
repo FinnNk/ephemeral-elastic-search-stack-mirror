@@ -1,4 +1,4 @@
-"""Versioned, content-addressed synthetic input contracts.
+"""Versioned, content-addressed input contracts.
 
 This package has no dependency on the search API or lab control runtime.
 """
@@ -57,7 +57,7 @@ def input_files(directory):
 
 def validate_records(files, traffic=None):
     """Stream records through a temporary identity index, including 1M inputs."""
-    with tempfile.TemporaryDirectory(prefix='synthetic-contract-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='input-contract-') as temporary:
         database = sqlite3.connect(Path(temporary) / 'ids.sqlite3')
         try:
             database.executescript('CREATE TABLE products(id TEXT PRIMARY KEY);'
@@ -153,8 +153,11 @@ def validate_envelope(manifest):
     if content.get('bytes', 0) <= 0 or not content.get('object', '').startswith(
             manifest['kind'] + '/' + digest + '/'):
         raise ValueError('Content address or size differs.')
-    if manifest.get('producer', {}).get('synthetic') is not True:
-        raise ValueError('This lab accepts synthetic input artifacts only.')
+    producer = manifest.get('producer', {})
+    if type(producer.get('synthetic')) is not bool:
+        raise ValueError('Producer must declare whether its inputs are wholly synthetic.')
+    if not producer['synthetic'] and not producer.get('sources'):
+        raise ValueError('Published inputs require source provenance.')
     if not manifest['producer'].get('name') or not manifest['producer'].get('source_release'):
         raise ValueError('Producer provenance is incomplete.')
     required = {'catalogue': set(), 'query-suite': set(),

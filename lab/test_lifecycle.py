@@ -69,8 +69,8 @@ class LifecycleContract(unittest.TestCase):
         self.assertEqual(row['state'], 'ready')
         self.assertEqual(row['source_sha'], 'a' * 40)
         self.assertEqual(row['fingerprint'], 'c' * 64)
-        self.assertEqual(row['catalogue_manifest_sha256'], DEFAULTS['retail-gb-10k-v1']['catalogue'])
-        self.assertEqual(row['index_name'], 'retail-gb-10k-v1-r' + 'e' * 24)
+        self.assertEqual(row['catalogue_manifest_sha256'], DEFAULTS['esci-gb-v1']['catalogue'])
+        self.assertEqual(row['index_name'], 'esci-gb-v1-r' + 'e' * 24)
         self.assertEqual(self.service.create('lab-demo', 3)['id'], row['id'])
         self.assertEqual(self.backend.provisions, ['lab-demo'])
         with self.assertRaises(ValueError):
@@ -100,10 +100,10 @@ class LifecycleContract(unittest.TestCase):
              patch('lifecycle.verify_catalogue_manifest', return_value=catalogue), \
              patch('lifecycle.elastic', return_value={'version': {'number': '9.5.4'}}), \
              patch('lifecycle.publish_index_recipe', return_value='b' * 64) as published:
-            pinned = LabBackend().pin_index_recipe('retail-gb-10k-v1', 'shared')
+            pinned = LabBackend().pin_index_recipe('esci-gb-v1', 'shared')
         self.assertEqual(published.call_args.args[0]['format'], 2)
         self.assertEqual(pinned['product_sha256'], product_sha)
-        self.assertEqual(pinned['shared_index'], 'retail-gb-10k-v1-r' + 'b' * 24)
+        self.assertEqual(pinned['shared_index'], 'esci-gb-v1-r' + 'b' * 24)
 
     def test_recovery_path_and_fallback_error_are_persisted(self):
         result = {'fingerprint': 'c' * 64,
@@ -165,8 +165,8 @@ class LifecycleContract(unittest.TestCase):
         first = self.service.create('lab-first', 3)
         second = self.service.create('lab-second', 3)
         with self.assertRaisesRegex(ValueError, 'different inputs'):
-            self.service.create('lab-first', 3, release_id='retail-gb-1m-v1')
-        self.store.update(second['id'], release_id='retail-gb-1m-v1', dataset_sha256='f' * 64)
+            self.service.create('lab-first', 3, release_id='esci-gb-demo-v1')
+        self.store.update(second['id'], release_id='esci-gb-demo-v1', dataset_sha256='f' * 64)
         with self.assertRaisesRegex(ValueError, 'same frozen catalogue'):
             self.service.compare(first['id'], second['id'], 'result-regression')
 
@@ -189,8 +189,12 @@ class LifecycleContract(unittest.TestCase):
         self.assertEqual(self.backend.deletions, ['lab-race'])
 
     def test_search_readiness_retries_after_argo_health(self):
-        answers = iter([None, {'ids': []}, {'ids': list(range(10))}])
+        answers = iter([None, {'ids': []}, {'ids': list(range(10)), 'total': 10}])
         self.assertEqual(len(wait_correct_search('lab-test', lambda _name, _query: next(answers), 5)['ids']), 10)
+
+    def test_readiness_accepts_the_api_default_page_and_an_empty_result(self):
+        for answer in ({'ids': list(range(20)), 'total': 200}, {'ids': [], 'total': 0}):
+            self.assertEqual(wait_correct_search('lab-test', lambda *_: answer, 5), answer)
 
     def test_dedicated_index_request_is_pinned_and_cannot_change_in_place(self):
         row = self.service.create('lab-mapped', 3, index_kind=INDEX_KIND)
@@ -315,9 +319,9 @@ class LifecycleContract(unittest.TestCase):
 
     def test_bulk_create_and_delete_keep_unique_names_and_pinned_release(self):
         rows = self.service.create_many(['lab-fleet-one', 'lab-fleet-two'], 3,
-                                        release_id='retail-gb-1m-v1')
+                                        release_id='esci-gb-demo-v1')
         self.assertEqual([row['state'] for row in rows], ['ready', 'ready'])
-        self.assertEqual([row['release_id'] for row in rows], ['retail-gb-1m-v1'] * 2)
+        self.assertEqual([row['release_id'] for row in rows], ['esci-gb-demo-v1'] * 2)
         self.assertEqual(self.backend.provisions, ['lab-fleet-one', 'lab-fleet-two'])
         with self.assertRaises(ValueError):
             self.service.create_many(['lab-fleet-one', 'lab-fleet-three'], 3)
@@ -338,6 +342,24 @@ class LifecycleContract(unittest.TestCase):
         self.assertFalse(Store(self.store.path).claim_delete(row['id'], self.now[0]))
         self.now[0] += timedelta(seconds=11)
         self.assertTrue(Store(self.store.path).claim_delete(row['id'], self.now[0]))
+
+
+class FailedProvisionCleanup(unittest.TestCase):
+    def test_namespace_without_an_application_is_removed(self):
+        from unittest.mock import patch
+        from types import SimpleNamespace
+        from lifecycle import delete_orphan_namespace
+        with patch('lifecycle.k', return_value=SimpleNamespace(stdout='')) as kubectl:
+            delete_orphan_namespace('lab-failed-start')
+        kubectl.assert_any_call('delete', 'namespace/lab-failed-start', '--ignore-not-found', '--wait=false')
+
+    def test_application_still_owns_its_namespace(self):
+        from unittest.mock import patch
+        from types import SimpleNamespace
+        from lifecycle import delete_orphan_namespace
+        with patch('lifecycle.k', return_value=SimpleNamespace(stdout='application/live')) as kubectl:
+            delete_orphan_namespace('lab-running')
+        self.assertEqual(kubectl.call_count, 1)
 
 
 if __name__ == '__main__':

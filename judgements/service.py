@@ -1,4 +1,4 @@
-"""Judgement API: stored synthetic labels first, bounded KServe inference on gaps."""
+"""Judgement API: stored labels first, bounded KServe inference on gaps."""
 
 import argparse
 import gzip
@@ -60,12 +60,12 @@ class JudgementService:
                         raise ValueError('Source judgement has an invalid grade.')
                     self.database.execute('INSERT OR IGNORE INTO labels VALUES (?,?,?,?,?,?)',
                                           (self.scope, row['query_id'], row['product_id'], '',
-                                           GRADE_TO_LABEL[grade], 'synthetic'))
+                                           GRADE_TO_LABEL[grade], 'stored'))
                     stored = self.database.execute('''SELECT label FROM labels WHERE
                         scope=? AND query_id=? AND product_id=? AND model_version='' ''',
                         (self.scope, row['query_id'], row['product_id'])).fetchone()
                     if stored[0] != GRADE_TO_LABEL[grade]:
-                        raise ValueError('Stored synthetic label conflicts with source bytes.')
+                        raise ValueError('Stored label conflicts with source bytes.')
                 self.database.execute('INSERT INTO imports VALUES (?,1)', (self.scope,))
 
     def lookup(self, query_id, product_id):

@@ -25,8 +25,8 @@ class FrozenTrafficContract(unittest.TestCase):
             (root / 'source-manifest-v1.json').write_text(json.dumps({
                 'trace_sha256': traffic.sha(trace.read_bytes()),
                 'query_sha256': traffic.sha(queries.read_bytes())}), encoding='utf-8')
-            with patch.multiple(traffic, ROOT=root, TRACE=trace, RECIPES=recipes,
-                                QUERY_PATH=queries, OUTPUT=root / 'workloads'):
+            with patch('traffic.generate_catalogue_trace', return_value=(trace,root/'source-manifest-v1.json',queries)), \
+                 patch.multiple(traffic, MILLION_RECIPES_EXT=recipes, OUTPUT=root/'workloads'):
                 compiled = compile_profile('probe')
                 with (Path(compiled['directory']) / 'probe.csv').open(encoding='utf-8', newline='') as handle:
                     rows = list(csv.DictReader(handle))
@@ -62,16 +62,16 @@ class FrozenTrafficContract(unittest.TestCase):
         self.assertEqual(generate_million_trace()['events'], 4399)
         manifest = generate_million_trace_extended()
         self.assertEqual(manifest['events'], 13099)
-        million = compile_profile('smoke', 'retail-gb-1m-v1')
+        million = compile_profile('smoke', 'esci-gb-demo-v1')
         original = compile_profile('smoke')
         self.assertEqual(million['phase_counts']['normal'], 3000)
         self.assertNotEqual(million['source_sha256'], original['source_sha256'])
         self.assertNotEqual(million['workload_sha256'], original['workload_sha256'])
-        normal = compile_profile('normal-full', 'retail-gb-1m-v1')
+        normal = compile_profile('normal-full', 'esci-gb-v1')
         self.assertEqual(normal['duration_seconds'], 360)
         self.assertGreater(normal['phase_counts']['normal'], 2_000)
-        self.assertEqual(compile_profile('sustained-peak', 'retail-gb-1m-v1')['phase_counts']['peak'], 18_000)
-        self.assertEqual(compile_profile('stress-full', 'retail-gb-1m-v1')['phase_counts']['recovery'], 3_000)
+        self.assertEqual(compile_profile('sustained-peak', 'esci-gb-v1')['phase_counts']['peak'], 18_000)
+        self.assertEqual(compile_profile('stress-full', 'esci-gb-v1')['phase_counts']['recovery'], 3_000)
 
 
 if __name__ == '__main__':

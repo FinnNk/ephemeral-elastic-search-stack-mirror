@@ -1,4 +1,5 @@
 """Aggregate three explicitly paired five-minute Gatling smoke runs."""
+from catalogue import DEFAULT_RELEASE, RELEASES
 import argparse
 import hashlib
 import json
@@ -75,7 +76,7 @@ if __name__ == '__main__':
     digest = hashlib.sha256(payload).hexdigest()
     report['report_sha256'] = digest
     report['report_blob'] = immutable_blob('runs', digest + '/three-pair-smoke.json', payload)
-    release_id = report['pair_identity'][4] or 'retail-gb-10k-v1'
+    release_id = report['pair_identity'][4] or DEFAULT_RELEASE
     record('gatling-smoke-three-pair-' + release_id + '-' + args.execution, report)
     print(json.dumps({'valid': report['valid'], 'verdict': report['verdict'],
                       'median_candidate_p95_increase_percent': report['median_candidate_p95_increase_percent'],

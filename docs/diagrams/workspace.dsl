@@ -47,8 +47,8 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 tags "Platform"
             }
         }
-        inputProduction = softwareSystem "Synthetic input production" "Publishes versioned catalogue, query, judgement and traffic artifacts." {
-            producer = container "Input producer Job" "Validates and publishes independent synthetic inputs." "Finite Kubernetes Job / pinned OCI image" {
+        inputProduction = softwareSystem "Input production" "Publishes versioned catalogue, query, judgement and traffic artifacts." {
+            producer = container "Input producer Job" "Validates and publishes independent frozen inputs." "Finite Kubernetes Job / pinned OCI image" {
                 tags "Job"
             }
         }
@@ -57,7 +57,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 tags "Job"
             }
         }
-        judgementSupply = softwareSystem "Judgement supply" "Returns stored synthetic labels and attempts to resolve gaps." {
+        judgementSupply = softwareSystem "Judgement supply" "Returns stored published labels and attempts to resolve gaps." {
             judgementApi = container "Judgement API" "Checks frozen query/product records; stores labels and inference attempts." "Python HTTP API / SQLite" {
                 tags "Platform"
             }
@@ -133,8 +133,8 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         engineer -> localDns "Resolves local lab names" "DNS"
         previewRouter -> kube "Discovers search services; reconciles scoped routes" "Kubernetes API"
         edge -> search "Routes preview search pages" "HTTP inside cluster"
-        engineer -> inputProduction "Revises synthetic inputs"
-        inputProduction -> lab "Publishes frozen synthetic inputs" "Manifest and Blob API"
+        engineer -> inputProduction "Selects source inputs"
+        inputProduction -> lab "Publishes frozen source inputs" "Manifest and Blob API"
         lab -> assessment "Submits retained observations for scoring" "Artifact references"
         assessment -> judgementSupply "Resolves pooled gaps from every variant before scoring" "Versioned JSON API"
         operator -> lab "Validates lifecycle and isolation"
@@ -219,11 +219,11 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         search -> artifacts "Loads pinned query assets" "Azure Blob API"
         evaluation -> search "Queries two or more named variants across frozen APIs" "Public search API"
         evaluation -> artifacts "Reads inputs and load reports; saves verdicts" "Azure Blob API"
-        producer -> artifacts "Publishes immutable synthetic inputs and manifests" "Blob API"
+        producer -> artifacts "Publishes immutable source inputs and manifests" "Blob API"
         offline -> artifacts "Reads observations and judgements; retains reports" "Blob API"
         offline -> judgementApi "Resolves missing pooled query-product pairs" "JSON / HTTP"
         offline -> gateway "Exports optional evaluation trace and input shift" "OTLP/HTTP"
-        judgementApi -> artifacts "Loads pinned synthetic catalogue, queries and labels" "Azure Blob API"
+        judgementApi -> artifacts "Loads pinned ESCI catalogue, queries and labels" "Azure Blob API"
         judgementApi -> kserve "Requests labels for missing pairs" "KServe V1 inference API"
         judgementApi -> gateway "Exports resolution spans and outcome counts" "OTLP/HTTP"
         kserve -> gateway "Exports inference spans, latency and outcomes" "OTLP/HTTP"
