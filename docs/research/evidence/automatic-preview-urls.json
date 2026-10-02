@@ -22,5 +22,8 @@
   "service_removal_status": 404,
   "real_search_health": 200,
   "rbac_other_namespace": "no",
-  "cleanup": true
+  "cleanup": true,
+  "control_image": "nexus.localhost:18185/lab-control@sha256:326597a4717bc9bba1f9e903e8680a9ca2cd5a44868881e8d1389a008c357832",
+  "control_source_revision": "0a20fcee654cf7d7874a9d77d911c0a959a1fb6c",
+  "control_lab_tree": "db4c91f2ac053995c8403e61ede067c209652acc"
 }
