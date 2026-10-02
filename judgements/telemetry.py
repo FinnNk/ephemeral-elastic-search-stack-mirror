@@ -106,7 +106,7 @@ class Telemetry:
                     self.predictions.add(1, {
                         'lab.model.version': str(model_version),
                         'lab.model.outcome': row['outcome'],
-                        'lab.model.label': row.get('label', 'none')})
+                        'lab.model.label': row.get('label') or 'none'})
             if self.duration is not None:
                 self.duration.record(duration_ms, {'lab.model.version': str(model_version)})
         except Exception:

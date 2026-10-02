@@ -15,6 +15,11 @@ Qualification does not implement the later cascade passes.
   compatibility adapters or rewrite existing evaluation evidence.
 - Keep the active bootstrap judge until serving and quality evidence has been reviewed.
 
+The optional worker is ready for review. The serving attempt failed its numerical
+tolerance despite matching labels and abstentions; see the
+[results](../research/evidence/esci-serving-qualification.md) and
+[next parity batch](esci-runtime-parity.md). Quality assessment has not started.
+
 ## Batches and acceptance
 
 | Batch | Work | Acceptance |

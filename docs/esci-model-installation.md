@@ -6,9 +6,10 @@ the learned four-score mapping, the exact question and a versioned abstention
 policy. The CUDA serving image is separate from the weights.
 
 Registration is possible on a CPU machine. Activation requires a GPU and passing
-serving checks. The retained installation evidence records an all-abstaining live model and no
-Kubernetes GPU allocation. Check current node capacity and competing GPU work
-before qualification; registration alone does not activate the candidate.
+serving and quality checks. The [latest serving attempt](research/evidence/esci-serving-qualification.md)
+started version 2 on the optional worker but failed numerical agreement. It
+remains inactive. Coordinate competing GPU work before another qualification
+window; registration alone does not activate the candidate.
 
 ## Candidate behaviour and evidence
 
@@ -49,7 +50,11 @@ during registration/download/staging, plus the source checkpoint, runtime image
 and registry storage. The storage initialiser stages a download before copying it
 to `/mnt/models`; budget at least 18 GB of temporary space for that step.
 KServe's default model volume is per Pod, so a replacement Pod downloads again.
-A persistent shared model cache is not included in this change.
+A persistent shared model cache is not included. The in-cluster initializer uses
+MLflow direct multipart downloads from the object store with 16 MiB chunks and
+a 2 GiB memory limit. The default 100 MiB chunks exhausted the previous 1 GiB
+limit; 16 MiB chunks alone also failed on a later fresh download. These settings apply to the storage initializer,
+not the host-side registration commands below.
 
 The candidate requests one NVIDIA GPU, two CPUs and 16 GiB host RAM, with a 24 GiB
 RAM limit. These are initial resource settings, not measured serving capacity.
@@ -218,7 +223,7 @@ Check the ready Pod's actual image ID against `$image` and retain its spec/statu
 with the evidence. Use a separate terminal while the port forward remains open:
 
 ```powershell
-& $py lab/install_judgement_model.py qualify --endpoint http://127.0.0.1:18087/v1/models/esci-v3-candidate:predict --canaries "$pack/canaries.json" --receipt "$pack/registration.json" --image $image --output "$pack/qualification.json"
+& $py lab/install_judgement_model.py qualify --endpoint http://127.0.0.1:18087/v1/models/judgement-model:predict --canaries "$pack/canaries.json" --receipt "$pack/registration.json" --image $image --output "$pack/qualification.json"
 ```
 
 The check compares independent saved research scores with batch, singleton and
@@ -302,7 +307,7 @@ version. This is a short maintenance procedure, not a rolling two-model rollout:
    terminal, repeat numerical qualification against the live service:
 
    ```powershell
-   & $py lab/install_judgement_model.py qualify --endpoint http://127.0.0.1:18087/v1/models/synthetic-esci-judge:predict --canaries "$pack/canaries.json" --receipt "$pack/registration.json" --image $image --output "$pack/live-qualification.json"
+   & $py lab/install_judgement_model.py qualify --endpoint http://127.0.0.1:18087/v1/models/judgement-model:predict --canaries "$pack/canaries.json" --receipt "$pack/registration.json" --image $image --output "$pack/live-qualification.json"
    ```
 
 5. Only after successful checks, restore the saved API replicas:

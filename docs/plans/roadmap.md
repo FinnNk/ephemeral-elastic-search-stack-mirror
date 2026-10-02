@@ -78,5 +78,8 @@ The current approach is to fill judgement gaps with qualified models while retai
 the coverage gate. [Model qualification](esci-model-qualification.md) starts with
 an optional NVIDIA worker and the registered calibrated version 2 candidate.
 Later cascade passes depend on its measured residual gaps and label quality.
-The next detailed batch covers serving and quality qualification during a
-coordinated GPU window, followed by the developer walkthrough.
+The optional worker is ready in PR #74. The [serving attempt](../research/evidence/esci-serving-qualification.md)
+started version 2 successfully but failed the fixed probability tolerance; it
+remains inactive. Research has resumed. The next batch is
+[parity diagnosis](esci-runtime-parity.md), followed by
+[independent label quality](esci-label-quality.md) and the developer walkthrough.

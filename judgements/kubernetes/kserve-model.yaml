@@ -21,13 +21,17 @@ spec:
         value: http://mlflow-mlflow.lab-models.svc:5000
       - name: GIT_PYTHON_REFRESH
         value: quiet
+      - name: MLFLOW_ENABLE_PROXY_MULTIPART_DOWNLOAD
+        value: "true"
+      - name: MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE
+        value: "16777216"
     resources:
       requests:
         cpu: 100m
         memory: 256Mi
       limits:
         cpu: "1"
-        memory: 1Gi
+        memory: 2Gi
   supportedUriFormats:
     - prefix: mlflow-registry://
 ---
