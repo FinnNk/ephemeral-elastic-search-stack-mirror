@@ -88,8 +88,31 @@ D1–D5 corrections are complete as reviewable batches; D1 is accepted, D2–D5 
 | Remaining item | Required work |
 | --- | --- |
 | Control HTTPS canonical route/session | Align canonical URL and Host handling with ingress; use secure cookies; verify authentication and redirects in a separate code batch |
-| Non-empty caller filters | Reject unsupported inputs before capture; the current API/worker does not implement them. Empty-filter generated suites are unaffected. [Detailed next plan](../plans/reference-request-contract.md). |
+| Non-empty caller filters | Implemented for review in project #64 and delivery-source #14: the current contract applies filters and capture verifies their echo. See the [filter guide](../search-request.md) and [verification](../research/evidence/search-request-filters.md). Source acceptance and deployment remain separate. |
 | Source demo PR #13 | Separate exact-commit code evaluation/review; templates are corrected but the code change remains open |
 | Runtime/external validation | GPU numerical/accuracy qualification, real human exception rehearsal, full browser drill-through, continuous seven-day coverage, valid overhead samples, native Apple silicon and Azure/GHES/New Relic |
 
 No compatibility adapter, live service change, human approval or stronger metric claim was introduced by this documentation sequence.
+
+## Status reconciliation — 2 October 2026
+
+The recorded editorial findings have been addressed. The sections above retain
+what was found and checked at each batch; they do not describe the installed
+services as having changed when only documentation was edited.
+
+| Batch | Current review state |
+| --- | --- |
+| Review, entry points and D1 operation | Accepted on Gitea main |
+| D2 evaluation and delivery | [Project PR #60](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/pulls/60) awaits review |
+| D3 models and observability | [Project PR #61](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/pulls/61) awaits review |
+| D4 design and navigation | [Project PR #62](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/pulls/62) awaits review |
+| D5 historical records and final review | [Project PR #63](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/pulls/63) awaits review |
+| Filter implementation follow-up | [Project PR #64](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/pulls/64) and [source PR #14](https://gitea.localhost:34443/elastic-agent/delivery-source/pulls/14) await acceptance; source #14 is stacked on #13 |
+
+Gitea status was checked on 2 October. Source #14 passed its release build;
+its relevance gate failed because `report.json` is missing for that exact
+source commit. Functional filter verification does not replace that evidence.
+
+The remaining implementation finding is [canonical HTTPS control sessions](../plans/reference-https-control-session.md).
+Runtime and external validation listed above also remain open. Neither is an
+unfinished editorial batch. The [roadmap](../plans/roadmap.md) owns the next work.

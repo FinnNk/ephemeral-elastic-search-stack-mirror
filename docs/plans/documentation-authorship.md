@@ -68,7 +68,7 @@ A CA-verified request to the HTTPS control route returned HTTP 307 to `http://lo
 
 ## D2 verification
 
-Capture, scoring, retention, finite-Job, judgement, attestation and delivery CLI help were checked. A disposable 12-product/3-query pack was generated and its local manifests published successfully; no live comparison, model activation or promotion was performed. The source README templates are already corrected; delivery-source PR #13 remains open for its separate code/demo change and exact-commit evidence. The guides link a complete operator runbook and explain the capture adapter's current empty-filter limitation.
+Capture, scoring, retention, finite-Job, judgement, attestation and delivery CLI help were checked. A disposable 12-product/3-query pack was generated and its local manifests published successfully; no live comparison, model activation or promotion was performed. The source README templates are already corrected; delivery-source PR #13 remains open for its separate code/demo change and exact-commit evidence. The guides link a complete operator runbook and record the empty-filter limitation observed in that batch. The later [filter-support batch](reference-request-contract.md) closes it for the current code.
 
 [D3: models and observability](documentation-model-observability.md) is the next detailed plan. Link and rendered-page checks are recorded in the review.
 
@@ -76,7 +76,7 @@ Capture, scoring, retention, finite-Job, judgement, attestation and delivery CLI
 
 The three model/observability guides were checked against CLI definitions, Kubernetes container names, signal code, dashboard sources and retained evidence. Current HTTPS access replaces stale port-forward-only instructions. Model activation has complete save/update/qualification/rollback commands; they were reviewed, not executed. Live GPU qualification, seven-day coverage and complete browser investigation remain external/runtime checks.
 
-The capture schema also permits non-empty caller filters although the worker and API do not implement them. Generated suites use empty filters. A separate implementation correction should reject unsupported filters before capture so retained requests cannot imply they were applied; adding filtering is a separate feature.
+At the D3 review revision, the capture schema permitted non-empty caller filters although the worker and API did not implement them. Generated suites use empty filters. That finding led to the separate [filter-support implementation](reference-request-contract.md); the current contract applies and verifies supported filters, and rejects unknown ones.
 
 [D4: design and navigation](documentation-design-navigation.md) is the next detailed plan.
 
@@ -91,3 +91,10 @@ The design's current topology, endpoint table, lease-worker description and API 
 Research/evidence indexes route to current procedures. Nine ambiguous historical entry points now identify their recorded scope; original bodies and measurements were preserved. The inventory distinguishes full reader-path review from structural/context review. Representative pages and the combined reading path were rendered; links/anchors and formatting checked. Existing screenshots were reused, not expanded decoratively.
 
 Editorial D1–D5 work is complete for review. [Filter support](reference-request-contract.md) is implemented in the following code batch; the dated findings above describe what was observed during the review. Canonical HTTPS control routing/secure cookies remain a code finding. GPU qualification, real human decisions, seven-day telemetry coverage, valid overhead measurements and native/cloud execution remain validation work; documentation does not close those gates.
+
+## Review close-out — 2 October 2026
+
+All recorded editorial batches are complete. Gitea PRs #60–#63 remain open for
+acceptance; #64 implements the filter follow-up. The [review status table](../reviews/documentation-2026-10-01.md#status-reconciliation--2-october-2026)
+links the batches and records the separate source-gate requirement. The next
+detailed implementation plan is [canonical HTTPS control sessions](reference-https-control-session.md).
