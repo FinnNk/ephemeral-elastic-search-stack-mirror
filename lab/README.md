@@ -28,7 +28,13 @@ The control workers already run in Kubernetes. Do not launch host control, lease
 
 A new environment retains its source commit, image digest, index recipe and fingerprint. The 72-hour lease extends with genuine activity; status polling does not extend it. **Search** runs a query and **Extend lease** renews it explicitly.
 
-To open an environment's browser page, use its name as the Kubernetes namespace in a separate terminal:
+After [preview access](../docs/preview-access.md) is installed, choose **Open search
+page** on a ready card. Its URL is
+`https://<environment-name>.preview.relevance.test:34443/`; each preview opens
+separately without local port selection. Workstation DNS and browser trust are
+one-off setup steps.
+
+For diagnosis or a workstation without preview DNS, use a port forward in a separate terminal:
 
 ```powershell
 # PowerShell, repository root. Select the existing retained state directory.

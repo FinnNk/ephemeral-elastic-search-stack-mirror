@@ -1,0 +1,12 @@
+[
+  {
+    "context": "Reference release CI / release (pull_request)",
+    "state": "success",
+    "target_url": "/elastic-agent/delivery-source/actions/runs/68/jobs/75"
+  },
+  {
+    "context": "Offline relevance gate / relevance (pull_request_target)",
+    "state": "success",
+    "target_url": "/elastic-agent/delivery-source/actions/runs/69/jobs/76"
+  }
+]

@@ -36,6 +36,8 @@ def build_record(run_id):
     return {'run':run_id,'source_sha':runinfo['head_sha'],'image':image,'started_at':job['started_at'],'completed_at':job['completed_at']}
 def provision_access(name,index,read_indices=None,registry=True):
     apply({'apiVersion':'v1','kind':'Namespace','metadata':{'name':name,'labels':{'lab':'search-spike'}}})
+    from preview_access import bind
+    bind(name)
     existing=k('get','secret/search-access','-n',name,'-o','json',check=False)
     password=(base64.b64decode(json.loads(existing.stdout)['data']['ES_PASSWORD']).decode()
               if existing.returncode==0 else secrets.token_urlsafe(24))

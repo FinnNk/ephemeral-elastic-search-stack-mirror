@@ -114,6 +114,7 @@ Review and merge the resulting PR by the same procedure. Its complete retained d
 
 - Inspect the automatic watcher with `kubectl --kubeconfig $kubeconfig -n lab-control logs deployment/lab-control -c delivery-watcher --tail=30`.
 - A preview has a 72-hour lease; stable targets do not. Use `preview`, `delete-preview` and `expire-previews` via the Pod CLI. Source, reports, images and frozen indices survive preview removal.
+- Open a preview or stable target at `https://<namespace>.preview.relevance.test:34443/` after the [one-off workstation setup](preview-access.md). No port forward is needed.
 - A concurrent operation may require retry: the local coordinator has one writer. Export [control state](control-runtime.md#back-up-and-restore-control-state) and back up retained services separately.
 - Historical target NetworkPolicies may need installer-owned ingress reconciliation after cluster restoration. Follow the control update procedure; changing chart source does not rewrite an unchanged frozen bundle.
 - The host-only `demonstrate-merge` harness uses a separate, explicitly simulated reviewer. It is not a human release decision and is not part of ordinary promotion.

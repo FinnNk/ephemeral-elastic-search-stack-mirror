@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import NameOID
 
 from common import HELM, ROOT, STATE, apply, guard, k, run
+from preview_routes import DOMAIN as PREVIEW_DOMAIN
 
 
 CHART_VERSION = '41.6.0'
@@ -45,7 +46,7 @@ def certificate():
     if all(path.exists() for path in (ca_key_path, ca_path, key_path, cert_path)):
         existing = x509.load_pem_x509_certificate(cert_path.read_bytes())
         san = existing.extensions.get_extension_for_class(x509.SubjectAlternativeName).value
-        expected = {name + '.localhost' for name in ENDPOINTS} | {INTERNAL_GITEA}
+        expected = {name + '.localhost' for name in ENDPOINTS} | {INTERNAL_GITEA, '*.' + PREVIEW_DOMAIN}
         try:
             existing.extensions.get_extension_for_class(x509.AuthorityKeyIdentifier)
             has_authority_key = True
@@ -77,6 +78,7 @@ def certificate():
     key = ec.generate_private_key(ec.SECP256R1())
     names = [x509.DNSName(name + '.localhost') for name in ENDPOINTS]
     names.append(x509.DNSName(INTERNAL_GITEA))
+    names.append(x509.DNSName('*.' + PREVIEW_DOMAIN))
     leaf = (x509.CertificateBuilder().subject_name(x509.Name([
                 x509.NameAttribute(NameOID.COMMON_NAME, 'gitea.localhost')]))
             .issuer_name(ca.subject).public_key(key.public_key())
@@ -208,6 +210,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('install', 'bootstrap-gitea', 'verify', 'trust'))
     args = parser.parse_args()
+    if args.action == 'verify':
+        for name in ENDPOINTS:
+            host = name + '.localhost'
+            try:
+                addresses = {item[4][0] for item in socket.getaddrinfo(host, HOST_PORT, type=socket.SOCK_STREAM)}
+            except socket.gaierror as error:
+                raise RuntimeError('Install workstation lab DNS first; see docs/workstation-access.md.') from error
+            if addresses != {'127.0.0.1'}:
+                raise RuntimeError(host + ' must resolve to 127.0.0.1 for this loopback ingress.')
+            print(host, 'native resolution verified')
     cert_path, key_path, ca_path = certificate()
     if args.action == 'trust':
         if os.name == 'nt':

@@ -158,7 +158,12 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
 });
 const canvases = {'01-context':[2900,2300], '02-control':[2380,2250],
   '03-evaluation':[2380,3450], '04-create':[2850,1450],
-  '05-local':[2800,7600], '06-azure':[2800,6250], '18-delivery':[3250,2150]};
+  '05-local':[2800,7600], '06-azure':[2800,6250], '18-delivery':[3250,2150], '07-preview':[2800,2000]};
+position(workspace.views.containerViews.find(v=>v.key==='07-preview'), {
+  'Lab user':[100,100], 'Local lab DNS':[1050,850],
+  'HTTPS ingress':[1050,100], 'Search API':[2050,100],
+  'Preview route reconciler':[1050,1400], 'Kubernetes API':[2050,1400]
+});
 for (const collection of ['systemContextViews','containerViews','dynamicViews','deploymentViews']) {
   for (const view of workspace.views[collection] || []) {
     const [width,height]=canvases[view.key];
@@ -166,4 +171,4 @@ for (const collection of ['systemContextViews','containerViews','dynamicViews','
   }
 }
 fs.writeFileSync(path.join(dir,'.structurizr/workspace-layout.json'),JSON.stringify(workspace,null,2)+'\n');
-console.log('Applied presentation layout to seven C4 views.');
+console.log('Applied presentation layout to eight C4 views.');

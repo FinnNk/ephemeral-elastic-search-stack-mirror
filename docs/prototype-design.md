@@ -37,7 +37,7 @@ This is a relevance lab, not a production commerce platform. All products, queri
 
 ## Architecture
 
-The local reference runs on Kubernetes. The [diagram gallery](diagrams/index.html) contains seven Structurizr C4 views and fifteen Archify views; [the diagram guide](diagrams/README.md) identifies their sources and scope. Azure placement remains proposed.
+The local reference runs on Kubernetes. The [diagram gallery](diagrams/index.html) contains eight Structurizr C4 views and fifteen Archify views; [the diagram guide](diagrams/README.md) identifies their sources and scope. Azure placement remains proposed.
 
 ![C4 system context: lab users and supporting platforms](diagrams/rendered/01-context.svg)
 

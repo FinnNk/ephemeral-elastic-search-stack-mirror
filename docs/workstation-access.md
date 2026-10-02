@@ -6,7 +6,64 @@ The lab uses its own certificate authority (CA). Trust its public certificate to
 
 Ask the lab operator for **`root.pem`**, or copy it from `.lab/https-ingress/root.pem` on the machine hosting the lab. On the current Windows host that is `D:\codex\Ephemeral Elasticsearch\.lab\https-ingress\root.pem`. The CA is created by `python lab/https_ingress.py install`. Only the public `root.pem` is needed; the private key stays on the host.
 
-The examples use a local lab: `gitea.localhost` resolves to your own machine. A remote workstation needs a reachable hostname, DNS and a certificate issued for that hostname; copying the certificate alone does not make a `.localhost` address reach the lab over the LAN.
+The examples use a lab on your own machine. A remote workstation needs a reachable hostname, DNS and a certificate issued for that hostname; copying the certificate alone does not expose the lab over the LAN.
+
+## Set up lab DNS once
+
+The lab's CoreDNS service resolves the five fixed platform names and any
+`*.preview.relevance.test` name to `127.0.0.1`. Configure your workstation to send
+only those domains to it. No hosts-file changes are needed when previews change.
+Ask the operator to [install preview access](preview-access.md#install-on-the-lab-host) first.
+
+**Windows:** open PowerShell as Administrator, change to this lab repository's
+root, then run:
+
+```powershell
+.\lab\workstation-dns.ps1 Install
+```
+
+The script installs two local name-resolution policy (NRPT) rules, preserves
+other rules and clears the DNS cache. It rejects an existing conflicting lab
+rule. Expect six lines ending `-> 127.0.0.1`, including a previously unused preview
+name. Check from a normal PowerShell with `.\lab\workstation-dns.ps1 Check`.
+To remove just these rules, run the script's `Remove` action as Administrator.
+The rules follow [Windows' domain-specific DNS mechanism](https://learn.microsoft.com/en-us/powershell/module/dnsclient/add-dnsclientnrptrule).
+
+**macOS:** configure the two domain-specific resolver files below. If either
+file already exists, inspect it and reconcile its settings before replacing it.
+Run in a terminal:
+
+```sh
+sudo mkdir -p /etc/resolver
+printf 'nameserver 127.0.0.1\n' | sudo tee /etc/resolver/localhost
+printf 'nameserver 127.0.0.1\n' | sudo tee /etc/resolver/preview.relevance.test
+sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder
+python3 -c "import socket; print(socket.gethostbyname('lab-dns-check.preview.relevance.test'))"
+```
+
+Expect `127.0.0.1`. To undo these entries, remove the two files you created and
+flush the cache again. This procedure has not been checked on a native Mac.
+
+**Linux:** DNS integration depends on your network manager. With NetworkManager's
+dnsmasq DNS plugin already enabled, add these domain forwarding lines to
+`/etc/NetworkManager/dnsmasq.d/relevance-lab.conf`:
+
+```text
+server=/localhost/127.0.0.1
+server=/preview.relevance.test/127.0.0.1
+```
+
+Run `sudo systemctl reload NetworkManager` to reload its DNS configuration and
+test using Python's resolver as above. Remove the two forwarding lines and reload
+to undo this setup. Do not replace your primary DNS server with the lab service: it serves
+only lab domains. Other Linux resolver setups need equivalent domain forwarding;
+native Linux integration remains unverified. See
+[NetworkManager's DNS options](https://networkmanager.dev/docs/api/latest/NetworkManager.conf.html).
+
+Name resolution and certificate trust are separate. Continue below to configure
+Git and browser trust. If Docker or CoreDNS is stopped, lab names cannot be
+resolved through these rules; other domains keep their normal DNS configuration.
 
 ## Configure Git once with a user-owned bundle
 

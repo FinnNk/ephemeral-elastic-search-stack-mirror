@@ -41,6 +41,8 @@ that was completed later.
 
 ## Build and deployment
 
+- [Automatic preview URL checks — 2 October 2026](automatic-preview-urls.md)
+
 - [Source PR merge readiness — 2 October 2026](source-merge-readiness.md)
 
 - [User-owned Git CA bundle — 2 October 2026](user-owned-git-ca.md)

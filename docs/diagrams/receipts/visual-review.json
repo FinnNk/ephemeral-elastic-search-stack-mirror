@@ -230,28 +230,30 @@
     }
   ],
   "c4": {
-    "validation": "Structurizr validate and SVG/PNG export passed",
-    "visual_review": "03-evaluation, 05-local (including full-size service detail) and 06-azure inspected after Azure service terminology changes; all seven views validated and exported",
-    "review_scope": "Azure Blob Storage and Azure Key Vault labels fit their nodes. Local deployment identifies the Floci emulator; Azure deployment uses managed service names. Relationships and placement are unchanged. Archify review remains at its recorded earlier revision.",
+    "validation": "Structurizr validation and SVG/PNG export passed for eight views",
+    "visual_review": "07-preview and 05-local inspected after local DNS and preview routing additions; preview layout corrected to keep the person outside the platform boundary.",
+    "review_scope": "Current preview access and local deployment changes inspected. Other views exported; previous visual reviews remain historical observations, not a fresh inspection of every unchanged view. Archify sources and outputs unchanged.",
     "sources": {
-      "workspace.dsl": "6bb70e079cf41361ceab402183d047478e2c82d29feb64d6eedb6d09745a83c0",
-      "layout.mjs": "f392dd2897daca3dab4a10acf1f475d161ee6a3f2b6d2d60d92d3d4761edf3cb"
+      "workspace.dsl": "4837807593c042aa051ce284e48fccd562fff2b662303e3d79b6ab60ae582872",
+      "layout.mjs": "f3f9bdaa06c554b12006c052fd8180065824163bee3a38db20567f23fbcaa2ab"
     },
     "svg_sha256": {
       "01-context-key.svg": "be9439d77f1889d034468c1a41ef9d943133136dc9713d4dac82171e5de24539",
-      "01-context.svg": "8a4071522a16a31dd03de67f0856ddadeb877341c8575083d467b71e9cd3d81e",
+      "01-context.svg": "14b5cfa68c795d7f7ee42efe9e47be045fefd7bda57c287b42edf8c95b4776f8",
       "02-control-key.svg": "b37e211ed58aaed3ef6cd72427088d61d7ece40dbb436554785b5319f4eebc02",
-      "02-control.svg": "90a9dbb516b7819647d8d0a5fa3c18ac68ef3c9ab43286188c99160286de7496",
+      "02-control.svg": "698a68b7217167551479d42907367792a7a71c016e03624c049909523347eab7",
       "03-evaluation-key.svg": "8080406967252a5b342b33ad3b8c9de2c26d20adc9c2d32d04fad5d2f56e910f",
-      "03-evaluation.svg": "605d71bea08c172264e410c91a48c6889db8e86c4437c2b300058e7c4efc617f",
+      "03-evaluation.svg": "ace2e1d57285b8b0a351ec6ea30d4e120132e431f563222b3843cd9e586fad39",
       "04-create-key.svg": "29ae8c456ce0c2026a9ca7dc3ebf4f268a16144faa0545baa752a2bf87e160e8",
-      "04-create.svg": "19b8400a3fd0cedafe8294e76edcf34bb4f1bd577b33c41815ccf37a4cd4918e",
+      "04-create.svg": "81a4c1373a28626f7a0ac1a82284104725912cc400d73bc9032cd120a51b2754",
       "05-local-key.svg": "125944d3a599f34aa7a22fa007598cd8b19d7aea7edca73f90464d5586d499fc",
-      "05-local.svg": "305c809f655f6365555d16a6c6f21fddd9e0d4e670899aa0c2faa6fd517286de",
+      "05-local.svg": "806ecc34385eea34bd452fbcc6182435a06046f8cf99fc04b25caf8a36e26fb5",
       "06-azure-key.svg": "aa7b989a3e068399eef3ab4d567695d7f44502cbcbacf28c46d2713ee2dbb084",
-      "06-azure.svg": "01612841d1a1b8270f41df043d538cfc63e544efba902e5f7ab563e4cda6ca24",
+      "06-azure.svg": "4cff7230fbd550892c35c3d84e7d8f7c3c423732bf27e20b0e564a59e59c281d",
+      "07-preview-key.svg": "e3adaf92f69916637b3ffa5e9b0e8556dd08c90357c402555a4e041bbd673971",
+      "07-preview.svg": "2ca23c8885b118482d9e874876389e954e2440b60dd3c313dee75db967b6e6e0",
       "18-delivery-key.svg": "21452daa1df3a7620c627c5f369c5a135c20ed1c1a77d656e05acfec268d661c",
-      "18-delivery.svg": "8813fdf4d63d38440ac12302bb63da5aac4139900102f6102c9765198e86e049"
+      "18-delivery.svg": "08ccf3fde0521281e5e3365d3248d327f31722eaf933a2686dbf047942b9fb08"
     },
     "reviewed_on": "2026-10-02"
   }

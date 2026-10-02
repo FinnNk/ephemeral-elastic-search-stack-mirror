@@ -12,7 +12,7 @@ This repository is part of the [ephemeral search lab](https://gitea.localhost:34
 
 ## Run the tests
 
-You need Git and a running Docker installation. Before cloning over HTTPS, follow the [Windows, Linux and macOS certificate instructions](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/workstation-access.md). The recommended Windows setup creates a user-owned CA bundle once, so the clone below needs no extra certificate arguments. Browser trust is a separate step. From a terminal, run:
+You need Git and a running Docker installation. Before cloning over HTTPS, set up lab DNS and certificate trust using the [Windows, Linux and macOS workstation instructions](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/workstation-access.md). The recommended Windows setup creates a user-owned CA bundle once, so the clone below needs no extra certificate arguments. Browser trust is a separate step. Lab DNS also covers preview URLs without hosts-file edits. From a terminal, run:
 
 ```sh
 git clone https://gitea.localhost:34443/elastic-agent/delivery-source.git
@@ -49,15 +49,23 @@ Image building and dependency installation need connectivity the first time; an 
 
 ## Try a search in the lab
 
-For the walkthrough, use a deployed environment. Select its namespace in the lab control UI. The stable integration target is `lab-delivery-integration`.
+For the walkthrough, use the deployed integration environment at
+**https://lab-delivery-integration.preview.relevance.test:34443/**. After the
+one-off workstation DNS and browser certificate setup, it opens directly. Each
+preview has its own URL: `https://<namespace>.preview.relevance.test:34443/`.
+Choose **Open search page** on a ready lab environment card.
 
-Run this in a terminal with kubectl and the lab kubeconfig, replacing `<lab-kubeconfig>` with the absolute path to the lab's `.lab/kubeconfig.yaml`:
+For diagnosis or a workstation without preview DNS, use a port forward. Run this
+with kubectl and the lab kubeconfig, replacing `<lab-kubeconfig>` with the absolute
+path to the lab's `.lab/kubeconfig.yaml`:
 
 ```sh
 kubectl --kubeconfig "<lab-kubeconfig>" -n lab-delivery-integration port-forward service/search 18088:8080
 ```
 
-Keep that terminal open and visit **http://127.0.0.1:18088/**. kubectl prints `Forwarding from 127.0.0.1:18088 -> 8080` when ready. The lab does not assign a permanent browser address to every environment; the port-forward creates this local address. For a preview, substitute its namespace. Stop with Ctrl+C when finished.
+Keep the terminal open and visit **http://127.0.0.1:18088/** after kubectl prints
+`Forwarding from 127.0.0.1:18088 -> 8080`. For a preview, substitute its namespace.
+Stop with Ctrl+C when finished.
 
 Try `running shoes`. The page calls `GET /search?q=running%20shoes`; the response includes matching product IDs, product details and total match count. The deployment supplies a frozen index, read credentials and the Elasticsearch certificate.
 

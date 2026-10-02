@@ -18,6 +18,11 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
+[Automatic preview URLs](automatic-preview-urls.md) replaces per-preview port
+selection with wildcard DNS and HTTPS ingress, and supplies the existing fixed
+platform names without hosts-file changes. The next implementation batch remains
+[canonical HTTPS control sessions](reference-https-control-session.md).
+
 Source implementation PRs #13–#15 are merged to source main. The [source merge-readiness record](source-merge-readiness.md) retains their exact-build evaluation evidence; no source merge steps remain for that stack. See the [dated evidence](../research/evidence/source-merge-readiness.md).
 
 [User-owned Git OpenSSL trust](user-owned-git-ca.md) is implemented for review and verified on the Windows host. Git uses standard roots plus the lab root without per-command certificate arguments; browser trust remains separate.

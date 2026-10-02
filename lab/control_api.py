@@ -14,6 +14,7 @@ from index_candidate import available_kinds
 from input_selection import DEFAULTS
 from control_identity import GiteaIdentity, Sessions, expired_cookie, session_cookie
 from operation_telemetry import configure as configure_telemetry, request_span, response_status
+from preview_routes import url as preview_url
 
 PORT = 18082
 UI = Path(__file__).with_name('control-ui.html')
@@ -27,6 +28,10 @@ class ControlServer(ThreadingHTTPServer):
 
 def route(path):
     return urllib.parse.urlparse(path).path.rstrip('/') or '/'
+
+
+def environment_view(row):
+    return {**row, 'browser_url': preview_url(row['name']) if row['state'] == 'ready' else None}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -113,7 +118,7 @@ class Handler(BaseHTTPRequestHandler):
             from notebook_task import available
             return self.send_json(200, available())
         if parts == ['api', 'environments']:
-            return self.send_json(200, [row for row in self.controller.store.all() if self.visible(row, identity)])
+            return self.send_json(200, [environment_view(row) for row in self.controller.store.all() if self.visible(row, identity)])
         if parts == ['api', 'comparisons']:
             return self.send_json(200, [row for row in self.controller.store.all_comparisons()
                                         if self.comparison_visible(row, identity)])
@@ -124,7 +129,7 @@ class Handler(BaseHTTPRequestHandler):
             if not self.comparison_visible(row, identity):
                 return self.send_json(403, {'error': 'Comparison belongs to another owner.'})
             if len(parts) == 3:
-                return self.send_json(200, row)
+                return self.send_json(200, environment_view(row))
             if len(parts) == 4 and parts[3] == 'report':
                 if not row['report_blob']:
                     return self.send_json(409, {'error': 'Comparison has no saved report.'})

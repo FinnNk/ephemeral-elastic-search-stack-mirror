@@ -12,6 +12,11 @@ Traefik routes five lab browser hostnames through loopback port `34443` and term
 
 These names address the current machine, not a laptop on the LAN. Use the [control forward](control-runtime.md#connect-and-check) for the current control UI; its [session boundary](identity-boundary.md) explains the HTTPS limitation.
 
+[Preview access](preview-access.md) adds local DNS for these names and automatic
+HTTPS addresses for dynamic search environments. Complete the workstation DNS
+step as well as certificate trust; native clients may not resolve `.localhost`
+automatically even when browsers and Git's transport do.
+
 ## Install or reconcile ingress
 
 Operator prerequisites: bootstrapped service namespaces, Docker, kubectl, k3d, the pinned lab Helm binary and Python. Use PowerShell from the repository root. In another worktree, point `LAB_STATE_DIR` at the retained state directory.
@@ -32,7 +37,10 @@ Keep CA and server private keys in ignored `$env:LAB_STATE_DIR/https-ingress/`. 
 python lab/https_ingress.py verify
 ```
 
-Expect one verification line per configured service. This checks the certificate, SNI hostname and initial HTTP response. It accepts a redirect and does not prove login, final routing or browser drill-through.
+Expect a native name-resolution line and a TLS/HTTP line per configured service.
+Verification fails if workstation DNS has not been configured. The transport
+check then validates the certificate, SNI hostname and initial HTTP response.
+It accepts a redirect and does not prove login, final routing or browser drill-through.
 
 | Failure | Recovery |
 | --- | --- |

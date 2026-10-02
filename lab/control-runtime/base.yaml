@@ -68,7 +68,7 @@ rules:
     verbs: [get, create, patch, update]
   - apiGroups: [rbac.authorization.k8s.io]
     resources: [clusterroles]
-    resourceNames: [lab-control-environment]
+    resourceNames: [lab-control-environment, lab-preview-route-writer]
     verbs: [bind]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

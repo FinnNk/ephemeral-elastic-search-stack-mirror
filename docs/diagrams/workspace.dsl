@@ -25,7 +25,13 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             }
         }
         platform = softwareSystem "Deployment platform" "Runs workloads through Argo CD, Kubernetes, ECK and ESO." {
-            edge = container "HTTPS ingress" "Routes browser requests to lab web services over TLS." "Traefik locally / ingress on AKS" {
+            localDns = container "Local lab DNS" "Resolves fixed platform and wildcard preview names to loopback." "CoreDNS / UDP and TCP" {
+                tags "Platform"
+            }
+            previewRouter = container "Preview route reconciler" "Manages namespace-owned routes for labelled search services." "Python / Kubernetes API" {
+                tags "Platform"
+            }
+            edge = container "HTTPS ingress" "Routes platform and preview requests over TLS." "Traefik locally / ingress on AKS" {
                 tags "Platform"
             }
             argo = container "Argo CD" "Reconciles environment resources." "Argo CD / Helm" {
@@ -124,6 +130,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             }
         }
         engineer -> lab "Creates and compares experiments"
+        engineer -> localDns "Resolves local lab names" "DNS"
+        previewRouter -> kube "Discovers search services; reconciles scoped routes" "Kubernetes API"
+        edge -> search "Routes preview search pages" "HTTP inside cluster"
         engineer -> inputProduction "Revises synthetic inputs"
         inputProduction -> lab "Publishes frozen synthetic inputs" "Manifest and Blob API"
         lab -> assessment "Submits retained observations for scoring" "Artifact references"
@@ -244,6 +253,8 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 deploymentNode "Local Kubernetes" "Three-node k3d cluster, including a dedicated observability worker" "Kubernetes" {
                     deploymentNode "HTTPS ingress" "One loopback TLS port for retained web services" "lab-ingress namespace / Traefik" {
                         containerInstance edge
+                        containerInstance localDns
+                        containerInstance previewRouter
                     }
                     deploymentNode "Local control plane" "Cluster control services" "Kubernetes control plane" {
                         containerInstance kube
@@ -385,6 +396,11 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         container delivery "18-delivery" {
             title "C4 Containers — immutable release delivery"
             include engineer gitea runner nexus coordinator argo kube search artifacts
+            autolayout lr
+        }
+        container platform "07-preview" {
+            title "C4 Containers — local DNS and preview access"
+            include engineer localDns edge previewRouter kube search
             autolayout lr
         }
         dynamic lab "04-create" {
