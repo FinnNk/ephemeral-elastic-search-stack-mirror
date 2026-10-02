@@ -35,7 +35,7 @@ If a step fails, inspect its error and service readiness before continuing. Use 
 
 ## Certificate replacement
 
-1. Reconcile ingress and distribute the new public CA to workstations using the trust guide.
+1. Reconcile ingress and distribute the new public CA to workstations using the [trust guide](workstation-access.md). Refresh user-owned Git bundles with `lab/git_ca.py` and update browser trust separately.
 2. Wait for active control work to finish, then restart the control Pod so mounted CA files refresh:
 
    ```powershell

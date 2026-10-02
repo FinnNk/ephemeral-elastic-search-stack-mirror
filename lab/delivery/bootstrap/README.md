@@ -12,7 +12,7 @@ This repository is part of the [ephemeral search lab](https://gitea.localhost:34
 
 ## Run the tests
 
-You need Git and a running Docker installation. Before cloning over HTTPS, follow the [Windows, Linux and macOS certificate instructions](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/workstation-access.md). They explain where to obtain the public lab certificate and how to configure Git and your browser. From a terminal, run:
+You need Git and a running Docker installation. Before cloning over HTTPS, follow the [Windows, Linux and macOS certificate instructions](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/workstation-access.md). The recommended Windows setup creates a user-owned CA bundle once, so the clone below needs no extra certificate arguments. Browser trust is a separate step. From a terminal, run:
 
 ```sh
 git clone https://gitea.localhost:34443/elastic-agent/delivery-source.git

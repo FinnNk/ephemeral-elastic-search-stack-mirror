@@ -41,6 +41,8 @@ that was completed later.
 
 ## Build and deployment
 
+- [User-owned Git CA bundle — 2 October 2026](user-owned-git-ca.md)
+
 - [Nexus artifact evidence](nexus-artifacts.md)
 - [Portable CI evidence](portable-ci.md)
 - [Promotion and deployment evidence](promotion-deployment.md)

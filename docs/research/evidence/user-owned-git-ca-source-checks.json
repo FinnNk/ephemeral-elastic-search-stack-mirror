@@ -1,0 +1,16 @@
+{
+  "pr": 16,
+  "source_sha": "769761c7033ebed69fd8efd1e563128d58939c4d",
+  "checks": [
+    {
+      "context": "Offline relevance gate / relevance (pull_request_target)",
+      "status": "success",
+      "target_url": "/elastic-agent/delivery-source/actions/runs/66/jobs/73"
+    },
+    {
+      "context": "Reference release CI / release (pull_request)",
+      "status": "success",
+      "target_url": "/elastic-agent/delivery-source/actions/runs/65/jobs/72"
+    }
+  ]
+}

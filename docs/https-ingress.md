@@ -41,7 +41,7 @@ Expect one verification line per configured service. This checks the certificate
 | Certificate expired or incomplete | Reconcile installation, then distribute the renewed CA if it changed. |
 | Route redirects incorrectly | Check that service's public URL and Host validation; TLS termination alone does not change application routing. |
 
-The script's `trust` action supports Windows and macOS. Linux trust is a separate workstation procedure. If the CA changes, follow [Git client recovery](https-git-transport.md#certificate-replacement) as well.
+The script's `trust` action installs browser/system trust on Windows and macOS. Git's OpenSSL backend uses the separate user-owned bundle described in [workstation access](workstation-access.md#configure-git-once-with-a-user-owned-bundle). Linux trust is a separate workstation procedure. If the CA changes, follow [Git client recovery](https-git-transport.md#certificate-replacement) as well.
 
 ## Transport boundaries
 

@@ -1,0 +1,9 @@
+{
+  "bundle": "C:\\Users\\finnn\\.config\\relevance-lab\\git-ca-bundle.pem",
+  "bundle_sha256": "319a02d90f905b7e89a31e7f2371ea0233b88d32b973d8401f7f89d50056dc29",
+  "git_backend": "openssl",
+  "gitea_head": "5c8339dc07948053eeeea8290dde7f637a89c42d",
+  "public_https": "https://github.com",
+  "public_status": 200,
+  "scope": "Windows host; Git has no per-command CA override; TLS verification enabled"
+}
