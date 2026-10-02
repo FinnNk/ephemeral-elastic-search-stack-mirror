@@ -100,7 +100,7 @@ The approval tool prompts for the password, verifies administrator status and re
 
 ## Rescore as a finite Job
 
-For installed producer/evaluator images and a local Floci connection in `DATA_BLOB_CONNECTION_STRING`, retain the captured observations and specification:
+For installed producer/evaluator images and a local Blob Storage emulator connection string in `DATA_BLOB_CONNECTION_STRING`, retain the captured observations and specification:
 
 ```powershell
 python evaluation/retain.py --file "$runDir/observations.json" --kind observation-set --output "$runDir/observations.ref.json"

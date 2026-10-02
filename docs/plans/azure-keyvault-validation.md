@@ -8,8 +8,8 @@ Verify that the lab's `ExternalSecret` targets work with a real Azure Key Vault 
 
 - Use a disposable Azure vault and synthetic credentials. Do not copy local Gitea, Nexus or GitHub credentials to Azure.
 - Give ESO a named Kubernetes ServiceAccount and narrowly scoped vault access. Keep application Pods free of direct vault permissions.
-- Do not infer Azure RBAC, TLS or network behaviour from Floci's fake bearer check.
-- Preserve the local Floci webhook store as the offline lab path.
+- Do not infer Azure RBAC, TLS or network behaviour from the Floci emulator's placeholder bearer check.
+- Preserve the local Key Vault emulator webhook store as the offline lab path.
 
 ## Acceptance criteria
 

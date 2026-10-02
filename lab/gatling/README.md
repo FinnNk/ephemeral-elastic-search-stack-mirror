@@ -7,7 +7,7 @@ Gatling replays one frozen synthetic workload against baseline and candidate API
 | Route | Prerequisites |
 | --- | --- |
 | Control UI **Gatling performance** | Installed lab, two ready environments on one frozen catalogue |
-| Kubernetes CLI Jobs | Same lab, frozen APIs, Floci forward/credentials and pinned runner image |
+| Kubernetes CLI Jobs | Same lab, frozen APIs, Blob Storage emulator port-forward/credentials and pinned runner image |
 | Local Docker runner | Docker, baseline/candidate API forwards on 18080/18081; original 10k aliases |
 
 | Profile | Purpose |
@@ -57,6 +57,6 @@ for older feeder layouts.
 
 Warm-up/ramp intervals are excluded from measured budgets. The adapter checks planned versus actual arrivals and phase counts before evaluating latency/errors. Missing events, unstable baselines or incomplete runs make the result inconclusive; they are not a pass. Shared indices/host resources can cause contention.
 
-Jobs copy reports from a temporary PVC, retain them in Floci by hash, then remove temporary Jobs, ConfigMaps and PVCs. A retained report survives environment removal. If a run fails, inspect its Job/runner error and arrival ledger before retrying with a new run ID.
+Jobs copy reports from a temporary PVC, retain them in Azure Blob Storage by hash, then remove temporary Jobs, ConfigMaps and PVCs. A retained report survives environment removal. If a run fails, inspect its Job/runner error and arrival ledger before retrying with a new run ID.
 
 See [traffic modelling](../../docs/research/synthetic-traffic.md), [performance contract](../../docs/prototype-design.md#performance-check-the-search-api-with-gatling) and [dated measurements](../../docs/research/evidence/gatling.md) for profile assumptions, budgets and evidence limits.

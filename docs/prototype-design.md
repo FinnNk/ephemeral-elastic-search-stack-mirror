@@ -48,7 +48,7 @@ The local reference runs on Kubernetes. The [diagram gallery](diagrams/index.htm
 | Deployment | Argo CD Git-file ApplicationSets and Helm | Publish reviewed desired state with bounded conflict retries |
 | Environment control | UI/API, lease worker, PR watcher and delivery coordinator in `lab-control` | One active Pod, persistent SQLite state and writer coordination; host bootstrap/recovery |
 | Source/build | Gitea Actions and runner; Nexus images, bundles and receipts | Provider-specific API/status calls; a common Actions subset for later GHES verification |
-| Frozen inputs/reports | Floci Blob locally; Azure Blob target | Independent producer contracts and immutable hashes |
+| Frozen inputs/reports | Azure Blob Storage (Floci emulator in the lab) | Independent producer contracts and immutable hashes |
 | Index snapshots | SeaweedFS S3 on host Docker with its own volume | Regular snapshots, separate from Elasticsearch data PVCs and environment leases |
 | Judgement supply | Separate API, MLflow registry and KServe Standard | Stored labels first; pinned inference for gaps; the default model abstains |
 | Scoring | Independent evaluator using established IR metrics | Frozen API observations, selected labels/specification, per-variant reports |
@@ -126,8 +126,8 @@ sharing indices reduces cluster count, not contractual uncertainty.
 
 | Local contract | Eventual service | Remaining validation |
 | --- | --- | --- |
-| Floci Blob: datasets, traffic, workloads and runs | Azure Blob | Workload Identity, read authorisation and immutable publication |
-| Floci Key Vault → adapter → ESO → Kubernetes Secrets | Azure Key Vault → ESO Azure provider → the same Secret targets | Real identity, permissions and rotation; [secret guide](keyvault-secrets.md) |
+| Azure Blob Storage (Floci emulator): datasets, traffic, workloads and runs | Azure Blob Storage | Workload Identity, read authorisation and immutable publication |
+| Azure Key Vault (Floci emulator) → adapter → ESO → Kubernetes Secrets | Azure Key Vault → ESO Azure provider → the same Secret targets | Real identity, permissions and rotation; [secret guide](keyvault-secrets.md) |
 | Traefik and local CA | AKS ingress and certificate issuer | Certificate trust, route and client verification |
 | Gitea APIs/Actions/statuses | GitHub Enterprise | Runner labels, event/status API mapping and branch protection |
 | Nexus | Nexus; ACR optional | Registry transport and target infrastructure |
@@ -388,7 +388,7 @@ Load-test preparation and artefacts:
 
 - **Preparation:** The [traffic-preparation workflow](diagrams/interactive/traffic-workload.html) freezes a trace and compiles the selected recipe before the lab schedules load jobs through its existing desired-state path.
 - **Execution and comparison:** Gatling creates traffic and per-run evidence; the evaluation job compares the completed reports. Use the upstream runner and report format, with a small versioned adapter for comparison summaries.
-- **Source and artefacts:** Keep simulations, build dependencies and workload manifests in Gitea; retain logs, HTML reports and summaries in Floci, with the same contracts after migration to GitHub Enterprise and Azure Blob Storage.
+- **Source and artefacts:** Keep simulations, build dependencies and workload manifests in Gitea; retain logs, HTML reports and summaries in Azure Blob Storage, with the same contracts after migration to GitHub Enterprise and Azure Blob Storage.
 
 Run the performance check in this order:
 

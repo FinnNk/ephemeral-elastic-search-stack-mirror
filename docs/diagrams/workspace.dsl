@@ -107,10 +107,10 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             generator = container "Workload compiler" "Compiles frozen traffic traces into load profiles." "Versioned batch job" {
                 tags "Job"
             }
-            artifacts = container "Artifact store" "Retains frozen data, index recipes, workloads, query assets and reports." "Floci AZ locally / Azure Blob Storage later" {
+            artifacts = container "Azure Blob Storage" "Retains frozen data, index recipes, workloads, query assets and reports." "Blob API" {
                 tags "Store"
             }
-            keyvault = container "Key Vault" "Retains lab service credentials for ESO." "Floci Key Vault locally / Azure Key Vault later" {
+            keyvault = container "Azure Key Vault" "Retains lab service credentials for ESO." "Secrets API" {
                 tags "Store"
             }
             snapshots = container "Index snapshot repository" "Retains index snapshots after environment deletion." "SeaweedFS S3 locally / Azure Blob proposed" {
@@ -264,7 +264,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance expiry
                         containerInstance coordinator
                     }
-                    deploymentNode "Persistent lab services" "Floci survives environment deletion" "Namespace / persistent volume" {
+                    deploymentNode "Azure service emulation" "Retained Blob Storage and Key Vault data" "Floci / namespace / persistent volume" {
                         containerInstance artifacts
                         containerInstance keyvault
                     }

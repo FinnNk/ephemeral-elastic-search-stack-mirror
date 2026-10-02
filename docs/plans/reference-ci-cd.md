@@ -12,7 +12,7 @@ Build a release once, store it in Nexus, then promote the same digests through i
 | One local cluster | Stable targets use separate namespaces. They demonstrate promotion boundaries, not independent failure domains or production capacity. |
 | Portable CI | Shared shell/Python entry points, explicit checkout SHA, basic jobs/steps/env/secrets. Provider-specific API calls stay in adapters. Do not depend on GitHub environment approvals. |
 | Reviewable implementation | Stack one project PR per batch. Dedicated demonstration repositories exercise source and promotion merges without merging project implementation PRs. |
-| Storage ownership | Nexus: images and release bundles. Floci Blob: frozen data and reports. SeaweedFS: Elasticsearch snapshots. |
+| Storage ownership | Nexus: images and release bundles. Azure Blob Storage: frozen data and reports. SeaweedFS: Elasticsearch snapshots. |
 
 ## Delivery batches
 

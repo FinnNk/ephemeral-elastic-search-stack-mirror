@@ -13,7 +13,7 @@ Demonstrate the second full source-to-comparison path: a reviewed index-design c
 | Data | Reuse the immutable `retail-gb-10k-v1` products, queries and synthetic judgements. The index candidate must not alter canonical Blob objects or introduce production records. |
 | Isolation | Give the candidate a dedicated index and scoped credentials on the shared self-managed Elasticsearch cluster. Keep the baseline's write-blocked index intact. |
 | Pinning | Record source SHA, API image digest, mapping/analyser revision and hash, dataset hashes, Elasticsearch version, index name and environment fingerprint. Reject mutable-only references. |
-| Build | Use a finite Kubernetes indexing Job reading Floci Blob through a short-lived SAS. Keep snapshot restore out of the first path because the tested Floci/Elasticsearch combination did not pass repository verification. |
+| Build | Use a finite Kubernetes indexing Job reading Azure Blob Storage through a short-lived SAS. Keep snapshot restore out of the first path because the tested Floci/Elasticsearch combination did not pass repository verification. |
 | Comparison | Send identical original requests to both public APIs. Report result preservation and synthetic relevance separately; a deliberate index change need not preserve rankings. Use `_rank_eval` or `_profile` only as optional component diagnosis. |
 | Cleanup | Delete the dedicated candidate index, namespace and scoped credentials; retain the shared baseline index, canonical Blob release, source revisions and reports. |
 

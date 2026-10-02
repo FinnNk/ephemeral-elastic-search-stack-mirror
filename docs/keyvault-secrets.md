@@ -1,6 +1,9 @@
 # Operate retained lab secrets
 
-External Secrets Operator (ESO) reads retained service credentials from Floci Key Vault and writes the Kubernetes Secrets used by the lab. Services keep the same Secret names and keys. Each selected namespace has a `SecretStore` and `ExternalSecret`; ESO runs in `lab-secrets`.
+External Secrets Operator (ESO) reads retained service credentials from Azure Key Vault and writes the Kubernetes Secrets used by the lab. Services keep the same Secret names and keys. Each selected namespace has a `SecretStore` and `ExternalSecret`; ESO runs in `lab-secrets`.
+
+The lab uses Floci to emulate Azure Key Vault locally. ESO reaches the emulator
+through its webhook provider; Azure uses the `azurekv` provider and Workload Identity.
 
 ## Check secret synchronisation
 
@@ -24,14 +27,14 @@ Descriptions explain reconciliation errors without requiring you to print Secret
 
 ## Set up or reconcile
 
-Prerequisites: Gitea, Nexus, control runtime, delivery and snapshot storage have created their initial credentials; Floci is running; the selected state directory contains kubeconfig and bootstrap records.
+Prerequisites: Gitea, Nexus, control runtime, delivery and snapshot storage have created their initial credentials; the local Azure service emulator (Floci) is running; the selected state directory contains kubeconfig and bootstrap records.
 
 ```powershell
 python lab/keyvault.py migrate
 kubectl --kubeconfig $kubeconfig get externalsecrets -A
 ```
 
-Migration installs pinned ESO, seeds only absent Floci names from selected existing Kubernetes Secrets, creates namespaced stores and waits for Ready. It checks the resulting values without printing them. A source mismatch fails instead of silently overwriting the vault. Repeating migration with unchanged credentials is safe.
+Migration installs pinned ESO, seeds only absent Key Vault secret names from selected existing Kubernetes Secrets, creates namespaced stores and waits for Ready. It checks the resulting values without printing them. A source mismatch fails instead of silently overwriting the vault. Repeating migration with unchanged credentials is safe.
 
 | Vault-backed credential | Consumer |
 | --- | --- |
@@ -44,7 +47,7 @@ A new ephemeral environment receives a lifecycle-owned copy of the retained imag
 
 ## Rotate or recover
 
-1. Coordinate the backing service's credential and its Floci value. ESO polls every minute.
+1. Coordinate the backing service's credential and its Key Vault value. ESO polls every minute.
 2. Wait for the relevant `ExternalSecret` to be Ready and verify authentication through the consumer.
 3. Restart consumers that mount credential files with `subPath`. For control, after the new value is ready:
 
@@ -58,8 +61,8 @@ A new ephemeral environment receives a lifecycle-owned copy of the retained imag
 
 ## Bootstrap and Azure boundaries
 
-Initial service and human accounts, runner registration, generated ECK/Argo CD material, finite Job credentials and the external GitHub App key remain outside Floci. `.lab/credentials.json` and `.lab/nexus.json` support bootstrap and host tools. Gitea Actions owns its repository secrets; ESO does not populate them.
+Initial service and human accounts, runner registration, generated ECK/Argo CD material, finite Job credentials and the external GitHub App key remain outside Key Vault. `.lab/credentials.json` and `.lab/nexus.json` support bootstrap and host tools. Gitea Actions owns its repository secrets; ESO does not populate them.
 
-Floci emulates the secret API but does not validate Azure identity or RBAC. Its ESO webhook provider uses a placeholder bearer header over cluster HTTP. Do not put genuine external credentials into this emulator.
+Floci emulates the Key Vault secret API but does not validate Azure identity or RBAC. Its ESO webhook provider uses a placeholder bearer header over cluster HTTP. Do not put genuine external credentials into this emulator.
 
 For Azure, replace the store provider with `azurekv` and Workload Identity while keeping the `ExternalSecret` targets. Validate authentication, vault policy, networking and rotation against a real tenant. See the [local adapter proof](../research/keyvault-eso-spike/README.md), [deployment diagrams](diagrams/index.html#system-architecture) and [Azure validation plan](plans/azure-keyvault-validation.md). The original migration counts are historical observations, not a readiness check for your installation.

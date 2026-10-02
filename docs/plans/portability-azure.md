@@ -12,7 +12,7 @@ Make the lab reproducible beyond the present Windows host and describe a credibl
 | Source and deployment | Gitea remains the lab source of truth, with GitHub as backup. Argo CD remains the deployment controller. GHES is a migration target, not a new lab dependency. |
 | Data | Product, query, judgement and traffic fixtures remain wholly synthetic. Immutable release manifests and hashes must survive a storage-provider change. |
 | Search | Elasticsearch remains self-managed under ECK. A shared write-blocked index is the default for API and query experiments; index and engine changes retain separate paths. |
-| Storage | Floci models Blob operations locally where compatible. The Azure design uses Blob Storage and workload identity; credentials must not be embedded in source or manifests. |
+| Storage | Floci emulates Azure Blob Storage locally where compatible. The Azure design uses Blob Storage and workload identity; credentials must not be embedded in source or manifests. |
 | Portability | Images and tooling need explicit amd64 and arm64 support. Local ports, hostnames and Docker Desktop assumptions must be isolated in host-specific configuration. |
 | Review | Commit the batch to a stacked branch and open Gitea and GitHub backup PRs. Do not merge without review. |
 

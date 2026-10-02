@@ -35,15 +35,15 @@ python data/publish.py --input-dir $pack --output $manifests --producer independ
 
 The example writes 12 products, three queries and rules-based labels. Publication validates IDs, markets and references and prints content/manifest hashes. This first command pair creates local manifests only.
 
-For Blob publication, ask the operator for the local Floci connection string through their secret channel and set it without printing it:
+For Blob publication, ask the operator for the local Blob Storage emulator connection string through their secret channel and set it without printing it:
 
 ```powershell
-$blobConnection = Read-Host 'Local Floci connection string' -AsSecureString
+$blobConnection = Read-Host 'Local Blob Storage emulator connection string' -AsSecureString
 $env:DATA_BLOB_CONNECTION_STRING = [System.Net.NetworkCredential]::new('', $blobConnection).Password
 python data/publish.py --input-dir $pack --output $manifests --producer independent-example-v2 --source-release retail-gb-independent-example-v2 --blob-url http://127.0.0.1:14577/devstoreaccount1
 ```
 
-Keep the operator's Floci forward on port `14577` running. Existing objects must match; a conflict fails rather than replacing them. Clear `DATA_BLOB_CONNECTION_STRING` when finished. Azure publication uses an HTTPS account URL and workload identity instead of the emulator credential.
+Keep the operator's Blob Storage emulator port-forward on port `14577` running. Existing objects must match; a conflict fails rather than replacing them. Clear `DATA_BLOB_CONNECTION_STRING` when finished. Azure publication uses an HTTPS account URL and workload identity instead of the emulator credential.
 
 For the 1M catalogue, obtain source bytes with `python lab/release_million.py`, then use its release directory as `--input-dir`, a new manifest directory, producer `synthetic-million-v1` and source release `retail-gb-1m-v1`. Add `--traffic lab/traffic/source-trace-million-v2.csv` if publishing its trace. Generation is substantial work; existing retained source packs can be reused after validation.
 
@@ -71,4 +71,4 @@ Retain catalogue/query/label/traffic manifests and bytes, observations, specific
 
 The catalogue-only recipe keeps index identity independent of query and label revisions. The controller verifies its catalogue bytes before reuse or rebuild. Historical restore uses the explicitly retained recipe, never today's mapping by assumption.
 
-Producer/evaluator Jobs use separate namespaces, scoped Blob access and no Kubernetes API token. They emit safe outcome/hash logs through the scoped log agent. Local Floci shares an account credential and cannot prove independent Azure write scopes. See [finite-Job evidence](research/evidence/signoz-finite-jobs-2026-09-28.md) and [contract evidence](research/evidence/independent-data-evaluation-contracts.md) for dated scope.
+Producer/evaluator Jobs use separate namespaces, scoped Blob access and no Kubernetes API token. They emit safe outcome/hash logs through the scoped log agent. The local Blob Storage emulator (Floci) shares an account credential and cannot prove independent Azure write scopes. See [finite-Job evidence](research/evidence/signoz-finite-jobs-2026-09-28.md) and [contract evidence](research/evidence/independent-data-evaluation-contracts.md) for dated scope.

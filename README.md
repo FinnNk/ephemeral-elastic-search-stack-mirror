@@ -20,18 +20,18 @@ The source README includes a disconnected mock demo. Evaluating a change require
 
 ## What runs in the lab
 
-[Floci](https://github.com/floci-io/floci-az) provides fake Azure services locally,
+[Floci](https://github.com/floci-io/floci-az) is the lab's local Azure service emulator,
 including Blob Storage for frozen data and reports, and Key Vault for secrets.
-It lets the lab exercise Azure service contracts without an Azure subscription.
+It lets the lab use these service APIs without an Azure subscription.
 
 | Responsibility | Components |
 | --- | --- |
 | Source, CI and deployment | Gitea, Actions runners, Nexus and Argo CD |
 | Search and environment management | Self-managed Elasticsearch, Search API workloads and Kubernetes control services |
-| Frozen inputs and index recovery | Floci (fake Azure Blob Storage), index recipes and a local snapshot store |
+| Frozen inputs and index recovery | Azure Blob Storage, index recipes and a local snapshot store |
 | Judgement gaps | Separate judgement API, MLflow model registry and KServe inference |
 | Observability | OpenTelemetry and SigNoz |
-| Secrets and browser access | External Secrets Operator, Floci (fake Azure Key Vault) and local HTTPS ingress |
+| Secrets and browser access | External Secrets Operator, Azure Key Vault and local HTTPS ingress |
 
 The lab supports 10,000-product/50-query and 1,000,000-product/1,000-query frozen releases. [Scale](docs/research/evidence/million-scale.md) and [40-environment isolation](docs/research/evidence/concurrency-isolation.md) checks have local evidence. Synthetic relevance scores demonstrate the workflow; they do not establish customer search quality.
 

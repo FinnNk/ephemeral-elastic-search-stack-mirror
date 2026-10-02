@@ -1,6 +1,6 @@
 # Use Nexus artefact storage
 
-Nexus stores container images, deployment bundles, build receipts and signed merge-gate evidence. The older Gitea registry retains its historical images. Frozen datasets and comparison reports use Floci Blob; Elasticsearch snapshots use the separate snapshot store.
+Nexus stores container images, deployment bundles, build receipts and signed merge-gate evidence. The older Gitea registry retains its historical images. Frozen datasets and comparison reports use Azure Blob Storage; Elasticsearch snapshots use the separate snapshot store.
 
 ## Open an existing installation
 

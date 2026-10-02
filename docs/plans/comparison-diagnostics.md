@@ -13,7 +13,7 @@ Explain *where* a customer-visible search result changed while keeping the final
 | Black box | Compare ordered IDs from the public `/search` response. Failed or incomplete requests cannot pass result preservation. Keep result equality, Jaccard and RBO separate from latency. |
 | Grey box | Add an opt-in, versioned diagnostic record and request correlation ID. Include original and normalised query, rewrite decision, Elasticsearch request fingerprint, returned IDs and stage times; avoid credentials and private configuration. Missing stage data is explicitly unavailable. |
 | White box | Run selected Elasticsearch `_profile`, `_explain` or `_rank_eval` queries against a known mapping/index outside the API comparison path. Store their outputs as diagnostic evidence only. |
-| Reproducibility | Pin source SHA, image digest, dataset/query hashes, index, Elasticsearch version and diagnostic schema. Store reports in Floci by content hash. |
+| Reproducibility | Pin source SHA, image digest, dataset/query hashes, index, Elasticsearch version and diagnostic schema. Store reports in Azure Blob Storage by content hash. |
 | Delivery | Use local Gitea source PRs for variants and one project PR stacked on the relevance batch. Leave merge decisions for review. |
 
 ## Work

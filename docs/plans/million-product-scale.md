@@ -18,14 +18,14 @@ Test the existing release, index and comparison paths at 1,000,000 wholly synthe
 ## Work
 
 1. Implement a streaming, deterministic generator for 1,000,000 products and 1,000 distinct requests. Document category mapping, text-length/presence distributions, UK price/stock assumptions, head/tail requests and graded pooling rules. Add a small fixture and reproducibility tests before the full build.
-2. Publish and verify frozen objects in Floci. Measure object bytes, generation time and deterministic rerun; use bounded memory and content hashes while streaming.
+2. Publish and verify frozen objects in Azure Blob Storage. Measure object bytes, generation time and deterministic rerun; use bounded memory and content hashes while streaming.
 3. Build and write-block a million-product baseline index with a finite Job. Measure indexing throughput, disk and heap; tune batch size, shards or Job limits only with recorded evidence. Verify mapping, count, hash and index-scoped access.
 4. Deploy a shared-index API candidate and a separate mapping candidate. Time warm startup and full reindex independently. Run result-preservation and judged relevance comparisons over all 1,000 requests, with query-level differences and immutable reports.
 5. Run the fixed 10 requests/s Gatling smoke profile and the frozen normal/peak/stress profiles against both APIs. Validate arrival completeness, latency, failures and resource conditions. Record failed attempts and whether the local host meets each provisional target.
 
 ## Acceptance criteria
 
-- Exactly 1,000,000 generated product IDs and 1,000 distinct query IDs are present; synthetic graded assessments, including explicit irrelevant and unjudged distinctions, are reproducible. The manifest and Floci objects verify byte for byte.
+- Exactly 1,000,000 generated product IDs and 1,000 distinct query IDs are present; synthetic graded assessments, including explicit irrelevant and unjudged distinctions, are reproducible. The manifest and Blob objects verify byte for byte.
 - The baseline index is write-blocked with 1,000,000 documents. A repeat load detects the existing frozen index without replacing it. An index-change candidate is built from the same release and removed without damaging baseline.
 - The public APIs complete the 1,000-query result-preservation and relevance suites. Missing responses produce an incomplete report. The 15-minute functional comparison and two-minute warm shared-index startup are measured hypotheses; report misses rather than relaxing them silently.
 - A full reindex is measured against the provisional 20-minute hypothesis, including Job startup and final verification. Record peak resource observations and disk footprint.
@@ -36,5 +36,5 @@ Test the existing release, index and comparison paths at 1,000,000 wholly synthe
 
 - [Design scale gates and targets](../prototype-design.md#provisional-quantitative-targets)
 - [ESCI-informed synthetic profile](../../lab/profiles/esci-informed-uk-v1.json) and [modelling note](../research/esci-synthetic-calibration.md)
-- [Current release generator](../../lab/release.py), [Floci/index loader](../../lab/load_release.py) and [index-change workflow](../../lab/index_candidate.py)
+- [Current release generator](../../lab/release.py), [Blob/index loader](../../lab/load_release.py) and [index-change workflow](../../lab/index_candidate.py)
 - [Frozen traffic model](../research/synthetic-traffic.md) and [Gatling runner](../../lab/gatling/README.md)

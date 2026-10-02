@@ -11,7 +11,7 @@ The initial model abstains on every pair. It demonstrates inference wiring witho
 | Judgement API | Verifies the selected frozen query/product pair; returns stored labels or model outcomes |
 | MLflow | Holds numbered model versions; PostgreSQL metadata and separate S3 model artefacts |
 | KServe Standard | Loads the exact model version and checks its artefact digest |
-| Floci Blob | Supplies hash-checked catalogue, queries and source labels |
+| Azure Blob Storage | Supplies hash-checked catalogue, queries and source labels |
 | ESO | Supplies retained registry, storage and pull credentials |
 
 These services are shared in `lab-models`, outside search experiment namespaces. Each prediction returns its model identity; the judgement service rejects a different identity.

@@ -76,7 +76,7 @@ route(control,'Lab API','Source and build platform',[[820,500],[820,230]],55);
 route(control,'Source and build platform','Lab API',[[1430,230],[1430,500]],55);
 
 const evaluation = workspace.views.containerViews.find(v=>v.key==='03-evaluation');
-position(evaluation, {'Workload compiler':[100,100],'Artifact store':[900,100],
+position(evaluation, {'Workload compiler':[100,100],'Azure Blob Storage':[900,100],
   'Index build job':[1700,100],'Observation capture job':[100,800],
   'Search API':[900,800],'Shared search engine':[1700,800],
   'Exploratory notebook job':[100,1500], 'Gatling load job':[900,1500],
@@ -84,9 +84,9 @@ position(evaluation, {'Workload compiler':[100,100],'Artifact store':[900,100],
   'Judgement API':[100,2200],'KServe predictor':[900,2200],
   'MLflow registry':[1700,2200],
   'Model artefact store':[1700,2900]});
-route(evaluation,'Gatling load job','Artifact store',[[1360,1630],[1360,500],[1250,500]],35);
+route(evaluation,'Gatling load job','Azure Blob Storage',[[1360,1630],[1360,500],[1250,500]],35);
 route(evaluation,'Gatling load job','Search API',[],75);
-route(evaluation,'Exploratory notebook job','Artifact store',[[70,1580],[70,480],[720,480]],75);
+route(evaluation,'Exploratory notebook job','Azure Blob Storage',[[70,1580],[70,480],[720,480]],75);
 
 const create = workspace.views.dynamicViews[0];
 position(create, {'Gitea':[100,200],'Build runner':[750,200],'Lab API':[1500,200],
@@ -98,12 +98,12 @@ route(create,'Lab API','Argo CD',[[1400,650],[310,650]],60);
 
 const releaseDelivery = workspace.views.containerViews.find(v=>v.key==='18-delivery');
 position(releaseDelivery, {'Lab user':[100,100],'Gitea':[900,100],'Build runner':[1700,100],
-  'Nexus':[2500,100],'Delivery coordinator':[900,850],'Artifact store':[100,850],
+  'Nexus':[2500,100],'Delivery coordinator':[900,850],'Azure Blob Storage':[100,850],
   'Argo CD':[1700,850],'Kubernetes API':[2500,850],'Search API':[900,1600]});
 releaseDelivery.relationships = releaseDelivery.relationships.filter(r=>{
   const m=relationships.get(r.id);
   return !((name(m.sourceId)==='Build runner' && name(m.destinationId)==='Gitea') ||
-           (name(m.sourceId)==='Search API' && name(m.destinationId)==='Artifact store'));
+           (name(m.sourceId)==='Search API' && name(m.destinationId)==='Azure Blob Storage'));
 });
 route(releaseDelivery,'Delivery coordinator','Nexus',[[1350,690],[2710,690]],60);
 route(releaseDelivery,'Kubernetes API','Nexus',[],50);
@@ -132,7 +132,7 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Persistent platform namespace':{x:1480,y:1500,cols:2},
   'Local control plane':{x:160,y:2950,cols:1},
   'Secret synchronisation':{x:720,y:2950,cols:1},
-  'Persistent lab services':{x:1480,y:2950,cols:2},
+  'Azure service emulation':{x:1480,y:2950,cols:2},
   'Observability worker':{x:160,y:3650,cols:2},
   'Log collection':{x:1480,y:3650,cols:1},
   'Experiment namespaces':{x:160,y:4850,cols:3},
