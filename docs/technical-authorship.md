@@ -20,6 +20,8 @@ A page can serve more than one purpose when the sections are clear. Link to deta
 
 ## Write for understanding and action
 
+- Name Azure services by their service names. Explain Floci as the local Azure
+  service emulator where setup, implementation or a limitation makes the difference relevant.
 - Use plain British English, named objects and concrete verbs. Explain a necessary specialist term where the reader first needs it.
 - Lead with the reader's outcome. Avoid introductions about what the diagram or document intends to explain.
 - Put ordered procedures in numbered steps. Use bullets for independent points and tables for genuine choices or repeated mappings.
