@@ -102,5 +102,12 @@
       "index": "retail-gb-1m-v1",
       "variant_config_b64": "eyJkZWZhdWx0X3ZhcmlhbnQiOiJyYW5rZXItYSIsInZhcmlhbnRzIjp7InJhbmtlci1hIjp7ImZpZWxkX2Jvb3N0cyI6eyJicmFuZCI6MiwiZGVzY3JpcHRpb24iOjEsInByb2R1Y3RfdHlwZSI6MywidGl0bGUiOjR9fSwicmFua2VyLWIiOnsiZmllbGRfYm9vc3RzIjp7ImJyYW5kIjoyLCJkZXNjcmlwdGlvbiI6MSwicHJvZHVjdF90eXBlIjozLCJ0aXRsZSI6Mn19LCJyYW5rZXItYyI6eyJmaWVsZF9ib29zdHMiOnsiYnJhbmQiOjEsImRlc2NyaXB0aW9uIjoxLCJwcm9kdWN0X3R5cGUiOjMsInRpdGxlIjo3fX19fQ=="
     }
+  },
+  "source_checks": {
+    "build_run": 77,
+    "build_conclusion": "success",
+    "relevance_run": 78,
+    "relevance_attempt": 2,
+    "relevance_conclusion": "success"
   }
 }

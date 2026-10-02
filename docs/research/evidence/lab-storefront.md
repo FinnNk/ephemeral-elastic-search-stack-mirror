@@ -8,6 +8,7 @@ catalogue, capture worker and signed report.
 | Check | Observed result |
 | --- | --- |
 | Application contracts | 16 tests passed locally; final multi-platform CI build #77 passed |
+| Source merge checks | Build #77 and relevance #78 attempt 2 passed for the exact PR head |
 | Live catalogue | `GET /catalogue` returned 1,000,000 GB/GBP products from `retail-gb-1m-v1` |
 | Desktop and mobile | Edge at 1440×1050 and 390×844; cards, count and three-line titles inspected; no horizontal overflow |
 | Price controls | £65 maximum returned only prices at or below £65; saved address restored the pound input |
