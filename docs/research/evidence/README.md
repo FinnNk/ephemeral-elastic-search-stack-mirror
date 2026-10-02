@@ -31,9 +31,9 @@ that was completed later.
 
 ## Development, evaluation and models
 
-- [Search filter verification — 1 October 2026](search-request-filters.md)
+- [Search filter verification â€” 1 October 2026](search-request-filters.md)
 - [Local developer evaluation loop](developer-evaluation-loop.md)
-- [Local judgement gap resolution evidence — 29 September 2026](mlflow-kserve-judgement-coverage.md)
+- [Local judgement gap resolution evidence â€” 29 September 2026](mlflow-kserve-judgement-coverage.md)
 - [Three-variant synthetic million-product proof](offline-variants-million.md)
 - [Managed offline variant gate rehearsal](managed-variant-gate.md)
 - [ESCI v3 packaging evidence](esci-model-bundle.md)
@@ -47,12 +47,12 @@ that was completed later.
 - [Kubernetes control services: local evidence](kubernetes-control-services.md)
 - [Control runtime and schema delivery: local evidence](runtime-consolidation-delivery.md)
 - [Documentation exemption: local verification](documentation-relevance-gate.md)
-- [Local HTTPS Git transport check — 28 September 2026](https-git-transport-2026-09-28.md)
+- [Local HTTPS Git transport check â€” 28 September 2026](https-git-transport-2026-09-28.md)
 - [Portability evidence and open gates](portability-azure.md)
 
 ## Performance and observability
 
-- [Offline evaluation throughput — 2 October 2026](evaluation-throughput.md)
+- [Offline evaluation throughput â€” 2 October 2026](evaluation-throughput.md)
 
 - [Gatling performance calibration evidence](gatling.md)
 - [OTel foundation: local evidence](otel-observability-foundation.md)

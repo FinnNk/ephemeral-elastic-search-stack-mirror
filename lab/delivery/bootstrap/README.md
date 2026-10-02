@@ -20,7 +20,7 @@ cd delivery-source
 docker build -t search-api-dev ./app
 ```
 
-The image build installs the Python dependencies and runs the application tests. A successful build means those tests passed. They use mocked Elasticsearch responses, so you do not need a running search environment for this check.
+The image build installs the Python dependencies and runs the application tests. A successful build means those tests passed. They use mocked Elasticsearch responses and local HTTP fixtures, so you do not need a running search environment for this check.
 
 To run tests directly with Python 3.13, install the dependencies in a virtual environment, then run these commands from the repository root:
 

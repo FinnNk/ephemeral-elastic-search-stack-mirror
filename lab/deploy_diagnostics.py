@@ -23,7 +23,7 @@ def source(branch, base, message, title, body):
         git('switch', '-c', branch, cwd=SOURCE)
         if branch == DIAGNOSTIC_BRANCH:
             for name in ('app.py', 'telemetry.py', 'variants.py', 'search_filters.py', 'index.html',
-                         'demo.py', 'test_app.py', 'test_demo.py', 'test_filters.py',
+                         'demo.py', 'test_app.py', 'test_demo.py', 'test_filters.py', 'test_pool.py',
                          'requirements.lock', 'Dockerfile'):
                 shutil.copy2(ROOT / 'lab/search-app' / name, SOURCE / name)
         else:

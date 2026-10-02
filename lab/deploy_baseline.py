@@ -17,7 +17,7 @@ def source_commit():
     assert not git('status', '--porcelain', cwd=SOURCE), 'Local search source has changes'
     git('switch', 'main', cwd=SOURCE)
     for name in ('app.py', 'telemetry.py', 'variants.py', 'search_filters.py', 'index.html',
-                 'demo.py', 'test_app.py', 'test_demo.py', 'test_filters.py', 'requirements.lock', 'Dockerfile'):
+                 'demo.py', 'test_app.py', 'test_demo.py', 'test_filters.py', 'test_pool.py', 'requirements.lock', 'Dockerfile'):
         shutil.copy2(APP / name, SOURCE / name)
     shutil.copy2(APP / '.gitea/workflows/build.yaml', SOURCE / '.gitea/workflows/build.yaml')
     if git('status', '--porcelain', cwd=SOURCE):

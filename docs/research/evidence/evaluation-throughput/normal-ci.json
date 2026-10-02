@@ -1,0 +1,18 @@
+[
+  {
+    "id": 58,
+    "head_sha": "5c8339dc07948053eeeea8290dde7f637a89c42d",
+    "status": "completed",
+    "conclusion": "success",
+    "run_attempt": 1,
+    "html_url": "http://127.0.0.1:31800/elastic-agent/delivery-source/actions/runs/58"
+  },
+  {
+    "id": 59,
+    "head_sha": "5c8339dc07948053eeeea8290dde7f637a89c42d",
+    "status": "completed",
+    "conclusion": "success",
+    "run_attempt": 2,
+    "html_url": "http://127.0.0.1:31800/elastic-agent/delivery-source/actions/runs/59"
+  }
+]

@@ -98,21 +98,13 @@ class SearchContract(unittest.TestCase):
                            'currency': 'GBP', 'available': True}}
         elastic = {'hits': {'total': {'value': 1}, 'hits': [hit]}}
 
-        class Response(io.BytesIO):
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *_args):
-                self.close()
-
         server = ThreadingHTTPServer(('127.0.0.1', 0), app.Handler)
         worker = threading.Thread(target=server.serve_forever, daemon=True)
         worker.start()
         try:
             with patch.dict(os.environ, {'ES_USER': 'reader', 'ES_PASSWORD': 'test',
                                           'ES_URL': 'https://example.invalid', 'ES_INDEX': 'test'}), \
-                    patch.object(app.ssl, 'create_default_context', return_value=None), \
-                    patch.object(app.urllib.request, 'urlopen', return_value=Response(json.dumps(elastic).encode())):
+                    patch.object(app.Handler, 'search_index', return_value=(elastic, 8.0)):
                 client = http.client.HTTPConnection('127.0.0.1', server.server_port)
                 client.request('GET', '/search?q=shirt', headers={'X-Lab-Traffic-Class': 'normal'})
                 response = client.getresponse()

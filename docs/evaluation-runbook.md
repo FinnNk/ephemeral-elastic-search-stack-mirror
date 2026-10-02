@@ -38,6 +38,11 @@ python evaluation/capture.py --variant-set $variantSet --queries "$inputDir/quer
 python evaluation/offline.py --observations "$runDir/observations.json" --judgements "$inputDir/judgements.jsonl" --specification evaluation/specs/proxy-v1.json --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --judgement-manifest "$manifestDir/judgement-set.json" --output "$runDir/evaluation.json"
 ```
 
+Capture makes fresh API requests with eight query workers. Each worker visits
+variants sequentially; observations retain the frozen query order. The Search API
+reuses verified Elasticsearch connections, while every request still executes a
+new search. Load testing remains a separate Gatling workflow.
+
 Capture prints its observation hash/Blob reference and retains ordered results. Scoring prints completeness, query count and per-variant metrics. Inspect `evaluation.json`, coverage and changed queries; positive deltas with poor coverage are not sufficient evidence.
 
 If responses or identities mismatch, fix the deployed definition before recapturing. For missing labels, use [pooled judgement resolution](judgement-resolution.md#capture-resolve-and-score) instead of the direct scoring command. Every variant must use the same frozen labels. Changed bytes require a new output directory; frozen reports are not overwritten.

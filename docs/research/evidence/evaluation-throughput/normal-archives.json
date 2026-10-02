@@ -1,0 +1,59 @@
+[
+  {
+    "file": "variants-2.json",
+    "sha256": "50c1c84ad0d2593df2106106ee404f1707faa35581297abfd3ce8db07c5efea3",
+    "archive_sha256": "8c0b340e434b32bc032453e2b02252daefd768c32c7f833c49b5f0b5cd3c3fd5",
+    "blob": "runs/evaluation-throughput/8c0b340e434b32bc032453e2b02252daefd768c32c7f833c49b5f0b5cd3c3fd5-normal-variants-2.json.gz",
+    "execution": {
+      "execution": "in-cluster variant capture Job",
+      "job_name": "variants-76a9446a",
+      "request_contract_sha256": "f1d7f1434dc0637cea4df7e6d9a77b2034a673a0f786fc360f6188efa475b1ff",
+      "seconds": 50.766,
+      "worker_count": 8,
+      "worker_image": "python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844",
+      "worker_sha256": "e9049e9fbb00039d103ef8d580f988b68a5379f68461db76ab9b6c2ce3466377"
+    }
+  },
+  {
+    "file": "variants-3.json",
+    "sha256": "32084bcad26aabadccbb9a0a81b6c835b7295195e4a3c6c1008f99ce0180d46b",
+    "archive_sha256": "f78f8f39b34504a19aae0077e384f0efd098dc3c162b6f13501d2deb67a521df",
+    "blob": "runs/evaluation-throughput/f78f8f39b34504a19aae0077e384f0efd098dc3c162b6f13501d2deb67a521df-normal-variants-3.json.gz",
+    "execution": {
+      "execution": "in-cluster variant capture Job",
+      "job_name": "variants-62248d7d",
+      "request_contract_sha256": "f1d7f1434dc0637cea4df7e6d9a77b2034a673a0f786fc360f6188efa475b1ff",
+      "seconds": 72.906,
+      "worker_count": 8,
+      "worker_image": "python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844",
+      "worker_sha256": "e9049e9fbb00039d103ef8d580f988b68a5379f68461db76ab9b6c2ce3466377"
+    }
+  },
+  {
+    "file": "paired.json",
+    "sha256": "3e63e182205f76385673de373d44491f191ac16c509234a974ab4e3da24ee519",
+    "archive_sha256": "121ef302873845906d6901f1d6d46b5ce1dd32f3c91885e664c919234ca03db9",
+    "blob": "runs/evaluation-throughput/121ef302873845906d6901f1d6d46b5ce1dd32f3c91885e664c919234ca03db9-normal-paired.json.gz",
+    "execution": {
+      "execution": "in-cluster evaluator Job",
+      "job_name": "evaluate-d5b4c719",
+      "request_contract_sha256": "f1d7f1434dc0637cea4df7e6d9a77b2034a673a0f786fc360f6188efa475b1ff",
+      "seconds": 37.391,
+      "worker_count": 8,
+      "worker_image": "python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844",
+      "worker_sha256": "90ab882e3cbccc0519dea1fe3a391ca9d31334f2861000ed7d0b0d175887a02c"
+    }
+  },
+  {
+    "file": "observations.json",
+    "sha256": "b44d3a3dc6e955720094c774e990ea81cb2437d42d461ecb2543a4c27b402e5f",
+    "archive_sha256": "84670b921c037fd74c54c1645038f29a693dd2131bd0fd18b076f861ea1c4eea",
+    "blob": "runs/evaluation-throughput/84670b921c037fd74c54c1645038f29a693dd2131bd0fd18b076f861ea1c4eea-normal-observations.json.gz"
+  },
+  {
+    "file": "report.json",
+    "sha256": "ecd450b5fac4a2d647fcf510b26cd78bef62198fa3437fa928881d72e0c42c06",
+    "archive_sha256": "0c207332fdc0956d8708c3a4c8a080723a38bd8de409f69c60f81df40a32022f",
+    "blob": "runs/evaluation-throughput/0c207332fdc0956d8708c3a4c8a080723a38bd8de409f69c60f81df40a32022f-normal-report.json.gz"
+  }
+]

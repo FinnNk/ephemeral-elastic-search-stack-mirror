@@ -1,0 +1,3 @@
+{"name":"search.request","spans":7000,"errors":0,"traces":7000,"index_pins":0}
+{"name":"search.query_understanding","spans":7000,"errors":0,"traces":7000,"index_pins":0}
+{"name":"search.elasticsearch","spans":7000,"errors":0,"traces":7000,"index_pins":7000}

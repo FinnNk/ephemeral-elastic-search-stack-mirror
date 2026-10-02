@@ -5,7 +5,10 @@ set -eu
 test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
 PYTHON_IMAGE='python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844'
 # Run tests before giving the build access to registry credentials.
-docker run --rm -v "$PWD:/work:ro" -w /work "$PYTHON_IMAGE" python -B -m unittest discover -s app -p 'test_*.py' -v
+docker run --rm -v "$PWD:/work:ro" -w /work "$PYTHON_IMAGE" sh -c '
+  python -m pip install --no-cache-dir -r app/requirements.lock &&
+  python -B -m unittest discover -s app -p "test_*.py" -v
+'
 export DOCKER_CONFIG="$PWD/.docker-ci"
 mkdir -p "$DOCKER_CONFIG"
 trap 'rm -f "$DOCKER_CONFIG/config.json"' EXIT

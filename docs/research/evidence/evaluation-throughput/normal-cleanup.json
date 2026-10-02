@@ -1,0 +1,10 @@
+{
+  "removed_namespaces": [
+    "lab-throughput-16a07499",
+    "lab-pool-baseline-c5a49474",
+    "lab-pool-candidate-2a804438"
+  ],
+  "remaining": [],
+  "frozen_index": "retail-gb-1m-v1",
+  "scope": "Owned disposable resources only"
+}

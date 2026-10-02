@@ -1,5 +1,4 @@
 """Small black-box search API and browser page for the frozen UK retail release."""
-import base64
 import hashlib
 import json
 import os
@@ -7,7 +6,6 @@ import re
 import ssl
 import time
 import urllib.parse
-import urllib.request
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -153,20 +151,16 @@ class Handler(BaseHTTPRequestHandler):
 
     def search_index(self, body):
         """Elasticsearch dependency; the standalone demo supplies an in-memory substitute."""
-        auth = base64.b64encode((os.environ['ES_USER'] + ':' + os.environ['ES_PASSWORD']).encode()).decode()
-        headers = {'Content-Type': 'application/json', 'Authorization': 'Basic ' + auth}
-        telemetry.inject(headers)
-        request = urllib.request.Request(
-            os.environ['ES_URL'] + '/' + os.environ['ES_INDEX'] + '/_search',
-            data=json.dumps(body).encode(), headers=headers)
+        headers = {}
         with telemetry.span('search.elasticsearch') as dependency_span:
             if dependency_span is not None:
                 dependency_span.set_attribute('db.collection.name', os.environ['ES_INDEX'])
-            context = ssl.create_default_context(cafile='/es-ca/tls.crt')
+            telemetry.inject(headers)
             started = time.monotonic()
-            with urllib.request.urlopen(request, context=context, timeout=10) as response:
-                result = json.load(response)
-            return result, (time.monotonic() - started) * 1000
+            response = self.server.elasticsearch.post('/' + os.environ['ES_INDEX'] + '/_search',
+                                                       json=body, headers=headers)
+            response.raise_for_status()
+            return response.json(), (time.monotonic() - started) * 1000
 
     def send_json(self, status, value):
         self.send_body(status, json.dumps(value).encode(), 'application/json; charset=utf-8')
@@ -180,8 +174,37 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
+class SearchServer(ThreadingHTTPServer):
+    """Own one verified Elasticsearch connection pool for this API process."""
+    def __init__(self, address):
+        # The disconnected demo replaces search_index and needs only Python.
+        import httpx
+        self.elasticsearch = httpx.Client(
+            base_url=os.environ['ES_URL'],
+            auth=(os.environ['ES_USER'], os.environ['ES_PASSWORD']),
+            verify=ssl.create_default_context(cafile='/es-ca/tls.crt'),
+            timeout=10, trust_env=False,
+            limits=httpx.Limits(max_connections=64, max_keepalive_connections=64))
+        try:
+            super().__init__(address, Handler)
+        except Exception:
+            self.elasticsearch.close()
+            raise
+
+    def server_close(self):
+        try:
+            super().server_close()
+        finally:
+            self.elasticsearch.close()
+
+
 if __name__ == '__main__':
     telemetry.configure()
-    server = ThreadingHTTPServer(('0.0.0.0', 8080), Handler)
+    server = SearchServer(('0.0.0.0', 8080))
     print('Search API listening on port 8080. Browser: http://127.0.0.1:8080/ (local process).', flush=True)
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()

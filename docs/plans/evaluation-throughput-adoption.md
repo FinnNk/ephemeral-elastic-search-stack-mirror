@@ -1,8 +1,13 @@
 # Adopt measured evaluation improvements
 
+Complete for review. Normal paired and N-way Jobs, source image tests and the
+exact-commit result-preservation gate passed. See the
+[adoption evidence](../research/evidence/evaluation-throughput-adoption.md).
+The experiment decision is recorded in [the evidence](../research/evidence/evaluation-throughput.md).
+
 ## Intent
 
-Shorten offline comparisons by pooling Search API → Elasticsearch connections,
+Shorten offline comparisons by pooling Search API â†’ Elasticsearch connections,
 the smallest qualifying change from the
 [experiment plan](evaluation-throughput.md). Keep every search fresh and preserve
 ordered observations, request/configuration checks and failure outcomes.
@@ -26,7 +31,7 @@ ordered observations, request/configuration checks and failure outcomes.
 | Work | Acceptance criterion |
 | --- | --- |
 | Select the simplest qualifying transport | Six confirmation blocks satisfy the declared speed/reliability rules; rejected techniques remain in research only |
-| Pool Search API → Elasticsearch connections | One verified, bounded client per API process; per-request trace headers; close connections when the server closes |
+| Pool Search API â†’ Elasticsearch connections | One verified, bounded client per API process; per-request trace headers; close connections when the server closes |
 | Decide evaluator-side pooling separately | Adopt only if its incremental confirmation clears both thresholds; otherwise retain the existing capture runtime |
 | Package and publish source | Source templates, deployment copy lists, Docker tests and portable CI agree; expose no experiment-mode flag |
 | Test transport behaviour | Real local HTTP fixtures prove reuse, response handling and failure visibility; disconnected demo never calls the backend |

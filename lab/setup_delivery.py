@@ -58,7 +58,7 @@ def seed_source(path):
         print('Source already seeded; publish further changes through a branch and PR.')
         return
     for name in ('app.py', 'telemetry.py', 'variants.py', 'search_filters.py', 'requirements.lock',
-                 'index.html', 'demo.py', 'test_app.py', 'test_demo.py', 'test_filters.py', 'Dockerfile'):
+                 'index.html', 'demo.py', 'test_app.py', 'test_demo.py', 'test_filters.py', 'test_pool.py', 'Dockerfile'):
         target = path / 'app' / name
         target.parent.mkdir(exist_ok=True)
         target.write_bytes((ROOT / 'lab/search-app' / name).read_bytes().replace(b'\r\n', b'\n'))
