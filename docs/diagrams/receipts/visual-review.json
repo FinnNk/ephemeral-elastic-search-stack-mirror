@@ -262,5 +262,11 @@
     "scope": "Changed context view inspected as PNG; eight C4 views regenerated. Archify workflows retain catalogue-independent contracts.",
     "result": "Context labels are legible; the implied DNS self-edge and overlapping evaluation routes were removed from this view.",
     "context_svg_sha256": "4854b1c0910c7b336644c1e726832d75a0ca1a68e0a5ad77d82d1e20abab8737"
+  },
+  "optional_gpu_worker_2026_10_02": {
+    "reviewed_on": "2026-10-02",
+    "scope": "Current 05-local PNG and focused model-services crop inspected; eight C4 views validated and exported. Unchanged SVGs retained to avoid timestamp-only changes.",
+    "result": "Optional GPU worker is separate from the CPU judgement API, registry and bootstrap predictor; labels and boundaries are legible without overlap.",
+    "local_svg_sha256": "71ed10e9e7788ea8de4e6f07a78cfb0880d75babb489e1d655092c2720ad61f2"
   }
 }

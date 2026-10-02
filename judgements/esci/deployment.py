@@ -94,6 +94,10 @@ def render(receipt: dict, image: str, qualification: dict | None = None) -> dict
         "spec": {
             "predictor": {
                 "serviceAccountName": "judgement-predictor",
+                "nodeSelector": {"lab.relevance/gpu-worker": "true"},
+                "tolerations": [
+                    {"key": "lab.relevance/gpu", "operator": "Equal", "value": "reserved", "effect": "NoSchedule"}
+                ],
                 "model": {
                     "modelFormat": {"name": "esci-v3-pyfunc", "version": "1"},
                     "runtime": runtime_name,

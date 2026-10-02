@@ -1,6 +1,9 @@
 # Published-label coverage and gates
 
-Status: proposed; policy changes require review before implementation.
+Status: superseded by [model qualification](esci-model-qualification.md).
+The selected approach retains the existing 80% gate and fills judgement gaps
+through qualified models. The policy changes below are historical proposals,
+not implementation instructions.
 
 ## Intent
 

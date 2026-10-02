@@ -144,7 +144,8 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Comparison jobs':{x:160,y:5550,cols:2},
   'Exploratory notebooks':{x:2080,y:6250,cols:1},
   'Independent input and scoring jobs':{x:1480,y:5550,cols:2},
-  'Judgement and model services':{x:160,y:6250,cols:3}
+  'Judgement and model services':{x:160,y:6250,cols:3},
+  'Optional GPU worker':{x:160,y:6950,cols:1}
 });
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
   'Organisation delivery services':{x:160,y:160,cols:2},
@@ -161,7 +162,7 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
 });
 const canvases = {'01-context':[2900,2300], '02-control':[2380,2250],
   '03-evaluation':[2380,3450], '04-create':[2850,1450],
-  '05-local':[2800,7600], '06-azure':[2800,6250], '18-delivery':[3250,2150], '07-preview':[2800,2000]};
+  '05-local':[2800,8300], '06-azure':[2800,6250], '18-delivery':[3250,2150], '07-preview':[2800,2000]};
 position(workspace.views.containerViews.find(v=>v.key==='07-preview'), {
   'Lab user':[100,100], 'Local lab DNS':[1050,850],
   'HTTPS ingress':[1050,100], 'Search API':[2050,100],

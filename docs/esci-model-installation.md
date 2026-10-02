@@ -201,9 +201,10 @@ Existing CPU images remain usable for MLflow and the storage initialiser.
 
 ## 5. Qualify on a GPU before promotion
 
-First make a CUDA-capable node available to Kubernetes and confirm it advertises
-`nvidia.com/gpu`. Configuring GPU passthrough/device plugins and restarting the
-lab are separate platform work. Confirm the GPU is available before inference.
+Add the [optional NVIDIA worker](gpu-worker.md) and confirm it advertises
+`nvidia.com/gpu`. The candidate selects that worker explicitly; existing CPU
+nodes remain unchanged. Confirm that host research processes have released the
+GPU before inference. Kubernetes does not account for their GPU allocation.
 
 ```powershell
 kubectl --kubeconfig "$env:LAB_STATE_DIR/kubeconfig.yaml" get nodes -o 'custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\.com/gpu'

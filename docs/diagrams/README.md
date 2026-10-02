@@ -6,6 +6,8 @@ Open the [diagram gallery](index.html) in a browser, or start with the [system c
 
 The local deployment places browser ingress in `lab-ingress`, control services
 in `lab-control`, ESO in `lab-secrets` and SigNoz on a dedicated worker. The
+[optional NVIDIA worker](../gpu-worker.md) serves qualified CUDA models; omit it
+on Apple silicon. The CPU judgement API and registry remain available. The
 [current operating guides](../../lab/README.md) explain access and procedures;
 the [roadmap](../plans/roadmap.md) records measured proofs and remaining checks.
 

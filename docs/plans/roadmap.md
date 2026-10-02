@@ -72,4 +72,11 @@ Historical schema and measurement artefacts remain unchanged. Canonical HTTPS
 control routing/session cookies remain the next implementation gap.
 
 
-The [ESCI catalogue batch](esci-catalogue.md) replaces normal generated retail inputs with the full English ESCI catalogue and an explicit configurable demo subset. Historical synthetic measurements retain their original conditions. The implementation and local verification are complete for review; [evidence](../research/evidence/esci-catalogue.md) records the scope. Source PR #19 remains blocked at 29.7% published-label coverage against its 80% minimum. The next batch is [coverage and gates](esci-coverage-gates.md), followed by the developer walkthrough.
+The [ESCI catalogue batch](esci-catalogue.md) is accepted on Gitea main and uses the full English ESCI catalogue with an explicit configurable demo subset. Historical synthetic measurements retain their original conditions. [Evidence](../research/evidence/esci-catalogue.md) records the scope. Source PR #19 remains blocked at 29.7% published-label coverage against its 80% minimum.
+
+The current approach is to fill judgement gaps with qualified models while retaining
+the coverage gate. [Model qualification](esci-model-qualification.md) starts with
+an optional NVIDIA worker and the registered calibrated version 2 candidate.
+Later cascade passes depend on its measured residual gaps and label quality.
+The next detailed batch covers serving and quality qualification during a
+coordinated GPU window, followed by the developer walkthrough.

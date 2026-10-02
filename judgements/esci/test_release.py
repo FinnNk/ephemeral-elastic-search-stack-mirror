@@ -171,7 +171,12 @@ def test_live_pins_require_matching_qualification():
         "release_sha256": "b" * 64,
     }
     image = "registry/esci@sha256:" + "c" * 64
-    assert render(receipt, image)["items"][1]["metadata"]["name"] == "esci-v3-candidate"
+    candidate = render(receipt, image)["items"][1]
+    assert candidate["metadata"]["name"] == "esci-v3-candidate"
+    assert candidate["spec"]["predictor"]["nodeSelector"] == {"lab.relevance/gpu-worker": "true"}
+    assert candidate["spec"]["predictor"]["tolerations"] == [
+        {"key": "lab.relevance/gpu", "operator": "Equal", "value": "reserved", "effect": "NoSchedule"}
+    ]
     qualification = {
         "format": "esci-runtime-qualification-v1",
         "model": {k: receipt[k] for k in ("name", "version", "artifact_sha256")},

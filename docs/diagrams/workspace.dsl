@@ -291,10 +291,13 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     deploymentNode "Shared search namespace" "One shared engine; scoped index credentials" "Namespace / persistent volume" {
                         containerInstance elastic
                     }
-                    deploymentNode "Judgement and model services" "Independent of Search API experiments" "lab-models namespace / persistent volumes" {
+                    deploymentNode "Judgement and model services" "CPU APIs, registry and bootstrap predictor" "lab-models namespace / persistent volumes" {
                         containerInstance judgementApi
                         containerInstance kserve
                         containerInstance mlflow
+                    }
+                    deploymentNode "Optional GPU worker" "CUDA predictor after qualification; omitted on Apple silicon" "NVIDIA / separate k3s agent / lab-models" {
+                        containerInstance kserve
                     }
                     deploymentNode "Experiment namespaces" "2–3 locally; one API deployment per namespace" "Namespaces / quotas / policies" {
                         containerInstance search
