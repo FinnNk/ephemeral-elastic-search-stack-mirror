@@ -76,13 +76,19 @@ The [ESCI catalogue batch](esci-catalogue.md) is accepted on Gitea main and uses
 
 The current approach is to fill judgement gaps with qualified models while retaining
 the coverage gate. [Model qualification](esci-model-qualification.md) starts with
-an optional NVIDIA worker and the registered calibrated version 2 candidate.
+an optional NVIDIA worker and a pinned calibrated candidate.
 Later cascade passes depend on its measured residual gaps and label quality.
 The optional worker is ready in PR #74. The [serving attempt](../research/evidence/esci-serving-qualification.md)
 started version 2 successfully but failed the fixed probability tolerance; it
 remains inactive. The [larger diagnosis](../research/evidence/esci-probability-diagnostics.md)
 measured 7,393 pairs across 457 queries and identified silent FLA fallback from a
 missing compiler. Correcting that path reproduced archived batched scores, but
-batch-size sensitivity remains. The next batch defines and qualifies an
-[explicit kernel and inference contract](esci-inference-contract.md), followed by
-[independent label quality](esci-label-quality.md) and the developer walkthrough.
+batch-size sensitivity remains. The [explicit singleton contract](esci-inference-contract.md)
+now starts with verified FLA and independently generated references, but version 3
+still fails numerical agreement and remains inactive. The
+[current evidence](../research/evidence/esci-inference-contract.md) records the
+scope and controlled replay: process-dependent tuning choices change scores;
+fixing the reference settings restores agreement on all 7,393 pairs in the
+request-thread diagnostic. Next,
+[freeze and qualify the kernel profile](esci-kernel-reproducibility.md), then
+complete [independent label quality](esci-label-quality.md) and the developer walkthrough.

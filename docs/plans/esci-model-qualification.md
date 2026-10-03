@@ -2,7 +2,7 @@
 
 ## Intent and constraints
 
-Qualify MLflow `synthetic-esci-judge/2` as a selective first pass for judgement
+Qualify a pinned registered ESCI release as a selective first pass for judgement
 gaps. Keep the 80% coverage gate and the model's acceptance thresholds unchanged.
 Qualification does not implement the later cascade passes.
 
@@ -15,12 +15,13 @@ Qualification does not implement the later cascade passes.
   compatibility adapters or rewrite existing evaluation evidence.
 - Keep the active bootstrap judge until serving and quality evidence has been reviewed.
 
-The optional worker is ready for review. The serving attempt failed its numerical
-tolerance on its 64 canaries. The
+The optional worker is ready for review. The original serving attempt and the
 [larger investigation](../research/evidence/esci-probability-diagnostics.md)
-found decision changes and identified silent kernel fallback and separate
-batch-size sensitivity. The next batch qualifies an
-[explicit inference contract](esci-inference-contract.md). Quality assessment has not started.
+identified silent kernel fallback and batch-size sensitivity. The explicit
+singleton release starts with verified FLA but still fails independent numerical
+agreement; [evidence](../research/evidence/esci-inference-contract.md) records the
+results. Next, [freeze and qualify the kernel profile](esci-kernel-reproducibility.md).
+Quality assessment has not started.
 
 ## Batches and acceptance
 

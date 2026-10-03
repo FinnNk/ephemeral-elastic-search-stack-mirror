@@ -39,6 +39,8 @@ that was completed later.
 - [ESCI v3 packaging evidence](esci-model-bundle.md)
 - [Exploratory notebook verification](exploratory-notebook.md)
 
+- [ESCI singleton inference contract — 3 October 2026](esci-inference-contract.md)
+
 ## Build and deployment
 
 - [Automatic preview URL checks — 2 October 2026](automatic-preview-urls.md)

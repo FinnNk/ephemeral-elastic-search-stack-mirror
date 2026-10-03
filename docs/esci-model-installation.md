@@ -6,19 +6,18 @@ the learned four-score mapping, the exact question and a versioned abstention
 policy. The CUDA serving image is separate from the weights.
 
 Registration is possible on a CPU machine. Activation requires a GPU and passing
-serving and quality checks. The [latest serving attempt](research/evidence/esci-serving-qualification.md)
-started version 2 on the optional worker but failed numerical agreement. It
-remains inactive. The [larger investigation](research/evidence/esci-probability-diagnostics.md)
-identified a missing compiler causing silent attention-kernel fallback, plus
-separate batch-size sensitivity. Coordinate competing GPU work before another qualification
-window; registration alone does not activate the candidate.
+serving and quality checks. The lab still uses the abstaining bootstrap model;
+the registered singleton candidate is inactive because its independent
+probability comparison failed. See the [qualification evidence](research/evidence/esci-inference-contract.md)
+for measurements and remaining work. Coordinate competing GPU work before
+qualification; registration alone does not activate the candidate.
 
 ## Candidate behaviour and evidence
 
-The initial policy emits its highest-scoring label when the mapped probability
+The policy emits its highest-scoring label when the mapped probability
 is at least **0.90**; otherwise it abstains. On the already-opened Amazon research
 cohort, this operating point accepted **37.17%** of pairs at **96.59%** accuracy
-(9,694 total pairs; query-bootstrap accuracy interval **95.54–97.51%**). All accepted
+(9,694 total pairs; query-bootstrap accuracy interval **95.54–97.51%**). These historical scores used the earlier batched protocol; they do not qualify the singleton release. All accepted
 labels were Exact; **12 Irrelevant pairs were accepted as Exact**. The threshold
 was examined retrospectively. These figures do not establish greater than 95%
 accuracy on the lab's GBP catalogue.
@@ -46,8 +45,8 @@ source, and the existing 80% judged-coverage gate remains in force.
 | Ignored release directory | Base weights, adapter, mapping, policy and per-file SHA-256 manifest |
 | Ignored registration receipt | Numbered MLflow URI, model-tree digest and implementation digest |
 
-The built assets occupy **8,691,339,810 bytes (8.69 GB / 8.09 GiB)**, excluding the
-small MLflow wrapper and the CUDA image (Docker reports **3.39 GB**). Allow at least three copies of the model
+The built assets occupy **8,691,340,329 bytes (8.69 GB / 8.09 GiB)**, excluding the
+small MLflow wrapper and the CUDA image (`docker image inspect` reports **3.46 GB** for the CUDA image). Allow at least three copies of the model
 during registration/download/staging, plus the source checkpoint, runtime image
 and registry storage. The storage initialiser stages a download before copying it
 to `/mnt/models`; budget at least 18 GB of temporary space for that step.
@@ -60,10 +59,15 @@ not the host-side registration commands below.
 
 The candidate requests one NVIDIA GPU, two CPUs and 16 GiB host RAM, with a 24 GiB
 RAM limit. These are initial resource settings, not measured serving capacity.
-The laptop has 16 GB VRAM; inference uses BF16 and batches of at most eight pairs
-internally. The API accepts at most 128 pairs and serialises GPU calls. CUDA
-graphs are disabled. The Linux image and batch shape need independent numerical
-qualification before activation; CPU packaging checks do not establish that
+The laptop has 16 GB VRAM. Inference uses BF16 and evaluates one pair at a time
+internally, so companion requests do not change its tensor batch. The API accepts at most 128 pairs and serialises GPU calls. CUDA
+graphs are disabled. The frozen protocol declares the 1,536-token context budget, right padding to
+a multiple of 64, SDPA attention, FLA gated-delta kernels and PyTorch convolution.
+Startup rejects a failed FLA import or a different selected backend. The image
+includes the C compiler, headers and checksum-pinned NVIDIA CUDA driver SDK stub
+required by Triton. The stub is used only for linking; the NVIDIA runtime supplies
+the real driver. Its directory is never added to `LD_LIBRARY_PATH`. Numerical
+qualification is required before activation; CPU packaging checks do not establish that
 this serving configuration fits the GPU or reproduces research scores.
 
 The assets, wrapper and runtime each have separate identities. Changing the
@@ -110,7 +114,7 @@ Choose one route:
 
 | Route | Required input |
 | --- | --- |
-| Install a supplied bundle | Complete portable bundle and its file-hash manifest from the model author; copy it to `$pack/esci-v3-score-map` and run `inspect` |
+| Install a supplied bundle | Complete portable bundle and its file-hash manifest from the model author; copy it to `$pack/esci-v3-singleton-fla` and run `inspect` |
 | Build the research candidate | Checkout containing the pinned base weights, adapter, saved predictions and learned mapping expected by `judgements/esci/release.py` |
 
 The research assets are not generated by cloning this repository. Obtain them
@@ -123,17 +127,16 @@ $researchRoot = Read-Host 'Absolute path to the pinned model research checkout'
 Then:
 
 ```powershell
-& $py lab/install_judgement_model.py build --research-root $researchRoot --output "$pack/esci-v3-score-map"
-& $py lab/install_judgement_model.py inspect --bundle "$pack/esci-v3-score-map"
-& $py lab/install_judgement_model.py canaries --research-root $researchRoot --bundle "$pack/esci-v3-score-map" --output "$pack/canaries.json"
+& $py lab/install_judgement_model.py build --research-root $researchRoot --output "$pack/esci-v3-singleton-fla"
+& $py lab/install_judgement_model.py inspect --bundle "$pack/esci-v3-singleton-fla"
 ```
 
 The builder accepts the pinned adapter and frozen mapping source only. The bundle
 is a portable directory: copy it intact to another machine, inspect it and use
 the registration command below. The original research checkout is unnecessary
-for ordinary installation. Serving reference canaries contain source examples;
-keep them local and outside Git. Export compares the numerical mapping against
-all 9,694 saved predictions and checks the sampled v3 input hashes.
+for ordinary installation when the author supplies independent references for
+the declared singleton protocol. References contain source examples; keep them
+local and outside Git. Archived eight-pair scores cannot qualify this protocol.
 
 A completed bundle can be reused. A partial or changed bundle fails verification;
 preserve it for diagnosis and choose a new output directory. Do not overwrite
@@ -167,7 +170,7 @@ through `kubectl port-forward` stalled during verification. The helper keeps
 large transfers on the lab's Docker network:
 
 ```powershell
-& $py lab/register_esci_local.py --bundle "$pack/esci-v3-score-map" --receipt "$pack/registration.json" --image $image
+& $py lab/register_esci_local.py --bundle "$pack/esci-v3-singleton-fla" --receipt "$pack/registration.json" --image $image
 ```
 
 It runs without GPU access, mounts the bundle and source read-only, and shares
@@ -188,7 +191,7 @@ For another installation with a directly reachable tracking endpoint, the
 portable registration command is:
 
 ```powershell
-& $py lab/install_judgement_model.py register --bundle "$pack/esci-v3-score-map" --tracking-uri $trackingUri --receipt "$pack/registration.json"
+& $py lab/install_judgement_model.py register --bundle "$pack/esci-v3-singleton-fla" --tracking-uri $trackingUri --receipt "$pack/registration.json"
 ```
 
 Set `$trackingUri` to that installation's reachable MLflow URL before running the
@@ -212,6 +215,23 @@ Add the [optional NVIDIA worker](gpu-worker.md) and confirm it advertises
 `nvidia.com/gpu`. The candidate selects that worker explicitly; existing CPU
 nodes remain unchanged. Confirm that host research processes have released the
 GPU before inference. Kubernetes does not account for their GPU allocation.
+
+Obtain frozen `inputs.json` and `exclusions.json` from the model author. Inputs
+must contain the release and protocol identities, exclusion-file hash, and rows
+with `input_hash`, normalised `query_hash`, API `input` and verified model `state`.
+Exclude protected research queries before freezing them. To generate references
+with the original research loader, run this **before starting the candidate**:
+
+```powershell
+$localImage = $image -replace '^nexus\.localhost:', '127.0.0.1:'
+docker run --rm --gpus all --mount "type=bind,source=$((Get-Location).Path),target=/repo,readonly" --mount "type=bind,source=$researchRoot,target=/research,readonly" --mount "type=bind,source=$pack/esci-v3-singleton-fla,target=/bundle,readonly" --mount "type=bind,source=$pack,target=/output" $localImage /repo/lab/generate_esci_references.py --research /research --bundle /bundle --inputs /output/inputs.json --exclusions /output/exclusions.json --output /output/references.json
+& $py lab/install_judgement_model.py canaries --reference "$pack/references.json" --bundle "$pack/esci-v3-singleton-fla" --output "$pack/canaries.json"
+```
+
+The generator verifies assets, runtime versions and reservations, uses the
+original Decider loader and sklearn mapping, and retains raw vectors and source
+hashes. Existing outputs are never overwritten. Select canaries from those
+references, then start the candidate:
 
 ```powershell
 kubectl --kubeconfig "$env:LAB_STATE_DIR/kubeconfig.yaml" get nodes -o 'custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\.com/gpu'

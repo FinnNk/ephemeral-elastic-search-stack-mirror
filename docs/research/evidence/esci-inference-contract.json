@@ -1,0 +1,1923 @@
+{
+  "format": "esci-inference-contract-diagnostics-v1",
+  "scope": "Exposed numerical diagnostic inputs; not independent label quality or activation approval.",
+  "model": {
+    "name": "synthetic-esci-judge",
+    "version": "3",
+    "artifact_sha256": "16a1701aa616ac2b00ccd5532cfad3a938da52ab6d7e2043c8f1437eaa8c4691",
+    "release_sha256": "f002bc1e73fc2649e370702781514a3c3f1b4276d4038c147f0f4fea430a3a16",
+    "implementation_sha256": "8cf6cb4d291ce7114829e4474f73577455d0ba9db2fd64fee096ae03565fadda"
+  },
+  "image": "sha256:ad5333062cb58f3f61929ccc2a70f0f46a7e18ccdf4d9ac6c3419e0a227dd816",
+  "runtime_source_sha256": "5642a2550a09f8624698656a5788c3f16f6a73114ca2d395aff833882518997a",
+  "input_sha256": "cd8a63848afd46dadbbf9a38e6232b38dee942ca74d0bfa05a444cb5f2611cf2",
+  "reference_sha256": "454270aaca5f3ad8038f32d1dbece24b4cb1b2cb0f0c948dbda07f65665a3680",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 4090 Laptop GPU",
+    "cuda": "12.4",
+    "cudnn": 90100
+  },
+  "http": {
+    "runs_sha256": {
+      "batch": "4c83ae1e11096edd62ba1afac5fae1b9246a8370fa01825bd40d59790fc548d1",
+      "cold-batch": "35aa2ca7490d21786bbe762d9f3c0364d2f098ace34bcdcc8fe23831edd563c3"
+    },
+    "comparisons": {
+      "reference__batch": {
+        "pairs": 7393,
+        "queries": 457,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 0.023093492795909498,
+        "median_max_absolute_delta": 0.0005494993561273587,
+        "p95_max_absolute_delta": 0.011205556607953115,
+        "p99_max_absolute_delta": 0.013139035375353587,
+        "above_tolerance_pairs": 4641,
+        "changed_winning_classes": 17,
+        "changed_labels_or_abstentions": 24,
+        "queries_with_changed_decisions": 23,
+        "reference_accepted": 2744,
+        "actual_accepted": 2740,
+        "decision_transitions": {
+          "E->E": 2730,
+          "abstain->abstain": 4639,
+          "abstain->E": 10,
+          "E->abstain": 14
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            0.002321103372475253,
+            0.0025857412245963237
+          ],
+          "above_tolerance_rate": [
+            0.6156304853152735,
+            0.6403339825615441
+          ],
+          "label_or_abstention_change_rate": [
+            0.0020131188464203613,
+            0.00459526216799063
+          ]
+        }
+      },
+      "reference__cold-batch": {
+        "pairs": 7393,
+        "queries": 457,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 0.023093492795909498,
+        "median_max_absolute_delta": 0.0005494993561273587,
+        "p95_max_absolute_delta": 0.011205556607953115,
+        "p99_max_absolute_delta": 0.013139035375353587,
+        "above_tolerance_pairs": 4641,
+        "changed_winning_classes": 17,
+        "changed_labels_or_abstentions": 24,
+        "queries_with_changed_decisions": 23,
+        "reference_accepted": 2744,
+        "actual_accepted": 2740,
+        "decision_transitions": {
+          "E->E": 2730,
+          "abstain->abstain": 4639,
+          "abstain->E": 10,
+          "E->abstain": 14
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            0.002321103372475253,
+            0.0025857412245963237
+          ],
+          "above_tolerance_rate": [
+            0.6156304853152735,
+            0.6403339825615441
+          ],
+          "label_or_abstention_change_rate": [
+            0.0020131188464203613,
+            0.00459526216799063
+          ]
+        }
+      },
+      "batch__cold-batch": {
+        "pairs": 7393,
+        "queries": 457,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 0.0,
+        "median_max_absolute_delta": 0.0,
+        "p95_max_absolute_delta": 0.0,
+        "p99_max_absolute_delta": 0.0,
+        "above_tolerance_pairs": 0,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 0,
+        "queries_with_changed_decisions": 0,
+        "reference_accepted": 2740,
+        "actual_accepted": 2740,
+        "decision_transitions": {
+          "E->E": 2740,
+          "abstain->abstain": 4653
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            0.0,
+            0.0
+          ],
+          "above_tolerance_rate": [
+            0.0,
+            0.0
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    }
+  },
+  "interrupted_repeat": {
+    "interrupted": true,
+    "reason": "Full first-pass failure redirected remaining GPU time to cold-start and kernel-selection diagnostics.",
+    "first_sha256": "4c83ae1e11096edd62ba1afac5fae1b9246a8370fa01825bd40d59790fc548d1",
+    "repeat_sha256": "c86213a4f89f7d6f2efa134ed2b3af7899edb730199b3c919398d8633e031f24",
+    "actual_changed_outcomes": 0,
+    "comparison": {
+      "pairs": 4608,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.0,
+      "median_max_absolute_delta": 0.0,
+      "p95_max_absolute_delta": 0.0,
+      "p99_max_absolute_delta": 0.0,
+      "above_tolerance_pairs": 0,
+      "changed_winning_classes": 0,
+      "changed_labels_or_abstentions": 0,
+      "queries_with_changed_decisions": 0,
+      "reference_accepted": 1698,
+      "actual_accepted": 1698,
+      "decision_transitions": {
+        "E->E": 1698,
+        "abstain->abstain": 2910
+      },
+      "query_bootstrap_95_intervals": {
+        "mean_max_absolute_delta": [
+          0.0,
+          0.0
+        ],
+        "above_tolerance_rate": [
+          0.0,
+          0.0
+        ],
+        "label_or_abstention_change_rate": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "canaries": {
+    "focused-warm-canaries.json": {
+      "reference_sha256": "e5d70d707c8c9847aba5ce6adfc06ca3c9a8b798bfea8744ce1c64e7841e37da",
+      "checks": {
+        "batch": {
+          "rows": 64,
+          "max_probability_delta": 0.011804719692928844,
+          "changed_labels_or_abstentions": 0,
+          "passed": false
+        },
+        "singletons": {
+          "rows": 64,
+          "max_probability_delta": 0.011804719692928844,
+          "changed_labels_or_abstentions": 0,
+          "passed": false
+        },
+        "reversed": {
+          "rows": 64,
+          "max_probability_delta": 0.011804719692928844,
+          "changed_labels_or_abstentions": 0,
+          "passed": false
+        }
+      },
+      "passed": false
+    },
+    "focused-cold-canaries.json": {
+      "reference_sha256": "e5d70d707c8c9847aba5ce6adfc06ca3c9a8b798bfea8744ce1c64e7841e37da",
+      "checks": {
+        "batch": {
+          "rows": 64,
+          "max_probability_delta": 0.011804719692928844,
+          "changed_labels_or_abstentions": 0,
+          "passed": false
+        },
+        "singletons": {
+          "rows": 64,
+          "max_probability_delta": 0.011804719692928844,
+          "changed_labels_or_abstentions": 0,
+          "passed": false
+        },
+        "reversed": {
+          "rows": 64,
+          "max_probability_delta": 0.011804719692928844,
+          "changed_labels_or_abstentions": 0,
+          "passed": false
+        }
+      },
+      "passed": false
+    }
+  },
+  "reference_mapping": {
+    "pairs": 7393,
+    "original_sklearn": "1.7.2",
+    "maximum_absolute_delta": 3.3306690738754696e-16,
+    "passed": true
+  },
+  "cost": {
+    "runs": {
+      "eight-pair": {
+        "pairs": 512,
+        "seconds": 53.17128176195547,
+        "peak_allocated_bytes": 9633890304,
+        "peak_reserved_bytes": 9862905856
+      },
+      "singleton": {
+        "pairs": 512,
+        "seconds": 62.41627104795771,
+        "peak_allocated_bytes": 8903144448,
+        "peak_reserved_bytes": 9862905856
+      },
+      "singleton-repeat": {
+        "pairs": 512,
+        "seconds": 62.98292662500171,
+        "peak_allocated_bytes": 8903144448,
+        "peak_reserved_bytes": 9862905856
+      },
+      "singleton-reversed": {
+        "pairs": 512,
+        "seconds": 63.80899996601511,
+        "peak_allocated_bytes": 8903144448,
+        "peak_reserved_bytes": 9862905856
+      }
+    }
+  },
+  "reference_configuration": {
+    "chunk_local_cumsum_scalar_kernel": [
+      {
+        "key": [
+          1,
+          32,
+          64,
+          false,
+          false,
+          "torch.float32",
+          "torch.float32"
+        ],
+        "config": {
+          "kwargs": {},
+          "num_warps": 2,
+          "num_stages": 2
+        }
+      }
+    ],
+    "l2norm_fwd_kernel": [
+      {
+        "key": [
+          128,
+          1,
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.float32"
+        ],
+        "config": {
+          "kwargs": {
+            "BT": 8
+          },
+          "num_warps": 8,
+          "num_stages": 2
+        }
+      }
+    ],
+    "chunk_gated_delta_rule_fwd_kernel_h_blockdim64": [
+      {
+        "key": [
+          32,
+          32,
+          128,
+          128,
+          64,
+          false,
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.float32",
+          "torch.bfloat16",
+          "torch.float32"
+        ],
+        "config": {
+          "kwargs": {
+            "BV": 64
+          },
+          "num_warps": 4,
+          "num_stages": 2
+        }
+      }
+    ],
+    "chunk_fwd_kernel_o": [
+      {
+        "key": [
+          32,
+          32,
+          128,
+          128,
+          64,
+          false,
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.float32",
+          "torch.bfloat16"
+        ],
+        "config": {
+          "kwargs": {
+            "BK": 128,
+            "BV": 128
+          },
+          "num_warps": 8,
+          "num_stages": 3
+        }
+      }
+    ],
+    "recompute_w_u_fwd_kernel": [
+      {
+        "key": [
+          32,
+          32,
+          128,
+          128,
+          64,
+          64,
+          64,
+          false,
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.float32"
+        ],
+        "config": {
+          "kwargs": {},
+          "num_warps": 8,
+          "num_stages": 2
+        }
+      }
+    ],
+    "chunk_gated_delta_rule_fwd_kkt_solve_kernel": [
+      {
+        "key": [
+          32,
+          32,
+          128,
+          16,
+          "torch.bfloat16",
+          "torch.float32",
+          "torch.bfloat16",
+          "torch.bfloat16"
+        ],
+        "config": {
+          "kwargs": {
+            "BK": 64
+          },
+          "num_warps": 2,
+          "num_stages": 2
+        }
+      }
+    ]
+  },
+  "frozen_configuration_sha256": {
+    "chunk_fwd_kernel_o.json": "5dca1a1404dc81305b4363ee90c20ba60c283b0e4d5ba21eff052daae2171200",
+    "chunk_gated_delta_rule_fwd_kernel_h_blockdim64.json": "0d13f41ad5a7b19ea933fbfccb94b703724e5a113cb7f1e27a9c0e2e230e9f5a",
+    "chunk_gated_delta_rule_fwd_kkt_solve_kernel.json": "4af5365be556595b07af973b78ff8c9e0e00870fc049712a20ba56de44445023",
+    "chunk_local_cumsum_scalar_kernel.json": "4dbf2c7d9c48d652bd0b3d54e1de06bfee937b599c2346737c12b4a74db4d125",
+    "l2norm_fwd_kernel.json": "bb2bdb413ab11511614803e0cd16916ce5cb6d24a39a6bcb23f05f0bf4943f8c",
+    "recompute_w_u_fwd_kernel.json": "55b0a3bd09f08168202876b6a2182a23a9561f99a63afba79fe55ff5e811bd5e"
+  },
+  "kernel_controls": {
+    "kernel-probes/research-cold": {
+      "capture_sha256": "9a751c84fefa3365802d47c1a94f34b5cb40f20767550549874b0f4a2b009604",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.0,
+      "mapped_max_delta_reference": 2.220446049250313e-16,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {}
+    },
+    "kernel-probes/research-warm": {
+      "capture_sha256": "3740b82feb65239d6dcc30063b1ad10cc10aef4ef98212f4baa4b2e862c1bb27",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.0,
+      "mapped_max_delta_reference": 2.220446049250313e-16,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {
+        "chunk_local_cumsum_scalar_kernel": [
+          {
+            "key": [
+              1,
+              32,
+              64,
+              false,
+              false,
+              "torch.float32",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 1,
+              "num_stages": 2
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 8,
+              "num_stages": 3
+            }
+          }
+        ]
+      }
+    },
+    "kernel-probes/serving-cold": {
+      "capture_sha256": "711bea0a05d4a2e98c18b13992f74e407c3073ba13ccae9b3747d6fdfa38db71",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.0,
+      "mapped_max_delta_reference": 2.220446049250313e-16,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {
+        "chunk_local_cumsum_scalar_kernel": [
+          {
+            "key": [
+              1,
+              32,
+              64,
+              false,
+              false,
+              "torch.float32",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 1,
+              "num_stages": 2
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ]
+      }
+    },
+    "kernel-probes/serving-warm-repeat": {
+      "capture_sha256": "47de726e56cc6c27fd3419865bc6d7d32dfac300c17393d24aec85412abe1cb7",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.015619903802871704,
+      "mapped_max_delta_reference": 0.013949321892648192,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {
+        "chunk_local_cumsum_scalar_kernel": [
+          {
+            "key": [
+              1,
+              32,
+              64,
+              false,
+              false,
+              "torch.float32",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 1,
+              "num_stages": 2
+            }
+          }
+        ],
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 64,
+                "BV": 64
+              },
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 8,
+              "num_stages": 3
+            }
+          }
+        ]
+      }
+    },
+    "kernel-probes/serving-warm": {
+      "capture_sha256": "0e980613919221d425ef6e8a016f869bda92da4cbeb88c8f10740b96bac845d6",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.015619903802871704,
+      "mapped_max_delta_reference": 0.013949321892648192,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {
+        "chunk_local_cumsum_scalar_kernel": [
+          {
+            "key": [
+              1,
+              32,
+              64,
+              false,
+              false,
+              "torch.float32",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 1,
+              "num_stages": 2
+            }
+          }
+        ],
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 64,
+                "BV": 64
+              },
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 8,
+              "num_stages": 3
+            }
+          }
+        ]
+      }
+    },
+    "configuration-probes/frozen-repeat": {
+      "capture_sha256": "894145742ba99dfe78e405cca7625cc30d6626800ad17d40e13c3417f8bbad2e",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.0,
+      "mapped_max_delta_reference": 2.220446049250313e-16,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {}
+    },
+    "configuration-probes/frozen": {
+      "capture_sha256": "a66cb8db02e7cd1182cf66acf362dc037ac7473998bb9402ff3546534e175778",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.0,
+      "mapped_max_delta_reference": 2.220446049250313e-16,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {}
+    },
+    "configuration-probes/kkt32": {
+      "capture_sha256": "cdfff3fce665e576ad394144a296300b52987003407d4aa4c1cce317212ec1e1",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.0,
+      "mapped_max_delta_reference": 2.220446049250313e-16,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {
+        "chunk_gated_delta_rule_fwd_kkt_solve_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              16,
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 32
+              },
+              "num_warps": 2,
+              "num_stages": 2
+            }
+          }
+        ]
+      }
+    },
+    "configuration-probes/output32": {
+      "capture_sha256": "af26c7d4fd6b712c8321e1cbf8e654a5598f12f9b9fcab50797a7fc6e72bc6df",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.0,
+      "mapped_max_delta_reference": 2.220446049250313e-16,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 32,
+                "BV": 32
+              },
+              "num_warps": 2,
+              "num_stages": 3
+            }
+          }
+        ]
+      }
+    },
+    "configuration-probes/output64": {
+      "capture_sha256": "ed39bb782e9e56829cf63d360860e691144bec5191d89f11d984c2540e4475b4",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.015619903802871704,
+      "mapped_max_delta_reference": 0.013949321892648192,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 64,
+                "BV": 64
+              },
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ]
+      }
+    },
+    "interaction-probes/combined": {
+      "capture_sha256": "a084269dfa62124f49cf5f9ad6a24de82c1d113faf2e6093531fa8b571d78365",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.015623658895492554,
+      "mapped_max_delta_reference": 0.014149805370986424,
+      "mapped_max_delta_KServe": 0.0,
+      "configuration_changes": {
+        "l2norm_fwd_kernel": [
+          {
+            "key": [
+              128,
+              1,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {
+                "BT": 32
+              },
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ],
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 64,
+                "BV": 64
+              },
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ]
+      }
+    },
+    "interaction-probes/l2norm32": {
+      "capture_sha256": "0394b7e63cd3a0462cff582f86b799acbfbccab9b388bbafddfce0be0c0d851f",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.015623539686203003,
+      "mapped_max_delta_reference": 0.014618605811683838,
+      "mapped_max_delta_KServe": 0.014195784224866947,
+      "configuration_changes": {
+        "l2norm_fwd_kernel": [
+          {
+            "key": [
+              128,
+              1,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {
+                "BT": 32
+              },
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ]
+      }
+    },
+    "interaction-probes/recompute4": {
+      "capture_sha256": "a5b9b3e9501ad6b87c237f94bc0502ed0b4a03f083995f76f3bcad29953c1603",
+      "pairs": 256,
+      "queries": 199,
+      "raw_max_delta_reference": 0.0,
+      "mapped_max_delta_reference": 2.220446049250313e-16,
+      "mapped_max_delta_KServe": 0.014149805370986424,
+      "configuration_changes": {
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ]
+      }
+    }
+  },
+  "request_paths": {
+    "default/engine-main": {
+      "capture_sha256": "3e6f3f6ebee7a399be7946eba08ce3a208525a0ba9e928682e3137e44128843b",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 0.014149805370986424,
+        "median_max_absolute_delta": 0.00044426944769448973,
+        "p95_max_absolute_delta": 0.011080678459857135,
+        "p99_max_absolute_delta": 0.012899562047962863,
+        "above_tolerance_pairs": 162,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 1,
+        "actual_changed_decisions": 1,
+        "queries_with_changed_decisions": 1,
+        "reference_accepted": 107,
+        "actual_accepted": 108,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 148,
+          "abstain->E": 1
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            0.0017984499559223824,
+            0.002641641924726166
+          ],
+          "above_tolerance_rate": [
+            0.5714285714285714,
+            0.6926070038910506
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.012195121951219513
+          ]
+        }
+      },
+      "seconds": 28.923048408003524,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "757068800d2bf1841cc1492e7ca6a8e9a73f1b9812bb75b0d0d75b9ff9269b6f",
+      "configuration_changes": {
+        "l2norm_fwd_kernel": [
+          {
+            "key": [
+              128,
+              1,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {
+                "BT": 32
+              },
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ],
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 64,
+                "BV": 64
+              },
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ]
+      }
+    },
+    "default/pyfunc-main": {
+      "capture_sha256": "3e6f3f6ebee7a399be7946eba08ce3a208525a0ba9e928682e3137e44128843b",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 0.014149805370986424,
+        "median_max_absolute_delta": 0.00044426944769448973,
+        "p95_max_absolute_delta": 0.011080678459857135,
+        "p99_max_absolute_delta": 0.012899562047962863,
+        "above_tolerance_pairs": 162,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 1,
+        "actual_changed_decisions": 1,
+        "queries_with_changed_decisions": 1,
+        "reference_accepted": 107,
+        "actual_accepted": 108,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 148,
+          "abstain->E": 1
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            0.0017984499559223824,
+            0.002641641924726166
+          ],
+          "above_tolerance_rate": [
+            0.5714285714285714,
+            0.6926070038910506
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.012195121951219513
+          ]
+        }
+      },
+      "seconds": 30.07215573301073,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "757068800d2bf1841cc1492e7ca6a8e9a73f1b9812bb75b0d0d75b9ff9269b6f",
+      "configuration_changes": {
+        "l2norm_fwd_kernel": [
+          {
+            "key": [
+              128,
+              1,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {
+                "BT": 32
+              },
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ],
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 64,
+                "BV": 64
+              },
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ]
+      }
+    },
+    "default/predictor-main": {
+      "capture_sha256": "3e6f3f6ebee7a399be7946eba08ce3a208525a0ba9e928682e3137e44128843b",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 0.014149805370986424,
+        "median_max_absolute_delta": 0.00044426944769448973,
+        "p95_max_absolute_delta": 0.011080678459857135,
+        "p99_max_absolute_delta": 0.012899562047962863,
+        "above_tolerance_pairs": 162,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 1,
+        "actual_changed_decisions": 1,
+        "queries_with_changed_decisions": 1,
+        "reference_accepted": 107,
+        "actual_accepted": 108,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 148,
+          "abstain->E": 1
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            0.0017984499559223824,
+            0.002641641924726166
+          ],
+          "above_tolerance_rate": [
+            0.5714285714285714,
+            0.6926070038910506
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.012195121951219513
+          ]
+        }
+      },
+      "seconds": 31.838849574967753,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "757068800d2bf1841cc1492e7ca6a8e9a73f1b9812bb75b0d0d75b9ff9269b6f",
+      "configuration_changes": {
+        "l2norm_fwd_kernel": [
+          {
+            "key": [
+              128,
+              1,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {
+                "BT": 32
+              },
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ],
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 64,
+                "BV": 64
+              },
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ]
+      }
+    },
+    "default/predictor-threads": {
+      "capture_sha256": "3e6f3f6ebee7a399be7946eba08ce3a208525a0ba9e928682e3137e44128843b",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 0.014149805370986424,
+        "median_max_absolute_delta": 0.00044426944769448973,
+        "p95_max_absolute_delta": 0.011080678459857135,
+        "p99_max_absolute_delta": 0.012899562047962863,
+        "above_tolerance_pairs": 162,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 1,
+        "actual_changed_decisions": 1,
+        "queries_with_changed_decisions": 1,
+        "reference_accepted": 107,
+        "actual_accepted": 108,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 148,
+          "abstain->E": 1
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            0.0017984499559223824,
+            0.002641641924726166
+          ],
+          "above_tolerance_rate": [
+            0.5714285714285714,
+            0.6926070038910506
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.012195121951219513
+          ]
+        }
+      },
+      "seconds": 29.425777499971446,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "757068800d2bf1841cc1492e7ca6a8e9a73f1b9812bb75b0d0d75b9ff9269b6f",
+      "configuration_changes": {
+        "l2norm_fwd_kernel": [
+          {
+            "key": [
+              128,
+              1,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {
+                "BT": 32
+              },
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ],
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 64,
+                "BV": 64
+              },
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ]
+      }
+    },
+    "default/engine-threads": {
+      "capture_sha256": "3e6f3f6ebee7a399be7946eba08ce3a208525a0ba9e928682e3137e44128843b",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 0.014149805370986424,
+        "median_max_absolute_delta": 0.00044426944769448973,
+        "p95_max_absolute_delta": 0.011080678459857135,
+        "p99_max_absolute_delta": 0.012899562047962863,
+        "above_tolerance_pairs": 162,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 1,
+        "actual_changed_decisions": 1,
+        "queries_with_changed_decisions": 1,
+        "reference_accepted": 107,
+        "actual_accepted": 108,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 148,
+          "abstain->E": 1
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            0.0017984499559223824,
+            0.002641641924726166
+          ],
+          "above_tolerance_rate": [
+            0.5714285714285714,
+            0.6926070038910506
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.012195121951219513
+          ]
+        }
+      },
+      "seconds": 31.135670733987354,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "757068800d2bf1841cc1492e7ca6a8e9a73f1b9812bb75b0d0d75b9ff9269b6f",
+      "configuration_changes": {
+        "l2norm_fwd_kernel": [
+          {
+            "key": [
+              128,
+              1,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {
+                "BT": 32
+              },
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ],
+        "chunk_fwd_kernel_o": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            "config": {
+              "kwargs": {
+                "BK": 64,
+                "BV": 64
+              },
+              "num_warps": 4,
+              "num_stages": 3
+            }
+          }
+        ],
+        "recompute_w_u_fwd_kernel": [
+          {
+            "key": [
+              32,
+              32,
+              128,
+              128,
+              64,
+              64,
+              64,
+              false,
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.bfloat16",
+              "torch.float32"
+            ],
+            "config": {
+              "kwargs": {},
+              "num_warps": 4,
+              "num_stages": 2
+            }
+          }
+        ]
+      }
+    },
+    "fixed/engine-main": {
+      "capture_sha256": "732eb9bce90ae2e94b59aec77889445378486aa8663f364add97040abc79a237",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 2.220446049250313e-16,
+        "median_max_absolute_delta": 0.0,
+        "p95_max_absolute_delta": 2.220446049250313e-16,
+        "p99_max_absolute_delta": 2.220446049250313e-16,
+        "above_tolerance_pairs": 0,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 0,
+        "actual_changed_decisions": 0,
+        "queries_with_changed_decisions": 0,
+        "reference_accepted": 107,
+        "actual_accepted": 107,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 149
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            5.575434156448782e-17,
+            7.693396251387957e-17
+          ],
+          "above_tolerance_rate": [
+            0.0,
+            0.0
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "seconds": 27.61685552401468,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "a81e5016930b42145ea56c5f721ba5534d1294a5eaccbc5207367fa3c146d2f1",
+      "configuration_changes": {}
+    },
+    "fixed/pyfunc-main": {
+      "capture_sha256": "732eb9bce90ae2e94b59aec77889445378486aa8663f364add97040abc79a237",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 2.220446049250313e-16,
+        "median_max_absolute_delta": 0.0,
+        "p95_max_absolute_delta": 2.220446049250313e-16,
+        "p99_max_absolute_delta": 2.220446049250313e-16,
+        "above_tolerance_pairs": 0,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 0,
+        "actual_changed_decisions": 0,
+        "queries_with_changed_decisions": 0,
+        "reference_accepted": 107,
+        "actual_accepted": 107,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 149
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            5.575434156448782e-17,
+            7.693396251387957e-17
+          ],
+          "above_tolerance_rate": [
+            0.0,
+            0.0
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "seconds": 29.80782680597622,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "a81e5016930b42145ea56c5f721ba5534d1294a5eaccbc5207367fa3c146d2f1",
+      "configuration_changes": {}
+    },
+    "fixed/predictor-main": {
+      "capture_sha256": "732eb9bce90ae2e94b59aec77889445378486aa8663f364add97040abc79a237",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 2.220446049250313e-16,
+        "median_max_absolute_delta": 0.0,
+        "p95_max_absolute_delta": 2.220446049250313e-16,
+        "p99_max_absolute_delta": 2.220446049250313e-16,
+        "above_tolerance_pairs": 0,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 0,
+        "actual_changed_decisions": 0,
+        "queries_with_changed_decisions": 0,
+        "reference_accepted": 107,
+        "actual_accepted": 107,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 149
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            5.575434156448782e-17,
+            7.693396251387957e-17
+          ],
+          "above_tolerance_rate": [
+            0.0,
+            0.0
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "seconds": 32.996200639987364,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "a81e5016930b42145ea56c5f721ba5534d1294a5eaccbc5207367fa3c146d2f1",
+      "configuration_changes": {}
+    },
+    "fixed/predictor-threads": {
+      "capture_sha256": "732eb9bce90ae2e94b59aec77889445378486aa8663f364add97040abc79a237",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 2.220446049250313e-16,
+        "median_max_absolute_delta": 0.0,
+        "p95_max_absolute_delta": 2.220446049250313e-16,
+        "p99_max_absolute_delta": 2.220446049250313e-16,
+        "above_tolerance_pairs": 0,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 0,
+        "actual_changed_decisions": 0,
+        "queries_with_changed_decisions": 0,
+        "reference_accepted": 107,
+        "actual_accepted": 107,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 149
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            5.575434156448782e-17,
+            7.693396251387957e-17
+          ],
+          "above_tolerance_rate": [
+            0.0,
+            0.0
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "seconds": 30.753488249029033,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "a81e5016930b42145ea56c5f721ba5534d1294a5eaccbc5207367fa3c146d2f1",
+      "configuration_changes": {}
+    },
+    "fixed/engine-threads": {
+      "capture_sha256": "732eb9bce90ae2e94b59aec77889445378486aa8663f364add97040abc79a237",
+      "generator_sha256": "b5de9e9901e6439258ebbe418f93c631aee5713c3cc819bb87c260cce1ce82db",
+      "comparison": {
+        "pairs": 256,
+        "queries": 199,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 2.220446049250313e-16,
+        "median_max_absolute_delta": 0.0,
+        "p95_max_absolute_delta": 2.220446049250313e-16,
+        "p99_max_absolute_delta": 2.220446049250313e-16,
+        "above_tolerance_pairs": 0,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 0,
+        "actual_changed_decisions": 0,
+        "queries_with_changed_decisions": 0,
+        "reference_accepted": 107,
+        "actual_accepted": 107,
+        "decision_transitions": {
+          "E->E": 107,
+          "abstain->abstain": 149
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            5.575434156448782e-17,
+            7.693396251387957e-17
+          ],
+          "above_tolerance_rate": [
+            0.0,
+            0.0
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "seconds": 29.424982248980086,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "a81e5016930b42145ea56c5f721ba5534d1294a5eaccbc5207367fa3c146d2f1",
+      "configuration_changes": {}
+    },
+    "full-fixed/predictor-threads": {
+      "capture_sha256": "948889ca9cb32247508281196133a9f63c0c098dcf75ba9407c46e5885c7316c",
+      "generator_sha256": "6ba88d6eede851d2e0ec4b67f394d6611f7694785bb5da1a55cef28b54f734d9",
+      "comparison": {
+        "pairs": 7393,
+        "queries": 457,
+        "tolerance": 0.0001,
+        "max_absolute_delta": 4.440892098500626e-16,
+        "median_max_absolute_delta": 0.0,
+        "p95_max_absolute_delta": 2.220446049250313e-16,
+        "p99_max_absolute_delta": 2.220446049250313e-16,
+        "above_tolerance_pairs": 0,
+        "changed_winning_classes": 0,
+        "changed_labels_or_abstentions": 0,
+        "actual_changed_decisions": 0,
+        "queries_with_changed_decisions": 0,
+        "reference_accepted": 2744,
+        "actual_accepted": 2744,
+        "decision_transitions": {
+          "E->E": 2744,
+          "abstain->abstain": 4649
+        },
+        "query_bootstrap_95_intervals": {
+          "mean_max_absolute_delta": [
+            5.415784956853894e-17,
+            5.784067025742919e-17
+          ],
+          "above_tolerance_rate": [
+            0.0,
+            0.0
+          ],
+          "label_or_abstention_change_rate": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "seconds": 986.3819986800081,
+      "context": {
+        "float32": "highest",
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduction": true,
+        "grad_enabled": true,
+        "autocast_enabled": false
+      },
+      "configuration_sha256": "a81e5016930b42145ea56c5f721ba5534d1294a5eaccbc5207367fa3c146d2f1",
+      "configuration_changes": {}
+    }
+  },
+  "telemetry": {
+    "probe": {
+      "trace_id": "eb8ec4b8fa0c4d8cbe3b7386ee646428",
+      "parent_span_id": "eceddd13f2734afc",
+      "model": {
+        "artifact_sha256": "16a1701aa616ac2b00ccd5532cfad3a938da52ab6d7e2043c8f1437eaa8c4691",
+        "name": "synthetic-esci-judge",
+        "version": "3"
+      },
+      "outcome": "abstain",
+      "input_hash": "0745c7ce3e50912309f69057e9b186289efe79d4ffedc7b6792a166c72feb3a4"
+    },
+    "spans": [
+      {
+        "trace_id": "eb8ec4b8fa0c4d8cbe3b7386ee646428",
+        "span_id": "6a53ecca68879a48",
+        "parent_span_id": "eceddd13f2734afc",
+        "name": "model.http",
+        "service": "esci-judgement-predictor",
+        "attributes_string": {
+          "lab.model.version": "3"
+        },
+        "attributes_number": {
+          "http.response.status_code": 200,
+          "lab.model.batch.size": 1
+        }
+      },
+      {
+        "trace_id": "eb8ec4b8fa0c4d8cbe3b7386ee646428",
+        "span_id": "10884b76a9aee435",
+        "parent_span_id": "6a53ecca68879a48",
+        "name": "model.predict",
+        "service": "esci-judgement-predictor",
+        "attributes_string": {},
+        "attributes_number": {}
+      }
+    ],
+    "metrics": [
+      {
+        "metric_name": "lab.model.predictions",
+        "model_version": "3",
+        "outcome": "abstain",
+        "label": "none",
+        "samples": [
+          {
+            "latest_value": 1119,
+            "last_unix_milli": 1791014836938
+          }
+        ]
+      },
+      {
+        "metric_name": "lab.model.requests",
+        "model_version": "3",
+        "outcome": "success",
+        "label": null,
+        "samples": [
+          {
+            "latest_value": 15,
+            "last_unix_milli": 1791014836938
+          }
+        ]
+      },
+      {
+        "metric_name": "lab.model.predictions",
+        "model_version": "3",
+        "outcome": "labelled",
+        "label": "E",
+        "samples": [
+          {
+            "latest_value": 674,
+            "last_unix_milli": 1791014836938
+          }
+        ]
+      }
+    ],
+    "passed": true,
+    "scope": "Direct candidate HTTP trace propagation and exported inference counters; not a new end-to-end judgement API rehearsal."
+  }
+}

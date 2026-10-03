@@ -1,6 +1,8 @@
 # Qualify ESCI labels on lab gaps
 
-Status: next batch, dependent on successful numerical serving qualification.
+Status: blocked by numerical serving qualification. The
+[singleton release](../research/evidence/esci-inference-contract.md) is inactive;
+[process reproducibility](esci-kernel-reproducibility.md) comes first.
 
 ## Intent and constraints
 

@@ -1,8 +1,9 @@
 # Make ESCI inference reproducible
 
-Status: next batch after the
-[probability investigation](../research/evidence/esci-probability-diagnostics.md).
-Version 2 remains inactive.
+Status: implementation and diagnosis recorded in the
+[qualification evidence](../research/evidence/esci-inference-contract.md).
+Numerical acceptance failed; registered version 3 remains inactive. The next
+batch [freezes the demonstrated kernel profile](esci-kernel-reproducibility.md).
 
 ## Intent and constraints
 
