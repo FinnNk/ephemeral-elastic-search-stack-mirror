@@ -138,6 +138,8 @@ The supplied Headlamp KServe plugin is installed locally and retained by both
 Headlamp and OIDC reconciliation. HTTPS plugin discovery and exact asset checks
 passed; browser rendering remains a manual check. The next identity batch remains
 [Gitea and control UI integration](oidc-application-integration.md).
+The current supplied plugin is `0.1.0-dev.6`; its three served files match the
+pinned archive, and the existing OIDC Pod configuration is preserved.
 The [KServe 0.21 upgrade](kserve-021.md) is installed locally. Existing model
 and custom loader definitions are preserved; a fresh MLflow model download,
 direct prediction and judgement API checks passed. Stable images are selected

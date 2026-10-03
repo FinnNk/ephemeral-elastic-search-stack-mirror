@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0-dev.6",
+  "archive_sha256": "88a40cfc5215ae3e0a829bd52e5c25fe0b6219d4b1d32f7753a1f55ca3de9591",
+  "headlamp_uid_preserved": true,
+  "pod_spec_and_oidc_preserved": true,
+  "served_assets": [
+    {
+      "path": "main.js",
+      "sha256": "631e46e0c2e8f75ec9a29bcc58f788b159639355894a526615adc7bfd1091546",
+      "bytes": 62625
+    },
+    {
+      "path": "package.json",
+      "sha256": "ddcafb1b68144e1db0eb6715604c336475f5c607a995b8cdd0140c5197a60488",
+      "bytes": 1330
+    },
+    {
+      "path": "locales/en/translation.json",
+      "sha256": "cb75ba899c466781c94062246748e4e67de0ed8e1b316b49351606e0feeb3255",
+      "bytes": 12719
+    }
+  ],
+  "plugin_discovery": true,
+  "https_ca_verified": true,
+  "browser_rendering_checked": false,
+  "initial_verification": "Transient502duringPodreplacement;retryverifiedallassets"
+}

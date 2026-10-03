@@ -2,7 +2,7 @@
 
 ## Intent and constraints
 
-Install the supplied built plugin (`0.1.0-dev.1`) in the existing Headlamp Pod. Preserve OIDC,
+Install the supplied built plugin (`0.1.0-dev.6`) in the existing Headlamp Pod. Preserve OIDC,
 Kubernetes permissions and the read-only container filesystem. Retain the
 archive and checksum so installations do not depend on the workstation folder.
 
@@ -17,6 +17,6 @@ archive and checksum so installations do not depend on the workstation folder.
 | KServe resources | One InferenceService exists in the lab |
 | Rendered pages | Not checked: browser automation could not start; refresh Headlamp and open KServe manually |
 
-The runtime receipt is retained at `.lab/evidence/headlamp-kserve-plugin-dev1.json`.
+The current runtime receipt is retained at `.lab/evidence/headlamp-kserve-plugin-dev6.json`.
 See [Headlamp access](../headlamp.md) and `lab/headlamp_plugin.py` for installation.
-The next detailed batch remains [Gitea and control UI OIDC](oidc-application-integration.md).
+The main development priority remains [ESCI label quality](esci-label-quality.md).

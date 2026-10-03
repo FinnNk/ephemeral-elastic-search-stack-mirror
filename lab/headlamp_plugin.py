@@ -6,8 +6,8 @@ from pathlib import PurePosixPath
 
 from common import ROOT, apply
 
-ARCHIVE = ROOT / 'lab/headlamp-plugins/headlamp-k8s-kserve-0.1.0-dev.1.tar.gz'
-SHA256 = 'f136efde34520715f91678d9fe443fb13fefad717e2d6d7274554027e7f4d697'
+ARCHIVE = ROOT / 'lab/headlamp-plugins/headlamp-k8s-kserve-0.1.0-dev.6.tar.gz'
+SHA256 = '88a40cfc5215ae3e0a829bd52e5c25fe0b6219d4b1d32f7753a1f55ca3de9591'
 CONFIGMAP = 'headlamp-kserve-plugin'
 
 
@@ -31,7 +31,7 @@ def manifest():
     if not {'main.js', 'package.json'}.issubset(paths):
         raise ValueError('Plugin archive needs main.js and package.json.')
     metadata = json.loads(next(data[x['key']] for x in items if x['path'] == 'package.json'))
-    if (metadata['name'], metadata['version']) != ('@headlamp-k8s/kserve', '0.1.0-dev.1'):
+    if (metadata['name'], metadata['version']) != ('@headlamp-k8s/kserve', '0.1.0-dev.6'):
         raise ValueError('Unexpected plugin name or version.')
     return {'apiVersion': 'v1', 'kind': 'ConfigMap',
             'metadata': {'name': CONFIGMAP, 'namespace': 'lab-headlamp',
