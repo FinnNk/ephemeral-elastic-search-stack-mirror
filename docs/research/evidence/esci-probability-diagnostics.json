@@ -1,0 +1,1400 @@
+{
+  "input_sha256": "b3ec49202a54f617f6e23f1448a4966a7c3a8c612db922416ee140f749fbb81b",
+  "pairs": 7393,
+  "queries": 457,
+  "runs_sha256": {
+    "batch": "0bcd26dd248ce0da9922208bf6f157e9ec30b466c99498d3938c5c2a869c902c",
+    "batch-repeat": "ad80208d863b3d300b8032ebbd8a42b79b8b36cac812ec45826efd80feba420d",
+    "reversed": "fe6b4b7d4977470e32f8d7b66948e965124b8f86ff1c72e0b6eeafb570305b48",
+    "singletons": "87e5db66f4bc2c296c592f969eac482104d24302141160d21a40ee7fdccdd5d5",
+    "singletons-repeat": "7a8993f0096cd9a1b97dc2aaa10aa0b9371eb679988d0002bc0fff7c94f3014b"
+  },
+  "comparisons": {
+    "reference__batch": {
+      "pairs": 7393,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.11072620011120426,
+      "median_max_absolute_delta": 0.0014047492503193038,
+      "p95_max_absolute_delta": 0.011796882642021543,
+      "p99_max_absolute_delta": 0.015057235941308192,
+      "above_tolerance_pairs": 5421,
+      "changed_winning_classes": 21,
+      "changed_labels_or_abstentions": 40,
+      "queries_with_changed_decisions": 35,
+      "changed_acceptance": 40,
+      "reference_accepted": 2740,
+      "actual_accepted": 2742,
+      "decision_transitions": {
+        "E->E": 2721,
+        "abstain->abstain": 4632,
+        "abstain->E": 21,
+        "E->abstain": 19
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 4023,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 323,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 307,
+          "changed_labels_or_abstentions": 21
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 413,
+          "changed_labels_or_abstentions": 19
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 1121,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 1206,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 0.003211217033236763,
+          "query_bootstrap_95_interval": [
+            0.003055511053729454,
+            0.003376993582797032
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.7332611930204247,
+          "query_bootstrap_95_interval": [
+            0.7223271115107409,
+            0.7441073567171296
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.00284052482077641,
+          "query_bootstrap_95_interval": [
+            0.0016284213928617686,
+            0.004180785292241444
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.005410523468145543,
+          "query_bootstrap_95_interval": [
+            0.0036579913824741875,
+            0.007248322147651007
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.005410523468145543,
+          "query_bootstrap_95_interval": [
+            0.0036579913824741875,
+            0.007248322147651007
+          ]
+        },
+        "mean_signed_E": {
+          "value": -8.704658393486266e-06,
+          "query_bootstrap_95_interval": [
+            -0.00014020599684450328,
+            0.00013111052990430767
+          ]
+        },
+        "mean_signed_S": {
+          "value": 9.914076616918585e-06,
+          "query_bootstrap_95_interval": [
+            -0.00012247766637847203,
+            0.00013478603092255325
+          ]
+        },
+        "mean_signed_C": {
+          "value": 2.4676458880296185e-06,
+          "query_bootstrap_95_interval": [
+            -3.487765775626695e-05,
+            4.242172478968002e-05
+          ]
+        },
+        "mean_signed_I": {
+          "value": -3.677064111461041e-06,
+          "query_bootstrap_95_interval": [
+            -6.712734877241982e-05,
+            5.788945969626941e-05
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    },
+    "reference__batch-repeat": {
+      "pairs": 7393,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.11072620011120426,
+      "median_max_absolute_delta": 0.0014047492503193038,
+      "p95_max_absolute_delta": 0.011796882642021543,
+      "p99_max_absolute_delta": 0.015057235941308192,
+      "above_tolerance_pairs": 5421,
+      "changed_winning_classes": 21,
+      "changed_labels_or_abstentions": 40,
+      "queries_with_changed_decisions": 35,
+      "changed_acceptance": 40,
+      "reference_accepted": 2740,
+      "actual_accepted": 2742,
+      "decision_transitions": {
+        "E->E": 2721,
+        "abstain->abstain": 4632,
+        "abstain->E": 21,
+        "E->abstain": 19
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 4023,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 323,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 307,
+          "changed_labels_or_abstentions": 21
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 413,
+          "changed_labels_or_abstentions": 19
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 1121,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 1206,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 0.003211217033236763,
+          "query_bootstrap_95_interval": [
+            0.003055511053729454,
+            0.003376993582797032
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.7332611930204247,
+          "query_bootstrap_95_interval": [
+            0.7223271115107409,
+            0.7441073567171296
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.00284052482077641,
+          "query_bootstrap_95_interval": [
+            0.0016284213928617686,
+            0.004180785292241444
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.005410523468145543,
+          "query_bootstrap_95_interval": [
+            0.0036579913824741875,
+            0.007248322147651007
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.005410523468145543,
+          "query_bootstrap_95_interval": [
+            0.0036579913824741875,
+            0.007248322147651007
+          ]
+        },
+        "mean_signed_E": {
+          "value": -8.704658393486266e-06,
+          "query_bootstrap_95_interval": [
+            -0.00014020599684450328,
+            0.00013111052990430767
+          ]
+        },
+        "mean_signed_S": {
+          "value": 9.914076616918585e-06,
+          "query_bootstrap_95_interval": [
+            -0.00012247766637847203,
+            0.00013478603092255325
+          ]
+        },
+        "mean_signed_C": {
+          "value": 2.4676458880296185e-06,
+          "query_bootstrap_95_interval": [
+            -3.487765775626695e-05,
+            4.242172478968002e-05
+          ]
+        },
+        "mean_signed_I": {
+          "value": -3.677064111461041e-06,
+          "query_bootstrap_95_interval": [
+            -6.712734877241982e-05,
+            5.788945969626941e-05
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    },
+    "reference__reversed": {
+      "pairs": 7393,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.11072620011120426,
+      "median_max_absolute_delta": 0.001388132222599904,
+      "p95_max_absolute_delta": 0.011777162196856348,
+      "p99_max_absolute_delta": 0.014959376194506544,
+      "above_tolerance_pairs": 5424,
+      "changed_winning_classes": 21,
+      "changed_labels_or_abstentions": 40,
+      "queries_with_changed_decisions": 35,
+      "changed_acceptance": 40,
+      "reference_accepted": 2740,
+      "actual_accepted": 2742,
+      "decision_transitions": {
+        "E->E": 2721,
+        "abstain->abstain": 4632,
+        "abstain->E": 21,
+        "E->abstain": 19
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 4023,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 323,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 307,
+          "changed_labels_or_abstentions": 21
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 413,
+          "changed_labels_or_abstentions": 19
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 1121,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 1206,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 0.003205617980925835,
+          "query_bootstrap_95_interval": [
+            0.00304942095342063,
+            0.0033707621656466798
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.7336669822805356,
+          "query_bootstrap_95_interval": [
+            0.7228083462444636,
+            0.7445130172943355
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.00284052482077641,
+          "query_bootstrap_95_interval": [
+            0.0016284213928617686,
+            0.004180785292241444
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.005410523468145543,
+          "query_bootstrap_95_interval": [
+            0.0036579913824741875,
+            0.007248322147651007
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.005410523468145543,
+          "query_bootstrap_95_interval": [
+            0.0036579913824741875,
+            0.007248322147651007
+          ]
+        },
+        "mean_signed_E": {
+          "value": -2.2071222433066987e-05,
+          "query_bootstrap_95_interval": [
+            -0.00015316273930697562,
+            0.00011844279351560894
+          ]
+        },
+        "mean_signed_S": {
+          "value": 1.833420842687735e-05,
+          "query_bootstrap_95_interval": [
+            -0.0001146003350673322,
+            0.000145261875119317
+          ]
+        },
+        "mean_signed_C": {
+          "value": -5.252789296492988e-07,
+          "query_bootstrap_95_interval": [
+            -3.641695045109176e-05,
+            3.666618439370961e-05
+          ]
+        },
+        "mean_signed_I": {
+          "value": 4.262292935840072e-06,
+          "query_bootstrap_95_interval": [
+            -5.815781615595738e-05,
+            6.534110929624844e-05
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    },
+    "reference__singletons": {
+      "pairs": 1024,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.02465375548809351,
+      "median_max_absolute_delta": 0.0016167083511413397,
+      "p95_max_absolute_delta": 0.011888067488461562,
+      "p99_max_absolute_delta": 0.013929982904546657,
+      "above_tolerance_pairs": 803,
+      "changed_winning_classes": 4,
+      "changed_labels_or_abstentions": 5,
+      "queries_with_changed_decisions": 5,
+      "changed_acceptance": 5,
+      "reference_accepted": 379,
+      "actual_accepted": 378,
+      "decision_transitions": {
+        "E->E": 376,
+        "abstain->abstain": 643,
+        "E->abstain": 3,
+        "abstain->E": 2
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 563,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 43,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 39,
+          "changed_labels_or_abstentions": 2
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 54,
+          "changed_labels_or_abstentions": 3
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 163,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 162,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 0.00331428627547856,
+          "query_bootstrap_95_interval": [
+            0.0030436633274658897,
+            0.0035944193428837116
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.7841796875,
+          "query_bootstrap_95_interval": [
+            0.7577205994676321,
+            0.8098061562161236
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.00390625,
+          "query_bootstrap_95_interval": [
+            0.0009652509652509653,
+            0.007881967722816526
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.0048828125,
+          "query_bootstrap_95_interval": [
+            0.000980392156862745,
+            0.009708737864077669
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.0048828125,
+          "query_bootstrap_95_interval": [
+            0.000980392156862745,
+            0.009708737864077669
+          ]
+        },
+        "mean_signed_E": {
+          "value": -9.90447866645673e-05,
+          "query_bootstrap_95_interval": [
+            -0.00037853356755003487,
+            0.00017005130872183063
+          ]
+        },
+        "mean_signed_S": {
+          "value": 0.0004242162477857554,
+          "query_bootstrap_95_interval": [
+            0.0001275769780102592,
+            0.0007245550285101959
+          ]
+        },
+        "mean_signed_C": {
+          "value": -2.0364541338009646e-05,
+          "query_bootstrap_95_interval": [
+            -9.3635011865562e-05,
+            5.284546976686065e-05
+          ]
+        },
+        "mean_signed_I": {
+          "value": -0.0003048069197831805,
+          "query_bootstrap_95_interval": [
+            -0.00046520782795363716,
+            -0.0001502687394387064
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    },
+    "reference__singletons-repeat": {
+      "pairs": 1024,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.02465375548809351,
+      "median_max_absolute_delta": 0.0016167083511413397,
+      "p95_max_absolute_delta": 0.011888067488461562,
+      "p99_max_absolute_delta": 0.013929982904546657,
+      "above_tolerance_pairs": 803,
+      "changed_winning_classes": 4,
+      "changed_labels_or_abstentions": 5,
+      "queries_with_changed_decisions": 5,
+      "changed_acceptance": 5,
+      "reference_accepted": 379,
+      "actual_accepted": 378,
+      "decision_transitions": {
+        "E->E": 376,
+        "abstain->abstain": 643,
+        "E->abstain": 3,
+        "abstain->E": 2
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 563,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 43,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 39,
+          "changed_labels_or_abstentions": 2
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 54,
+          "changed_labels_or_abstentions": 3
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 163,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 162,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 0.00331428627547856,
+          "query_bootstrap_95_interval": [
+            0.0030436633274658897,
+            0.0035944193428837116
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.7841796875,
+          "query_bootstrap_95_interval": [
+            0.7577205994676321,
+            0.8098061562161236
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.00390625,
+          "query_bootstrap_95_interval": [
+            0.0009652509652509653,
+            0.007881967722816526
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.0048828125,
+          "query_bootstrap_95_interval": [
+            0.000980392156862745,
+            0.009708737864077669
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.0048828125,
+          "query_bootstrap_95_interval": [
+            0.000980392156862745,
+            0.009708737864077669
+          ]
+        },
+        "mean_signed_E": {
+          "value": -9.90447866645673e-05,
+          "query_bootstrap_95_interval": [
+            -0.00037853356755003487,
+            0.00017005130872183063
+          ]
+        },
+        "mean_signed_S": {
+          "value": 0.0004242162477857554,
+          "query_bootstrap_95_interval": [
+            0.0001275769780102592,
+            0.0007245550285101959
+          ]
+        },
+        "mean_signed_C": {
+          "value": -2.0364541338009646e-05,
+          "query_bootstrap_95_interval": [
+            -9.3635011865562e-05,
+            5.284546976686065e-05
+          ]
+        },
+        "mean_signed_I": {
+          "value": -0.0003048069197831805,
+          "query_bootstrap_95_interval": [
+            -0.00046520782795363716,
+            -0.0001502687394387064
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    },
+    "batch__batch-repeat": {
+      "pairs": 7393,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.0,
+      "median_max_absolute_delta": 0.0,
+      "p95_max_absolute_delta": 0.0,
+      "p99_max_absolute_delta": 0.0,
+      "above_tolerance_pairs": 0,
+      "changed_winning_classes": 0,
+      "changed_labels_or_abstentions": 0,
+      "queries_with_changed_decisions": 0,
+      "changed_acceptance": 0,
+      "reference_accepted": 2742,
+      "actual_accepted": 2742,
+      "decision_transitions": {
+        "E->E": 2742,
+        "abstain->abstain": 4651
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 4021,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 322,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 308,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 416,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 1128,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 1198,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_signed_E": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_signed_S": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_signed_C": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_signed_I": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    },
+    "batch__reversed": {
+      "pairs": 7393,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.021965388734732416,
+      "median_max_absolute_delta": 0.0,
+      "p95_max_absolute_delta": 0.0,
+      "p99_max_absolute_delta": 0.0029722154840891093,
+      "above_tolerance_pairs": 172,
+      "changed_winning_classes": 0,
+      "changed_labels_or_abstentions": 0,
+      "queries_with_changed_decisions": 0,
+      "changed_acceptance": 0,
+      "reference_accepted": 2742,
+      "actual_accepted": 2742,
+      "decision_transitions": {
+        "E->E": 2742,
+        "abstain->abstain": 4651
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 4021,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 322,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 308,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 416,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 1128,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 1198,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 9.812585594942873e-05,
+          "query_bootstrap_95_interval": [
+            7.753356313183917e-05,
+            0.00012105031360416487
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.023265250913025837,
+          "query_bootstrap_95_interval": [
+            0.019723312795016837,
+            0.02689942004410292
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_signed_E": {
+          "value": -1.336656403958079e-05,
+          "query_bootstrap_95_interval": [
+            -3.076419171185182e-05,
+            2.558732350346895e-06
+          ]
+        },
+        "mean_signed_S": {
+          "value": 8.420131809958744e-06,
+          "query_bootstrap_95_interval": [
+            -6.431132411848089e-06,
+            2.4096766832848777e-05
+          ]
+        },
+        "mean_signed_C": {
+          "value": -2.992924817678905e-06,
+          "query_bootstrap_95_interval": [
+            -9.433164530043397e-06,
+            2.6528529954749846e-06
+          ]
+        },
+        "mean_signed_I": {
+          "value": 7.939357047301037e-06,
+          "query_bootstrap_95_interval": [
+            -1.7183950227192664e-06,
+            1.7830289345499502e-05
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    },
+    "batch__singletons": {
+      "pairs": 1024,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.02465375548809351,
+      "median_max_absolute_delta": 0.0017067923912985547,
+      "p95_max_absolute_delta": 0.011923548950984885,
+      "p99_max_absolute_delta": 0.014118874679072147,
+      "above_tolerance_pairs": 800,
+      "changed_winning_classes": 5,
+      "changed_labels_or_abstentions": 2,
+      "queries_with_changed_decisions": 2,
+      "changed_acceptance": 2,
+      "reference_accepted": 380,
+      "actual_accepted": 378,
+      "decision_transitions": {
+        "E->E": 378,
+        "abstain->abstain": 644,
+        "E->abstain": 2
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 563,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 38,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 43,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 51,
+          "changed_labels_or_abstentions": 2
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 167,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 162,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 0.0034241907609901382,
+          "query_bootstrap_95_interval": [
+            0.0031399576273210207,
+            0.003722968070148769
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.78125,
+          "query_bootstrap_95_interval": [
+            0.7560975609756098,
+            0.8066099789137581
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.0048828125,
+          "query_bootstrap_95_interval": [
+            0.0009784735812133072,
+            0.009737098344693282
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.001953125,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.004906771344455349
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.001953125,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.004906771344455349
+          ]
+        },
+        "mean_signed_E": {
+          "value": -0.00022344202582542269,
+          "query_bootstrap_95_interval": [
+            -0.000528487637002592,
+            8.076630354811295e-05
+          ]
+        },
+        "mean_signed_S": {
+          "value": 0.0005687667312840003,
+          "query_bootstrap_95_interval": [
+            0.00026395814555097173,
+            0.0008729308214381081
+          ]
+        },
+        "mean_signed_C": {
+          "value": -6.057696121541626e-05,
+          "query_bootstrap_95_interval": [
+            -0.00012488514008954674,
+            1.7179554266529133e-06
+          ]
+        },
+        "mean_signed_I": {
+          "value": -0.00028474774424316614,
+          "query_bootstrap_95_interval": [
+            -0.0004180768339306842,
+            -0.00015174556090464058
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    },
+    "batch__singletons-repeat": {
+      "pairs": 1024,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.02465375548809351,
+      "median_max_absolute_delta": 0.0017067923912985547,
+      "p95_max_absolute_delta": 0.011923548950984885,
+      "p99_max_absolute_delta": 0.014118874679072147,
+      "above_tolerance_pairs": 800,
+      "changed_winning_classes": 5,
+      "changed_labels_or_abstentions": 2,
+      "queries_with_changed_decisions": 2,
+      "changed_acceptance": 2,
+      "reference_accepted": 380,
+      "actual_accepted": 378,
+      "decision_transitions": {
+        "E->E": 378,
+        "abstain->abstain": 644,
+        "E->abstain": 2
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 563,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 38,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 43,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 51,
+          "changed_labels_or_abstentions": 2
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 167,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 162,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 0.0034241907609901382,
+          "query_bootstrap_95_interval": [
+            0.0031399576273210207,
+            0.003722968070148769
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.78125,
+          "query_bootstrap_95_interval": [
+            0.7560975609756098,
+            0.8066099789137581
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.0048828125,
+          "query_bootstrap_95_interval": [
+            0.0009784735812133072,
+            0.009737098344693282
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.001953125,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.004906771344455349
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.001953125,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.004906771344455349
+          ]
+        },
+        "mean_signed_E": {
+          "value": -0.00022344202582542269,
+          "query_bootstrap_95_interval": [
+            -0.000528487637002592,
+            8.076630354811295e-05
+          ]
+        },
+        "mean_signed_S": {
+          "value": 0.0005687667312840003,
+          "query_bootstrap_95_interval": [
+            0.00026395814555097173,
+            0.0008729308214381081
+          ]
+        },
+        "mean_signed_C": {
+          "value": -6.057696121541626e-05,
+          "query_bootstrap_95_interval": [
+            -0.00012488514008954674,
+            1.7179554266529133e-06
+          ]
+        },
+        "mean_signed_I": {
+          "value": -0.00028474774424316614,
+          "query_bootstrap_95_interval": [
+            -0.0004180768339306842,
+            -0.00015174556090464058
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    },
+    "singletons__singletons-repeat": {
+      "pairs": 1024,
+      "queries": 457,
+      "tolerance": 0.0001,
+      "max_absolute_delta": 0.0,
+      "median_max_absolute_delta": 0.0,
+      "p95_max_absolute_delta": 0.0,
+      "p99_max_absolute_delta": 0.0,
+      "above_tolerance_pairs": 0,
+      "changed_winning_classes": 0,
+      "changed_labels_or_abstentions": 0,
+      "queries_with_changed_decisions": 0,
+      "changed_acceptance": 0,
+      "reference_accepted": 378,
+      "actual_accepted": 378,
+      "decision_transitions": {
+        "E->E": 378,
+        "abstain->abstain": 646
+      },
+      "changes_by_reference_confidence": [
+        {
+          "lower_inclusive": 0,
+          "upper": 0.85,
+          "upper_inclusive": false,
+          "pairs": 563,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.85,
+          "upper": 0.88,
+          "upper_inclusive": false,
+          "pairs": 42,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.88,
+          "upper": 0.9,
+          "upper_inclusive": false,
+          "pairs": 41,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.9,
+          "upper": 0.92,
+          "upper_inclusive": false,
+          "pairs": 47,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.92,
+          "upper": 0.95,
+          "upper_inclusive": false,
+          "pairs": 164,
+          "changed_labels_or_abstentions": 0
+        },
+        {
+          "lower_inclusive": 0.95,
+          "upper": 1,
+          "upper_inclusive": true,
+          "pairs": 167,
+          "changed_labels_or_abstentions": 0
+        }
+      ],
+      "metrics": {
+        "mean_max_absolute_delta": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "above_tolerance_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "winning_class_change_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "label_or_abstention_change_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "acceptance_change_rate": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_signed_E": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_signed_S": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_signed_C": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_signed_I": {
+          "value": 0.0,
+          "query_bootstrap_95_interval": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "uncertainty": {
+        "method": "whole-query percentile bootstrap; pair-weighted statistics",
+        "replicates": 5000,
+        "seed": 20261002,
+        "scope": "Conditional on this exposed cohort; not a population quality guarantee."
+      }
+    }
+  },
+  "cohort": {
+    "format": "esci-parity-diagnostic-inputs-v1",
+    "release_sha256": "93ee12f782684f5213a5b5ff0205d0d2765554f42646d5294a65029704742c45",
+    "source_sha256": {
+      "cohorts-v2/confirmation.parquet": "c2133b1326a64a512703790d668e899dc7a4a72eaf0747a8e8d2b75bd048dc40",
+      "signals/v3_8192/confirmation.parquet": "2804518ab62ed12b55afbfe9884884bac84dfb1edefeef0d18fdb394e0e07ee3",
+      "decision-confirmation/probabilities.npz": "3bf8ca86318e1016bc897f03e84ed165bb95546f57a1fc499c7e062e1183c86b"
+    },
+    "exclusions_sha256": "47b0c6333841254d75baaf16401e1f1902a01afdcca155f92138bb5c21b39161",
+    "normalisation": "nfkc_html_whitespace_v1",
+    "original_pairs": 9694,
+    "excluded_pairs": 2301,
+    "pairs": 7393,
+    "queries": 457,
+    "selection": "All exposed confirmation pairs outside protected normalised query membership."
+  },
+  "registration": {
+    "name": "synthetic-esci-judge",
+    "version": "2",
+    "model_uri": "models:/synthetic-esci-judge/2",
+    "artifact_sha256": "ee4048a8ee758af4b4f697c63e921d4113b8bc95fa4e81728e881360405598f1",
+    "release_sha256": "93ee12f782684f5213a5b5ff0205d0d2765554f42646d5294a65029704742c45",
+    "implementation_sha256": "dd8d66e84f55239475e99a4472368c202a8277d759372899afa5a8d5e38ea408"
+  }
+}

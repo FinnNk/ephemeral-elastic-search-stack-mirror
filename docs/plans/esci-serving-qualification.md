@@ -1,8 +1,10 @@
 # Check version 2 in KServe
 
 Status: attempt finished; numerical checks failed. See the
-[results](../research/evidence/esci-serving-qualification.md). The next batch is
-[parity diagnosis](esci-runtime-parity.md).
+[results](../research/evidence/esci-serving-qualification.md). The
+[larger diagnosis](../research/evidence/esci-probability-diagnostics.md) identifies
+kernel fallback and batch-size sensitivity. The next batch qualifies an
+[explicit inference contract](esci-inference-contract.md).
 
 ## Intent and constraints
 

@@ -8,7 +8,9 @@ policy. The CUDA serving image is separate from the weights.
 Registration is possible on a CPU machine. Activation requires a GPU and passing
 serving and quality checks. The [latest serving attempt](research/evidence/esci-serving-qualification.md)
 started version 2 on the optional worker but failed numerical agreement. It
-remains inactive. Coordinate competing GPU work before another qualification
+remains inactive. The [larger investigation](research/evidence/esci-probability-diagnostics.md)
+identified a missing compiler causing silent attention-kernel fallback, plus
+separate batch-size sensitivity. Coordinate competing GPU work before another qualification
 window; registration alone does not activate the candidate.
 
 ## Candidate behaviour and evidence

@@ -16,9 +16,11 @@ Qualification does not implement the later cascade passes.
 - Keep the active bootstrap judge until serving and quality evidence has been reviewed.
 
 The optional worker is ready for review. The serving attempt failed its numerical
-tolerance despite matching labels and abstentions; see the
-[results](../research/evidence/esci-serving-qualification.md) and
-[next parity batch](esci-runtime-parity.md). Quality assessment has not started.
+tolerance on its 64 canaries. The
+[larger investigation](../research/evidence/esci-probability-diagnostics.md)
+found decision changes and identified silent kernel fallback and separate
+batch-size sensitivity. The next batch qualifies an
+[explicit inference contract](esci-inference-contract.md). Quality assessment has not started.
 
 ## Batches and acceptance
 

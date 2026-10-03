@@ -4,7 +4,7 @@ Status: next batch, dependent on successful numerical serving qualification.
 
 ## Intent and constraints
 
-Measure whether registered model version 2 can safely supply a selective first
+Measure whether a numerically qualified registered release can safely supply a selective first
 pass of missing judgements. Keep its frozen 0.90 acceptance threshold and the
 lab's 80% judged-coverage gate. A first pass need not close every gap.
 
@@ -46,7 +46,7 @@ Changing the model or policy requires a newly reserved confirmation cohort.
 ## Sources
 
 - [Overall qualification](esci-model-qualification.md) and
-  [serving qualification](esci-serving-qualification.md).
+  [inference-contract qualification](esci-inference-contract.md).
 - [Model installation](../esci-model-installation.md): retrospective quality
   evidence and the exact registered release.
 - [Catalogue evidence](../research/evidence/esci-catalogue.md): current missing
