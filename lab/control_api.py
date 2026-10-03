@@ -39,6 +39,8 @@ class Handler(BaseHTTPRequestHandler):
     sessions = None
     identity_provider = None
     canonical_host = None
+    oidc_provider = None
+    public_url = None
 
     def send_bytes(self, status, payload, content_type, extra_headers=None):
         response_status(status)
@@ -63,11 +65,13 @@ class Handler(BaseHTTPRequestHandler):
         return route(self.path).strip('/').split('/')
 
     def host_allowed(self):
+        if self.command == 'GET' and route(self.path) == '/api/health':
+            return True
         if self.canonical_host is None or self.headers.get('Host') == self.canonical_host:
             return True
         if self.command == 'GET':
             self.send_response(307)
-            self.send_header('Location', 'http://' + self.canonical_host + self.path)
+            self.send_header('Location', (self.public_url or 'http://' + self.canonical_host) + self.path)
             self.send_header('Cache-Control', 'no-store')
             self.end_headers()
         else:
@@ -75,11 +79,19 @@ class Handler(BaseHTTPRequestHandler):
         return False
 
     def identity(self):
+        authorization = self.headers.get('Authorization', '')
+        if self.oidc_provider:
+            try:
+                if not authorization.startswith('Bearer '):
+                    return None
+                return self.oidc_provider.verify(authorization[7:])
+            except Exception:
+                return None
         return self.sessions.get(self.headers.get('Cookie'))
 
     @staticmethod
     def visible(row, identity):
-        return bool(row) and (identity['is_admin'] or row['owner'] == identity['username'])
+        return bool(row) and (identity['is_admin'] or identity.get('is_reader', False) or row['owner'] == identity['username'])
 
     def comparison_visible(self, row, identity):
         return bool(row) and self.visible(self.controller.store.get(row['baseline_id']), identity) and \
@@ -97,11 +109,13 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_bytes(200, UI.read_bytes(), 'text/html; charset=utf-8')
         if parts == ['api', 'health']:
             return self.send_json(503 if DRAIN.exists() else 200, {'ready': not DRAIN.exists()})
+        if parts == ['api', 'auth']:
+            return self.send_json(200, {'oidc': self.oidc_provider is not None, 'login_url': '/oauth2/start?rd=/', 'logout_url': '/oauth2/sign_out?rd=/oauth2/sign_in'})
         identity = self.identity()
         if identity is None:
-            return self.send_json(401, {'error': 'Sign in with Gitea.'})
+            return self.send_json(401, {'error': 'Sign in to the lab.'})
         if parts == ['api', 'me']:
-            return self.send_json(200, {'username': identity['username'], 'is_admin': identity['is_admin']})
+            return self.send_json(200, {key: value for key, value in identity.items() if key != 'expires_at'})
         if parts == ['api', 'datasets']:
             releases = []
             for release_id in RELEASES:
@@ -189,7 +203,7 @@ class Handler(BaseHTTPRequestHandler):
                 if answer.get('filters') != filters:
                     return self.send_json(502, {'error': 'Search API returned different filters.'})
                 try:
-                    self.controller.activity(row['id'])
+                    self.controller.activity(row['id']) if not identity.get('is_reader', False) else None
                 except ValueError:
                     return self.send_json(409, {'error': 'Environment lease has expired.'})
                 return self.send_json(200, answer)
@@ -219,15 +233,19 @@ class Handler(BaseHTTPRequestHandler):
         try:
             payload = self.body()
             if parts == ['api', 'login']:
+                if self.oidc_provider:
+                    return self.send_json(403, {'error': 'Use OIDC sign-in; local recovery uses the operator CLI.'})
                 identity = self.identity_provider.verify(payload['username'], payload['password'])
                 token = self.sessions.create(identity)
                 return self.send_json(200, identity, {'Set-Cookie': session_cookie(token)})
             identity = self.identity()
             if identity is None:
-                return self.send_json(401, {'error': 'Sign in with Gitea.'})
+                return self.send_json(401, {'error': 'Sign in to the lab.'})
             if parts == ['api', 'logout']:
                 self.sessions.discard(self.headers.get('Cookie'))
                 return self.send_json(200, {'signed_out': True}, {'Set-Cookie': expired_cookie()})
+            if identity.get('is_reader', False):
+                return self.send_json(403, {'error': 'Reader accounts cannot change lab resources.'})
             if parts == ['api', 'environments', 'batch']:
                 rows = self.controller.create_many(payload['names'], payload['build_run'],
                     owner=identity['username'], release_id=payload.get('release_id', DATASET))
@@ -279,7 +297,9 @@ class Handler(BaseHTTPRequestHandler):
             payload = self.body()
             identity = self.identity()
             if identity is None:
-                return self.send_json(401, {'error': 'Sign in with Gitea.'})
+                return self.send_json(401, {'error': 'Sign in to the lab.'})
+            if identity.get('is_reader', False):
+                return self.send_json(403, {'error': 'Reader accounts cannot change lab resources.'})
             if parts == ['api', 'environments', 'batch']:
                 instance_ids = payload['ids']
                 if not isinstance(instance_ids, list) or any(
@@ -306,8 +326,12 @@ def serve():
     Handler.controller = controller
     Handler.sessions = Sessions()
     Handler.identity_provider = GiteaIdentity()
+    if os.environ.get('LAB_OIDC_ISSUER'):
+        from control_oidc import OIDCIdentity
+        Handler.oidc_provider = OIDCIdentity()
     public_url = os.environ.get('LAB_CONTROL_PUBLIC_URL', f'http://localhost:{PORT}/').rstrip('/')
     Handler.canonical_host = urllib.parse.urlparse(public_url).netloc
+    Handler.public_url = public_url
     bind_address = os.environ.get('LAB_CONTROL_BIND', '127.0.0.1')
     with ControlServer((bind_address, PORT), Handler) as server:
         print(f'Lifecycle UI: {public_url}/', flush=True)

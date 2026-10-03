@@ -1,43 +1,60 @@
 # Lab identities and sessions
 
-Sign in to the control UI with your own local Gitea account. The control service asks Gitea to verify the credentials and uses its returned login and administrator flag to decide which environments you can manage.
+Sign in to the [control UI](https://control.localhost:34443/) with your lab
+identity. Keycloak authenticates the user; the control API verifies the signed
+token and applies its group permissions.
 
 ## Access rules
 
 | Identity | Control access |
 | --- | --- |
-| Ordinary Gitea user | Read, search, compare, renew and delete their own environments |
-| Gitea administrator | Manage all environments and inspect their retained reports |
-| Automation account | Acts under its own identity; it does not become the human owner |
+| `lab-readers` | View environments, search and inspect retained reports |
+| `lab-admins` | Create, compare, renew and delete environments |
+| Neither group | Access denied |
+| Automation | Existing scoped service credentials; separate from browser sign-in |
 
-The password is used only for the Gitea verification request. It is not written to SQLite, Git, reports or the browser response; the UI clears the password field after sign-in.
+The API checks the issuer, audience, expiry, signature and group claims. It
+retains the immutable subject alongside the display name in the authenticated
+session response. Forwarded usernames and groups cannot grant access. Reader
+searches do not extend environment leases.
 
-| Session behaviour | Current implementation |
+## Browser sessions
+
+| Behaviour | Implementation |
 | --- | --- |
-| Lifetime | Random token, held in memory, expires after 12 hours |
-| Cookie | Host-only, `HttpOnly`, `SameSite=Strict`, path `/`; no `Secure` flag |
-| End of session | Logout, expiry or control process restart |
-| Account deactivation | Not rechecked during an existing session |
+| Login | OAuth2 Proxy authorisation-code flow with PKCE and nonce verification |
+| Cookie | Host-only `__Host-lab-control`; `Secure`, `HttpOnly`, `SameSite=Lax` |
+| Lifetime | One hour; refreshed after five minutes of activity |
+| Sign out | Clears the control cookie; the Keycloak SSO session may remain |
+| Group changes | Existing tokens retain claims until renewed or expired; this is not immediate revocation |
+| API | Independently verifies the ID token forwarded by the proxy |
 
-## Browser and network boundary
+Traefik routes the canonical HTTPS address to OAuth2 Proxy. The proxy sends
+requests to the private control Service. A direct API request still needs a
+valid token. The lab CA verifies discovery, signing-key access and token
+exchange. Readiness probes remain available inside Kubernetes.
 
-The Kubernetes installer binds the API to `0.0.0.0` inside its Pod. A scoped NetworkPolicy permits the configured lab clients and ingress; this is not a host-loopback server. The installer sets `LAB_CONTROL_PUBLIC_URL=http://localhost:18082` and the API checks that Host header.
-
-Use the [loopback port forward](control-runtime.md#connect-and-check) and open `http://localhost:18082/`. A different Host causes a GET redirect to the canonical HTTP address; other requests receive HTTP 421. The configured HTTPS ingress route does not change that canonical URL or add the cookie's `Secure` flag. Do not describe it as an end-to-end HTTPS control session.
-
-The lab's remaining identity limits are canonical HTTPS routing, secure cookies, account revocation and an enterprise identity flow. Documenting these limits does not change the running configuration.
+The operator CLI and retained administrator kubeconfig provide recovery when
+the identity service is unavailable. An unconfigured standalone control process
+can use local Gitea sessions; the installed OIDC API rejects those cookies.
 
 ## Separate service accounts
 
 | Service | Human and automation distinction |
 | --- | --- |
-| Gitea/control | Personal account for interactive use; `elastic-agent` for agent work |
-| Nexus | Personal administrator, setup administrator, `lab-publisher` for CI and `lab-reader` for deployment pulls |
-| Delivery review | Human release review is separate from the proposing/validating agent |
-| Demonstration approvals | `lab-admin` is used only by the explicitly invoked simulation harness; those approvals are labelled simulated |
+| Gitea | Linked personal account; `elastic-agent` for agent work |
+| Control | Named Keycloak identity; scoped Gitea and Nexus credentials for workers |
+| Nexus | Personal administrator, setup administrator, `lab-publisher` and `lab-reader` |
+| Delivery review | Human release review is separate from the proposing agent |
+| Demonstration approvals | Explicitly invoked simulation accounts; labelled simulated |
 
-Nexus credentials are not Gitea credentials. CI receives no Nexus administrator password. The delivery watcher does not approve or merge promotion PRs. Local administrators can change protection settings; enterprise migration must apply the organisation's real identities and reviewer policy.
+Gitea retains its own repository permissions after account linking. Control
+permissions come from Keycloak groups. A role in one product does not grant a
+role in another. The delivery watcher does not approve or merge promotion PRs.
 
-The [adapter](../lab/control_identity.py) returns only `{username, is_admin}` to the [control API](../lab/control_api.py). A GHES implementation should use approved OAuth/OIDC, stable subject IDs and explicit role mapping. A Gitea login name is sufficient for this lab but is not an enterprise-stable subject ID.
+Recorded gate exceptions still use the existing verified Gitea approval CLI.
+Binding new decisions to an OIDC issuer and subject is the next integration
+batch; browser access alone does not change that contract.
 
-The [dated identity checks](research/evidence/lifecycle-measurement/README.md) demonstrate owner isolation and administrator cleanup. They do not establish personal-account sign-in or enterprise SSO.
+See [OIDC access](oidc-access.md), [control operations](control-runtime.md) and
+[measured control access](research/evidence/control-oidc.md).

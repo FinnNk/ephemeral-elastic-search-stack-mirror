@@ -17,23 +17,21 @@ kubectl --kubeconfig $kubeconfig -n lab-control get deploy,pod,pvc,svc
 kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
 ```
 
-Expect one available Deployment, a Running Pod with four ready containers and a Bound PVC. The smoke check prints JSON containing `cluster: matched`, the Gitea runtime identity, Elasticsearch version, record counts and `nexus: reachable`. It checks connectivity; it does not run a comparison.
+Expect ready `lab-control` and `lab-control-oidc` Deployments, four ready control containers and a Bound PVC. The smoke check prints JSON containing `cluster: matched`, the Gitea runtime identity, Elasticsearch version, record counts and `nexus: reachable`. It checks connectivity; it does not run a comparison.
 
-To open the UI, run this in a separate terminal and leave it running:
+Open [Control UI](https://control.localhost:34443/) and sign in with your lab
+identity. OAuth2 Proxy runs in a separate Pod; the control Pod still contains
+four workers. See [OIDC access](oidc-access.md#open-the-control-ui) for reader
+permissions and operator verification.
 
-```powershell
-kubectl --kubeconfig $kubeconfig -n lab-control port-forward svc/lab-control 18082:18082 --address 127.0.0.1
-```
-
-When it prints `Forwarding from 127.0.0.1:18082`, open [http://localhost:18082/](http://localhost:18082/). Use `localhost`, because the service checks the Host header. If the port is already occupied by the supervised lab forward, reuse it. After a Pod replacement, restart a manual forward if it exits.
-
-The HTTPS ingress also has a control route, but the installed canonical URL remains HTTP localhost. See the [identity boundary](identity-boundary.md) for its redirect and cookie limits.
+A loopback port forward can help diagnose readiness, but authenticated browser
+access uses the canonical HTTPS URL.
 
 | Problem | Check and recovery |
 | --- | --- |
 | Pod unavailable | Inspect `kubectl --kubeconfig $kubeconfig -n lab-control describe pod`; check image pulls and PVC binding before restarting anything. |
 | Smoke check fails | Read the named service error and the API log below; verify that service and its ESO-backed Secret are ready. |
-| UI redirects or refuses a request | Use the canonical `localhost:18082` address; inspect `LAB_CONTROL_PUBLIC_URL` in `lab-control-config`. |
+| UI redirects or refuses a request | Use the canonical `https://control.localhost:34443/` address; inspect `LAB_CONTROL_PUBLIC_URL` in `lab-control-config`. |
 | Comparisons fail after restart | Inspect retained comparison state and logs. Do not delete SQLite or rerun initial activation. |
 
 ```powershell
@@ -66,8 +64,7 @@ Wait for active comparisons and delivery work to finish. The Deployment uses `Re
 3. Apply that image, wait for readiness and repeat the smoke check:
 
    ```powershell
-   (Get-Content lab/control-runtime/deployment.yaml -Raw).Replace('__CONTROL_IMAGE__', $controlImage) |
-       kubectl --kubeconfig $kubeconfig apply -f -
+   python lab/install_control_oidc.py --image $controlImage
    kubectl --kubeconfig $kubeconfig -n lab-control rollout status deployment/lab-control --timeout=180s
    kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
    ```

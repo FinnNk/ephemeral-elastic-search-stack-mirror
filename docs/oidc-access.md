@@ -85,6 +85,7 @@ It does not change your password or run an application sync.
 | Kubernetes identity | Immutable subject, prefixed `lab-oidc:`; prefixed group claims |
 | Headlamp | Native OIDC with PKCE; uses the user's token, not a shared privileged token |
 | Argo CD | Native OIDC; group claims map to application roles |
+| Control UI | OAuth2 Proxy browser login; API verifies signed identities and enforces reader permissions |
 | Gitea | Native OIDC; explicit existing-account linking; existing Gitea roles retained |
 | TLS | Existing root CA; verified discovery, token exchange and API access |
 
@@ -118,6 +119,33 @@ On Linux or macOS, use `python3`. Requires the existing identity service, ESO,
 Key Vault delivery, lab CA, Helm and kubectl. Expect the Gitea sign-in URL.
 The [verification record](research/evidence/gitea-oidc.md) describes the tests.
 
+## Open the control UI
+
+Open [Control UI](https://control.localhost:34443/). If you already have a
+Keycloak session, it can sign you in without another password prompt.
+
+- **Administrators** create environments and run comparisons.
+- **Readers** inspect environments, searches and reports. Mutating controls
+  are unavailable and the API rejects write requests.
+- **Sign out** clears this application's session; Keycloak may still have an
+  SSO session. Sign out of Keycloak separately to end it across applications.
+
+Operators update the integration from the lab repository using a published
+control image. With `LAB_STATE_DIR` set to retained state:
+
+```powershell
+$controlImage = (Get-Content (Join-Path $env:LAB_STATE_DIR control-image.json) -Raw | ConvertFrom-Json).image
+python lab/install_control_oidc.py --image $controlImage
+python lab/verify_control_oidc.py
+```
+
+On Linux or macOS, use `python3`; obtain the image reference from the same JSON
+file. The installer requires the existing control Deployment, Keycloak, ESO,
+Key Vault and trusted lab CA. It preserves the control PVC and waits for idle
+operations before replacing the Pod. The verifier uses disposable accounts,
+checks administrator and reader callbacks, denies reader writes and removes
+the accounts afterwards.
+
 ## Recovery
 
 | Problem | Action |
@@ -130,6 +158,6 @@ The [verification record](research/evidence/gitea-oidc.md) describes the tests.
 | Need Gitea recovery | Use its existing local password sign-in; OAuth client linking does not replace it. |
 | Need Argo CD recovery | Use its retained local administrator account; automation credentials are unchanged. |
 
-OIDC integration for the control UI, MLflow, Nexus and SigNoz remains planned.
+MLflow, Nexus and SigNoz access integrations remain planned.
 See the [next integration plan](plans/oidc-application-integration.md) and
 [verification evidence](research/evidence/local-oidc.md).

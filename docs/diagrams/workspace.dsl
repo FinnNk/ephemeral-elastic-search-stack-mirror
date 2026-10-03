@@ -99,6 +99,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         }
         lab = softwareSystem "Search relevance lab" "Creates environments; checks relevance, results and performance." {
             ui = container "Lab web UI" "Creates environments and displays comparisons." "HTML / JavaScript in control Pod"
+            controlAuth = container "Control sign-in proxy" "Authenticates browser users and forwards signed identities." "OAuth2 Proxy 7.15.5" {
+                tags "Platform"
+            }
             api = container "Lab API" "Manages experiments, leases and comparisons." "Python HTTP API in control Pod"
             coordinator = container "Delivery coordinator" "Validates promotion PRs and verifies deployments." "Python worker in control Pod / provider adapter"
             metadata = container "Lab metadata" "Retains environment records, leases and report links." "SQLite on control PVC; shared store for AKS" {
@@ -160,6 +163,10 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         engineer -> identity "Signs in" "HTTPS"
         headlamp -> identity "Authenticates users" "OIDC / verified TLS"
         argo -> identity "Authenticates users" "OIDC / verified TLS"
+        controlAuth -> identity "Authenticates users" "OIDC / verified TLS"
+        engineer -> controlAuth "Opens control UI" "HTTPS / OIDC"
+        controlAuth -> api "Forwards requests and signed ID tokens" "HTTP in cluster"
+        api -> identity "Verifies issuer and signing keys" "OIDC discovery / verified TLS"
         gitea -> identity "Authenticates linked accounts; retains Gitea roles" "OIDC / verified TLS"
         kube -> identity "Verifies issuer and signing keys" "OIDC discovery / verified TLS"
         identity -> identitydb "Retains identity state" "SQL"
@@ -289,9 +296,10 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                     deploymentNode "Secret synchronisation" "ESO runs outside experiment namespaces" "lab-secrets namespace" {
                         containerInstance eso
                     }
-                    deploymentNode "Lab control namespace" "One active Pod and retained SQLite/Git state" "Namespace / persistent volume" {
+                    deploymentNode "Lab control namespace" "Control workers, sign-in proxy and retained SQLite/Git state" "Namespace / persistent volume" {
                         containerInstance ui
                         containerInstance api
+                        containerInstance controlAuth
                         containerInstance metadata
                         containerInstance expiry
                         containerInstance coordinator
@@ -376,6 +384,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance eso
                         containerInstance ui
                         containerInstance api
+                        containerInstance controlAuth
                         containerInstance metadata
                         containerInstance expiry
                         containerInstance coordinator
@@ -436,7 +445,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         }
         container platform "09-identity" {
             title "C4 Containers — lab identity and permissions"
-            include engineer identity identitydb headlamp argo kube eso keyvault gitea
+            include engineer identity identitydb headlamp argo kube eso keyvault gitea controlAuth api
             autolayout lr
         }
         dynamic lab "04-create" {

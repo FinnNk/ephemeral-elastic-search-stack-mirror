@@ -66,6 +66,7 @@ class LocalControlApi(unittest.TestCase):
         cls.state = TemporaryDirectory()
         cls.drain_patch = patch('control_api.DRAIN', Path(cls.state.name) / 'control-drain')
         cls.drain_patch.start()
+        Handler.oidc_provider = None
         Handler.controller = EmptyController()
         Handler.sessions = Sessions()
         Handler.identity_provider = FakeIdentity()
@@ -81,6 +82,38 @@ class LocalControlApi(unittest.TestCase):
         cls.thread.join(timeout=2)
         cls.drain_patch.stop()
         cls.state.cleanup()
+
+    def test_oidc_rejects_session_and_spoofed_headers(self):
+        cookie = self.login('admin')
+        with patch.object(Handler, 'oidc_provider', Mock()):
+            request = urllib.request.Request(self.base + '/api/me', headers={
+                'Cookie': cookie, 'X-Forwarded-User': 'admin', 'X-Forwarded-Groups': 'lab-admins'})
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(request)
+            self.assertEqual(error.exception.code, 401)
+
+    def test_oidc_reader_views_other_owner_and_cannot_mutate(self):
+        reader = {'username': 'reader', 'is_admin': False, 'is_reader': True,
+                  'issuer': 'https://identity.example/realm', 'subject': 'immutable-reader'}
+        with patch.object(Handler, 'oidc_provider', Mock(verify=Mock(return_value=reader))):
+            request = urllib.request.Request(self.base + '/api/me', headers={'Authorization': 'Bearer fixture'})
+            with urllib.request.urlopen(request) as response:
+                self.assertEqual(json.load(response)['subject'], 'immutable-reader')
+            self.assertTrue(Handler.visible({'owner': 'someone-else'}, reader))
+            with patch('control_api.search', return_value={'filters': {}}), \
+                    patch.object(Handler.controller, 'activity', create=True) as activity:
+                request = urllib.request.Request(self.base + '/api/environments/known/search?q=shirt',
+                                                  headers={'Authorization': 'Bearer fixture', 'X-Lab-Intent': '1'})
+                with urllib.request.urlopen(request) as response:
+                    self.assertEqual(response.status, 200)
+                activity.assert_not_called()
+
+            for method, path in [('POST', '/api/environments'), ('DELETE', '/api/environments/known')]:
+                request = urllib.request.Request(self.base + path, method=method, data=b'{}', headers={
+                    'Authorization': 'Bearer fixture', 'Content-Type': 'application/json', 'X-Lab-Intent': '1'})
+                with self.assertRaises(urllib.error.HTTPError) as error:
+                    urllib.request.urlopen(request)
+                self.assertEqual(error.exception.code, 403)
 
     def test_loopback_reads(self):
         with urllib.request.urlopen(self.base + '/api/health') as response:

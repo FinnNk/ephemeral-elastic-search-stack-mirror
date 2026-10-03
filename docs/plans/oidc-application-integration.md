@@ -49,7 +49,8 @@ proxy login alone does not establish application-level authorisation.
 | Batch | Status | Remaining evidence |
 | --- | --- | --- |
 | Native Gitea account linking | Implemented locally; owner confirmed linked sign-in; disposable accounts verified ownership proof and repeat login | Ready for review |
-| Control UI and recorded decisions | Next: [detailed control plan](oidc-control-access.md) | Live admin/reader permissions, token rejection and authenticated decision attribution |
+| Control UI access | Implemented locally; [measured callbacks and permissions](../research/evidence/control-oidc.md) | Browser familiarisation |
+| Recorded decisions | Next: [detailed decision plan](oidc-recorded-decisions.md) | Immutable authenticated attribution and matching trusted checker |
 
 Keep these review batches separate so native account linking can be accepted
 without waiting for control API deployment. The original acceptance criteria

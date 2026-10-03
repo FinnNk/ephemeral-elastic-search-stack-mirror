@@ -70,6 +70,11 @@ def prepare_config(image, baseline_run):
         'HELM_CONFIG_HOME': '/state/helm-config',
         'HELM_DATA_HOME': '/state/helm-data',
     }
+    if k('get', 'service/lab-control-oidc', '-n', NAMESPACE, check=False).returncode == 0:
+        from install_oidc import ISSUER
+        data.update({'LAB_OIDC_ISSUER': ISSUER, 'LAB_OIDC_AUDIENCE': 'lab-control',
+                     'LAB_OIDC_CA_FILE': '/etc/lab-ca/root.pem',
+                     'LAB_CONTROL_PUBLIC_URL': 'https://control.localhost:34443'})
     notebook_image = STATE / 'notebook-image.json'
     if notebook_image.exists():
         data['LAB_NOTEBOOK_IMAGE'] = json.loads(notebook_image.read_text(encoding='utf-8'))['image']

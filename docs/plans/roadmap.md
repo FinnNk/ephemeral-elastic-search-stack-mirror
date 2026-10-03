@@ -148,3 +148,9 @@ proved explicit account ownership, wrong-password rejection and repeated
 sign-in without a new account or role remapping. The owner confirmed successful
 linked sign-in. The next identity batch is
 [control UI and recorded decisions](oidc-control-access.md).
+
+Control UI OIDC is installed locally. Real administrator and reader callbacks,
+reader write rejection, token validation and worker service checks passed.
+The control PVC is retained. [Evidence](../research/evidence/control-oidc.md)
+records the checks and browser-rendering limitation. The next identity batch
+binds [recorded decisions](oidc-recorded-decisions.md) to immutable subjects.

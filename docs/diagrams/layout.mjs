@@ -164,7 +164,7 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
 });
 const canvases = {'01-context':[2900,2300], '02-control':[2380,2250],
   '03-evaluation':[2380,3450], '04-create':[2850,1450],
-  '05-local':[2800,8300], '06-azure':[2800,6250], '18-delivery':[3250,2150], '07-preview':[2800,2000], '09-identity':[3800,2600]};
+  '05-local':[2800,8300], '06-azure':[2800,6250], '18-delivery':[3250,2150], '07-preview':[2800,2000], '09-identity':[4800,2600]};
 position(workspace.views.containerViews.find(v=>v.key==='07-preview'), {
   'Lab user':[100,100], 'Local lab DNS':[1050,850],
   'HTTPS ingress':[1050,100], 'Search API':[2050,100],
@@ -174,8 +174,17 @@ const identityView = workspace.views.containerViews.find(v=>v.key==='09-identity
 position(identityView, {
   'Lab user':[100,1000], 'Gitea':[100,100], 'Headlamp':[2050,100], 'Argo CD':[3050,100],
   'Keycloak':[1050,1000], 'Kubernetes API':[2050,1000], 'External Secrets Operator':[3050,1000],
-  'Identity database':[1050,1900], 'Azure Key Vault':[3050,1900]
+  'Identity database':[1050,1900], 'Azure Key Vault':[4050,1900],
+  'Control sign-in proxy':[4050,100], 'Lab API':[4050,1000]
 });
+identityView.relationships = identityView.relationships.filter(r=>{
+  const m=relationships.get(r.id);
+  return (name(m.sourceId)!=='Lab API'||name(m.destinationId)==='Keycloak') &&
+    (name(m.destinationId)!=='Lab API'||name(m.sourceId)==='Control sign-in proxy');
+});
+route(identityView, 'Lab API', 'Keycloak', [[4260,1550],[1260,1550]], 55);
+route(identityView, 'Control sign-in proxy', 'Keycloak', [[3650,550],[1700,550]], 50);
+route(identityView, 'Lab user', 'Control sign-in proxy', [[570,740],[4470,740],[4470,230]], 70);
 route(identityView, 'Lab user', 'Headlamp', [[660,1130],[660,230]], 80);
 route(identityView, 'Lab user', 'Argo CD', [[660,1130],[660,80],[3260,80]], 85);
 route(identityView, 'Argo CD', 'Gitea', [[3260,45],[310,45]], 45);

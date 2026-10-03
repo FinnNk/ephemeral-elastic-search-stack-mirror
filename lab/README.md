@@ -8,10 +8,13 @@ To inspect Pods, deployments, events and logs, use [Headlamp](../docs/headlamp.m
 
 ## Open the control UI
 
-Prerequisites: your own Gitea account, access to the lab machine and a ready `lab-control` Pod. The [control access procedure](../docs/control-runtime.md#connect-and-check) selects the retained kubeconfig and starts a port forward.
+Prerequisites: your own lab identity, a trusted lab certificate, working local
+DNS and ready control services. See [OIDC access](../docs/oidc-access.md) for
+sign-in and [control operations](../docs/control-runtime.md#connect-and-check)
+for readiness checks.
 
-1. Open [http://localhost:18082/](http://localhost:18082/) after the forward reports ready. The control API currently requires that canonical address; see [identity limits](../docs/identity-boundary.md).
-2. Use **Sign in with local Gitea**. Administrators can manage all environments; other users see their own.
+1. Open [Control UI](https://control.localhost:34443/) and sign in with your lab identity.
+2. Administrators manage environments and comparisons; readers inspect searches and reports.
 3. Find a successful build in `elastic-agent/search-spike` → **Actions**. Copy the run ID from `/actions/runs/<id>`, not the PR number. The control UI resolves its commit and image digest.
 
 The control workers already run in Kubernetes. Do not launch host control, lease or watcher processes beside them.

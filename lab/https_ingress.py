@@ -117,6 +117,8 @@ def route(cert_path, key_path, browser_names=None):
     browser_names = tuple(browser_names or ENDPOINTS)
     for name in browser_names:
         namespace, service, port = ENDPOINTS[name]
+        if name == 'control' and k('get', 'service/lab-control-oidc', '-n', namespace, check=False).returncode == 0:
+            service, port = 'lab-control-oidc', 4180
         if name in ('headlamp', 'identity') and k('get', 'service', service, '-n', namespace, check=False).returncode:
             continue
         host = name + '.localhost'
@@ -163,11 +165,13 @@ def route(cert_path, key_path, browser_names=None):
     if k('get', 'namespace', 'lab-control', check=False).returncode == 0:
         apply({'apiVersion': 'networking.k8s.io/v1', 'kind': 'NetworkPolicy',
                'metadata': {'name': 'lab-https-control', 'namespace': 'lab-control'},
-               'spec': {'podSelector': {'matchLabels': {'app': 'lab-control'}},
+               'spec': {'podSelector': {'matchLabels': {'app': 'lab-control-oidc' if
+                    k('get', 'service/lab-control-oidc', '-n', 'lab-control', check=False).returncode == 0 else 'lab-control'}},
                         'policyTypes': ['Ingress'],
                         'ingress': [{'from': [{'namespaceSelector': {'matchLabels': {
                             'kubernetes.io/metadata.name': 'lab-ingress'}}}],
-                            'ports': [{'protocol': 'TCP', 'port': 18082}]}]}})
+                            'ports': [{'protocol': 'TCP', 'port': 4180 if
+                    k('get', 'service/lab-control-oidc', '-n', 'lab-control', check=False).returncode == 0 else 18082}]}]}})
 
 
 def expose():

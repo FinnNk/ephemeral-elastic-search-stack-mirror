@@ -42,3 +42,14 @@ administrators manage environments and record permitted decisions.
 
 After this batch, assess MLflow separately. A proxy must preserve API clients
 and cannot supply application roles that a product does not support.
+
+## Status
+
+Control sign-in and reader permissions are implemented locally. Real callbacks,
+signed-token rejection, direct-header rejection and worker service credentials
+passed. The existing Deployment and state volume were retained; browser
+rendering remains a manual check. See [evidence](../research/evidence/control-oidc.md).
+
+Authenticated gate decisions are a separate review batch because they change
+the signed approval contract and trusted source checker. Their acceptance
+criterion above remains required; see the [next plan](oidc-recorded-decisions.md).
