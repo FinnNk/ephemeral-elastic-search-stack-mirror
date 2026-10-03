@@ -172,12 +172,13 @@ position(workspace.views.containerViews.find(v=>v.key==='07-preview'), {
 });
 const identityView = workspace.views.containerViews.find(v=>v.key==='09-identity');
 position(identityView, {
-  'Lab user':[100,1000], 'Headlamp':[2050,100], 'Argo CD':[3050,100],
+  'Lab user':[100,1000], 'Gitea':[100,100], 'Headlamp':[2050,100], 'Argo CD':[3050,100],
   'Keycloak':[1050,1000], 'Kubernetes API':[2050,1000], 'External Secrets Operator':[3050,1000],
   'Identity database':[1050,1900], 'Azure Key Vault':[3050,1900]
 });
 route(identityView, 'Lab user', 'Headlamp', [[660,1130],[660,230]], 80);
 route(identityView, 'Lab user', 'Argo CD', [[660,1130],[660,80],[3260,80]], 85);
+route(identityView, 'Argo CD', 'Gitea', [[3260,45],[310,45]], 45);
 route(identityView, 'Argo CD', 'Keycloak', [[2790,550],[1260,550]], 65);
 for (const collection of ['systemContextViews','containerViews','dynamicViews','deploymentViews']) {
   for (const view of workspace.views[collection] || []) {

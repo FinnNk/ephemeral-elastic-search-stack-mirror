@@ -185,7 +185,7 @@ def expose():
 
 def configure_gitea():
     values = ROOT / 'research' / 'platform-spike' / 'gitea-values.yaml'
-    run([HELM, 'upgrade', 'gitea', 'gitea', '--repo', 'https://dl.gitea.com/charts/',
+    run([HELM, 'upgrade', 'gitea', 'gitea', '--reuse-values', '--repo', 'https://dl.gitea.com/charts/',
          '--version', '12.7.0',
          '--namespace', 'platform', '--values', str(values), '--set-string',
          f'gitea.config.server.ROOT_URL=https://gitea.localhost:{HOST_PORT}/',

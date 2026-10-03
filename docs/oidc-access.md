@@ -1,7 +1,7 @@
 # Sign in to the lab with OIDC
 
 Keycloak provides a local OpenID Connect (OIDC) identity provider. Use your named
-account to sign in to Headlamp and Argo CD. Each application checks its own
+account to sign in to Headlamp, Argo CD and Gitea. Each application checks its own
 permissions; signing in does not grant administrator access by itself.
 
 ![Lab identity and permissions](diagrams/rendered/09-identity.svg)
@@ -38,8 +38,8 @@ The identity service uses the same lab root certificate.
    identity**. An existing Keycloak session can sign you in without another
    password prompt.
 
-Gitea still uses its existing account and password. The OIDC account has the
-same name but a separate password; account linking is a later integration.
+Gitea links your OIDC identity to your existing Gitea account. Repository
+permissions and its administrator role remain managed in Gitea.
 
 | Account/group | Kubernetes through Headlamp | Argo CD |
 | --- | --- | --- |
@@ -85,12 +85,38 @@ It does not change your password or run an application sync.
 | Kubernetes identity | Immutable subject, prefixed `lab-oidc:`; prefixed group claims |
 | Headlamp | Native OIDC with PKCE; uses the user's token, not a shared privileged token |
 | Argo CD | Native OIDC; group claims map to application roles |
+| Gitea | Native OIDC; explicit existing-account linking; existing Gitea roles retained |
 | TLS | Existing root CA; verified discovery, token exchange and API access |
 
 The pinned image manifests include amd64 and arm64. Installation on Apple
 silicon remains untested. This provider is local to the lab; an organisation's
 provider can later supply the same OIDC contracts with its own issuer, clients
 and group mapping.
+
+## Link your Gitea account
+
+1. Open [Gitea sign-in](https://gitea.localhost:34443/user/login). If already
+   signed in, sign out first. Choose **lab-identity**.
+2. Sign in with your Keycloak username and password.
+3. On the account-linking page, enter your existing **Gitea** username and
+   password. This proves ownership of that account; it may use a different
+   password from Keycloak.
+4. On subsequent visits, choose **lab-identity** to use the linked account.
+
+Account linking does not create a second account or change its permissions.
+Automatic registration and automatic email matching are disabled. Existing
+password sign-in remains available for recovery, Git clients and machine accounts.
+
+An operator can reconcile this integration from the lab repository, with
+`LAB_STATE_DIR` set to the retained state directory:
+
+```powershell
+python lab/install_gitea_oidc.py
+```
+
+On Linux or macOS, use `python3`. Requires the existing identity service, ESO,
+Key Vault delivery, lab CA, Helm and kubectl. Expect the Gitea sign-in URL.
+The [verification record](research/evidence/gitea-oidc.md) describes the tests.
 
 ## Recovery
 
@@ -101,8 +127,9 @@ and group mapping.
 | Identity service unavailable | Check `keycloak` and `keycloak-database` in `lab-identity`. Preserve the database PVC. |
 | Need cluster access while repairing sign-in | Use the retained operator kubeconfig, or [Headlamp token recovery](headlamp.md#recovery-token). |
 | Need identity administration | Run `python lab/install_oidc.py credentials --user bootstrap-admin`, then open [Keycloak administration](https://identity.localhost:34443/admin/). Keep this recovery account separate from everyday access. |
+| Need Gitea recovery | Use its existing local password sign-in; OAuth client linking does not replace it. |
 | Need Argo CD recovery | Use its retained local administrator account; automation credentials are unchanged. |
 
-This batch does not add OIDC to Gitea, the control UI, MLflow, Nexus or SigNoz.
+OIDC integration for the control UI, MLflow, Nexus and SigNoz remains planned.
 See the [next integration plan](plans/oidc-application-integration.md) and
 [verification evidence](research/evidence/local-oidc.md).

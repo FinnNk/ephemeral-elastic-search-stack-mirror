@@ -21,7 +21,7 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 | [02 · C4 containers: control](rendered/02-control.svg) | Environment state, leases and deployment. | [Structurizr DSL](workspace.dsl) |
 | [03 · C4 containers: evaluation](rendered/03-evaluation.svg) | API capture, shared index, workloads, optional exploratory notebook and diagnostics. The context view shows independent input and scoring owners. | [Structurizr DSL](workspace.dsl) |
 | [05 · C4 local deployment](rendered/05-local.svg) | HTTPS ingress, Kubernetes control Pod, ESO, locally emulated Azure Key Vault, SigNoz, Headlamp, host Nexus/PostgreSQL and S3 storage. | [Structurizr DSL](workspace.dsl) |
-| [09 · C4 identity](rendered/09-identity.svg) | Keycloak, group permissions and native Headlamp/Argo sign-in. | [Structurizr DSL](workspace.dsl) |
+| [09 · C4 identity](rendered/09-identity.svg) | Keycloak, group permissions and native Headlamp/Argo/Gitea sign-in. | [Structurizr DSL](workspace.dsl) |
 | [07 · C4 preview access](rendered/07-preview.svg) | CoreDNS, HTTPS ingress and namespace-scoped preview routing. | [Structurizr DSL](workspace.dsl) |
 | [06 · C4 Azure deployment](rendered/06-azure.svg) | Ingress, GHES, Nexus, optional ACR, Blob Storage, Key Vault, AKS and OTel collection. | [Structurizr DSL](workspace.dsl) |
 

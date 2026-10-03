@@ -43,3 +43,14 @@ proxy login alone does not establish application-level authorisation.
 - [Gitea authentication](https://docs.gitea.com/administration/authentication/).
 - [SigNoz SSO](https://signoz.io/docs/manage/administrator-guide/sso/overview/).
 - [Nexus OIDC](https://help.sonatype.com/en/openid-connect.html).
+
+## Delivery batches
+
+| Batch | Status | Remaining evidence |
+| --- | --- | --- |
+| Native Gitea account linking | Implemented locally; owner confirmed linked sign-in; disposable accounts verified ownership proof and repeat login | Ready for review |
+| Control UI and recorded decisions | Next: [detailed control plan](oidc-control-access.md) | Live admin/reader permissions, token rejection and authenticated decision attribution |
+
+Keep these review batches separate so native account linking can be accepted
+without waiting for control API deployment. The original acceptance criteria
+above still apply to the combined integration.

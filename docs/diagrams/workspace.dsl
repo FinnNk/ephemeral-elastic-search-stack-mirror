@@ -160,6 +160,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         engineer -> identity "Signs in" "HTTPS"
         headlamp -> identity "Authenticates users" "OIDC / verified TLS"
         argo -> identity "Authenticates users" "OIDC / verified TLS"
+        gitea -> identity "Authenticates linked accounts; retains Gitea roles" "OIDC / verified TLS"
         kube -> identity "Verifies issuer and signing keys" "OIDC discovery / verified TLS"
         identity -> identitydb "Retains identity state" "SQL"
         edge -> identity "Routes sign-in" "HTTP in cluster"
@@ -435,7 +436,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         }
         container platform "09-identity" {
             title "C4 Containers — lab identity and permissions"
-            include engineer identity identitydb headlamp argo kube eso keyvault
+            include engineer identity identitydb headlamp argo kube eso keyvault gitea
             autolayout lr
         }
         dynamic lab "04-create" {
