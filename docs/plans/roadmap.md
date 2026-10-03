@@ -154,3 +154,8 @@ reader write rejection, token validation and worker service checks passed.
 The control PVC is retained. [Evidence](../research/evidence/control-oidc.md)
 records the checks and browser-rendering limitation. The next identity batch
 binds [recorded decisions](oidc-recorded-decisions.md) to immutable subjects.
+
+The [control navigation batch](control-list-navigation.md) adds environment,
+comparison and query search, filters and paging. Browser fixtures cover large
+lists and UTF-8 report labels. The next identity batch remains
+[authenticated gate decisions](oidc-recorded-decisions.md).

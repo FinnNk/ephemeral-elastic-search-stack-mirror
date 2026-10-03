@@ -49,8 +49,12 @@ def main():
                         assert failure.code == 403
                     else:
                         raise ValueError('Reader mutation was not denied.')
+            _, html = load(client, URL + '/')
+            assert '\u00c2\u00b7' not in html and 'products \u00b7 ' in html
+            assert 'Search environments' in html and 'Search comparisons' in html
             results[role] = {'callback': 'passed', 'signed_subject': 'matched', 'read': 'passed'}
         results['reader']['mutations'] = 'forbidden'
+        results['ui_navigation_and_utf8'] = 'passed'
         results['anonymous'] = 'redirects_to_sign_in'
         url, _ = load(browser(), URL + '/api/me')
         assert parse.urlparse(url).hostname == 'identity.localhost'

@@ -107,6 +107,9 @@ class Handler(BaseHTTPRequestHandler):
         parts = self.path_parts()
         if parts == ['']:
             return self.send_bytes(200, UI.read_bytes(), 'text/html; charset=utf-8')
+        if parts == ['control_lists.js']:
+            return self.send_bytes(200, UI.with_name('control_lists.js').read_bytes(),
+                                   'text/javascript; charset=utf-8')
         if parts == ['api', 'health']:
             return self.send_json(503 if DRAIN.exists() else 200, {'ready': not DRAIN.exists()})
         if parts == ['api', 'auth']:

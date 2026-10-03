@@ -17,6 +17,25 @@ for readiness checks.
 2. Administrators manage environments and comparisons; readers inspect searches and reports.
 3. Find a successful build in `elastic-agent/search-spike` → **Actions**. Copy the run ID from `/actions/runs/<id>`, not the PR number. The control UI resolves its commit and image digest.
 
+The **Environments** list initially shows active environments, newest first.
+Search by name, owner, build or index; use **Status** and **Catalogue** to narrow
+it down. Choose **All** under Status to include deleted environments.
+
+The **Comparisons** list shows baseline and candidate names. Search names or a
+comparison ID, then filter by **Check**, **Status** or **Verdict**. Both lists
+have **Previous**, **Next** and **Per page** controls. Refresh keeps your filters
+and ready-environment selections. Filtering cards does not remove choices from
+the comparison form.
+
+Open a report to search its query text or IDs and page through results. Changing
+a report filter returns to its first page; the JSON download still contains the
+complete pinned report.
+
+![Environment search and status filters, page controls and the first row of matching cards](../docs/screenshots/control-list-navigation.png)
+
+*Synthetic UI fixture: searching for Alice's environments. The image shows the
+list controls and first row; the page contains 12 of 22 matches.*
+
 The control workers already run in Kubernetes. Do not launch host control, lease or watcher processes beside them.
 
 ## Create an environment
@@ -65,14 +84,14 @@ Create a baseline and candidate with the same frozen catalogue. They may share a
 | Mode | Use it to | Interpret the result |
 | --- | --- | --- |
 | Result preservation | Check final ordered product IDs and totals | `unchanged` means preserved; differences need inspection; incomplete responses invalidate the check |
-| Synthetic relevance | Score returned results against saved labels | Read judged coverage beside the scores; unknown labels are not evidence of irrelevance |
+| Relevance | Score returned results against saved labels | Read judged coverage beside the scores; unknown labels are not evidence of irrelevance |
 | Gatling performance | Compare public-API latency/errors under one frozen workload | A probe checks wiring; use the intended load profile for a performance decision |
 
 **Quick · first 50** limits a functional check; **Full suite** uses all selected queries. Performance uses its chosen profile and always retains the workload identity.
 
-![Comparison form with baseline and candidate selectors, three check modes and the optional notebook selector](../docs/screenshots/comparison-controls.png)
+![Comparison form with baseline and candidate selectors, three check modes and the optional notebook selector](../docs/screenshots/comparison-controls-current.png)
 
-*Installed control UI, synthetic lab, 1 October 2026. The notebook is selected for illustration; no comparison was launched during capture.*
+*Current control form with synthetic UI fixtures, 3 October 2026. The notebook is selected for illustration; no comparison was launched.*
 
 The query inspector offers **Changed**, **All** and **Unjudged** filters and side-by-side returned IDs. Use retained diagnostics to explain a rewrite or retrieval change; do not treat Elasticsearch-only diagnostics as the end-to-end verdict.
 

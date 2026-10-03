@@ -13,9 +13,26 @@ Control image at capture: `nexus.localhost:18185/lab-control@sha256:baa5ead3bbae
 
 The notebook was downloaded read-only from `runs/notebooks/<hash>/executed.ipynb` and its SHA-256 verified before export. Its source run and limits are in [notebook evidence](../research/evidence/exploratory-notebook.md). Three synthetic variants had very low judged coverage. The screenshot illustrates saved exploratory analysis, not a gate pass.
 
+## Control navigation captures — 3 October 2026
+
+These captures use the current `codex/control-list-navigation` interface with
+synthetic API fixtures from `lab/test_control_ui.cjs`, not a real evaluation.
+The fixture route is `http://control.test/`; requests are intercepted inside
+Playwright. Chromium 151.0.7922.34 uses a 1440×1100 viewport, device scale 1.
+
+| Asset | Framing and state |
+| --- | --- |
+| `control-list-navigation.png` | Environments heading, filters, paging controls and first row of cards. Search `alice`, status Active, newest first; page 1 contains 12 of 22 matches. Reader identity; remaining rows are outside the crop. |
+| `comparison-controls-current.png` | Current `#compare` form. Synthetic administrator, ready baseline/candidate and packaged notebook selected. No comparison submitted. |
+
+No redaction or alteration of controls or results was applied. Unicode and
+narrow-screen checks use the same fixture. Run the browser test and copy its
+named captures from `.lab/ui-qa`; [navigation evidence](../research/evidence/control-list-navigation.md)
+records the test setup. The original 1 October form capture remains historical.
+
 ## Recapture and maintenance
 
-1. Connect to the running control UI using the [port-forward procedure](../control-runtime.md#connect-and-check). Sign in with a shareable lab identity; keep credentials and account panels outside the capture.
+1. Connect to the running control UI using the [control access procedure](../control-runtime.md#connect-and-check). Sign in with a shareable lab identity; keep credentials and account panels outside the capture.
 2. At the same viewport, capture the comparison form after notebook options load. Select the packaged example without running a comparison. Preserve the actual labels and available state.
 3. Download the retained notebook using its recorded Blob reference, verify its content hash and export with Jupyter nbconvert's `lab` template and `exclude_input=True`. Open the export at the stated viewport and capture the top of the page.
 4. Inspect both images in the rendered lab guide at normal document width. Check legibility, controls, captions and source identity before committing.

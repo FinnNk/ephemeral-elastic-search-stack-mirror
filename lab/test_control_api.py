@@ -115,6 +115,16 @@ class LocalControlApi(unittest.TestCase):
                     urllib.request.urlopen(request)
                 self.assertEqual(error.exception.code, 403)
 
+    def test_ui_and_list_script_are_served_as_utf8(self):
+        for path, content_type in [('/', 'text/html'), ('/control_lists.js', 'text/javascript')]:
+            with urllib.request.urlopen(self.base + path) as response:
+                self.assertEqual(response.headers['Content-Type'], content_type + '; charset=utf-8')
+                body = response.read().decode('utf-8')
+                self.assertNotIn('\u00c2\u00b7', body)
+                if path == '/':
+                    self.assertIn('products \u00b7 ', body)
+                    self.assertIn(' \u00b7 \u0394nDCG ', body)
+
     def test_loopback_reads(self):
         with urllib.request.urlopen(self.base + '/api/health') as response:
             self.assertEqual(json.load(response), {'ready': True})
