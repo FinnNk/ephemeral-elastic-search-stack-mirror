@@ -6,6 +6,10 @@ remain outstanding.
 
 ## Intent
 
+The current experiment sequence is owned by
+[Close the remaining ESCI judgement gaps](esci-residual-cascade.md). The
+maintenance rollout and human-decision requirements below remain outstanding.
+
 Unblock result-preserving delivery work with honest evidence. Keep the 80%
 coverage requirement for ranking changes and qualify any additional model labels
 before using them in a merge gate.

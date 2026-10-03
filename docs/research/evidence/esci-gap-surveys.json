@@ -1,0 +1,31 @@
+{
+  "kind": "esci-residual-surveys-aggregate-receipt",
+  "gate_eligible": false,
+  "gate_policy_changed": false,
+  "actual_qualified_pairs": 2946,
+  "capture_pairs": 9915,
+  "additional_qualified_labels_for_80_percent": 4986,
+  "conditional_recalibrator_cascade_pairs": 4790,
+  "source_hashes": {
+    "residual-audit/report.json": "e05582452f7c0bae2fb9382e94156b978946d933b16d54aa21b22fb51c331dc7",
+    "selective-survey/plan.json": "7c1734ba0c0ee9eff1ea63d49d893eed1f9506ce0b8419b9084d106ae3070700",
+    "selective-survey/report.json": "ed123e1994903b9ad95092cf6d626dd4951564038d67ced8d7c243bf255526ed",
+    "selective-followup/plan.json": "dbdfb1a85c18081a65bc952a1fbdc011e6717ca9a1cd90633461082d856f0fd2",
+    "selective-followup/report.json": "fb912ea0c37bbefe067003f9fa9d664ccb77302582a610f676940afb5f30a68e",
+    "specialist-survey/report.json": "38ec6c165091c5c13a72d511cf245ebf4f51f8ef5b34a7cf958656aca0582599",
+    "specialist-survey/embedding-role-extension/report.json": "91707b93c3feff295250968b1a263ff85d7062c0ac999e35f6927941ecca7f33",
+    "specialist-survey/actual-gap-projection/report.json": "b549a64c258c67316e552d07819e0078c8cbbfb86b5c69cc638edda92e909537",
+    "input-embeddings/receipt.json": "873cdade608a070a86eb239e673e70d82878743cac11fb11af853f2343b53940",
+    "support-survey-char/report.json": "97ccf2f3055a5a9e1ab8db1a6dfd1452fc15cf8a24b472f55a63d494904a9150",
+    "support-survey-minilm/report.json": "c287c8431444d300f547440517ac05ccf5d05b09ee899f5f98feed8bfb252218",
+    "nli-survey/attempt-02/pilot.json": "710b702179ad646e6b292f866f189ddd355bc16327d8cee9f0b8761643344cb7",
+    "nli-survey/pilot-diagnostic/amendment.json": "e06a788ea795317b265cbeb5f96103a21a55c10d89339082674453457441d254",
+    "nli-survey/pilot-diagnostic/report.json": "69680d881ce6d26b893531087eabc24e71141f481001e08c0e3dc7aae7e622f8",
+    "instruction-survey/receipt.json": "ae3cc5b89be1fc7211ec10cdcc46265323fb772a575d6dc5e8a24180f2b3f941"
+  },
+  "limits": [
+    "Development screens are exposed; no independent model qualification or actual gap quality claim.",
+    "Record separate run receipts for numerical/code/library pins; committed tools include portability and formatting changes after screening.",
+    "The projected4790pairs include1844unqualified model labels; qualified coverage remains2946/9915."
+  ]
+}

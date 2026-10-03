@@ -18,6 +18,16 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
+The current priority is [closing ESCI judgement gaps](esci-residual-cascade.md).
+The [residual audit and CPU surveys](../research/evidence/esci-gap-surveys.md)
+found a useful selective recalibrator, but actual qualified coverage remains
+29.71%. Granular category and prompt experiments run alongside complementary
+CPU surveys. Qualify the complete cascade before adding its labels to gates;
+control UI improvements and further identity work wait behind this priority.
+The next detailed experiment batch is
+[fitting complementary specialists](esci-fitted-specialists.md) on the owner's
+separately reserved training pool.
+
 The [lab storefront](lab-storefront.md) simplifies the search page and replaces its
 hard-coded size with the current catalogue count. Review it before resuming the
 [developer walkthrough](developer-walkthrough.md).
