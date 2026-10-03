@@ -50,14 +50,20 @@ unjudged and rejected forged product content. Repeated installation passed.
 These checks establish local operation, not judgement quality or Apple silicon
 compatibility. Aggregate results are in `.lab/kserve-upgrade/verification.json`.
 
-## Proposed ingress correction
+## Traefik ingress
 
-The deployed controller still inherits `ingressClassName=istio` and
-`disableIstioVirtualHost=false`. The latter causes the recurring missing-Istio
-warning. The prepared installer sets the class to `traefik` and disables Istio
-virtual hosts. Applying this correction awaits user approval after automatic
-approval review rejected the live routing change.
+The installer sets `ingressClassName=traefik` and
+`disableIstioVirtualHost=true`. This matches the lab ingress controller and
+stops the warning about missing Istio VirtualService CRDs. Eight fresh
+reconciliations after applying the settings emitted no such warning, the model
+remained ready and the judgement API checks passed.
 
 The advertised `example.com` model URL remains a placeholder; the judgement
-API uses its internal Kubernetes Service address. This correction does not
-create public model DNS names or change model selection.
+API uses its internal Kubernetes Service address. These settings do not create
+public model DNS names or change model selection.
+
+The installer's preservation check caught a concurrent change to a separate
+`iris` demo model during this run. The active `synthetic-esci-judge` definition
+was independently checked and unchanged. A concurrent model edit can trip this
+check even when controller installation succeeds; inspect the retained before
+snapshot and current definitions before retrying.
