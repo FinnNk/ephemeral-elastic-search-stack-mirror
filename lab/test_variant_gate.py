@@ -1,7 +1,6 @@
 """Measured gate result and human exception stay distinct."""
 
 from datetime import datetime, timezone
-import json
 from pathlib import Path
 import sys
 import unittest
@@ -24,7 +23,8 @@ class VariantGateTests(unittest.TestCase):
     def setUp(self):
         self.policy = POLICY.read_bytes()
         self.report = {'kind': 'variant-evaluation-report', 'schema_version': 1,
-            'complete': True, 'query_count': 100, 'default_variant': 'ranker-a',
+            'complete': True, 'judgement_selection': 'gate', 'unqualified_judgements': 0,
+            'query_count': 100, 'default_variant': 'ranker-a',
             'baseline_variant': 'ranker-b', 'variants': {name: {
                 'configuration_sha256': 'c' * 64,
                 'image': 'nexus.localhost:18185/search-api@sha256:' + '1' * 64,
@@ -60,6 +60,15 @@ class VariantGateTests(unittest.TestCase):
         return check(report, self.policy, selection, receipt, list(approvals),
                      EVIDENCE_KEY, APPROVAL_KEY, sha(self.policy), SOURCE,
                      self.build, 'elastic-agent/delivery-source', NOW)
+
+    def test_exploratory_labels_cannot_be_overridden(self):
+        for field, value in [('judgement_selection', 'exploratory'),
+                             ('unqualified_judgements', 1)]:
+            old = self.report[field]
+            self.report[field] = value
+            with self.assertRaisesRegex(ValueError, 'unqualified'):
+                self.check()
+            self.report[field] = old
 
     def test_negative_within_bounds_requires_human_decision(self):
         self.assertEqual(self.check()['state'], 'decision_required')

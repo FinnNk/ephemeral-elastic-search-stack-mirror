@@ -3,7 +3,10 @@
 Status: next batch. Candidate `synthetic-esci-judge/4` passed
 [numerical serving qualification](../research/evidence/esci-frozen-kernels.md) and
 remains inactive. Freeze and audit the independent cohorts before requesting
-another GPU window.
+another GPU window. The isolated lab inference exception does not change the
+confirmation exclusions: its 944 exposed final-assessment queries remain
+unavailable for fresh adaptive confirmation. See the
+[progressive pass plan](esci-progressive-judgements.md).
 
 ## Intent and constraints
 

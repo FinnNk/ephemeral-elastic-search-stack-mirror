@@ -59,6 +59,8 @@ that was completed later.
 - [Local HTTPS Git transport check â€” 28 September 2026](https-git-transport-2026-09-28.md)
 - [Portability evidence and open gates](portability-azure.md)
 
+- [Progressive ESCI judgement pass — 3 October 2026](esci-progressive-judgements.md)
+
 ## Performance and observability
 
 - [Offline evaluation throughput â€” 2 October 2026](evaluation-throughput.md)

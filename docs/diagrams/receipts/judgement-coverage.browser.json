@@ -6,9 +6,9 @@
   "status": "pass",
   "visualReview": "pending",
   "artifact": {
-    "path": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\interactive\\judgement-coverage.html",
-    "sha256": "25d2e2144bb9fce0a3994d11bf1a03644f7213a725714bd6c590e3ff0340fcef",
-    "bytes": 803044
+    "path": "C:\\Users\\finnn\\.codex\\worktrees\\exploratory-notebooks\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\judgement-coverage.html",
+    "sha256": "7e319e3a9261a43c61e8eed98ff0454f889f946067c507df4834d9e640132905",
+    "bytes": 803032
   },
   "state": {
     "detail": "read",

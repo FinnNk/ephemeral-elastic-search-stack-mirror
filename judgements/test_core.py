@@ -40,7 +40,8 @@ class JudgementResolutionTests(unittest.TestCase):
 
     def test_model_label_is_shared_by_both_sides(self):
         def infer(items):
-            return [{'outcome': 'labelled', 'label': 'S'} for _ in items]
+            return [{'outcome': 'labelled', 'label': 'S', 'gate_eligible': True,
+                     'provenance': {'kind': 'model', 'source_id': 'fixture'}} for _ in items]
 
         frozen, receipt = resolve(self.observations, self.specification,
                                   self.source, self.products, infer)

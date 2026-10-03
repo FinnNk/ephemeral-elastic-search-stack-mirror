@@ -43,7 +43,7 @@ def main():
             'product': product}
     pair['request']['filters'] = query.get('filters', {})
     labelled = post(context, [pair])['results'][0]
-    assert labelled['outcome'] == 'labelled' and labelled['source'] == 'stored'
+    assert labelled['outcome'] == 'labelled' and labelled['source'] == 'published' and labelled['gate_eligible'] is True
     gap = {**pair, 'product_id': missing['product_id'], 'product': missing}
     unknown = post(context, [gap])['results'][0]
     assert unknown['outcome'] == 'unjudged' and unknown['reason'] == 'model_abstained'

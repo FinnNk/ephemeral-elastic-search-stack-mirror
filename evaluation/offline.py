@@ -174,6 +174,8 @@ def evaluate(observation_path, judgement_path, specification_path,
                                    'fraction': round(changed / len(observed_ids), 6)}
     return {'kind': 'variant-evaluation-report', 'schema_version': SCHEMA,
             'complete': True, 'query_count': len(observed_ids),
+            'judgement_selection': judgement_manifest.get('producer', {}).get('selection', 'gate'),
+            'unqualified_judgements': sum(row.get('gate_eligible') is False for row in rows),
             'default_variant': observations['default_variant'],
             'baseline_variant': baseline, 'variants': observations['variants'],
             'variant_set_sha256': observations.get('variant_set_sha256'),

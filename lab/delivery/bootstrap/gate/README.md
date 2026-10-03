@@ -2,6 +2,12 @@
 
 Before merging a search change, compare its lab API results with a baseline using the same saved queries and relevance labels. **Offline relevance gate** checks that report against [the merge policy](policy.json).
 
+
+Exploratory reports and unqualified model labels cannot satisfy this gate, even
+when their coverage is high. Use a frozen gate selection that retains each
+label’s source and qualification provenance. A business exception cannot bypass
+this requirement.
+
 Application tests and builds run separately. If a PR changes only `README.md`, `gate/README.md`, or both, the relevance check passes with `evaluation_not_required`.
 
 ## Prepare your PR

@@ -268,5 +268,11 @@
     "scope": "Current 05-local PNG and focused model-services crop inspected; eight C4 views validated and exported. Unchanged SVGs retained to avoid timestamp-only changes.",
     "result": "Optional GPU worker is separate from the CPU judgement API, registry and bootstrap predictor; labels and boundaries are legible without overlap.",
     "local_svg_sha256": "71ed10e9e7788ea8de4e6f07a78cfb0880d75babb489e1d655092c2720ad61f2"
+  },
+  "progressiveJudgements20261003": {
+    "source": "archify/judgement-coverage.json",
+    "output": "interactive/judgement-coverage.html",
+    "preview": "rendered/judgement-coverage.png",
+    "review": "Inspected the 1440x900 light preview. Published-label precedence, progressive model passes, gate/exploratory selection and retained provenance are legible. Browser checks passed at all configured sizes and themes."
   }
 }

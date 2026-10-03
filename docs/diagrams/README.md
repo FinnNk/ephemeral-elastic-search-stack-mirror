@@ -104,9 +104,10 @@ generators reserve separate resources; the local host still shares resources.
   engine; the execution selects one frozen request suite. Compatible elements
   may be reused without merging the identities.
 - **Relevance:** Final public API rankings are the black-box scoring surface.
-  All selected recall sets can be pooled for missing judgements. Stored labels
-  take precedence; an exact MLflow model version served by KServe may label gaps.
-  The default model abstains. Freeze one set before scoring every variant.
+  All selected recall sets can be pooled for missing judgements. Published labels
+  take precedence. Model passes retain distinct provenance; exploratory selection
+  may include unqualified predictions, while gate selection excludes them. The
+  default model abstains. Freeze one selection before scoring every variant.
 - **Diagnosis:** Grey-box records explain implemented pipeline stages; absent
   stages are unavailable. `_rank_eval`, profile, explain and analyser checks are
   component diagnostics. Collect costly replays separately from latency runs.

@@ -8,7 +8,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'data'))
 from contracts import envelope
-from core import canonical, digest
+from core import canonical
 from prepare import prepare
 
 
@@ -70,7 +70,8 @@ class PrepareTests(unittest.TestCase):
                               lambda items: [{'outcome': 'abstain'} for _ in items])
         first_bytes = (self.root / 'snapshot-one/judgements.jsonl').read_bytes()
         second = self.run_case('p3', 'snapshot-two',
-                               lambda items: [{'outcome': 'labelled', 'label': 'S'}
+                               lambda items: [{'outcome': 'labelled', 'label': 'S', 'gate_eligible': True,
+                     'provenance': {'kind': 'model', 'source_id': 'fixture'}}
                                               for _ in items])
         self.assertNotEqual(first['judgements'], second['judgements'])
         self.assertEqual((self.root / 'snapshot-one/judgements.jsonl').read_bytes(),

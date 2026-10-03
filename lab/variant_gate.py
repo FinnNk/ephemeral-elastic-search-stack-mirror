@@ -44,7 +44,15 @@ def verify(value, key, kind):
         raise ValueError('Trusted ' + kind + ' signature differs.')
 
 
+def require_gate_judgements(report):
+    if (report.get('judgement_selection') != 'gate' or
+            type(report.get('unqualified_judgements')) is not int or
+            report['unqualified_judgements'] != 0):
+        raise ValueError('Exploratory or unqualified judgements cannot be used in merge gates.')
+
+
 def attest(report_bytes, source_sha, build_receipt_bytes, key, issued_at):
+    require_gate_judgements(json.loads(report_bytes))
     if not re.fullmatch('[0-9a-f]{40}', source_sha):
         raise ValueError('Attestation needs an exact source commit.')
     build = json.loads(build_receipt_bytes)
@@ -98,6 +106,7 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
     if report.get('kind') != 'variant-evaluation-report' or \
             report.get('schema_version') != 1 or report.get('complete') is not True:
         raise ValueError('A complete current variant report is required.')
+    require_gate_judgements(report)
     variants = report.get('variants')
     baseline = report.get('baseline_variant')
     if not isinstance(variants, dict) or len(variants) < 2 or \

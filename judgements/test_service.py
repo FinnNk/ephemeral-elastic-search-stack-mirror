@@ -68,10 +68,52 @@ class ServiceTests(unittest.TestCase):
         service = JudgementService(self.database, [], self.query_rows,
                                    self.product_rows, self.context, self.model, infer)
         self.addCleanup(service.database.close)
-        self.assertEqual(service.resolve(self.context, self.pairs)['results'][0]['grade'], 1)
-        service.resolve(self.context, self.pairs)
+        self.assertEqual(service.resolve(self.context, self.pairs, 'exploratory')['results'][0]['grade'], 1)
+        service.resolve(self.context, self.pairs, 'exploratory')
         self.assertEqual(calls, [2])
-        self.assertEqual(service.database.execute('SELECT count(*) FROM attempts').fetchone()[0], 2)
+        self.assertEqual(service.database.execute('SELECT count(*) FROM evidence').fetchone()[0], 2)
+
+    def test_passes_survive_restart_and_gate_selection_excludes_them(self):
+        service = JudgementService(self.database,
+            [{'query_id': 'q1', 'product_id': 'p1', 'grade': 3}],
+            self.query_rows, self.product_rows, self.context, self.model,
+            lambda pairs: [{'outcome': 'abstain'} for _ in pairs])
+        provenance = {'kind': 'model', 'source_id': 'first-model', 'model': self.model,
+                      'pass_id': 'pass-one', 'policy_sha256': 'd' * 64,
+                      'release_sha256': 'e' * 64}
+        first = {'query_id': 'q1', 'product_id': 'p2', 'outcome': 'labelled',
+                 'label': 'S', 'confidence': 0.95, 'gate_eligible': False,
+                 'provenance': provenance}
+        payload = {'kind': 'judgement-pass', 'context': self.context, 'records': [first]}
+        receipt = service.import_pass(payload)
+        self.assertEqual(service.import_pass(payload), receipt)
+        service.import_pass({**payload, 'records': [{**first, 'label': 'E',
+            'provenance': {**provenance, 'source_id': 'second-model', 'pass_id': 'pass-two',
+                           'model': {**self.model, 'version': '2'}}}]})
+        self.assertIsNone(service.lookup('q1', 'p2', 'gate'))
+        self.assertEqual(service.lookup('q1', 'p2', 'exploratory')['label'], 'S')
+        self.assertEqual(service.lookup('q1', 'p1')['source'], 'published')
+        service.database.close()
+        second = JudgementService(self.database, [], [], [], self.context, self.model,
+                                  lambda _: [])
+        self.addCleanup(second.database.close)
+        records = second.records(self.context, [{'query_id': 'q1', 'product_id': 'p2'}])
+        self.assertEqual(len(records['results'][0]['evidence']), 2)
+        self.assertEqual(records['results'][0]['evidence'][0]['confidence'], 0.95)
+        self.assertIsNone(second.lookup('q1', 'p2', 'gate'))
+        with self.assertRaisesRegex(ValueError, 'unqualified'):
+            second.import_pass({**payload, 'records': [{**first, 'gate_eligible': True}]})
+
+    def test_frozen_candidate_source_is_not_promoted_on_import(self):
+        candidate = {'query_id': 'q1', 'product_id': 'p2', 'grade': 2,
+                     'gate_eligible': False, 'provenance': {'kind': 'model',
+                     'source_id': 'candidate', 'model': self.model, 'pass_id': 'first',
+                     'policy_sha256': 'd' * 64}}
+        service = JudgementService(self.database, [candidate], self.query_rows,
+            self.product_rows, self.context, self.model, lambda _: [])
+        self.addCleanup(service.database.close)
+        self.assertIsNone(service.lookup('q1', 'p2', 'gate'))
+        self.assertFalse(service.lookup('q1', 'p2', 'exploratory')['gate_eligible'])
 
     def test_other_context_is_rejected(self):
         service = JudgementService(self.database, [], self.query_rows,

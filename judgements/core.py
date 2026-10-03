@@ -61,20 +61,27 @@ def validate_labels(rows):
         label = row.get('label')
         if label is not None and label != GRADE_TO_LABEL[grade]:
             raise ValueError('ESCI label disagrees with its numeric grade.')
+        if row.get('source') == 'model' and (not row.get('provenance') or
+                type(row.get('gate_eligible')) is not bool):
+            raise ValueError('Model source labels require provenance and eligibility.')
         labels[key] = dict(row)
     return labels
 
 
-def resolve(observations, specification, source_rows, products, infer, batch_size=64):
+def resolve(observations, specification, source_rows, products, infer, batch_size=64, selection='gate'):
     """Resolve only missing pooled pairs; return frozen rows and an attempt report.
 
     ``infer`` accepts a list of synthetic query/product records and returns one
     outcome per input. It may return ``labelled``, ``abstain`` or ``error``.
     """
+    if selection not in ('gate', 'exploratory'):
+        raise ValueError('Judgement selection must be gate or exploratory.')
     if type(batch_size) is not int or batch_size < 1:
         raise ValueError('Batch size must be positive.')
     pairs, sides = pool(observations, specification)
     labels = validate_labels(source_rows)
+    labels = {key: row for key, row in labels.items()
+              if selection == 'exploratory' or row.get('gate_eligible', True)}
     missing = [pair for pair in pairs
                if (pair['query_id'], pair['product_id']) not in labels]
     attempts = []
@@ -105,10 +112,18 @@ def resolve(observations, specification, source_rows, products, infer, batch_siz
                 label = outcome.get('label')
                 if label not in LABEL_TO_GRADE:
                     raise ValueError('Model returned an invalid ESCI label.')
-                labels[key] = {'query_id': key[0], 'product_id': key[1],
-                               'label': label, 'grade': LABEL_TO_GRADE[label],
-                               'source': 'model'}
-                receipt['label'] = label
+                if type(outcome.get('gate_eligible')) is not bool or not outcome.get('provenance'):
+                    raise ValueError('Resolved labels need provenance and explicit gate eligibility.')
+                record = {key: value for key, value in outcome.items()
+                          if key not in ('outcome', 'scope')}
+                record.update(query_id=key[0], product_id=key[1], label=label,
+                              grade=LABEL_TO_GRADE[label])
+                if selection == 'exploratory' or outcome['gate_eligible']:
+                    labels[key] = record
+                receipt.update(label=label, provenance=outcome['provenance'],
+                               gate_eligible=outcome['gate_eligible'])
+                if 'confidence' in outcome:
+                    receipt['confidence'] = outcome['confidence']
             elif state == 'abstain':
                 pass
             elif state == 'error':
@@ -119,8 +134,14 @@ def resolve(observations, specification, source_rows, products, infer, batch_siz
     counts = {}
     for side, keys in sides.items():
         judged = sum(key in labels for key in keys)
+        contributions = {}
+        for key in sorted(keys & labels.keys()):
+            provenance = labels[key].get('provenance', {'kind': 'published', 'source_id': 'source'})
+            identity = digest(canonical(provenance))
+            entry = contributions.setdefault(identity, {'provenance': provenance, 'judged': 0})
+            entry['judged'] += 1
         counts[side] = {'required': len(keys), 'judged': judged,
-                        'unjudged': len(keys) - judged}
+                        'unjudged': len(keys) - judged, 'by_source': contributions}
     counts['pool'] = {'required': len(pairs),
                       'stored': len(pairs) - len(missing),
                       'newly_labelled': sum(row['outcome'] == 'labelled' for row in attempts),
@@ -128,5 +149,6 @@ def resolve(observations, specification, source_rows, products, infer, batch_siz
                       'failed': sum(row['outcome'] == 'error' for row in attempts)}
     return [labels[key] for key in sorted(labels)], {
         'kind': 'judgement-resolution', 'schema_version': 1,
+        'selection': selection,
         'observation_sha256': digest(canonical(observations)),
         'counts': counts, 'attempts': attempts}

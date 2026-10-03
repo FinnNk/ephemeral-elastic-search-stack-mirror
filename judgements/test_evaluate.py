@@ -1,7 +1,6 @@
 """Pooled resolution feeds the existing black-box offline evaluator."""
 
 import json
-from pathlib import Path
 import unittest
 
 from core import canonical

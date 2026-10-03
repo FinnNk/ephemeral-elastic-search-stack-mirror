@@ -94,3 +94,14 @@ request-thread diagnostic. The immutable profile and runtime guards now pass
 7,393-pair HTTP passes agree, including after a fresh Pod starts. Version 4 remains
 inactive. Next, complete [independent label quality](esci-label-quality.md) and the
 developer walkthrough.
+
+The [progressive judgement batch](esci-progressive-judgements.md) adds retained
+source/pass evidence and separate exploratory/gate selections. The user authorised isolated inference on 944 reserved final-assessment queries;
+all six specialist confirmation queries remain excluded. The original research
+protocol stays frozen, with exposure recorded for future adaptive work.
+Independent label quality remains a separate acceptance step.
+
+The first [measured progressive pass](../research/evidence/esci-progressive-judgements.md)
+added 2,099 exploratory predictions in 15 minutes 41 seconds, taking coverage
+from 29.7% to 50.9%. Unqualified labels remain excluded from gates. The next
+batch is independent label quality; then select another model for the residual gaps.

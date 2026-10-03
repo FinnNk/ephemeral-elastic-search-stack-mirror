@@ -54,14 +54,14 @@ def require_content(path, manifest, kind):
         raise ValueError('Selected ' + kind + ' bytes differ from the manifest.')
 
 
-def service_client(url, context, model_identity, timeout=10):
+def service_client(url, context, model_identity, timeout=10, selection='gate'):
     if not math.isfinite(timeout) or not 0 < timeout <= 900:
         raise ValueError('Resolution timeout must be between zero and 900 seconds.')
     if not url.startswith(('http://', 'https://')):
         raise ValueError('KServe URL needs an HTTP(S) scheme.')
 
     def predict(items):
-        body = canonical({'context': context, 'pairs': items})
+        body = canonical({'context': context, 'pairs': items, 'selection': selection})
         with telemetry.span('judgement.resolve', kind='client'):
             headers = {'Content-Type': 'application/json'}
             telemetry.inject(headers)
@@ -70,7 +70,7 @@ def service_client(url, context, model_identity, timeout=10):
                 value = json.loads(response.read())
         if value.get('model') != model_identity:
             raise ValueError('Judgement service uses another model version.')
-        return [{'outcome': 'labelled', 'label': row['label']}
+        return [{**row}
                 if row['outcome'] == 'labelled' else
                 {'outcome': 'abstain' if row['outcome'] == 'unjudged' else 'error',
                  'detail': row.get('reason', '')}
@@ -91,7 +91,7 @@ def immutable(path, payload):
 
 def prepare(observation_path, specification_path, catalogue_path, catalogue_manifest_path,
             query_manifest_path, source_path, source_manifest_path, output,
-            predict, model_identity):
+            predict, model_identity, selection='gate'):
     observation_bytes = Path(observation_path).read_bytes()
     observations = json.loads(observation_bytes)
     specification = read_json(specification_path)
@@ -107,12 +107,18 @@ def prepare(observation_path, specification_path, catalogue_path, catalogue_mani
             observations['query_suite_sha256'] != query_manifest['content']['sha256']:
         raise ValueError('Selected frozen inputs do not match the observations.')
     needed, _ = pool(observations, specification)
-    known = {(row['query_id'], row['product_id']) for row in read_rows(source_path)}
+    known = {(row['query_id'], row['product_id']) for row in read_rows(source_path)
+             if selection == 'exploratory' or row.get('gate_eligible', True)}
     missing_ids = {pair['product_id'] for pair in needed
                    if (pair['query_id'], pair['product_id']) not in known}
     products = selected_products(catalogue_path, missing_ids)
-    frozen, attempts = resolve(observations, specification, read_rows(source_path),
-                               products, predict)
+    source_rows = read_rows(source_path)
+    for row in source_rows:
+        if 'provenance' not in row:
+            row.update(source='published', gate_eligible=True, provenance={
+                'kind': 'published', 'source_id': source_manifest['content']['sha256']})
+    frozen, attempts = resolve(observations, specification, source_rows,
+                               products, predict, selection=selection)
     attempts['input_shift'] = input_shift(observations, attempts['attempts'])
     attempts['model'] = model_identity
     attempts['source_judgement_sha256'] = source_manifest['content']['sha256']
@@ -129,7 +135,7 @@ def prepare(observation_path, specification_path, catalogue_path, catalogue_mani
                          'source_judgement_sha256': source_manifest['content']['sha256'],
                          'observation_sha256': digest(observation_bytes),
                          'resolution_sha256': digest(canonical(attempts)),
-                         'model': model_identity})
+                         'model': model_identity, 'selection': selection})
     immutable(manifest_path, canonical(manifest))
     return {'judgements': manifest['content']['sha256'],
             'manifest': digest(canonical(manifest)),
@@ -143,6 +149,7 @@ def main():
                  'query-manifest', 'source-judgements', 'source-manifest', 'output'):
         parser.add_argument('--' + name, required=True, type=Path)
     parser.add_argument('--resolve-url', required=True)
+    parser.add_argument('--selection', choices=('gate', 'exploratory'), default='gate')
     parser.add_argument('--resolve-timeout', type=float, default=10,
                         help='Seconds per resolution batch; use 130 for the v3 candidate')
     parser.add_argument('--model-name', required=True)
@@ -159,7 +166,8 @@ def main():
     result = prepare(args.observations, args.specification, args.catalogue,
                      args.catalogue_manifest, args.query_manifest,
                      args.source_judgements, args.source_manifest, args.output,
-                     service_client(args.resolve_url, context, model, timeout=args.resolve_timeout), model)
+                     service_client(args.resolve_url, context, model, timeout=args.resolve_timeout, selection=args.selection),
+                     model, selection=args.selection)
     print(json.dumps(result, sort_keys=True))
 
 

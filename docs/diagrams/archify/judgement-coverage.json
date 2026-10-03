@@ -2,52 +2,149 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "Resolve judgement gaps before scoring",
+    "title": "Fill gaps and select frozen labels",
     "locale": "en",
     "quality_profile": "showcase",
     "legend": {
       "entries": {
-        "backend": {"label": "Service or evaluator"},
-        "database": {"label": "Frozen evidence"},
-        "cloud": {"label": "Frozen APIs"}
+        "backend": {
+          "label": "Service or evaluator"
+        },
+        "database": {
+          "label": "Frozen evidence"
+        },
+        "cloud": {
+          "label": "Frozen APIs"
+        }
       }
     }
   },
   "lanes": [
-    {"id": "capture", "label": "Capture"},
-    {"id": "resolve", "label": "Resolve gaps"},
-    {"id": "score", "label": "Freeze and score"}
+    {
+      "id": "capture",
+      "label": "Capture"
+    },
+    {
+      "id": "resolve",
+      "label": "Resolve gaps"
+    },
+    {
+      "id": "score",
+      "label": "Freeze and score"
+    }
   ],
   "nodes": [
-    {"id": "results", "lane": "capture", "col": 0, "type": "cloud",
-     "label": "Call variant APIs", "sublabel": "Two or more choices", "width": 130},
-    {"id": "pool", "lane": "capture", "col": 1, "type": "backend",
-     "label": "Pool result pairs", "sublabel": "Union through metric K", "width": 130},
-    {"id": "judgements", "lane": "resolve", "col": 2, "type": "backend",
-     "label": "Judgement API", "sublabel": "Stored labels first", "width": 130},
-    {"id": "model", "lane": "resolve", "col": 3, "type": "backend",
-     "label": "KServe model", "sublabel": "Pinned MLflow version", "width": 130},
-    {"id": "snapshot", "lane": "score", "col": 4, "type": "database",
-     "label": "Freeze labels", "sublabel": "Attempts + unknowns", "width": 130},
-    {"id": "evaluate", "lane": "score", "col": 5, "type": "backend",
-     "label": "Score and retain", "sublabel": "Per-variant coverage", "width": 130}
+    {
+      "id": "results",
+      "lane": "capture",
+      "col": 0,
+      "type": "cloud",
+      "label": "Call variant APIs",
+      "sublabel": "Two or more choices",
+      "width": 130
+    },
+    {
+      "id": "pool",
+      "lane": "capture",
+      "col": 1,
+      "type": "backend",
+      "label": "Pool result pairs",
+      "sublabel": "Union through metric K",
+      "width": 130
+    },
+    {
+      "id": "judgements",
+      "lane": "resolve",
+      "col": 2,
+      "type": "backend",
+      "label": "Judgement API",
+      "sublabel": "Published labels first",
+      "width": 130
+    },
+    {
+      "id": "model",
+      "lane": "resolve",
+      "col": 3,
+      "type": "backend",
+      "label": "Run model pass",
+      "sublabel": "Pinned KServe model",
+      "width": 130
+    },
+    {
+      "id": "snapshot",
+      "lane": "score",
+      "col": 4,
+      "type": "database",
+      "label": "Select and freeze",
+      "sublabel": "Gate or exploratory",
+      "width": 130
+    },
+    {
+      "id": "evaluate",
+      "lane": "score",
+      "col": 5,
+      "type": "backend",
+      "label": "Score and retain",
+      "sublabel": "Coverage by source",
+      "width": 130
+    }
   ],
   "edges": [
-    {"from": "results", "to": "pool", "label": "Ordered IDs", "role": "main"},
-    {"from": "pool", "to": "judgements", "label": "Distinct pairs", "role": "main"},
-    {"from": "judgements", "to": "model", "label": "Gaps only", "role": "main"},
-    {"from": "model", "to": "snapshot", "label": "Labels or abstain", "role": "main"},
-    {"from": "snapshot", "to": "evaluate", "label": "One frozen set", "role": "main"}
+    {
+      "from": "results",
+      "to": "pool",
+      "label": "Ordered IDs",
+      "role": "main"
+    },
+    {
+      "from": "pool",
+      "to": "judgements",
+      "label": "Distinct pairs",
+      "role": "main"
+    },
+    {
+      "from": "judgements",
+      "to": "model",
+      "label": "Gaps only",
+      "role": "main"
+    },
+    {
+      "from": "model",
+      "to": "snapshot",
+      "label": "Labels or abstain",
+      "role": "main"
+    },
+    {
+      "from": "snapshot",
+      "to": "evaluate",
+      "label": "One frozen set",
+      "role": "main"
+    }
   ],
-  "mainPath": ["results", "pool", "judgements", "model", "snapshot", "evaluate"],
+  "mainPath": [
+    "results",
+    "pool",
+    "judgements",
+    "model",
+    "snapshot",
+    "evaluate"
+  ],
   "cards": [
-    {"dot": "violet", "title": "Only gaps reach KServe", "items": [
-      "The API verifies each pair against frozen query and catalogue bytes",
-      "The current MLflow model abstains on every missing pair"
-    ]},
-    {"dot": "emerald", "title": "A recall change creates new evidence", "items": [
-      "Abstention is unknown; I is an explicit irrelevant label",
-      "Rescore every variant with one new immutable snapshot"
-    ]}
+    {
+      "dot": "violet",
+      "title": "Retain each source and pass",
+      "items": [
+        "Published labels remain authoritative",
+        "Model identity, policy, confidence and abstentions stay queryable"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Select labels before scoring",
+      "items": [
+        "Exploratory selection may include unqualified predictions",
+        "Merge gates reject exploratory or unqualified labels"
+      ]
+    }
   ]
 }

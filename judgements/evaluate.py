@@ -14,12 +14,12 @@ from offline import evaluate as score
 
 
 def run(observations, specification, catalogue, catalogue_manifest, query_manifest,
-        source_judgements, source_manifest, output, predict, model):
+        source_judgements, source_manifest, output, predict, model, selection='gate'):
     output = Path(output)
     frozen = output / 'frozen'
     preparation = prepare(observations, specification, catalogue, catalogue_manifest,
                           query_manifest, source_judgements, source_manifest,
-                          frozen, predict, model)
+                          frozen, predict, model, selection=selection)
     report_path = output / 'evaluation.json'
     previous = read_json(report_path) if report_path.exists() else None
     report = score(observations, frozen / 'judgements.jsonl', specification,
@@ -53,6 +53,7 @@ def main():
                  'query-manifest', 'source-judgements', 'source-manifest', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--resolve-url', required=True)
+    parser.add_argument('--selection', choices=('gate', 'exploratory'), default='gate')
     parser.add_argument('--resolve-timeout', type=float, default=10,
                         help='Seconds per resolution batch; use 130 for the v3 candidate')
     parser.add_argument('--model-name', required=True)
@@ -70,7 +71,8 @@ def main():
         result = run(args.observations, args.specification, args.catalogue,
                      args.catalogue_manifest, args.query_manifest, args.source_judgements,
                      args.source_manifest, args.output,
-                     service_client(args.resolve_url, context, model, timeout=args.resolve_timeout), model)
+                     service_client(args.resolve_url, context, model, timeout=args.resolve_timeout, selection=args.selection),
+                     model, selection=args.selection)
     print(json.dumps(result, sort_keys=True))
 
 

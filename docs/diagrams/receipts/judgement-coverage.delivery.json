@@ -3,15 +3,15 @@
   "ok": true,
   "command": "deliver",
   "type": "workflow",
-  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\archify\\judgement-coverage.json",
-  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\interactive\\judgement-coverage.html",
+  "input": "C:\\Users\\finnn\\.codex\\worktrees\\exploratory-notebooks\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\judgement-coverage.json",
+  "output": "C:\\Users\\finnn\\.codex\\worktrees\\exploratory-notebooks\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\judgement-coverage.html",
   "specification": {
-    "sha256": "4f7de2661fb00038637f31606ab3667a5916bfdad9f51a0905293ca1b82f075e",
-    "bytes": 2440
+    "sha256": "8dcf5849bb9c350cb16cad73083d8530f82c8691ae0bd564e1ad0f1bf8f61add",
+    "bytes": 3179
   },
   "artifact": {
-    "sha256": "25d2e2144bb9fce0a3994d11bf1a03644f7213a725714bd6c590e3ff0340fcef",
-    "bytes": 803044
+    "sha256": "7e319e3a9261a43c61e8eed98ff0454f889f946067c507df4834d9e640132905",
+    "bytes": 803032
   },
   "validation": {
     "checksPassed": 9,

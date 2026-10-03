@@ -22,7 +22,7 @@ def call(arguments, environment, input_text=None):
 
 def source_sha256():
     checksum = hashlib.sha256()
-    for path in [ROOT / 'judgements' / 'Dockerfile',
+    for path in [ROOT / 'judgements' / 'Dockerfile', ROOT / 'data' / 'contracts.py',
                  *sorted((ROOT / 'judgements').glob('*.py'))]:
         checksum.update(path.relative_to(ROOT).as_posix().encode() + b'\0')
         checksum.update(path.read_bytes())

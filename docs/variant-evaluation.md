@@ -19,6 +19,10 @@ Compare the results returned by two or more Search API configurations. Use the s
 
 Offline evaluation does not allocate online traffic. A recorded exception can accept a bounded regression for business reasons.
 
+Exploratory comparisons may include unqualified model labels. Their reports retain
+that selection and each label’s provenance; merge gates require gate selection
+and reject unqualified labels. See [judgement resolution](judgement-resolution.md).
+
 ## Prepare the comparison
 
 For a source PR, start in the Search API repository's `gate/README.md`. Declare which variants you want to release and whether the change should preserve results or change ranking. CI must build the exact PR commit before its image is evaluated.

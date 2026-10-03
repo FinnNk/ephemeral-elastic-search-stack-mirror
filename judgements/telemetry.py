@@ -93,7 +93,8 @@ class Telemetry:
             outcome = row['outcome']
             source = row.get('source', 'none') if outcome == 'labelled' else 'none'
             try:
-                self.results.add(1, {'lab.model.version': str(model_version),
+                version = row.get('provenance', {}).get('model', {}).get('version', model_version)
+                self.results.add(1, {'lab.model.version': str(version),
                                      'lab.judgement.outcome': outcome,
                                      'lab.judgement.source': source})
             except Exception:
