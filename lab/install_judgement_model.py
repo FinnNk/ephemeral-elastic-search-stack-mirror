@@ -33,9 +33,9 @@ def main():
     register.add_argument("--receipt", type=Path, required=True)
     canaries = commands.add_parser(
         "canaries",
-        help="Export ignored local runtime references from old research scores",
+        help="Select local canaries from independent singleton references",
     )
-    canaries.add_argument("--research-root", type=Path, required=True)
+    canaries.add_argument("--reference", type=Path, required=True)
     canaries.add_argument("--bundle", type=Path, required=True)
     canaries.add_argument("--output", type=Path, required=True)
     canaries.add_argument("--count", type=int, default=64)
@@ -65,7 +65,7 @@ def main():
         from esci.canaries import export_canaries
 
         result = export_canaries(
-            args.research_root, args.bundle, args.output, args.count
+            args.reference, args.bundle, args.output, args.count
         )
     elif args.command == "qualify":
         from esci.qualification import qualify as qualify_model

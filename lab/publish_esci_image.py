@@ -20,6 +20,7 @@ def source_sha256() -> str:
             "__init__.py",
             "contract.py",
             "engine.py",
+            "runtime.py",
             "model.py",
             "release.py",
             "serve.py",
@@ -72,6 +73,8 @@ def publish() -> dict:
         ],
         environment,
     )
+    if source_sha256() != source:
+        raise RuntimeError("Serving sources changed during the build; rebuild before publishing.")
     call(["docker", "push", tag], environment)
     digests = json.loads(
         call(

@@ -6,6 +6,7 @@ import urllib.request
 
 from .contract import probabilities
 from .release import content_digest, read_json, sha256, write_json
+from .runtime import INFERENCE_PROTOCOL
 
 
 def compare(expected: list[dict], actual: list[dict]) -> dict:
@@ -36,7 +37,8 @@ def qualify(
     receipt, canaries = read_json(registration), read_json(reference)
     if canaries["release_sha256"] != receipt["release_sha256"]:
         raise ValueError("Canaries describe a different release.")
-    if canaries.get("origin") != "frozen-research-scores":
+    if (canaries.get("origin") != "frozen-research-scores"
+            or canaries.get("protocol") != INFERENCE_PROTOCOL):
         raise ValueError(
             "Canaries must come from the independent frozen research scores."
         )

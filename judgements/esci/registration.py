@@ -7,7 +7,7 @@ import tempfile
 
 from .release import content_digest, read_json, sha256, verify_bundle
 
-RUNTIME_FILES = ("__init__.py", "contract.py", "engine.py", "model.py", "release.py")
+RUNTIME_FILES = ("__init__.py", "contract.py", "engine.py", "runtime.py", "model.py", "release.py")
 
 
 def implementation_digest(folder: Path) -> str:
@@ -89,6 +89,8 @@ def register(
                     "esci_qualification": "pending",
                     "esci_implementation_sha256": implementation,
                     "esci_mapping": manifest["source"]["mapping_key"],
+                    "esci_inference_protocol_sha256": content_digest(
+                        read_json(bundle / "inference.json")),
                 },
             )
         versions = [registered]

@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 
 from .contract import LABELS, QUESTION, validate_mapping, validate_policy
+from .runtime import INFERENCE_PROTOCOL
 
 BASE_REVISION = "eb5fbdfc9448473ec25e399882912863afbdb70e"
 ADAPTER_SHA256 = "227cfbeb71dc40c0737c372fb3bebb03738cf5b71e54e8be7d7a668678d71fee"
@@ -29,6 +30,9 @@ RUNTIME = {
     "peft": "0.14.0",
     "safetensors": "0.8.0",
     "numpy": "1.26.4",
+    "flash-linear-attention": "0.5.2",
+    "fla-core": "0.5.2",
+    "triton": "3.2.0",
 }
 
 
@@ -141,7 +145,8 @@ def build_bundle(research: Path, output: Path) -> dict:
     )
     if output.exists():
         existing = verify_bundle(output)
-        if existing["source"]["mapping_bundle_sha256"] != MAPPING_BUNDLE_SHA256:
+        if (existing["source"]["mapping_bundle_sha256"] != MAPPING_BUNDLE_SHA256
+            or read_json(output / "inference.json").get("protocol") != INFERENCE_PROTOCOL):
             raise ValueError("Output contains a different release.")
         return existing
     output.mkdir(parents=True)
@@ -167,13 +172,9 @@ def build_bundle(research: Path, output: Path) -> dict:
         {
             "question": QUESTION,
             "feature_profile": "title_leaf_category",
-            "dtype": "bfloat16",
-            "temperature": 1.0,
-            "use_graphs": False,
+            "protocol": INFERENCE_PROTOCOL,
             "max_batch_size": 128,
-            "microbatch_size": 8,
             "runtime": RUNTIME,
-            "note": "Independent serving parity remains required; no merged checkpoint.",
         },
     )
     source = {
@@ -186,7 +187,7 @@ def build_bundle(research: Path, output: Path) -> dict:
     }
     manifest = {
         "format": "esci-release-v1",
-        "name": "esci-v3-score-map",
+        "name": "esci-v3-singleton-fla",
         "source": source,
         "files": file_inventory(output),
     }

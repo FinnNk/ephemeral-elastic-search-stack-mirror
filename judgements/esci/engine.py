@@ -4,6 +4,7 @@ from importlib.metadata import version
 from pathlib import Path
 
 from .contract import OPTIONS, probabilities
+from .runtime import configure_runtime, verify_backend
 
 
 class Engine:
@@ -18,6 +19,8 @@ class Engine:
             raise RuntimeError(
                 "The v3 serving image requires an available NVIDIA CUDA GPU."
             )
+        configure_runtime(torch, settings)
+        self.backend = verify_backend()
         from decider.infer import Decider
         from peft import LoraConfig, inject_adapter_in_model, set_peft_model_state_dict
         from safetensors.torch import load_file
@@ -41,16 +44,19 @@ class Engine:
                 "Adapter weights did not load completely into the backbone."
             )
         self.decider.m.eval()
+        if self.decider.m.lm.config._attn_implementation != "sdpa":
+            raise RuntimeError("The frozen inference protocol requires SDPA attention.")
 
     def predict(self, states: list[str]) -> list[list[float]]:
         question = {"question": self.settings["question"], "options": list(OPTIONS)}
         output = []
-        size = self.settings["microbatch_size"]
-        for start in range(0, len(states), size):
+        # Each pair keeps the same tensor shape regardless of HTTP companions.
+        for state in states:
             answers = self.decider.decide_batch(
-                [(s, [question]) for s in states[start : start + size]]
+                [(state, [question])],
+                max_ctx_tokens=self.settings["protocol"]["max_context_tokens"],
             )
-            if len(answers) != len(states[start : start + size]):
+            if len(answers) != 1:
                 raise RuntimeError("Decider returned an unexpected result count.")
             for answer in answers:
                 if len(answer) != 1:
