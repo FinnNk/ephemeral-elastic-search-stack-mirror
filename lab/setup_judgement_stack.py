@@ -92,9 +92,8 @@ def install(million=False):
     configure_network()
     chart('cert-manager', 'oci://quay.io/jetstack/charts/cert-manager', 'v1.17.0',
           'cert-manager', '--set', 'crds.enabled=true')
-    chart('kserve-crd', 'oci://ghcr.io/kserve/charts/kserve-crd', 'v0.19.0', 'kserve')
-    chart('kserve-resources', 'oci://ghcr.io/kserve/charts/kserve-resources',
-          'v0.19.0', 'kserve', '--set', 'kserve.controller.deploymentMode=Standard')
+    from setup_kserve import install as install_kserve
+    install_kserve()
     configure_secrets()
     k('wait', '--for=condition=Ready', 'externalsecret', '--all', '-n', 'lab-models',
       '--timeout=180s')

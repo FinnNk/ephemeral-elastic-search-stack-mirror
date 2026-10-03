@@ -156,3 +156,6 @@ The current API database is `evidence.sqlite3`. Existing deployments create it
 from frozen inputs instead of migrating the earlier disposable database. Old
 model outcomes remain in their frozen experiment records. Delete an obsolete
 cache only after confirming it contains no unique evidence you need to retain.
+
+For controller installation or upgrades that preserve the selected model, see
+[KServe installation](kserve-installation.md).

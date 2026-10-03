@@ -138,3 +138,8 @@ The supplied Headlamp KServe plugin is installed locally and retained by both
 Headlamp and OIDC reconciliation. HTTPS plugin discovery and exact asset checks
 passed; browser rendering remains a manual check. The next identity batch remains
 [Gitea and control UI integration](oidc-application-integration.md).
+The [KServe 0.21 upgrade](kserve-021.md) is installed locally. Existing model
+and custom loader definitions are preserved; a fresh MLflow model download,
+direct prediction and judgement API checks passed. Stable images are selected
+explicitly because the official charts retain rc1 metadata. Identity integration
+remains the next application batch; label qualification remains separate.

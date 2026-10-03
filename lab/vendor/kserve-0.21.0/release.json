@@ -1,0 +1,17 @@
+{
+  "release": "v0.21.0",
+  "source": "https://github.com/kserve/kserve/releases/tag/v0.21.0",
+  "controller": "kserve/kserve-controller:v0.21.0@sha256:74c5de4f166f04a12e5926af37751554e8f4be900bdf3368d0a348abf5f7b0a6",
+  "charts": {
+    "crd": {
+      "file": "helm-chart-kserve-crd-v0.21.0-rc1.tgz",
+      "sha256": "20751a25fe49b082b36e78cf7e9f707a7ed516db9c4bac4be53dc143f0464d4d",
+      "url": "https://github.com/kserve/kserve/releases/download/v0.21.0/helm-chart-kserve-crd-v0.21.0-rc1.tgz"
+    },
+    "resources": {
+      "file": "helm-chart-kserve-resources-v0.21.0-rc1.tgz",
+      "sha256": "3d6174ef0833ef4e281732bfe213a43cd55a54da6059f984c578cb1efaeb86e3",
+      "url": "https://github.com/kserve/kserve/releases/download/v0.21.0/helm-chart-kserve-resources-v0.21.0-rc1.tgz"
+    }
+  }
+}
