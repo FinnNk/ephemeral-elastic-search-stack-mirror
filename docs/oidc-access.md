@@ -11,17 +11,27 @@ permissions; signing in does not grant administrator access by itself.
 Complete [workstation DNS and certificate trust](workstation-access.md) once.
 The identity service uses the same lab root certificate.
 
-1. From the lab repository, set `LAB_STATE_DIR` to the retained `.lab` directory.
-   On this host, use PowerShell:
+1. On the machine hosting the lab, retrieve your initial credentials. On this
+   Windows host, run PowerShell from any directory:
 
    ```powershell
-   $env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
-   python lab/install_oidc.py credentials --user finnnk
+   $account = (Get-Content -Raw -LiteralPath 'D:\codex\Ephemeral Elasticsearch\.lab\oidc\users.json' | ConvertFrom-Json).finnnk
+   $account | Select-Object username, password
    ```
 
-   On Linux or macOS, use `export LAB_STATE_DIR=/path/to/.lab` and `python3`
-   instead. The command deliberately prints your temporary password: keep its
-   output private.
+   Expect your username and temporary password. Keep the output private. This
+   reads the retained lab state; it does not require a repository checkout or
+   the lab's Python dependencies. If you are on another machine, ask the lab
+   operator for your initial credentials.
+
+   On a Linux or macOS lab host, set the retained state path and use Python 3's
+   standard library. These commands also work from any directory:
+
+   ```sh
+   export LAB_STATE_DIR=/path/to/retained/.lab
+   python3 -c 'import json, os; from pathlib import Path; a = json.loads((Path(os.environ["LAB_STATE_DIR"]) / "oidc/users.json").read_text())["finnnk"]; print("Username:", a["username"]); print("Temporary password:", a["password"])'
+   ```
+
 2. Open [Headlamp](https://headlamp.localhost:34443/), choose OIDC sign-in, and
    enter the account name and temporary password. Set a new password when asked.
 3. Open [Argo CD](https://argocd.localhost:34443/) and choose **Log in via Lab
@@ -37,18 +47,20 @@ same name but a separate password; account linking is a later integration.
 | `lab-reader` / `lab-readers` | View workloads; cannot read Secrets or mutate resources | Read-only; cannot sync |
 | No lab group | No workload access | No application access |
 
-Use `python lab/install_oidc.py credentials --user lab-reader` for the reader's
-first sign-in. Password updates are stored in Keycloak, not written back to the
+The same file holds the reader's initial credentials under `lab-reader`.
+In PowerShell, use `.'lab-reader'` instead of `.finnnk` in the command above. Password updates are stored in Keycloak, not written back to the
 initial-password file. Reinstallation leaves existing passwords unchanged.
 
 ## Install and verify
 
 Requires the running local lab, Headlamp, ESO/Key Vault delivery, HTTPS ingress,
 automatic lab DNS, Helm, kubectl, Docker and Python dependencies from
-`lab/requirements-https.txt`. Run from the repository root with `LAB_STATE_DIR`
-set:
+`lab/requirements-https.txt`. Run the commands below from the
+**ephemeral-elastic-search-stack repository root**, not `delivery-source`,
+with `LAB_STATE_DIR` set:
 
 ```powershell
+$env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
 python lab/install_oidc.py install
 python lab/verify_oidc.py
 ```
