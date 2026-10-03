@@ -78,7 +78,7 @@ def main():
         if version(package).split("+")[0] != expected:
             raise RuntimeError(f"Unexpected diagnostic runtime: {package}.")
     import torch
-    configure_runtime(torch, settings)
+    configure_runtime(torch, settings, args.bundle)
     backend = verify_backend()
     if args.loader == "research":
         sys.path.insert(0, str(args.research / "src"))

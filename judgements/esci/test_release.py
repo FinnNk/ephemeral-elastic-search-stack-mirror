@@ -1,6 +1,7 @@
 """Contract, numerical, integrity and activation checks without a GPU."""
 
 import json
+import shutil
 from pathlib import Path
 import sys
 from types import SimpleNamespace
@@ -20,6 +21,7 @@ from esci.contract import (
 )
 from esci.deployment import render
 from esci.model import EsciModel
+from esci.runtime import INFERENCE_PROTOCOL
 from esci.qualification import compare
 from esci.release import content_digest, file_inventory, verify_bundle, write_json
 
@@ -53,8 +55,12 @@ def bundle(tmp_path, mapping, policy):
     write_json(tmp_path / "score-mapping.json", mapping)
     write_json(tmp_path / "policy.json", policy)
     write_json(
-        tmp_path / "inference.json", {"question": QUESTION, "max_batch_size": 128}
+        tmp_path / "inference.json", {"question": QUESTION, "max_batch_size": 128, "protocol": INFERENCE_PROTOCOL}
     )
+    shutil.copy2(Path(__file__).with_name("kernel-profile.json"), tmp_path / "kernel-profile.json")
+    (tmp_path / "kernel-configs").mkdir()
+    for name, definition in json.loads((tmp_path / "kernel-profile.json").read_text())["kernels"].items():
+        write_json(tmp_path / "kernel-configs" / (name + ".json"), definition)
     manifest = {
         "format": "esci-release-v1",
         "files": file_inventory(tmp_path),

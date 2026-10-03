@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "judgements"))
 from esci.contract import clean, map_scores, model_state, outcome
 from esci.diagnostics import summarise
 from esci.release import content_digest, read_json, sha256, write_json
+from esci.qualification import compare
 
 
 def prepare(research, bundle, exclusions, output):
@@ -135,7 +136,7 @@ def collect(endpoint, inputs, receipt, output, arrangement):
                 print(f"{arrangement}: {min(start+size,len(indices))}/{len(indices)}; {time.monotonic()-started:.1f}s", flush=True)
 
 
-def scores(path, frozen):
+def predictions(path, frozen):
     result = {}
     with path.open(encoding="utf-8") as stream:
         header = json.loads(next(stream))["header"]
@@ -146,7 +147,7 @@ def scores(path, frozen):
             for i, row in zip(chunk["indices"], chunk["predictions"], strict=True):
                 if i in result:
                     raise ValueError("A pair occurs more than once in a run.")
-                result[i] = row["probabilities"]
+                result[i] = row
     inputs = read_json(frozen)
     expected = (set(inputs["singleton_indices"]) if header["arrangement"] == "singletons"
                 else set(range(inputs["pairs"])))
@@ -160,7 +161,12 @@ def report(inputs, runs, output):
         raise FileExistsError("Preserve earlier diagnostic reports.")
     frozen = read_json(inputs)
     reference = {i:row["reference"]["probabilities"] for i,row in enumerate(frozen["rows"])}
-    collected = {name:scores(path, inputs) for name,path in runs.items()}
+    returned = {name:predictions(path, inputs) for name,path in runs.items()}
+    collected = {name: {i: row["probabilities"] for i, row in rows.items()}
+                 for name, rows in returned.items()}
+    decision_checks = {name: compare(
+        [frozen["rows"][i]["reference"] for i in sorted(rows)],
+        [rows[i] for i in sorted(rows)]) for name, rows in returned.items()}
     comparisons = {}
     pairs = [("reference", name) for name in collected]
     pairs += [("batch", name) for name in collected if name != "batch"]
@@ -172,12 +178,18 @@ def report(inputs, runs, output):
         comparisons[first+"__"+second] = summarise(
             [sources[first][i] for i in indices], [sources[second][i] for i in indices],
             [frozen["rows"][i]["query_hash"] for i in indices])
-    value = {"input_sha256": sha256(inputs), "pairs": frozen["pairs"], "queries": frozen["queries"],
-             "runs_sha256": {name:sha256(path) for name,path in runs.items()}, "comparisons": comparisons}
+    value = {"scope": "Numerical agreement on the retained cohort; not label quality.",
+             "input_sha256": sha256(inputs), "pairs": frozen["pairs"], "queries": frozen["queries"],
+             "runs_sha256": {name:sha256(path) for name,path in runs.items()}, "comparisons": comparisons,
+             "decision_checks": decision_checks,
+             "passed": all(check["passed"] for check in decision_checks.values())}
     write_json(output, value)
+    print(json.dumps({"returned_decision_checks": decision_checks}), flush=True)
     print(json.dumps({name:{key:result[key] for key in
           ("pairs", "max_absolute_delta", "p95_max_absolute_delta", "above_tolerance_pairs", "changed_labels_or_abstentions")}
           for name,result in comparisons.items()}, indent=2), flush=True)
+    if not value["passed"]:
+        raise SystemExit(2)
 
 
 def probe_report(inputs, runs, output):

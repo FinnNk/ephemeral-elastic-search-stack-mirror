@@ -34,7 +34,8 @@ def main():
     loaded = model.unwrap_python_model()
     print(json.dumps({"event": "esci.runtime.ready",
                       "protocol": loaded.settings["protocol"],
-                      "selected_backend": loaded.engine.backend}, sort_keys=True), flush=True)
+                      "selected_backend": loaded.engine.backend,
+                      "kernel_selections": loaded.engine.kernel_selections}, sort_keys=True), flush=True)
     telemetry.configure("esci-judgement-predictor")
     serve(model, identity, port=int(os.environ.get("PORT", "8080")))
 

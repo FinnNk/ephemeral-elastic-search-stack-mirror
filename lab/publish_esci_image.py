@@ -21,6 +21,8 @@ def source_sha256() -> str:
             "contract.py",
             "engine.py",
             "runtime.py",
+            "kernels.py",
+            "kernel-profile.json",
             "model.py",
             "release.py",
             "serve.py",

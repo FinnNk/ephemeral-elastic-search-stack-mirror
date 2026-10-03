@@ -10,6 +10,7 @@ import time
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "judgements"))
 from esci.release import content_digest, read_json, sha256, verify_bundle, write_json
 from esci.runtime import INFERENCE_PROTOCOL, configure_runtime, verify_backend
+from esci.kernels import verify_selections
 
 
 def main():
@@ -39,7 +40,7 @@ def main():
         if version(name).split("+")[0] != expected:
             raise RuntimeError(f"Unexpected reference runtime: {name}.")
     import torch
-    configure_runtime(torch, settings)
+    configure_runtime(torch, settings, args.bundle)
     backend = verify_backend()
     sys.path.insert(0, str(args.research / "src"))
     from esci_gap_judge.model.inference import DeciderJudge
@@ -73,6 +74,7 @@ def main():
                 "cuda": torch.version.cuda, "cudnn": torch.backends.cudnn.version(),
                 "gpu": torch.cuda.get_device_name(), "mapping_sha256": sha256(source)}
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    torch.cuda.reset_peak_memory_stats()
     started = time.monotonic()
     rows = []
     labels = ["E", "S", "C", "I"]
@@ -93,6 +95,10 @@ def main():
             stream.flush()
             if (i+1) % 256 == 0 or i+1 == len(frozen["rows"]):
                 print(f"Independent references: {i+1}/{len(frozen['rows'])}; {time.monotonic()-started:.1f}s", flush=True)
+    metadata["peak_allocated_bytes"] = torch.cuda.max_memory_allocated()
+    metadata["peak_reserved_bytes"] = torch.cuda.max_memory_reserved()
+    metadata["kernel_selections"] = verify_selections(
+        args.bundle, INFERENCE_PROTOCOL["kernel_profile_sha256"], require_all=True)
     output = {**frozen, "origin": "frozen-research-scores", "provenance": metadata,
               "raw_capture_sha256": sha256(raw_output), "rows": rows,
               "singleton_indices": list(range(len(rows))), "seconds": time.monotonic()-started}

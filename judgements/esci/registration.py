@@ -7,7 +7,7 @@ import tempfile
 
 from .release import content_digest, read_json, sha256, verify_bundle
 
-RUNTIME_FILES = ("__init__.py", "contract.py", "engine.py", "runtime.py", "model.py", "release.py")
+RUNTIME_FILES = ("__init__.py", "contract.py", "engine.py", "runtime.py", "kernels.py", "kernel-profile.json", "model.py", "release.py")
 
 
 def implementation_digest(folder: Path) -> str:

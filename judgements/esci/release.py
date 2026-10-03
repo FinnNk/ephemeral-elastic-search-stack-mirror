@@ -7,6 +7,7 @@ import shutil
 
 from .contract import LABELS, QUESTION, validate_mapping, validate_policy
 from .runtime import INFERENCE_PROTOCOL
+from .kernels import read_profile
 
 BASE_REVISION = "eb5fbdfc9448473ec25e399882912863afbdb70e"
 ADAPTER_SHA256 = "227cfbeb71dc40c0737c372fb3bebb03738cf5b71e54e8be7d7a668678d71fee"
@@ -91,7 +92,11 @@ def verify_bundle(root: Path) -> dict:
         raise ValueError("Missing, changed or unexpected release files.")
     validate_mapping(read_json(root / "score-mapping.json"))
     validate_policy(read_json(root / "policy.json"))
-    if read_json(root / "inference.json")["question"] != QUESTION:
+    settings = read_json(root / "inference.json")
+    if settings.get("protocol") != INFERENCE_PROTOCOL:
+        raise ValueError("Release inference protocol differs.")
+    read_profile(root, INFERENCE_PROTOCOL["kernel_profile_sha256"])
+    if settings["question"] != QUESTION:
         raise ValueError("The v3 question changed.")
     return manifest
 
@@ -156,6 +161,10 @@ def build_bundle(research: Path, output: Path) -> dict:
         shutil.copy2(base / name, output / "base" / name)
     for name in ("adapter.safetensors", "adapter_config.json"):
         shutil.copy2(trained / "adapter" / name, output / "adapter" / name)
+    shutil.copy2(Path(__file__).with_name("kernel-profile.json"), output / "kernel-profile.json")
+    (output / "kernel-configs").mkdir()
+    for name, definition in read_json(output / "kernel-profile.json")["kernels"].items():
+        write_json(output / "kernel-configs" / (name + ".json"), definition)
     write_json(output / "score-mapping.json", mapping)
     write_json(
         output / "policy.json",
@@ -187,7 +196,7 @@ def build_bundle(research: Path, output: Path) -> dict:
     }
     manifest = {
         "format": "esci-release-v1",
-        "name": "esci-v3-singleton-fla",
+        "name": "esci-v3-frozen-fla",
         "source": source,
         "files": file_inventory(output),
     }

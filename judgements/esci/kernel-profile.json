@@ -1,0 +1,77 @@
+{
+  "format": "esci-kernel-profile-v1",
+  "gpu": "NVIDIA GeForce RTX 4090 Laptop GPU",
+  "capability": [
+    8,
+    9
+  ],
+  "cuda": "12.4",
+  "torch": "2.6.0",
+  "triton": "3.2.0",
+  "fla-core": "0.5.2",
+  "kernels": {
+    "chunk_fwd_kernel_o": {
+      "kernel_name": "chunk_fwd_kernel_o",
+      "triton_version": "3.2.0",
+      "default_config": {
+        "kwargs": {
+          "BK": 128,
+          "BV": 128
+        },
+        "num_warps": 8,
+        "num_stages": 3
+      }
+    },
+    "chunk_gated_delta_rule_fwd_kernel_h_blockdim64": {
+      "kernel_name": "chunk_gated_delta_rule_fwd_kernel_h_blockdim64",
+      "triton_version": "3.2.0",
+      "default_config": {
+        "kwargs": {
+          "BV": 64
+        },
+        "num_warps": 4,
+        "num_stages": 2
+      }
+    },
+    "chunk_gated_delta_rule_fwd_kkt_solve_kernel": {
+      "kernel_name": "chunk_gated_delta_rule_fwd_kkt_solve_kernel",
+      "triton_version": "3.2.0",
+      "default_config": {
+        "kwargs": {
+          "BK": 64
+        },
+        "num_warps": 2,
+        "num_stages": 2
+      }
+    },
+    "chunk_local_cumsum_scalar_kernel": {
+      "kernel_name": "chunk_local_cumsum_scalar_kernel",
+      "triton_version": "3.2.0",
+      "default_config": {
+        "kwargs": {},
+        "num_warps": 2,
+        "num_stages": 2
+      }
+    },
+    "l2norm_fwd_kernel": {
+      "kernel_name": "l2norm_fwd_kernel",
+      "triton_version": "3.2.0",
+      "default_config": {
+        "kwargs": {
+          "BT": 8
+        },
+        "num_warps": 8,
+        "num_stages": 2
+      }
+    },
+    "recompute_w_u_fwd_kernel": {
+      "kernel_name": "recompute_w_u_fwd_kernel",
+      "triton_version": "3.2.0",
+      "default_config": {
+        "kwargs": {},
+        "num_warps": 8,
+        "num_stages": 2
+      }
+    }
+  }
+}

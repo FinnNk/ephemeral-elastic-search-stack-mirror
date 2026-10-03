@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .contract import OPTIONS, probabilities
 from .runtime import configure_runtime, verify_backend
+from .kernels import read_profile, verify_selections
 
 
 class Engine:
@@ -19,12 +20,14 @@ class Engine:
             raise RuntimeError(
                 "The v3 serving image requires an available NVIDIA CUDA GPU."
             )
-        configure_runtime(torch, settings)
+        configure_runtime(torch, settings, bundle)
         self.backend = verify_backend()
+        verify_selections(bundle, settings["protocol"]["kernel_profile_sha256"])
         from decider.infer import Decider
         from peft import LoraConfig, inject_adapter_in_model, set_peft_model_state_dict
         from safetensors.torch import load_file
 
+        self.bundle = bundle
         self.settings = settings
         self.decider = Decider(
             str(bundle / "base"),
@@ -48,6 +51,8 @@ class Engine:
             raise RuntimeError("The frozen inference protocol requires SDPA attention.")
 
     def predict(self, states: list[str]) -> list[list[float]]:
+        if states:
+            read_profile(self.bundle, self.settings["protocol"]["kernel_profile_sha256"])
         question = {"question": self.settings["question"], "options": list(OPTIONS)}
         output = []
         # Each pair keeps the same tensor shape regardless of HTTP companions.
@@ -64,4 +69,7 @@ class Engine:
                 output.append(
                     probabilities([float(answer[0]["probs"][name]) for name in OPTIONS])
                 )
+        if states:
+            self.kernel_selections = verify_selections(
+                self.bundle, self.settings["protocol"]["kernel_profile_sha256"], require_all=True)
         return output

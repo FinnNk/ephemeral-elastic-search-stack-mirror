@@ -24,11 +24,13 @@ def test_dispatch_inspection_requires_declared_selection():
 
 
 def test_undeclared_protocol_rejected_before_configuration():
-    with pytest.raises(RuntimeError, match="singleton-fla-v1"):
-        configure_runtime(None, {"protocol": {"internal_batch_size": 8}})
+    with pytest.raises(RuntimeError, match="singleton-fla-frozen-v1"):
+        configure_runtime(None, {"protocol": {"internal_batch_size": 8}}, None)
 
 
-def test_http_companions_cannot_change_decider_batch():
+def test_http_companions_cannot_change_decider_batch(monkeypatch):
+    monkeypatch.setattr("esci.engine.read_profile", lambda *args: None)
+    monkeypatch.setattr("esci.engine.verify_selections", lambda *args, **kwargs: {})
     seen = []
 
     def decide(requests, max_ctx_tokens):
@@ -37,6 +39,7 @@ def test_http_companions_cannot_change_decider_batch():
                             "Complement": 0.02, "Irrelevant": 0.01}}]]
 
     engine = Engine.__new__(Engine)
+    engine.bundle = Path("unused-in-test")
     engine.settings = {"question": "ESCI", "protocol": INFERENCE_PROTOCOL}
     engine.decider = SimpleNamespace(decide_batch=decide)
     batch = engine.predict(["short", "a much longer companion"])

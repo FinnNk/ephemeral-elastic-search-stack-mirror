@@ -11,7 +11,7 @@ RUN dpkg-deb -x /tmp/cuda-driver-dev.deb /opt/cuda-driver-dev && rm /tmp/cuda-dr
 ENV TRITON_LIBCUDA_PATH=/opt/cuda-driver-dev/usr/local/cuda-12.4/targets/x86_64-linux/lib/stubs
 COPY judgements/predictor.py judgements/telemetry.py judgements/fetch_model.py /app/
 COPY judgements/esci/__init__.py judgements/esci/contract.py judgements/esci/engine.py \
-    judgements/esci/runtime.py judgements/esci/model.py judgements/esci/release.py /app/esci/
+    judgements/esci/runtime.py judgements/esci/kernels.py judgements/esci/kernel-profile.json judgements/esci/model.py judgements/esci/release.py /app/esci/
 COPY judgements/esci/serve.py /app/serve_esci.py
 RUN useradd --uid 10001 --create-home judge && chown -R judge:judge /app
 USER 10001
