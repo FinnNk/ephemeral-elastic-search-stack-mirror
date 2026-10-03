@@ -1,0 +1,150 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Qualify judgement labels",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "backend": {
+          "label": "Service or evaluator"
+        },
+        "database": {
+          "label": "Frozen evidence"
+        },
+        "cloud": {
+          "label": "Frozen APIs"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "inputs",
+      "label": "Frozen inputs"
+    },
+    {
+      "id": "development",
+      "label": "Develop rules"
+    },
+    {
+      "id": "confirmation",
+      "label": "Confirm quality"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "references",
+      "lane": "inputs",
+      "col": 0,
+      "type": "database",
+      "label": "ESCI references",
+      "sublabel": "Published E/S/C/I",
+      "width": 130
+    },
+    {
+      "id": "reserve",
+      "lane": "development",
+      "col": 1,
+      "type": "backend",
+      "label": "Reserve cohorts",
+      "sublabel": "Disjoint query groups",
+      "width": 130
+    },
+    {
+      "id": "infer",
+      "lane": "development",
+      "col": 2,
+      "type": "backend",
+      "label": "Infer development",
+      "sublabel": "Pinned model scores",
+      "width": 130
+    },
+    {
+      "id": "freeze",
+      "lane": "development",
+      "col": 3,
+      "type": "database",
+      "label": "Freeze thresholds",
+      "sublabel": "Rules for each class",
+      "width": 130
+    },
+    {
+      "id": "confirm",
+      "lane": "confirmation",
+      "col": 4,
+      "type": "backend",
+      "label": "Confirm quality",
+      "sublabel": "Untouched query groups",
+      "width": 130
+    },
+    {
+      "id": "review",
+      "lane": "confirmation",
+      "col": 5,
+      "type": "backend",
+      "label": "Review eligibility",
+      "sublabel": "Gap transfer required",
+      "width": 130
+    }
+  ],
+  "edges": [
+    {
+      "from": "references",
+      "to": "reserve",
+      "label": "Query groups",
+      "role": "main"
+    },
+    {
+      "from": "reserve",
+      "to": "infer",
+      "label": "Development only",
+      "role": "main"
+    },
+    {
+      "from": "infer",
+      "to": "freeze",
+      "label": "Selected rules",
+      "role": "main"
+    },
+    {
+      "from": "freeze",
+      "to": "confirm",
+      "label": "Policy pinned",
+      "role": "main"
+    },
+    {
+      "from": "confirm",
+      "to": "review",
+      "label": "Retained evidence",
+      "role": "main"
+    }
+  ],
+  "mainPath": [
+    "references",
+    "reserve",
+    "infer",
+    "freeze",
+    "confirm",
+    "review"
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Limit harmful labels",
+      "items": [
+        "Measure Irrelevant to Exact and accepted Exact contamination",
+        "Zero observed errors do not prove zero risk"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Keep sources distinct",
+      "items": [
+        "Published confirmation does not establish quality on unknown gaps",
+        "Abstentions stay unknown; eligibility requires a recorded decision"
+      ]
+    }
+  ]
+}

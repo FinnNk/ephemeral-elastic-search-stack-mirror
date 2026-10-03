@@ -107,3 +107,13 @@ from 29.7% to 50.9%. Unqualified labels remain excluded from gates. The next
 batch is independent label quality; then select another model for the residual gaps.
 
 The [Headlamp batch](headlamp.md) adds the local cluster UI with existing DNS/TLS and a separate expiring human administrator token. Local authentication and readiness checks passed; the batch is ready for review.
+
+The [label-quality batch](esci-label-quality.md) implements frozen cohort
+assessment, traced HTTP inference and separately developed class thresholds.
+The development search found no feasible policy; version 4 remains inactive.
+[Evidence](../research/evidence/esci-label-quality.md) records the measured
+trade-off and incomplete independent confirmation. The bounded GPU run was
+cleaned up before its deadline; no candidate activation occurred. The
+[next detailed batch](esci-quality-next.md) rolls out the narrowly scoped checker
+through trusted source CI, then records the real ESCI coverage decision and
+selects a credible residual model. No human exception has been issued.

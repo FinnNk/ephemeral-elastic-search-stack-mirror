@@ -1,0 +1,12 @@
+{
+  "kind": "esci-label-quality-policy",
+  "schema_version": 1,
+  "acceptance_threshold": 0.9,
+  "minimum_confirmation_queries": 200,
+  "minimum_accepted_pairs": 300,
+  "minimum_accuracy_lower_bound": 0.95,
+  "maximum_irrelevant_to_exact_rate": 0.01,
+  "bootstrap_repetitions": 20000,
+  "bootstrap_seed": 20261003,
+  "required_cohorts": ["published", "human-gap"]
+}

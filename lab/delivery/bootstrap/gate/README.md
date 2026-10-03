@@ -40,10 +40,21 @@ Application tests and builds run separately. If a PR changes only `README.md`, `
 | --- | --- |
 | `evaluation_not_required` | Review the documentation; no relevance report is needed |
 | `pass` | Review the report and proposed release choice |
-| `decision_required` | Ask an administrator to review the bounded regression or changed results and record a reason if accepting them |
+| `decision_required` | Ask an administrator to review the bounded regression, changed results or permitted coverage gap; record a reason if accepting it |
 | `approved_exception` | Review the measured results and administrator's recorded reason separately |
 | `blocked` | Address the regression or insufficient label coverage; an exception cannot bypass this result |
 | `invalid` | Check for missing evidence, mismatched commits/images or an incomplete report, then rerun after correcting it |
+
+The normal policy requires 80% judged coverage. A declared low-coverage
+exception is available only for `preserve-results` when every captured query
+has identical ordered product IDs and total count, and both scores and coverage
+match exactly. It checks results at the saved capture depth. A human
+administrator must accept the disclosed gap; selecting this intent does not
+approve it. Low-coverage ranking changes and unqualified labels remain blocked.
+
+The prepared fallback still requires review, source propagation and protected
+policy/code pin updates before existing CI can use it. It does not make an
+existing PR check pass automatically.
 
 An exception preserves the scores and binds the decision to the report, source commit, policy and selected variant. It does not approve deployment. Merge still requires an approving PR review and the passing build check.
 

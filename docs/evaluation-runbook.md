@@ -83,12 +83,30 @@ The command prints the retained executed-notebook reference. This saved analysis
 
 ## Human exceptions
 
-Only a `decision_required` result is eligible for a bounded exception. Obtain the exact PR's `gate/selection.json` from its source revision and save it locally. Use the trusted policy that matches the protected gate pin. The human administrator supplies the following values themselves:
+Only a `decision_required` result is eligible for a bounded exception. The
+normal coverage requirement remains 80%. The prepared checker and policy also
+allow a low-coverage decision for `preserve-results` when all these conditions hold:
+
+- Every captured query returns identical ordered product IDs and total counts.
+- Candidate and baseline scores and coverage are exactly equal.
+- The report uses published or qualified labels, without exploratory predictions.
+- The evaluated image and signed evidence match the exact source PR build.
+
+This checks the saved results at the capture depth, not the whole catalogue.
+A human administrator must approve the disclosed coverage gap. Low-coverage
+`ranking-change` reports, changed results and unqualified labels stay blocked.
+The new fallback is prepared for review; existing CI needs the reviewed source
+copy and protected policy/code pins before it can use it. No approval or passing
+gate is created by preparing the policy.
+
+Obtain the exact PR's `gate/selection.json` from its source revision and save it
+locally. Use the trusted policy matching the protected gate pin. The human
+administrator supplies the following values themselves:
 
 ```powershell
 $selection = Read-Host 'Absolute path to the exact PR selection.json'
 $variant = Read-Host 'Selected variant requiring a decision'
-$reason = Read-Host 'Business reason for accepting the measured regression'
+$reason = Read-Host 'Reason for accepting the measured regression or disclosed coverage gap'
 $reviewer = Read-Host 'Your Gitea administrator login'
 python lab/variant_gate_issue.py approve --report "$runDir/evaluation.json" --policy lab/delivery/policies/variant-merge-v1.json --selection $selection --attestation "$runDir/attestation.json" --build-receipt "$runDir/build-receipt.json" --output "$runDir/approval.json" --source-sha $sourceSha --source-repository elastic-agent/delivery-source --variant $variant --reason $reason --username $reviewer
 $env:NEXUS_PASSWORD = $nexus.publisher.password
@@ -96,7 +114,14 @@ python lab/delivery/ci/variant_gate_store.py publish-approval --source-sha $sour
 Remove-Item Env:NEXUS_PASSWORD
 ```
 
-The approval tool prompts for the password, verifies administrator status and refuses other result states. The receipt binds report, policy, selection, commit, variant, reason and reviewer. Rerun the gate after publication. Hard blocks and invalid evidence cannot be approved away. Passing the source gate still does not authorise deployment.
+The approval tool prompts for the password, verifies administrator status and
+refuses other result states. The receipt binds report, policy, selection, commit,
+variant, reason and reviewer. Rerun the gate after publication.
+
+The verdict retains actual baseline/candidate coverage and required coverage,
+with `coverage_exception: true` for the narrow case above. Hard blocks and
+invalid evidence cannot be approved away. Passing the source gate does not
+authorise deployment.
 
 ## Rescore as a finite Job
 

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\Users\\finnn\\.codex\\worktrees\\exploratory-notebooks\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\label-qualification.json",
+  "output": "C:\\Users\\finnn\\.codex\\worktrees\\exploratory-notebooks\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\label-qualification.html",
+  "specification": {
+    "sha256": "aff13b0734f55521ab0ec6732ddf697591bea7a5ad617b19555418915f0e211f",
+    "bytes": 3078
+  },
+  "artifact": {
+    "sha256": "40012f20c745ba08a25e9c89f0e7bb32c64b137667ee1e223a602b86a6af3a0f",
+    "bytes": 802694
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

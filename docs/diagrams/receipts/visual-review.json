@@ -280,5 +280,12 @@
     "artifact": "rendered/05-local.svg",
     "artifact_sha256": "0ab9474553d1b7adbc6ee42143130959db007a2a7e5f28552adf96cd74096695",
     "inspection": "Combined deployment PNG inspected after rebase: Headlamp, CPU model services and the optional GPU worker have separate, legible boundaries without overlap. All eight C4 views validated and exported; unrelated generated SVGs retained."
+  },
+  "labelQualification20261003": {
+    "source": "archify/label-qualification.json",
+    "output": "interactive/label-qualification.html",
+    "preview": "rendered/label-qualification.png",
+    "artifact_sha256": "40012f20c745ba08a25e9c89f0e7bb32c64b137667ee1e223a602b86a6af3a0f",
+    "review": "Inspected the 1440x900 light preview: development and confirmation are separate; threshold freezing and the unresolved gap-transfer decision are readable. Showcase validation and all configured desktop browser sizes/themes passed."
   }
 }

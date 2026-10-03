@@ -1,6 +1,6 @@
 # Architecture diagrams
 
-Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These twenty-three views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
+Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These twenty-four views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
 
 ## Reading order
 
@@ -62,6 +62,7 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 | [07 · Compare relevance](interactive/evaluation-dataflow.html) | Every named variant produces retained API observations; an independent evaluator scores them against one selected judgement set. | [Archify data flow](archify/evaluation-dataflow.json) |
 | [Variant merge gate](interactive/variant-merge-gate.html) | Match signed evidence to the selected source build, then record any bounded human exception. | [Archify workflow](archify/variant-merge-gate.json) |
 | [Resolve judgement gaps](interactive/judgement-coverage.html) | Pool all returned pairs, ask the pinned model about missing labels, then freeze and score one set. | [Archify workflow](archify/judgement-coverage.json) |
+| [Qualify judgement labels](interactive/label-qualification.html) | Disjoint development and confirmation cohorts, frozen class thresholds and eligibility review. | [Archify workflow](archify/label-qualification.json) |
 | [11 · Verify unchanged results](interactive/result-regression.html) | Compare ordered API results, explain differences and record an exact-match verdict. | [Archify workflow](archify/result-regression.json) |
 | [12 · Check API performance](interactive/performance-check.html) | Gatling replays pinned phases against each API; reports retain phase verdicts and capacity. | [Archify workflow](archify/performance-check.json) |
 
@@ -165,7 +166,7 @@ Prerequisites: Node.js, Git, a working Docker daemon with Linux containers and, 
    node docs/diagrams/render.mjs --browser
    ```
 
-   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders eight C4 SVGs and PNG inspection copies, validates and delivers fifteen Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
+   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders eight C4 SVGs and PNG inspection copies, validates and delivers sixteen Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
 
    For a focused rebuild, use `--c4` or `--archify`, optionally with `--browser`. The script checks the Archify commit before use. Docker pulls the pinned Structurizr image when missing. A Docker connection failure means the daemon must be started before retrying.
 

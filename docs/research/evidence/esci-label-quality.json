@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-03",
+  "gate_eligible": false,
+  "status": "development-no-feasible-policy",
+  "files": {
+    "label-calibration-20261003/manifest.json": "a832cefe6b52b822bed764243ec5947b1b9a9be69a1ed5ffc8015e09c8dc72b5",
+    "label-calibration-20261003/inputs.jsonl": "ec6958902a308e2764f7d9fb236588623138c1a9257596deff73e895bb778f3a",
+    "label-calibration-20261003/references.jsonl": "5ef90fe3400d3a8f56d2cbde0cbd22ef14c6b35d40c7f389d21a61ad65a31e7e",
+    "label-calibration-20261003/audit.json": "7bf6d643f1d09814754d6232229d47bcefae8c745de8452b1901972ec71b555c",
+    "label-calibration-20261003/research-reservation-receipt.json": "d6fe1a68a9d5b7e7a1c0814f0818cfc566a2456c76d06e3d3c82117e19a15f6e",
+    "label-calibration-20261003/quality-policy.json": "cad99a46ef211b3bf3e18e0928f8753919db6537a1f1e9fde5b30c913aa16254",
+    "label-calibration-20261003/inference-01/inference.json": "c72aadb2cde2fa27428ecf7948d37e48a05806b2733d0178c3d6237200d0f2de",
+    "label-calibration-20261003/inference-01/predictions.jsonl": "b864179ed28df77a1f96c155a801cfea827f81f001c5f5e1f2c9834be23871d7",
+    "label-calibration-20261003/threshold-selection.json": "e764606f4896d482d18c8ccaa796e74ff00c1c40c0335aa4407f73220bd2f4e1",
+    "label-calibration-20261003/threshold-selection-freeze.json": "600f405dcc4a49055dcf25c6905e6f72ab02c63ffc7c6ef9efcf533958d0879d",
+    "label-calibration-20261003/original-policy-development-report.json": "c0b5d99731359c92913b11a1cae3581b0ce7f8902f930ad294810c95eae68c4b",
+    "label-calibration-20261003/threshold-diagnostics.json": "afea0ad985f558a69a618a5b6e8b98e321e55fd7fa67ccf8b7cfd37753093244",
+    "label-quality-20261003/manifest.json": "093af69c6ee2bb5d46d8abf1a317b5ec6265d7cfdfd7318ca72604eddd90be31",
+    "label-quality-20261003/inputs.jsonl": "edca83a60e60f613b2a03b493d62c563c611208068e6e91aa18e5a779750a6fa",
+    "label-quality-20261003/references.jsonl": "edb34cfbfee067e39c253b7265e2ce4d25664f43e995577b98598061943dfd17",
+    "label-quality-20261003/audit.json": "f93f69bd44360dfe91c4c4d184c9a9ef89879ceab712505363eab4cbc6ad0600",
+    "label-quality-20261003/research-reservation-receipt.json": "4a3afd9b27a670e58418beb1642f4e3e39c7b21517af164f8be5e37769feee31",
+    "label-quality-20261003/quality-policy.json": "cad99a46ef211b3bf3e18e0928f8753919db6537a1f1e9fde5b30c913aa16254",
+    "label-quality-20261003/trace-evidence.json": "36d676ca7a236501c71983e3d975bfaf85a312e51941bcd667f3eabe31e036f3",
+    "label-calibration-20261003/reservation.json": "ef04aa41943f27bfa4f69df5dbd7fbe8f1bfa3747137de0629391893387d3558",
+    "label-quality-20261003/reservation.json": "5224deeb4266383157ef3a11ae4519a7dd73e9f547f63921441fda1479afbd98",
+    "label-quality-20261003/inference-01/predictions.jsonl": "281b2bb34f301ff673e247b4bf75e64ba4d1c58e4a11ebc99510ba617ca2d176",
+    "label-quality-20261003/window-result.json": "cfd31f6e8548ab606ca60ecba9dcb5c97b2119ee2714d4189b953d411bd89f8b"
+  },
+  "confirmation": {
+    "complete": false,
+    "predictions": 6336,
+    "planned_pairs": 6494,
+    "assessment_performed": false
+  },
+  "gpu_cleanup": {
+    "finished": "2026-10-03T17:15:02.952680+00:00",
+    "before_deadline": true,
+    "explicit_handback_sent": true
+  }
+}

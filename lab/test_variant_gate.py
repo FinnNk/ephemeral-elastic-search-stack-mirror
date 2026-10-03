@@ -2,12 +2,13 @@
 
 from datetime import datetime, timezone
 from pathlib import Path
+import json
 import sys
 import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from variant_gate import approve, attest, canonical, check, sha
+from variant_gate import approve, attest, canonical, check, sha, sign
 from variant_gate_issue import issue_approval
 
 
@@ -144,6 +145,137 @@ class VariantGateTests(unittest.TestCase):
     def test_low_baseline_coverage_cannot_be_overridden(self):
         self.report['coverage']['ranker-b']['fraction'] = 0.79
         self.assertEqual(self.check()['state'], 'blocked')
+
+
+    def unchanged_low_coverage(self):
+        self.selection['selected'][0]['intent'] = 'preserve-results'
+        self.report['metrics']['ranker-a']['nDCG@10'] = 0.7
+        self.report['delta_from_baseline']['ranker-a']['nDCG@10'] = 0.0
+        self.report['coverage']['ranker-a']['fraction'] = 0.297
+        self.report['coverage']['ranker-b']['fraction'] = 0.297
+        self.report['result_changes']['ranker-a'] = {'changed_queries': 0, 'fraction': 0.0}
+
+    def fixture_approval(self):
+        return approve(canonical(self.report), self.policy, canonical(self.selection),
+                       SOURCE, 'ranker-a', 'finn',
+                       'Accept this unchanged-result fixture with disclosed judgement gaps.',
+                       APPROVAL_KEY, STAMP)
+
+    def test_low_coverage_unchanged_results_requires_authenticated_decision(self):
+        self.unchanged_low_coverage()
+        verdict = self.check()
+        self.assertEqual(verdict['state'], 'decision_required')
+        item = verdict['variants'][0]
+        self.assertTrue(item['coverage_exception'])
+        self.assertEqual(item['judged_fraction'], 0.297)
+        self.assertEqual(item['baseline_judged_fraction'], 0.297)
+        self.assertEqual(item['required_judged_fraction'], 0.8)
+        self.assertIsNone(item['approval_sha256'])
+        report, selection = canonical(self.report), canonical(self.selection)
+        evidence = attest(report, SOURCE, self.build, EVIDENCE_KEY, STAMP)
+        with patch('variant_gate_issue.GiteaIdentity') as identity:
+            identity.return_value.verify.return_value = {'username': 'finn', 'is_admin': True}
+            approval = issue_approval(report, self.policy, selection, evidence,
+                self.build, 'elastic-agent/delivery-source', 'ranker-a',
+                'Accept the unchanged fixture with coverage explicitly below 80 percent.',
+                SOURCE, 'finn', 'test-password', EVIDENCE_KEY, APPROVAL_KEY,
+                sha(self.policy), STAMP)
+        verdict = self.check([approval])
+        self.assertEqual(verdict['state'], 'approved_exception')
+        self.assertEqual(verdict['variants'][0]['judged_fraction'], 0.297)
+        self.assertEqual(verdict['variants'][0]['delta'], 0)
+        self.assertIsNotNone(verdict['variants'][0]['approval_sha256'])
+
+    def test_low_coverage_changed_results_and_loss_cannot_be_overridden(self):
+        for change in ('query', 'delta', 'coverage', 'intent', 'tiny-delta'):
+            with self.subTest(change=change):
+                self.setUp()
+                self.unchanged_low_coverage()
+                if change == 'query':
+                    self.report['result_changes']['ranker-a'] = {
+                        'changed_queries': 1, 'fraction': 0.01}
+                elif change == 'delta':
+                    self.report['metrics']['ranker-a']['nDCG@10'] = 0.69
+                    self.report['delta_from_baseline']['ranker-a']['nDCG@10'] = -0.01
+                elif change == 'tiny-delta':
+                    self.report['metrics']['ranker-a']['nDCG@10'] = 0.70000001
+                elif change == 'coverage':
+                    self.report['coverage']['ranker-a']['fraction'] = 0.298
+                else:
+                    self.selection['selected'][0]['intent'] = 'ranking-change'
+                self.assertEqual(self.check([self.fixture_approval()])['state'], 'blocked')
+
+    def test_low_coverage_exception_requires_explicit_valid_policy(self):
+        self.unchanged_low_coverage()
+        policy = json.loads(self.policy)
+        del policy['low_coverage_exception']
+        self.policy = canonical(policy)
+        self.assertEqual(self.check([self.fixture_approval()])['state'], 'blocked')
+        invalid = [None, {}, {'intent': 'ranking-change', 'maximum_changed_queries': 0,
+                             'required_delta': 0},
+                   {'intent': 'preserve-results', 'maximum_changed_queries': 1,
+                    'required_delta': 0},
+                   {'intent': 'preserve-results', 'maximum_changed_queries': False,
+                    'required_delta': 0},
+                   {'intent': 'preserve-results', 'maximum_changed_queries': 0,
+                    'required_delta': -0.01},
+                   {'intent': 'preserve-results', 'maximum_changed_queries': 0,
+                    'required_delta': False},
+                   {'intent': 'preserve-results', 'maximum_changed_queries': 0,
+                    'required_delta': 0, 'extra': True}]
+        for stanza in invalid:
+            with self.subTest(stanza=stanza):
+                policy['low_coverage_exception'] = stanza
+                self.policy = canonical(policy)
+                with self.assertRaisesRegex(ValueError, 'Low-coverage exception'):
+                    self.check()
+
+    def test_low_coverage_exception_retains_identity_and_judgement_guards(self):
+        for field, value in [('judgement_selection', 'exploratory'),
+                             ('unqualified_judgements', 1)]:
+            with self.subTest(field=field):
+                self.setUp()
+                self.unchanged_low_coverage()
+                self.report[field] = value
+                with self.assertRaisesRegex(ValueError, 'unqualified'):
+                    self.check([self.fixture_approval()])
+        self.setUp()
+        self.unchanged_low_coverage()
+        self.report['variants']['ranker-a']['image'] = (
+            'nexus.localhost:18185/search-api@sha256:' + '2' * 64)
+        with self.assertRaisesRegex(ValueError, 'this source build image'):
+            self.check([self.fixture_approval()])
+
+    def test_low_coverage_approval_cannot_be_retargeted(self):
+        self.unchanged_low_coverage()
+        original = self.fixture_approval()
+        for field, value in [('source_sha', 'f' * 40), ('report_sha256', 'f' * 64),
+                             ('policy_sha256', 'f' * 64), ('selection_sha256', 'f' * 64)]:
+            with self.subTest(field=field):
+                approval = {key: item for key, item in original.items() if key != 'signature'}
+                approval[field] = value
+                with self.assertRaisesRegex(ValueError, 'another decision'):
+                    self.check([sign(approval, APPROVAL_KEY)])
+        forged = dict(original, signature='0' * 64)
+        with self.assertRaisesRegex(ValueError, 'signature differs'):
+            self.check([forged])
+
+    def test_low_coverage_exception_rejects_non_admin_approval(self):
+        self.unchanged_low_coverage()
+        report, selection = canonical(self.report), canonical(self.selection)
+        evidence = attest(report, SOURCE, self.build, EVIDENCE_KEY, STAMP)
+        with patch('variant_gate_issue.GiteaIdentity') as identity:
+            identity.return_value.verify.return_value = {'username': 'engineer', 'is_admin': False}
+            with self.assertRaisesRegex(ValueError, 'administrator'):
+                issue_approval(report, self.policy, selection, evidence, self.build,
+                    'elastic-agent/delivery-source', 'ranker-a',
+                    'Accept this unchanged fixture with disclosed judgement gaps.',
+                    SOURCE, 'engineer', 'test-password', EVIDENCE_KEY, APPROVAL_KEY,
+                    sha(self.policy), STAMP)
+
+    def test_normal_coverage_is_not_marked_as_coverage_exception(self):
+        verdict = self.check()
+        self.assertFalse(verdict['variants'][0]['coverage_exception'])
 
 
 if __name__ == '__main__':

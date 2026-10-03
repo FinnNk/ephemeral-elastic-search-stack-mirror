@@ -42,6 +42,8 @@ that was completed later.
 - [ESCI singleton inference contract — 3 October 2026](esci-inference-contract.md)
 - [Frozen ESCI kernels — 3 October 2026](esci-frozen-kernels.md)
 
+- [Independent ESCI label quality — 3 October 2026](esci-label-quality.md)
+
 ## Build and deployment
 
 - [Automatic preview URL checks — 2 October 2026](automatic-preview-urls.md)

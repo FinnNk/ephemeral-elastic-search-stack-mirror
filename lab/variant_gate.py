@@ -160,6 +160,16 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
     exception_delta = number(policy.get('exception_min_delta'), 'Exception delta', -1, 1)
     if exception_delta > pass_delta:
         raise ValueError('Exception floor exceeds the normal threshold.')
+    coverage_exception = policy.get('low_coverage_exception')
+    if 'low_coverage_exception' in policy and (
+            not isinstance(coverage_exception, dict) or
+            set(coverage_exception) != {'intent', 'maximum_changed_queries', 'required_delta'} or
+            coverage_exception['intent'] != 'preserve-results' or
+            type(coverage_exception['maximum_changed_queries']) is not int or
+            coverage_exception['maximum_changed_queries'] != 0 or
+            type(coverage_exception['required_delta']) not in (int, float) or
+            coverage_exception['required_delta'] != 0):
+        raise ValueError('Low-coverage exception must require unchanged preserve-results evidence.')
     change_policy = policy.get('changed_query_fraction')
     if not isinstance(change_policy, dict) or set(change_policy) != {
             'preserve-results', 'ranking-change'}:
@@ -193,9 +203,15 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
         if report.get('delta_from_baseline', {}).get(variant, {}).get(metric) != delta:
             raise ValueError('Reported metric delta differs from its scores.')
         limits = change_policy[intent]
-        if baseline_coverage < minimum_coverage or coverage < minimum_coverage or \
-                delta < exception_delta or \
-                fraction > limits['exception']:
+        low_coverage = baseline_coverage < minimum_coverage or coverage < minimum_coverage
+        coverage_exception_allowed = bool(
+            low_coverage and coverage_exception is not None and
+            intent == coverage_exception['intent'] and
+            changed['changed_queries'] == 0 and fraction == 0 and delta == 0 and
+            score == baseline_score and coverage == baseline_coverage)
+        if low_coverage:
+            state = 'decision_required' if coverage_exception_allowed else 'blocked'
+        elif delta < exception_delta or fraction > limits['exception']:
             state = 'blocked'
         elif delta >= pass_delta and fraction <= limits['pass']:
             state = 'pass'
@@ -220,6 +236,9 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
         receipts.append({'variant': variant, 'intent': intent, 'state': state,
                          'baseline': baseline, 'metric': metric, 'value': score,
                          'delta': delta, 'judged_fraction': coverage,
+                         'baseline_judged_fraction': baseline_coverage,
+                         'required_judged_fraction': minimum_coverage,
+                         'coverage_exception': coverage_exception_allowed,
                          'changed_query_fraction': fraction,
                          'approval_sha256': sha(canonical(approval)) if
                          state == 'approved_exception' else None})
