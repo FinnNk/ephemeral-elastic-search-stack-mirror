@@ -46,6 +46,8 @@ that was completed later.
 
 ## Build and deployment
 
+- [Trusted gate maintenance benchmark — 3 October 2026](gate-maintenance-benchmark.md)
+
 - [Automatic preview URL checks — 2 October 2026](automatic-preview-urls.md)
 
 - [Source PR merge readiness — 2 October 2026](source-merge-readiness.md)

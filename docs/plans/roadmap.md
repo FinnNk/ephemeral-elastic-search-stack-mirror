@@ -117,3 +117,10 @@ cleaned up before its deadline; no candidate activation occurred. The
 [next detailed batch](esci-quality-next.md) rolls out the narrowly scoped checker
 through trusted source CI, then records the real ESCI coverage decision and
 selects a credible residual model. No human exception has been issued.
+
+
+The separate [trusted gate maintenance proof](../research/evidence/gate-maintenance-benchmark.md)
+passed source PR #22 release and relevance CI on predetermined synthetic labels.
+Its application, chart and index-contract trees are unchanged. Review and merge
+are required before installing its trusted pins and recording a real ESCI
+result-preservation decision. The fixture does not qualify model predictions.

@@ -67,7 +67,9 @@ small independent generator. The current generator now emits `North` and uses
 a new immutable release; current guide paths were updated. Six existing
 producer-contract tests passed. The failed frozen benchmark was retained;
 its replacement adds the declared brand without changing the 36 labels fixed
-before capture. Neither benchmark replaces the ESCI application evidence.
+before capture. Neither benchmark replaces the ESCI application evidence. The
+[maintenance proof](gate-maintenance-benchmark.md) passed protected CI using the
+old accepted checker and unchanged pins.
 
 ## Follow-up
 

@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-03",
+  "scope": "tooling-only synthetic benchmark; not ESCI application quality",
+  "source_sha": "1b8abc0830aab87bfc96ef7860135d982e1715d2",
+  "source_pr": 22,
+  "release_run": 88,
+  "relevance_run": 89,
+  "relevance_attempt": 2,
+  "relevance_job": 99,
+  "relevance_conclusion": "success",
+  "files": {
+    "source-proof.json": "d4d17f520ddb666945b2efc8268625aa8992ca0f486e348d03c688a923f84bb7",
+    "benchmark-freeze.json": "b32f22ae320e35abafd337fde9ba2374cff1f5d3dc75f01fc17af61df0405897",
+    "benchmark-provenance.json": "df1cbdd94a27413d10880599aaafa3ce8e0f76fd84d30862ccfc09ce0f44f2a3",
+    "first-capture-failure.json": "ab7bc359ec692b32dd7e40757bb0116bd9039612caf4d9d982db6cf08934194d",
+    "benchmark-v2-freeze.json": "15e2801336c5931158edb7894d969437009091b9a57de3bb7aca073aaf4f3c72",
+    "benchmark-v2-provenance.json": "127a34fc4883a233bced7d15056c47e647c663ebfa27d3ea768434b44fa0ce84",
+    "build-receipt.json": "2747a70b3461e77565dfaae8620163cfec228d91c7dbb6b86f075f2b484c3c78",
+    "baseline-build-receipt.json": "4dc6748cbe36a8ceedc4d0a0bc2ff9b5dcc1a7655ced471a16e476059344b469",
+    "capture-v2-summary.json": "55f16e3b8eb212633ba73629c1ac07f080440f7305503e08b898f2686ef8db75",
+    "observations-v2.json": "353c6e599de95038427cc746472b3aa1c28a2a907d2041a6b16c5ca286d75d86",
+    "report.json": "4e0a87c518d3461f0ff9f253b4a9f21435bca6b7a432596e51978ec177c9c2b3",
+    "protected-pins-before.json": "298141880f2beb35cf889920e810016ac66d9eab16289efd9ad98ff2978ae054",
+    "final-receipt.json": "84103d9904b4cd330b886fea24ad0e848ab1388f79da717bff6709675a009854",
+    "ci-88-attempt-1.log": "adbd2c6b869e3ff4bedc77e5f70fd8a16acc0f205016fa314396eb8faa9ca12f",
+    "ci-89-attempt-2.log": "2ae6bad6dde5cbe8a9f8268ba5d220b4a547b6726a00430ca1af60ac8ca9710a",
+    "source21-comparison.json": "6849a692972ac63547439b954ea4a47f767809f716924ca09235aea2b6437730"
+  }
+}
