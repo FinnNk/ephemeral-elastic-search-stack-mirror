@@ -61,6 +61,7 @@ that was completed later.
 - [Control runtime and schema delivery: local evidence](runtime-consolidation-delivery.md)
 - [Documentation exemption: local verification](documentation-relevance-gate.md)
 - [Local HTTPS Git transport check â€” 28 September 2026](https-git-transport-2026-09-28.md)
+- [Local OIDC login and permissions](local-oidc.md)
 - [Portability evidence and open gates](portability-azure.md)
 
 - [Progressive ESCI judgement pass — 3 October 2026](esci-progressive-judgements.md)
@@ -77,5 +78,3 @@ that was completed later.
 - [Seven-day SLO window: fixture verification](signoz-window-2026-09-28.md)
 - [Connected SigNoz investigation: local evidence](signoz-investigation-2026-09-28.md)
 - [Model observability: local proof, 29 September 2026](model-observability-2026-09-29.md)
-
-- [Local OIDC login and permissions](local-oidc.md)
