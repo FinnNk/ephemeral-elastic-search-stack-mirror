@@ -22,7 +22,7 @@ if ($Action -ne 'Check') {
     Clear-DnsClientCache
 }
 if ($Action -ne 'Remove') {
-    foreach ($labName in @('gitea.localhost','argocd.localhost','control.localhost','signoz.localhost','nexus.localhost','lab-dns-check.preview.relevance.test')) {
+    foreach ($labName in @('gitea.localhost','argocd.localhost','control.localhost','signoz.localhost','nexus.localhost','headlamp.localhost','lab-dns-check.preview.relevance.test')) {
         $labAddresses = @([Net.Dns]::GetHostAddresses($labName) | ForEach-Object { $_.IPAddressToString })
         if ($labAddresses.Count -ne 1 -or $labAddresses[0] -ne '127.0.0.1') {
             throw "$labName did not resolve exclusively to 127.0.0.1"

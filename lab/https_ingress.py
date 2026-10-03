@@ -28,6 +28,7 @@ ENDPOINTS = {
     'control': ('lab-control', 'lab-control', 18082),
     'signoz': ('lab-observability', 'signoz', 8080),
     'nexus': ('platform', 'nexus', 8081),
+    'headlamp': ('lab-headlamp', 'headlamp', 80),
 }
 
 
@@ -115,6 +116,8 @@ def route(cert_path, key_path, browser_names=None):
     browser_names = tuple(browser_names or ENDPOINTS)
     for name in browser_names:
         namespace, service, port = ENDPOINTS[name]
+        if name == 'headlamp' and k('get', 'service', service, '-n', namespace, check=False).returncode:
+            continue
         host = name + '.localhost'
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'type': 'kubernetes.io/tls',
                'metadata': {'name': 'lab-edge-tls', 'namespace': namespace},
@@ -193,6 +196,8 @@ def verify(ca_path, names=None):
     import ssl
     context = ssl.create_default_context(cafile=str(ca_path))
     for name in (names or ENDPOINTS):
+        if name == 'headlamp' and k('get', 'service/headlamp', '-n', 'lab-headlamp', check=False).returncode:
+            continue
         host = name + '.localhost'
         # Some host DNS resolvers do not implement the browser's .localhost rule.
         # Connect to loopback while still validating the real SNI hostname.
@@ -212,6 +217,8 @@ def main():
     args = parser.parse_args()
     if args.action == 'verify':
         for name in ENDPOINTS:
+            if name == 'headlamp' and k('get', 'service/headlamp', '-n', 'lab-headlamp', check=False).returncode:
+                continue
             host = name + '.localhost'
             try:
                 addresses = {item[4][0] for item in socket.getaddrinfo(host, HOST_PORT, type=socket.SOCK_STREAM)}

@@ -4,6 +4,8 @@ Use the lab control UI to deploy a pinned Search API, compare it with a baseline
 
 This guide assumes an **installed lab**. Operators should start with [control runtime](../docs/control-runtime.md); first-time platform experiments have a separate [bootstrap guide](../research/platform-spike/README.md). Search API development and the disconnected mock demo are in the [source README](delivery/bootstrap/README.md).
 
+To inspect Pods, deployments, events and logs, use [Headlamp](../docs/headlamp.md).
+
 ## Open the control UI
 
 Prerequisites: your own Gitea account, access to the lab machine and a ready `lab-control` Pod. The [control access procedure](../docs/control-runtime.md#connect-and-check) selects the retained kubeconfig and starts a port forward.

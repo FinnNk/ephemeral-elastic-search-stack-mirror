@@ -139,7 +139,7 @@ Elasticsearch repository verification; it is not the working snapshot store.
 The Key Vault adapter models secret retrieval, not Azure identity enforcement.
 Bootstrap exceptions remain explicit.
 
-Traefik exposes Gitea, Argo CD, control, SigNoz and Nexus browser routes through
+Traefik exposes Gitea, Argo CD, control, SigNoz, Nexus and Headlamp browser routes through
 local HTTPS. The control canonical-URL redirect and non-`Secure` session cookie
 remain an implementation gap; [HTTPS operation](https-ingress.md) records the
 actual boundary. Native Apple silicon and Azure/GHES execution remain unverified.

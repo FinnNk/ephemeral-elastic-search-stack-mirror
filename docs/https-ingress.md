@@ -1,6 +1,6 @@
 # Access lab services over HTTPS
 
-Traefik routes five lab browser hostnames through loopback port `34443` and terminates TLS with a local certificate authority (CA). Trust the public CA certificate using [workstation access](workstation-access.md) before opening the services.
+Traefik routes lab browser hostnames through loopback port `34443` and terminates TLS with a local certificate authority (CA). Trust the public CA certificate using [workstation access](workstation-access.md) before opening the services.
 
 | Service | Browser address | Behaviour |
 | --- | --- | --- |
@@ -8,6 +8,7 @@ Traefik routes five lab browser hostnames through loopback port `34443` and term
 | Argo CD | `https://argocd.localhost:34443/` | Deployment UI |
 | Control | `https://control.localhost:34443/` | Route exists; the installed API redirects to its canonical HTTP localhost address |
 | SigNoz | `https://signoz.localhost:34443/` | Observability UI |
+| Headlamp | `https://headlamp.localhost:34443/` | [Kubernetes workload UI](headlamp.md); install separately |
 | Nexus | `https://nexus.localhost:34443/` | Repository administration UI |
 
 These names address the current machine, not a laptop on the LAN. Use the [control forward](control-runtime.md#connect-and-check) for the current control UI; its [session boundary](identity-boundary.md) explains the HTTPS limitation.
@@ -29,7 +30,7 @@ python lab/https_ingress.py install
 
 Installation prints TLS/HTTP verification results for the configured routes. It installs pinned Traefik, creates or reuses the CA and 90-day server certificate, applies namespaced routes and TLS Secrets, exposes the host port and updates Gitea's public URL. A current valid certificate is retained on repeat runs.
 
-Keep CA and server private keys in ignored `$env:LAB_STATE_DIR/https-ingress/`. Share only `root.pem`. Initial research bootstrap can use `bootstrap-gitea` before other service namespaces exist; use full `install` once all five services are available.
+Keep CA and server private keys in ignored `$env:LAB_STATE_DIR/https-ingress/`. Share only `root.pem`. Initial research bootstrap can use `bootstrap-gitea` before other service namespaces exist; use full `install` once the platform services are available; install optional Headlamp using its guide.
 
 ## Verify and recover
 

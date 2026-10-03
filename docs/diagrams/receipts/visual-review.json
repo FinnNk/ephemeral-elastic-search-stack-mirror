@@ -274,5 +274,11 @@
     "output": "interactive/judgement-coverage.html",
     "preview": "rendered/judgement-coverage.png",
     "review": "Inspected the 1440x900 light preview. Published-label precedence, progressive model passes, gate/exploratory selection and retained provenance are legible. Browser checks passed at all configured sizes and themes."
+  },
+  "headlamp_review": {
+    "reviewed_on": "2026-10-03",
+    "artifact": "rendered/05-local.svg",
+    "artifact_sha256": "0ab9474553d1b7adbc6ee42143130959db007a2a7e5f28552adf96cd74096695",
+    "inspection": "Combined deployment PNG inspected after rebase: Headlamp, CPU model services and the optional GPU worker have separate, legible boundaries without overlap. All eight C4 views validated and exported; unrelated generated SVGs retained."
   }
 }

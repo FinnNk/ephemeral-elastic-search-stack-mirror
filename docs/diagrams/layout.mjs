@@ -21,7 +21,7 @@ visit(workspace.model);
 const name = id => elements.get(id)?.name;
 const edgeDescriptions = new Set(['Opens lab web services', 'Routes source and review pages',
   'Routes deployment UI', 'Routes lab UI and API', 'Routes observability UI',
-  'Routes artifact UI']);
+  'Routes artifact UI', 'Routes cluster UI']);
 const edgeRoute = relationship => edgeDescriptions.has(relationships.get(relationship.id)?.description);
 function position(view, locations) {
   delete view.automaticLayout;
@@ -138,6 +138,7 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Azure service emulation':{x:1480,y:2950,cols:2},
   'Observability worker':{x:160,y:3650,cols:2},
   'Log collection':{x:1480,y:3650,cols:1},
+  'Cluster UI':{x:2080,y:3650,cols:1},
   'Experiment namespaces':{x:160,y:4850,cols:3},
   'Indexing namespace':{x:1480,y:4850,cols:1},
   'Shared search namespace':{x:2080,y:4850,cols:1},

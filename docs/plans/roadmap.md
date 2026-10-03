@@ -105,3 +105,5 @@ The first [measured progressive pass](../research/evidence/esci-progressive-judg
 added 2,099 exploratory predictions in 15 minutes 41 seconds, taking coverage
 from 29.7% to 50.9%. Unqualified labels remain excluded from gates. The next
 batch is independent label quality; then select another model for the residual gaps.
+
+The [Headlamp batch](headlamp.md) adds the local cluster UI with existing DNS/TLS and a separate expiring human administrator token. Local authentication and readiness checks passed; the batch is ready for review.

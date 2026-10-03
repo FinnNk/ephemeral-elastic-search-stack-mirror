@@ -10,7 +10,7 @@ The examples use a lab on your own machine. A remote workstation needs a reachab
 
 ## Set up lab DNS once
 
-The lab's CoreDNS service resolves the five fixed platform names and any
+The lab's CoreDNS service resolves the fixed platform names and any
 `*.preview.relevance.test` name to `127.0.0.1`. Configure your workstation to send
 only those domains to it. No hosts-file changes are needed when previews change.
 Ask the operator to [install preview access](preview-access.md#install-on-the-lab-host) first.
@@ -24,7 +24,7 @@ root, then run:
 
 The script installs two local name-resolution policy (NRPT) rules, preserves
 other rules and clears the DNS cache. It rejects an existing conflicting lab
-rule. Expect six lines ending `-> 127.0.0.1`, including a previously unused preview
+rule. Expect seven lines ending `-> 127.0.0.1`, including a previously unused preview
 name. Check from a normal PowerShell with `.\lab\workstation-dns.ps1 Check`.
 To remove just these rules, run the script's `Remove` action as Administrator.
 The rules follow [Windows' domain-specific DNS mechanism](https://learn.microsoft.com/en-us/powershell/module/dnsclient/add-dnsclientnrptrule).

@@ -34,6 +34,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             edge = container "HTTPS ingress" "Routes platform and preview requests over TLS." "Traefik locally / ingress on AKS" {
                 tags "Platform"
             }
+            headlamp = container "Headlamp" "Inspects cluster workloads using the signed-in user identity." "Headlamp / Kubernetes API" {
+                tags "Platform"
+            }
             argo = container "Argo CD" "Reconciles environment resources." "Argo CD / Helm" {
                 tags "Platform"
             }
@@ -145,6 +148,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         edge -> argo "Routes deployment UI" "HTTP in cluster"
         edge -> ui "Routes lab UI and API" "HTTP in cluster"
         edge -> signoz "Routes observability UI" "HTTP in cluster"
+        operator -> headlamp "Inspects and manages lab workloads" "HTTPS / expiring Kubernetes token"
+        edge -> headlamp "Routes cluster UI" "HTTP in cluster"
+        headlamp -> kube "Uses the signed-in user permissions" "Kubernetes API / TLS"
         edge -> nexus "Routes artifact UI" "HTTP in cluster"
         engineer -> observability "Investigates lab operations" "Browser"
         operator -> observability "Checks telemetry coverage and capacity" "Browser"
@@ -284,6 +290,9 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance ingester
                         containerInstance signoz
                         containerInstance telemetrydb
+                    }
+                    deploymentNode "Cluster UI" "Separate human token login" "lab-headlamp namespace" {
+                        containerInstance headlamp
                     }
                     deploymentNode "Log collection" "One scoped agent on each node" "lab-observability / DaemonSet" {
                         containerInstance logagent

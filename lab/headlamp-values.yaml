@@ -1,0 +1,32 @@
+fullnameOverride: headlamp
+image:
+  tag: v0.45.0@sha256:db3f0e0fc58d358d41daa3fe7fc852437552c7ee873c3645470f7b86a8e0db49
+config:
+  inClusterContextName: relevance-lab
+  unsafeUseServiceAccountToken: false
+  sessionTTL: 3600
+  oidc:
+    secret:
+      create: false
+clusterRoleBinding:
+  create: false
+serviceAccount:
+  name: headlamp
+resources:
+  requests:
+    cpu: 25m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 100
+  runAsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
