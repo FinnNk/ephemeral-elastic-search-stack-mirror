@@ -133,3 +133,8 @@ reader and unassigned identities and reject a wrong-audience token. Repeating
 installation preserves users and clients without another server restart.
 The next identity batch is [Gitea and control UI integration](oidc-application-integration.md).
 Label-quality qualification remains independent and unresolved.
+
+The supplied Headlamp KServe plugin is installed locally and retained by both
+Headlamp and OIDC reconciliation. HTTPS plugin discovery and exact asset checks
+passed; browser rendering remains a manual check. The next identity batch remains
+[Gitea and control UI integration](oidc-application-integration.md).

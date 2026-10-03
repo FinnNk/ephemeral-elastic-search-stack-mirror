@@ -274,10 +274,13 @@ def headlamp_values(edge):
     values['volumes'] = [{'name': 'oidc-ca', 'configMap': {'name': 'lab-oidc-ca'}}]
     values['volumeMounts'] = [{'name': 'oidc-ca', 'mountPath': '/etc/lab-oidc', 'readOnly': True}]
     values['hostAliases'] = [{'ip': edge, 'hostnames': [HOST]}]
-    return values
+    from headlamp_plugin import plugin_values
+    return plugin_values(values)
 
 
 def reconcile_headlamp(edge=None):
+    from headlamp_plugin import install_plugin
+    install_plugin()
     if edge is None:
         edge = json.loads(k('get', 'svc/lab-oidc-edge', '-n', 'lab-ingress', '-o', 'json').stdout)['spec']['clusterIP']
     file = STATE_DIR / 'headlamp-values.yaml'

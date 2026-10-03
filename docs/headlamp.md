@@ -11,6 +11,17 @@ Argo CD owns Git-managed deployments and may revert direct edits to them.
 Administrators can change resources. Readers can inspect workloads but cannot
 change them or read Kubernetes Secrets.
 
+## Inspect KServe models
+
+Refresh Headlamp after installation, then expand **KServe** in the sidebar.
+Open **Overview** or **Inference Services** to inspect model deployments and
+serving status. The plugin uses your signed-in Kubernetes permissions; it does
+not grant extra access. Git-managed changes still belong in the source repository.
+
+The lab includes the supplied `@headlamp-k8s/kserve` plugin, version
+`0.1.0-dev.0`. Installation mounts its built files read-only and pins the archive
+checksum. Reinstalling Headlamp or reconciling OIDC retains the plugin.
+
 ## Install or reconcile
 
 Requires the running lab, Helm, kubectl, Python dependencies from

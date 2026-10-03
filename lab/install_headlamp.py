@@ -2,9 +2,12 @@
 import argparse
 import json
 
+import yaml
+
 from common import HELM, ROOT, STATE, apply, guard, k, run
 from https_ingress import certificate, route, verify
 from install_preview_urls import corefile
+from headlamp_plugin import install_plugin, plugin_values
 
 NAMESPACE = 'lab-headlamp'
 CHART_VERSION = '0.45.0'
@@ -14,16 +17,20 @@ URL = 'https://headlamp.localhost:34443/'
 
 def install():
     guard()
+    install_plugin()
     k('get', 'deployment/lab-traefik', '-n', 'lab-ingress')
     k('get', 'configmap/lab-preview-code', '-n', 'lab-ingress')
     if k('get', 'secret/lab-oidc-client', '-n', NAMESPACE, check=False).returncode == 0:
         from install_oidc import reconcile_headlamp
         reconcile_headlamp()
     else:
+        values = plugin_values(yaml.safe_load((ROOT / 'lab/headlamp-values.yaml').read_text(encoding='utf-8')))
+        values_file = STATE / 'headlamp-plugin-values.yaml'
+        values_file.write_text(yaml.safe_dump(values), encoding='utf-8')
         run([HELM, 'upgrade', '--install', 'headlamp', 'headlamp', '--repo',
              'https://kubernetes-sigs.github.io/headlamp/', '--version', CHART_VERSION,
              '--namespace', NAMESPACE, '--create-namespace', '--values',
-             str(ROOT / 'lab/headlamp-values.yaml'), '--wait', '--timeout', '5m',
+             str(values_file), '--wait', '--timeout', '5m',
              '--kubeconfig', str(STATE / 'kubeconfig.yaml')])
     apply({'apiVersion': 'v1', 'kind': 'ServiceAccount',
            'metadata': {'name': USER, 'namespace': NAMESPACE},
