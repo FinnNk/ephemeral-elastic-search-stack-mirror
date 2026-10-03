@@ -24,9 +24,13 @@ found a useful selective recalibrator, but actual qualified coverage remains
 29.71%. Granular category and prompt experiments run alongside complementary
 CPU surveys. Qualify the complete cascade before adding its labels to gates;
 control UI improvements and further identity work wait behind this priority.
-The next detailed experiment batch is
-[fitting complementary specialists](esci-fitted-specialists.md) on the owner's
-separately reserved training pool.
+The [larger fitting-pool screen](../research/evidence/esci-fitted-specialists.md)
+is complete: six inexpensive classifiers add no useful labels at the required
+precision. The next detailed batch tests
+[CPU pair models and prompt inference](esci-cpu-pair-judges.md). The owner's
+separate fitting pool remains excluded from confirmation. The
+[confirmation specification](esci-cascade-confirmation.md) keeps independent
+published and blinded gap references separate.
 
 The [lab storefront](lab-storefront.md) simplifies the search page and replaces its
 hard-coded size with the current catalogue count. Review it before resuming the

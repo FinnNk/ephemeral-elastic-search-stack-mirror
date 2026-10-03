@@ -55,9 +55,11 @@ their intervals do not confirm a winner selected from many alternatives.
 
 ## Next batch: qualify complementary stages
 
-First run the [larger fitting-pool screen](esci-fitted-specialists.md) while the
-research owner prepares the matched category survey. It has reserved 1,000
-separate official-training query groups; the fitting labels remain unopened.
+The [larger fitting-pool screen](esci-fitted-specialists.md) is complete: six
+fixed classifiers add no useful labels at the required precision. Next test
+[CPU pair models and prompt inference](esci-cpu-pair-judges.md) while the research
+owner prepares its matched category survey. The separate 1,000-query training
+pool remains excluded from confirmation.
 
 | Work | Acceptance criterion |
 | --- | --- |
@@ -68,6 +70,10 @@ separate official-training query groups; the fitting labels remain unopened.
 | Confirm quality | Fresh published references and independently blinded actual-gap references; adequate query/class support; current accuracy and I → E requirements |
 | Verify serving | Numerically consistent isolated inference, exact MLflow/KServe release, tracing and source-separated persistence |
 | Re-run the gate | Fresh capture and signed evidence for the exact source revision, selected variants and frozen qualified judgement set |
+
+The [cascade confirmation specification](esci-cascade-confirmation.md) defines
+cohorts, error denominators, sample support and handling of rare errors. A
+zero-error bootstrap or model agreement cannot establish gap quality.
 
 Stop expanding an approach when it adds negligible coverage, lacks adequate
 precision or consumes disproportionate compute. Spend the next GPU window on

@@ -1,0 +1,4177 @@
+{
+  "kind": "esci-fitted-specialists-aggregate-evidence",
+  "schema_version": 1,
+  "measured_date": "2026-10-04",
+  "gate_eligible": false,
+  "activated": false,
+  "qualified_source_coverage": {
+    "accepted": 2946,
+    "required": 9915,
+    "coverage": 0.29712556732223905
+  },
+  "fitting_pool": {
+    "catalogue_sha256": "dfe6cecbc7d745a728fbed59679be10af0532be69583f65dc078c8108c25ff50",
+    "class_counts": {
+      "C": 411,
+      "E": 11600,
+      "I": 1404,
+      "S": 3353
+    },
+    "elapsed_seconds": 67.047,
+    "files_sha256": {
+      "inputs.jsonl": "d5a653612458ac9c6fcb240974dc87c1c0041ded8903b1c78644499ccb3f97da",
+      "overlap-exposure-receipt.json": "a5db034e82d669e43147679cae68585f4bfdd3a348ae9f389e1b8faff30254b5",
+      "references.jsonl": "93a03ca2bd4bdb6ea4274f05fd97ae59b36a9488e865c67c0001b4d709de81fb",
+      "selection-before-labels.json": "d92e2a6dc577bccb06814e093ac472f5e09858f1ef8f1f62a828cb73c280d870"
+    },
+    "gate_eligible": false,
+    "kind": "esci-fitting-pool",
+    "limits": [
+      "Published official-training labels, not independent confirmation.",
+      "Products retain canonical API fields. Synthetic price, stock and popularity must never enter relevance features.",
+      "No labels or example/query/product identifiers may enter model features.",
+      "Owner historical exposure guard is inherited; protected research row files were not opened."
+    ],
+    "max_products_per_query": 25,
+    "normalisation": "nfkc_html_whitespace_v1",
+    "pairs": 16768,
+    "query_groups": 1000,
+    "role": "fitting",
+    "schema_version": 1,
+    "source_code_sha256": "d3c905f2a43ceee783bf53895d650689f50a3dda8b97105158ff29b49fc50a41",
+    "source_sha256": "4a735b693b4a424a6fc67f5be6e4c811495c488bbf66d02a602d308b2744263a",
+    "unique_products": 16594
+  },
+  "frozen_plan_sha256": "0f701747517f0848106bf026c79a37f65bdf8a1f19310d5cd6a3c45e565cae12",
+  "original_executed_tool_sha256": "094dd669338027950758f90b3faaf700f28ca31bc714ed4bd8755c7b333984e5",
+  "report_sha256": "3a7c9e690ed5abdc4a998c7c9adba47d561c86e62f426001585d2244838cd282",
+  "development": {
+    "pairs": 6525,
+    "query_groups": 400
+  },
+  "partitions": {
+    "calibration": {
+      "labels": {
+        "C": 89,
+        "E": 3380,
+        "I": 453,
+        "S": 1097
+      },
+      "pairs": 5019,
+      "queries": 300
+    },
+    "fit": {
+      "labels": {
+        "C": 322,
+        "E": 8220,
+        "I": 951,
+        "S": 2256
+      },
+      "pairs": 11749,
+      "queries": 700
+    }
+  },
+  "prefix": {
+    "accepted": 1753,
+    "accepted_query_groups": 259,
+    "accuracy": {
+      "denominator": 1753,
+      "estimate": 0.9857387335995437,
+      "numerator": 1728,
+      "usable_pair_risk_upper": null,
+      "whole_query_bootstrap_interval_95": [
+        0.9757312400710214,
+        0.9940032283457918
+      ],
+      "zero_denominator_repetitions": 0
+    },
+    "classes": {
+      "C": {
+        "accepted_queries": 0,
+        "denominator": 0,
+        "estimate": null,
+        "numerator": 0,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": null,
+        "zero_denominator_repetitions": 2000
+      },
+      "E": {
+        "accepted_queries": 259,
+        "denominator": 1753,
+        "estimate": 0.9857387335995437,
+        "numerator": 1728,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": [
+          0.9757312400710214,
+          0.9940032283457918
+        ],
+        "zero_denominator_repetitions": 0
+      },
+      "I": {
+        "accepted_queries": 0,
+        "denominator": 0,
+        "estimate": null,
+        "numerator": 0,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": null,
+        "zero_denominator_repetitions": 2000
+      },
+      "S": {
+        "accepted_queries": 0,
+        "denominator": 0,
+        "estimate": null,
+        "numerator": 0,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": null,
+        "zero_denominator_repetitions": 2000
+      }
+    },
+    "confusion_true_rows_prediction_columns_ESCI": [
+      [
+        1728,
+        0,
+        0,
+        0
+      ],
+      [
+        22,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0,
+        0
+      ]
+    ],
+    "coverage": 0.2686590038314176,
+    "limits": [
+      "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+      "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+      "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+      "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+    ],
+    "pairs": 6525,
+    "query_groups": 400,
+    "risks": {
+      "exact_irrelevant_contamination": {
+        "denominator": 1753,
+        "estimate": 0.0017113519680547634,
+        "numerator": 3,
+        "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004417084576379481,
+        "usable_pair_risk_upper": 0.003911488812800546,
+        "whole_query_bootstrap_interval_95": [
+          0.0,
+          0.003911488812800546
+        ],
+        "zero_denominator_repetitions": 0
+      },
+      "exact_to_irrelevant": {
+        "denominator": 4552,
+        "estimate": 0.0,
+        "numerator": 0,
+        "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": [
+          0.0,
+          0.0
+        ],
+        "zero_denominator_repetitions": 0
+      },
+      "irrelevant_to_exact": {
+        "denominator": 626,
+        "estimate": 0.004792332268370607,
+        "numerator": 3,
+        "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.012339075360626596,
+        "usable_pair_risk_upper": 0.011235955056179775,
+        "whole_query_bootstrap_interval_95": [
+          0.0,
+          0.011235955056179775
+        ],
+        "zero_denominator_repetitions": 0
+      }
+    }
+  },
+  "candidates": [
+    {
+      "argmax_development_accuracy": 0.6816858237547893,
+      "cascade": {
+        "accepted": 1753,
+        "accepted_query_groups": 259,
+        "accuracy": {
+          "denominator": 1753,
+          "estimate": 0.9857387335995437,
+          "numerator": 1728,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.9757312400710214,
+            0.9940032283457918
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 259,
+            "denominator": 1753,
+            "estimate": 0.9857387335995437,
+            "numerator": 1728,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.9757312400710214,
+              0.9940032283457918
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            1728,
+            0,
+            0,
+            0
+          ],
+          [
+            22,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.2686590038314176,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 1753,
+            "estimate": 0.0017113519680547634,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004417084576379481,
+            "usable_pair_risk_upper": 0.003911488812800546,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.003911488812800546
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.004792332268370607,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.012339075360626596,
+            "usable_pair_risk_upper": 0.011235955056179775,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.011235955056179775
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "features": 49401,
+      "fit_seconds": 17.59399999998277,
+      "fit_warnings": [],
+      "fitted_model_sha256": "e7deeee9748f02ba8d27d610af8ee6b5a2417e467b646dc6e8ffe0253b26652d",
+      "learner_parameters": {
+        "C": 1.0,
+        "class_weight": null,
+        "dual": false,
+        "fit_intercept": true,
+        "intercept_scaling": 1,
+        "l1_ratio": null,
+        "max_iter": 1000,
+        "multi_class": "deprecated",
+        "n_jobs": 1,
+        "penalty": "l2",
+        "random_state": null,
+        "solver": "lbfgs",
+        "tol": 0.0001,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "meaningful_to_project": false,
+      "name": "lexical_category_lr",
+      "residual_after_prior_two_stages": {
+        "accepted": 0,
+        "accepted_query_groups": 0,
+        "accuracy": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.0,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "standalone": {
+        "accepted": 0,
+        "accepted_query_groups": 0,
+        "accuracy": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.0,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "thresholds": {
+        "C": {
+          "calibration_grid": [
+            {
+              "precision": 0.0,
+              "support": 1,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.0,
+              "support": 1,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.0,
+              "support": 1,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "E": {
+          "calibration_grid": [
+            {
+              "precision": 0.75587752870421,
+              "support": 3658,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.7774284816095568,
+              "support": 3181,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.8090111642743222,
+              "support": 2508,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.8466807165437302,
+              "support": 1898,
+              "threshold": 0.95
+            },
+            {
+              "precision": 0.8770788141720897,
+              "support": 1383,
+              "threshold": 0.975
+            },
+            {
+              "precision": 0.91,
+              "support": 900,
+              "threshold": 0.99
+            },
+            {
+              "precision": 0.904424778761062,
+              "support": 565,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "I": {
+          "calibration_grid": [
+            {
+              "precision": 0.4,
+              "support": 10,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.3333333333333333,
+              "support": 3,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "S": {
+          "calibration_grid": [
+            {
+              "precision": 0.28440366972477066,
+              "support": 109,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.26,
+              "support": 50,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.1875,
+              "support": 16,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.0,
+              "support": 2,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        }
+      }
+    },
+    {
+      "argmax_development_accuracy": 0.6891954022988506,
+      "cascade": {
+        "accepted": 1774,
+        "accepted_query_groups": 264,
+        "accuracy": {
+          "denominator": 1774,
+          "estimate": 0.9842164599774521,
+          "numerator": 1746,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.9741615191703059,
+            0.9928710166256248
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 264,
+            "denominator": 1774,
+            "estimate": 0.9842164599774521,
+            "numerator": 1746,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.9741615191703059,
+              0.9928710166256248
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            1746,
+            0,
+            0,
+            0
+          ],
+          [
+            22,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.27187739463601535,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 1774,
+            "estimate": 0.0016910935738444193,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004364866729386681,
+            "usable_pair_risk_upper": 0.0038525571632574388,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0038525571632574388
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.004792332268370607,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.012339075360626596,
+            "usable_pair_risk_upper": 0.011235955056179775,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.011235955056179775
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "features": 107,
+      "fit_seconds": 12.85899999999674,
+      "fit_warnings": [],
+      "fitted_model_sha256": "d44c4494a28c517aad4f343e603d19b008d7406154a6b7a3ea08afbe19e46f2e",
+      "learner_parameters": {
+        "categorical_features": "from_dtype",
+        "class_weight": null,
+        "early_stopping": "auto",
+        "interaction_cst": null,
+        "l2_regularization": 10.0,
+        "learning_rate": 0.1,
+        "loss": "log_loss",
+        "max_bins": 255,
+        "max_depth": 3,
+        "max_features": 1.0,
+        "max_iter": 150,
+        "max_leaf_nodes": 31,
+        "min_samples_leaf": 40,
+        "monotonic_cst": null,
+        "n_iter_no_change": 10,
+        "random_state": 20261004,
+        "scoring": "loss",
+        "tol": 1e-07,
+        "validation_fraction": 0.1,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "meaningful_to_project": false,
+      "name": "numeric_role_hist",
+      "residual_after_prior_two_stages": {
+        "accepted": 21,
+        "accepted_query_groups": 11,
+        "accuracy": {
+          "denominator": 21,
+          "estimate": 0.8571428571428571,
+          "numerator": 18,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 1
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 11,
+            "denominator": 21,
+            "estimate": 0.8571428571428571,
+            "numerator": 18,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 1
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            18,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.003218390804597701,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 21,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.13294591102652337,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 1
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "standalone": {
+        "accepted": 121,
+        "accepted_query_groups": 46,
+        "accuracy": {
+          "denominator": 121,
+          "estimate": 0.9669421487603306,
+          "numerator": 117,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.9159644231524385,
+            1.0
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 46,
+            "denominator": 121,
+            "estimate": 0.9669421487603306,
+            "numerator": 117,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.9159644231524385,
+              1.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            117,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.01854406130268199,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 121,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.02445414949019953,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "thresholds": {
+        "C": {
+          "calibration_grid": [
+            {
+              "precision": 0.25,
+              "support": 4,
+              "threshold": 0.7
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "E": {
+          "calibration_grid": [
+            {
+              "precision": 0.8280689160086145,
+              "support": 2786,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.8793012175754368,
+              "support": 1889,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.9334532374100719,
+              "support": 1112,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.9584199584199584,
+              "support": 481,
+              "threshold": 0.95
+            },
+            {
+              "precision": 0.993006993006993,
+              "support": 143,
+              "threshold": 0.975
+            },
+            {
+              "precision": 1.0,
+              "support": 12,
+              "threshold": 0.99
+            },
+            {
+              "precision": 1.0,
+              "support": 1,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": 0.975
+        },
+        "I": {
+          "calibration_grid": [
+            {
+              "precision": 0.3333333333333333,
+              "support": 3,
+              "threshold": 0.7
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "S": {
+          "calibration_grid": [
+            {
+              "precision": 0.21739130434782608,
+              "support": 23,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.0,
+              "support": 2,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        }
+      }
+    },
+    {
+      "argmax_development_accuracy": 0.693639846743295,
+      "cascade": {
+        "accepted": 1768,
+        "accepted_query_groups": 261,
+        "accuracy": {
+          "denominator": 1768,
+          "estimate": 0.9852941176470589,
+          "numerator": 1742,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.9751551117240639,
+            0.9936163402837197
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 261,
+            "denominator": 1768,
+            "estimate": 0.9852941176470589,
+            "numerator": 1742,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.9751551117240639,
+              0.9936163402837197
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            1742,
+            0,
+            0,
+            0
+          ],
+          [
+            22,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.2709578544061303,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 1768,
+            "estimate": 0.0022624434389140274,
+            "numerator": 4,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.005169787715239331,
+            "usable_pair_risk_upper": 0.004632019802351977,
+            "whole_query_bootstrap_interval_95": [
+              0.0005154639175257732,
+              0.004632019802351977
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.006389776357827476,
+            "numerator": 4,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.014562127670161878,
+            "usable_pair_risk_upper": 0.013051104074038531,
+            "whole_query_bootstrap_interval_95": [
+              0.0014386943167529014,
+              0.013051104074038531
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "features": 110,
+      "fit_seconds": 8.40700000000652,
+      "fit_warnings": [],
+      "fitted_model_sha256": "98f506e271455cc2ce1cb769a5eeb700c5cec8f27aef20255d582f6b1412a29a",
+      "learner_parameters": {
+        "C": 1.0,
+        "class_weight": null,
+        "dual": false,
+        "fit_intercept": true,
+        "intercept_scaling": 1,
+        "l1_ratio": null,
+        "max_iter": 1000,
+        "multi_class": "deprecated",
+        "n_jobs": 1,
+        "penalty": "l2",
+        "random_state": null,
+        "solver": "lbfgs",
+        "tol": 0.0001,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "meaningful_to_project": false,
+      "name": "minilm_cosine_lr",
+      "residual_after_prior_two_stages": {
+        "accepted": 15,
+        "accepted_query_groups": 7,
+        "accuracy": {
+          "denominator": 15,
+          "estimate": 0.9333333333333333,
+          "numerator": 14,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 7,
+            "denominator": 15,
+            "estimate": 0.9333333333333333,
+            "numerator": 14,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            14,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.0022988505747126436,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 15,
+            "estimate": 0.06666666666666667,
+            "numerator": 1,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.27939619361287654,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.001597444089456869,
+            "numerator": 1,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0075554353039658465,
+            "usable_pair_risk_upper": 0.00519975887273001,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.00519975887273001
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "standalone": {
+        "accepted": 110,
+        "accepted_query_groups": 40,
+        "accuracy": {
+          "denominator": 110,
+          "estimate": 0.990909090909091,
+          "numerator": 109,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.9666573033707865,
+            1.0
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 40,
+            "denominator": 110,
+            "estimate": 0.990909090909091,
+            "numerator": 109,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.9666573033707865,
+              1.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            109,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.01685823754789272,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 110,
+            "estimate": 0.00909090909090909,
+            "numerator": 1,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.04239904695711903,
+            "usable_pair_risk_upper": 0.03334269662921343,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.03334269662921343
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.001597444089456869,
+            "numerator": 1,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0075554353039658465,
+            "usable_pair_risk_upper": 0.00519975887273001,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.00519975887273001
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "thresholds": {
+        "C": {
+          "calibration_grid": [
+            {
+              "precision": 0.0,
+              "support": 1,
+              "threshold": 0.7
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "E": {
+          "calibration_grid": [
+            {
+              "precision": 0.8195247270391779,
+              "support": 3114,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.873179896665101,
+              "support": 2129,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.9490586932447398,
+              "support": 903,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.9710467706013363,
+              "support": 449,
+              "threshold": 0.95
+            },
+            {
+              "precision": 0.9828571428571429,
+              "support": 175,
+              "threshold": 0.975
+            },
+            {
+              "precision": 1.0,
+              "support": 9,
+              "threshold": 0.99
+            },
+            {
+              "precision": 1.0,
+              "support": 1,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": 0.975
+        },
+        "I": {
+          "calibration_grid": [
+            {
+              "precision": 0.2222222222222222,
+              "support": 9,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.3333333333333333,
+              "support": 3,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "S": {
+          "calibration_grid": [
+            {
+              "precision": 0.15789473684210525,
+              "support": 19,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.0,
+              "support": 5,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.0,
+              "support": 1,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        }
+      }
+    },
+    {
+      "argmax_development_accuracy": 0.6937931034482758,
+      "cascade": {
+        "accepted": 1753,
+        "accepted_query_groups": 259,
+        "accuracy": {
+          "denominator": 1753,
+          "estimate": 0.9857387335995437,
+          "numerator": 1728,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.9757312400710214,
+            0.9940032283457918
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 259,
+            "denominator": 1753,
+            "estimate": 0.9857387335995437,
+            "numerator": 1728,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.9757312400710214,
+              0.9940032283457918
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            1728,
+            0,
+            0,
+            0
+          ],
+          [
+            22,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.2686590038314176,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 1753,
+            "estimate": 0.0017113519680547634,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004417084576379481,
+            "usable_pair_risk_upper": 0.003911488812800546,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.003911488812800546
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.004792332268370607,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.012339075360626596,
+            "usable_pair_risk_upper": 0.011235955056179775,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.011235955056179775
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "features": 110,
+      "fit_seconds": 13.079000000027008,
+      "fit_warnings": [],
+      "fitted_model_sha256": "f599819092bc63aacee9669a132bb419b504b0ccdb029987a08444f16cc3f38c",
+      "learner_parameters": {
+        "categorical_features": "from_dtype",
+        "class_weight": null,
+        "early_stopping": "auto",
+        "interaction_cst": null,
+        "l2_regularization": 10.0,
+        "learning_rate": 0.1,
+        "loss": "log_loss",
+        "max_bins": 255,
+        "max_depth": 3,
+        "max_features": 1.0,
+        "max_iter": 150,
+        "max_leaf_nodes": 31,
+        "min_samples_leaf": 40,
+        "monotonic_cst": null,
+        "n_iter_no_change": 10,
+        "random_state": 20261004,
+        "scoring": "loss",
+        "tol": 1e-07,
+        "validation_fraction": 0.1,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "meaningful_to_project": false,
+      "name": "minilm_cosine_hist",
+      "residual_after_prior_two_stages": {
+        "accepted": 0,
+        "accepted_query_groups": 0,
+        "accuracy": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.0,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "standalone": {
+        "accepted": 0,
+        "accepted_query_groups": 0,
+        "accuracy": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.0,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "thresholds": {
+        "C": {
+          "calibration_grid": [
+            {
+              "precision": 0.0,
+              "support": 1,
+              "threshold": 0.7
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "E": {
+          "calibration_grid": [
+            {
+              "precision": 0.8408525754884547,
+              "support": 2815,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.885884509624198,
+              "support": 2182,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.9327794561933535,
+              "support": 1324,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.9619565217391305,
+              "support": 736,
+              "threshold": 0.95
+            },
+            {
+              "precision": 0.9700996677740864,
+              "support": 301,
+              "threshold": 0.975
+            },
+            {
+              "precision": 0.967741935483871,
+              "support": 62,
+              "threshold": 0.99
+            },
+            {
+              "precision": 0.9230769230769231,
+              "support": 26,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "I": {
+          "calibration_grid": [
+            {
+              "precision": 0.6666666666666666,
+              "support": 9,
+              "threshold": 0.7
+            },
+            {
+              "precision": 1.0,
+              "support": 3,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "S": {
+          "calibration_grid": [
+            {
+              "precision": 0.4375,
+              "support": 32,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.0,
+              "support": 1,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        }
+      }
+    },
+    {
+      "argmax_development_accuracy": 0.6695785440613027,
+      "cascade": {
+        "accepted": 1753,
+        "accepted_query_groups": 259,
+        "accuracy": {
+          "denominator": 1753,
+          "estimate": 0.9857387335995437,
+          "numerator": 1728,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.9757312400710214,
+            0.9940032283457918
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 259,
+            "denominator": 1753,
+            "estimate": 0.9857387335995437,
+            "numerator": 1728,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.9757312400710214,
+              0.9940032283457918
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            1728,
+            0,
+            0,
+            0
+          ],
+          [
+            22,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.2686590038314176,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 1753,
+            "estimate": 0.0017113519680547634,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004417084576379481,
+            "usable_pair_risk_upper": 0.003911488812800546,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.003911488812800546
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.004792332268370607,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.012339075360626596,
+            "usable_pair_risk_upper": 0.011235955056179775,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.011235955056179775
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "features": 1646,
+      "fit_seconds": 18.98499999998603,
+      "fit_warnings": [],
+      "fitted_model_sha256": "95492ffdaf2321851f7ad44695b07ee4988560c7807c73db35da39b362ec8baa",
+      "learner_parameters": {
+        "C": 1.0,
+        "class_weight": null,
+        "dual": false,
+        "fit_intercept": true,
+        "intercept_scaling": 1,
+        "l1_ratio": null,
+        "max_iter": 1000,
+        "multi_class": "deprecated",
+        "n_jobs": 1,
+        "penalty": "l2",
+        "random_state": null,
+        "solver": "lbfgs",
+        "tol": 0.0001,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "meaningful_to_project": false,
+      "name": "minilm_pair_lr",
+      "residual_after_prior_two_stages": {
+        "accepted": 0,
+        "accepted_query_groups": 0,
+        "accuracy": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.0,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "standalone": {
+        "accepted": 0,
+        "accepted_query_groups": 0,
+        "accuracy": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.0,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "thresholds": {
+        "C": {
+          "calibration_grid": [
+            {
+              "precision": 0.0,
+              "support": 3,
+              "threshold": 0.7
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.8
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.9
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "E": {
+          "calibration_grid": [
+            {
+              "precision": 0.8088737201365188,
+              "support": 2930,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.8361396303901437,
+              "support": 2435,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.8718390804597701,
+              "support": 1740,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.9014336917562724,
+              "support": 1116,
+              "threshold": 0.95
+            },
+            {
+              "precision": 0.9284671532846716,
+              "support": 685,
+              "threshold": 0.975
+            },
+            {
+              "precision": 0.9144736842105263,
+              "support": 304,
+              "threshold": 0.99
+            },
+            {
+              "precision": 0.90625,
+              "support": 160,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "I": {
+          "calibration_grid": [
+            {
+              "precision": 0.4189189189189189,
+              "support": 74,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.4594594594594595,
+              "support": 37,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.35714285714285715,
+              "support": 14,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.3333333333333333,
+              "support": 3,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "S": {
+          "calibration_grid": [
+            {
+              "precision": 0.32663316582914576,
+              "support": 199,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.2777777777777778,
+              "support": 90,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.391304347826087,
+              "support": 23,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.5,
+              "support": 2,
+              "threshold": 0.95
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.975
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.99
+            },
+            {
+              "precision": null,
+              "support": 0,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        }
+      }
+    },
+    {
+      "argmax_development_accuracy": 0.6352490421455939,
+      "cascade": {
+        "accepted": 1753,
+        "accepted_query_groups": 259,
+        "accuracy": {
+          "denominator": 1753,
+          "estimate": 0.9857387335995437,
+          "numerator": 1728,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.9757312400710214,
+            0.9940032283457918
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 259,
+            "denominator": 1753,
+            "estimate": 0.9857387335995437,
+            "numerator": 1728,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.9757312400710214,
+              0.9940032283457918
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            1728,
+            0,
+            0,
+            0
+          ],
+          [
+            22,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.2686590038314176,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 1753,
+            "estimate": 0.0017113519680547634,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004417084576379481,
+            "usable_pair_risk_upper": 0.003911488812800546,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.003911488812800546
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.004792332268370607,
+            "numerator": 3,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.012339075360626596,
+            "usable_pair_risk_upper": 0.011235955056179775,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.011235955056179775
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "features": 1646,
+      "fit_seconds": 53.45300000003772,
+      "fit_warnings": [],
+      "fitted_model_sha256": "91b59cc491040bc4ad93dcccce98a14f923f082b4d77e60b15fa7d5b03d9b32b",
+      "learner_parameters": {
+        "activation": "relu",
+        "alpha": 0.01,
+        "batch_size": 128,
+        "beta_1": 0.9,
+        "beta_2": 0.999,
+        "early_stopping": false,
+        "epsilon": 1e-08,
+        "hidden_layer_sizes": [
+          64
+        ],
+        "learning_rate": "constant",
+        "learning_rate_init": 0.001,
+        "max_fun": 15000,
+        "max_iter": 80,
+        "momentum": 0.9,
+        "n_iter_no_change": 10,
+        "nesterovs_momentum": true,
+        "power_t": 0.5,
+        "random_state": 20261004,
+        "shuffle": true,
+        "solver": "adam",
+        "tol": 0.0001,
+        "validation_fraction": 0.1,
+        "verbose": false,
+        "warm_start": false
+      },
+      "meaningful_to_project": false,
+      "name": "minilm_pair_mlp",
+      "residual_after_prior_two_stages": {
+        "accepted": 0,
+        "accepted_query_groups": 0,
+        "accuracy": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.0,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "standalone": {
+        "accepted": 0,
+        "accepted_query_groups": 0,
+        "accuracy": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "classes": {
+          "C": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "E": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "I": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "S": {
+            "accepted_queries": 0,
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          }
+        },
+        "confusion_true_rows_prediction_columns_ESCI": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "coverage": 0.0,
+        "limits": [
+          "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+          "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+          "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+          "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+        ],
+        "pairs": 6525,
+        "query_groups": 400,
+        "risks": {
+          "exact_irrelevant_contamination": {
+            "denominator": 0,
+            "estimate": null,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": null,
+            "zero_denominator_repetitions": 2000
+          },
+          "exact_to_irrelevant": {
+            "denominator": 4552,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          },
+          "irrelevant_to_exact": {
+            "denominator": 626,
+            "estimate": 0.0,
+            "numerator": 0,
+            "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+            "usable_pair_risk_upper": null,
+            "whole_query_bootstrap_interval_95": [
+              0.0,
+              0.0
+            ],
+            "zero_denominator_repetitions": 0
+          }
+        }
+      },
+      "thresholds": {
+        "C": {
+          "calibration_grid": [
+            {
+              "precision": 0.044444444444444446,
+              "support": 45,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.06060606060606061,
+              "support": 33,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.0,
+              "support": 23,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.0,
+              "support": 14,
+              "threshold": 0.95
+            },
+            {
+              "precision": 0.0,
+              "support": 11,
+              "threshold": 0.975
+            },
+            {
+              "precision": 0.0,
+              "support": 5,
+              "threshold": 0.99
+            },
+            {
+              "precision": 0.0,
+              "support": 3,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "E": {
+          "calibration_grid": [
+            {
+              "precision": 0.7701881331403763,
+              "support": 3455,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.7771156138259833,
+              "support": 3356,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.7866624525916561,
+              "support": 3164,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.7928835179590467,
+              "support": 2979,
+              "threshold": 0.95
+            },
+            {
+              "precision": 0.8029925187032418,
+              "support": 2807,
+              "threshold": 0.975
+            },
+            {
+              "precision": 0.8113933795227097,
+              "support": 2598,
+              "threshold": 0.99
+            },
+            {
+              "precision": 0.8210743801652892,
+              "support": 2420,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "I": {
+          "calibration_grid": [
+            {
+              "precision": 0.25316455696202533,
+              "support": 316,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.25704225352112675,
+              "support": 284,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.2747747747747748,
+              "support": 222,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.29213483146067415,
+              "support": 178,
+              "threshold": 0.95
+            },
+            {
+              "precision": 0.2647058823529412,
+              "support": 136,
+              "threshold": 0.975
+            },
+            {
+              "precision": 0.29411764705882354,
+              "support": 102,
+              "threshold": 0.99
+            },
+            {
+              "precision": 0.2875,
+              "support": 80,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        },
+        "S": {
+          "calibration_grid": [
+            {
+              "precision": 0.4101449275362319,
+              "support": 690,
+              "threshold": 0.7
+            },
+            {
+              "precision": 0.41300813008130083,
+              "support": 615,
+              "threshold": 0.8
+            },
+            {
+              "precision": 0.41836734693877553,
+              "support": 490,
+              "threshold": 0.9
+            },
+            {
+              "precision": 0.41975308641975306,
+              "support": 405,
+              "threshold": 0.95
+            },
+            {
+              "precision": 0.4229607250755287,
+              "support": 331,
+              "threshold": 0.975
+            },
+            {
+              "precision": 0.4448669201520912,
+              "support": 263,
+              "threshold": 0.99
+            },
+            {
+              "precision": 0.4697674418604651,
+              "support": 215,
+              "threshold": 0.995
+            }
+          ],
+          "threshold": null
+        }
+      }
+    }
+  ],
+  "libraries": {
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "sklearn": "1.7.2"
+  },
+  "field_audit": {
+    "new_fitting": {
+      "pairs": 16768,
+      "category_depths": {
+        "0": 2944,
+        "2": 243,
+        "3": 1867,
+        "4": 5268,
+        "5": 4761,
+        "6": 1323,
+        "7": 354,
+        "8": 8
+      },
+      "missing_brand": 810,
+      "missing_description": 8649,
+      "missing_bullets": 1967
+    },
+    "exposed_development": {
+      "pairs": 6525,
+      "category_depths": {
+        "0": 1090,
+        "2": 161,
+        "3": 645,
+        "4": 2207,
+        "5": 1723,
+        "6": 529,
+        "7": 161,
+        "8": 8,
+        "9": 1
+      },
+      "missing_brand": 299,
+      "missing_description": 3381,
+      "missing_bullets": 786
+    }
+  },
+  "retrieval_pilots": {
+    "reranker-development-pilot": {
+      "receipt": {
+        "kind": "esci-pair-reranker-features-v1",
+        "model": "cross-encoder/ms-marco-MiniLM-L6-v2",
+        "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+        "contracts": [
+          "title-category",
+          "catalogue-text"
+        ],
+        "input_sha256": "ec6958902a308e2764f7d9fb236588623138c1a9257596deff73e895bb778f3a",
+        "pairs": 256,
+        "selection": "label-free text/product hash pilot",
+        "max_tokens": 256,
+        "batch_size": 16,
+        "torch_threads": 4,
+        "device": "cpu",
+        "budget_seconds": 900.0,
+        "reference_labels_read": false,
+        "gate_eligible": false,
+        "output_meaning": "raw retrieval relevance logit; not an ESCI confidence",
+        "plan_sha256": "f84502c5d4ba66963105182b950f3d285a6b97a5648b12669df9196ccf324846",
+        "status": "completed",
+        "completed_pairs": 256,
+        "seconds": 40.84299999999348,
+        "truncated_contract_inputs": 122,
+        "model_files_sha256": {
+          "config.json": "380e02c93f431831be65d99a4e7e5f67c133985bf2e77d9d4eba46847190bacc",
+          "model.safetensors": "821d1aa69520101d6e0737f78a042ae25b19e5cb9160701909d10434f4aeb0ae",
+          "README.md": "7c0ec39941d0d1d766ccde671f592971d82fe45b7eea550a80d1ea864ebc3baa",
+          "special_tokens_map.json": "3c3507f36dff57bce437223db3b3081d1e2b52ec3e56ee55438193ecb2c94dd6",
+          "tokenizer.json": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+          "tokenizer_config.json": "a5c2e5a7b1a29a0702cd28c08a399b5ecc110c263009d17f7e3b415f25905fd8",
+          "vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+        },
+        "features_sha256": "7cd6ddb575dc01ae60c6bbe9a32e2915e46ceff8af1169d20cf747c82f8039d7",
+        "torch_version": "2.6.0+cu124",
+        "transformers_version": "5.17.0"
+      },
+      "receipt_sha256": "ba6bce726e1a2026363483ec2cee90e2fb7fb07fca9557ffa9bf1e649b26037e"
+    },
+    "reranker-int8-pilot": {
+      "receipt": {
+        "kind": "esci-pair-reranker-features-v1",
+        "model": "cross-encoder/ms-marco-MiniLM-L6-v2",
+        "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+        "contracts": [
+          "title-category",
+          "catalogue-text"
+        ],
+        "input_sha256": "ec6958902a308e2764f7d9fb236588623138c1a9257596deff73e895bb778f3a",
+        "pairs": 256,
+        "selection": "label-free text/product hash pilot",
+        "max_tokens": 256,
+        "batch_size": 16,
+        "torch_threads": 4,
+        "device": "cpu",
+        "linear_weights": "torch dynamic int8",
+        "budget_seconds": 900.0,
+        "reference_labels_read": false,
+        "gate_eligible": false,
+        "output_meaning": "raw retrieval relevance logit; not an ESCI confidence",
+        "plan_sha256": "b4078fdcf8455d7e8fc556ed42a7f9826f947917bc2ef1737ee9c55be502e656",
+        "status": "completed",
+        "completed_pairs": 256,
+        "seconds": 39.85899999999674,
+        "truncated_contract_inputs": 122,
+        "model_files_sha256": {
+          "config.json": "380e02c93f431831be65d99a4e7e5f67c133985bf2e77d9d4eba46847190bacc",
+          "model.safetensors": "821d1aa69520101d6e0737f78a042ae25b19e5cb9160701909d10434f4aeb0ae",
+          "README.md": "7c0ec39941d0d1d766ccde671f592971d82fe45b7eea550a80d1ea864ebc3baa",
+          "special_tokens_map.json": "3c3507f36dff57bce437223db3b3081d1e2b52ec3e56ee55438193ecb2c94dd6",
+          "tokenizer.json": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+          "tokenizer_config.json": "a5c2e5a7b1a29a0702cd28c08a399b5ecc110c263009d17f7e3b415f25905fd8",
+          "vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+        },
+        "features_sha256": "1d196ee4d607ab2320ff64439921dc06384d650f0bbf16eb95c1a5085ead0c36",
+        "torch_version": "2.6.0+cu124",
+        "transformers_version": "5.17.0"
+      },
+      "receipt_sha256": "630dbbbe5eea617b52e40862b2be890c680eeb1cf3781b7ba21d9ca8edfa621a"
+    }
+  },
+  "limits": [
+    "Only the new published training pool may be fitted; calibration queries are whole-query disjoint.",
+    "The 400-query cohort is exposed development only. It is not fresh confirmation.",
+    "Identifiers, labels and synthetic serving fields are excluded from model inputs.",
+    "Fixed screens are not qualification; no label activation or gate-policy change.",
+    "The prior recalibrator was fitted on part of the exposed development cohort; prefix metrics are descriptive and may be optimistic.",
+    "The new specialists fit none of the old development references. Source coverage and deployed judgements are unchanged.",
+    "Retrieval pilots did not freeze their original script before execution; weights, field contracts, input and output hashes are retained. No strict numerical qualification claimed.",
+    "All measurements shared the host with concurrent lab/research work. No actual-gap projection or label activation."
+  ],
+  "retrieval_pilot_diagnostic": {
+    "kind": "esci-reranker-exposed-development-pilot-diagnostic",
+    "pairs": 256,
+    "gate_eligible": false,
+    "limits": [
+      "Exposed development; retrieved passage score is not an ESCI label or confidence.",
+      "No threshold or class decision assessed."
+    ],
+    "scores": {
+      "title-category": {
+        "class_counts": {
+          "E": 176,
+          "S": 53,
+          "C": 5,
+          "I": 22
+        },
+        "class_mean_logits": {
+          "E": 2.17971350828355,
+          "S": -2.5983547307550907,
+          "C": 1.6602152824401855,
+          "I": -7.501465531912717
+        },
+        "exact_vs_rest_auc": 0.7626420454545455,
+        "exact_vs_irrelevant_auc": 0.8894628099173554
+      },
+      "catalogue-text": {
+        "class_counts": {
+          "E": 176,
+          "S": 53,
+          "C": 5,
+          "I": 22
+        },
+        "class_mean_logits": {
+          "E": 2.7638744901950387,
+          "S": -1.57942344754372,
+          "C": 2.654086780548096,
+          "I": -7.228229855949229
+        },
+        "exact_vs_rest_auc": 0.7563920454545455,
+        "exact_vs_irrelevant_auc": 0.9021177685950414
+      }
+    }
+  },
+  "source_packaging_receipt_sha256": "87525a4d084d55453d16e3e2680ba2cda44687f3b04bdcfcd6d2e4be34ae42fc",
+  "class_support_audit": {
+    "candidates": [
+      {
+        "meaningful_to_project": false,
+        "name": "lexical_category_lr",
+        "predictions_sha256": "537c3d1a21d07aa670ae8155b4fda82cd91e28bc87a255fe3bd7f9d58f0691de",
+        "selective_accepted": 0,
+        "selective_added_after_prior_stages": 0,
+        "unfiltered_classes": {
+          "C": {
+            "correct": 0,
+            "precision": 0.0,
+            "predicted": 29,
+            "recall": 0.0,
+            "references": 172
+          },
+          "E": {
+            "correct": 4171,
+            "precision": 0.7369257950530035,
+            "predicted": 5660,
+            "recall": 0.9163005272407733,
+            "references": 4552
+          },
+          "I": {
+            "correct": 70,
+            "precision": 0.3626943005181347,
+            "predicted": 193,
+            "recall": 0.11182108626198083,
+            "references": 626
+          },
+          "S": {
+            "correct": 207,
+            "precision": 0.32192846034214617,
+            "predicted": 643,
+            "recall": 0.17617021276595746,
+            "references": 1175
+          }
+        },
+        "unfiltered_confusion_true_rows_prediction_columns_ESCI": [
+          [
+            4171,
+            297,
+            18,
+            66
+          ],
+          [
+            918,
+            207,
+            2,
+            48
+          ],
+          [
+            153,
+            10,
+            0,
+            9
+          ],
+          [
+            418,
+            129,
+            9,
+            70
+          ]
+        ]
+      },
+      {
+        "meaningful_to_project": false,
+        "name": "numeric_role_hist",
+        "predictions_sha256": "0e71e77d51f0e380570be7bc189754ccbdd4878b5da20df00fa4e508415f681f",
+        "selective_accepted": 121,
+        "selective_added_after_prior_stages": 21,
+        "unfiltered_classes": {
+          "C": {
+            "correct": 3,
+            "precision": 0.07142857142857142,
+            "predicted": 42,
+            "recall": 0.01744186046511628,
+            "references": 172
+          },
+          "E": {
+            "correct": 4254,
+            "precision": 0.7373894955798231,
+            "predicted": 5769,
+            "recall": 0.9345342706502636,
+            "references": 4552
+          },
+          "I": {
+            "correct": 73,
+            "precision": 0.28185328185328185,
+            "predicted": 259,
+            "recall": 0.11661341853035144,
+            "references": 626
+          },
+          "S": {
+            "correct": 167,
+            "precision": 0.367032967032967,
+            "predicted": 455,
+            "recall": 0.14212765957446807,
+            "references": 1175
+          }
+        },
+        "unfiltered_confusion_true_rows_prediction_columns_ESCI": [
+          [
+            4254,
+            180,
+            29,
+            89
+          ],
+          [
+            916,
+            167,
+            4,
+            88
+          ],
+          [
+            153,
+            7,
+            3,
+            9
+          ],
+          [
+            446,
+            101,
+            6,
+            73
+          ]
+        ]
+      },
+      {
+        "meaningful_to_project": false,
+        "name": "minilm_cosine_lr",
+        "predictions_sha256": "96fd06eccbd5726ddf6b45998355f5f4395261e75ca910893611d7856dc1927c",
+        "selective_accepted": 110,
+        "selective_added_after_prior_stages": 15,
+        "unfiltered_classes": {
+          "C": {
+            "correct": 3,
+            "precision": 0.10714285714285714,
+            "predicted": 28,
+            "recall": 0.01744186046511628,
+            "references": 172
+          },
+          "E": {
+            "correct": 4228,
+            "precision": 0.7444972706462405,
+            "predicted": 5679,
+            "recall": 0.9288224956063269,
+            "references": 4552
+          },
+          "I": {
+            "correct": 137,
+            "precision": 0.36436170212765956,
+            "predicted": 376,
+            "recall": 0.21884984025559107,
+            "references": 626
+          },
+          "S": {
+            "correct": 158,
+            "precision": 0.3574660633484163,
+            "predicted": 442,
+            "recall": 0.13446808510638297,
+            "references": 1175
+          }
+        },
+        "unfiltered_confusion_true_rows_prediction_columns_ESCI": [
+          [
+            4228,
+            174,
+            14,
+            136
+          ],
+          [
+            917,
+            158,
+            5,
+            95
+          ],
+          [
+            153,
+            8,
+            3,
+            8
+          ],
+          [
+            381,
+            102,
+            6,
+            137
+          ]
+        ]
+      },
+      {
+        "meaningful_to_project": false,
+        "name": "minilm_cosine_hist",
+        "predictions_sha256": "149e74edefbbaf4bf29664c2ca3fdea826ea5e83779c46f520758f7326182a4f",
+        "selective_accepted": 0,
+        "selective_added_after_prior_stages": 0,
+        "unfiltered_classes": {
+          "C": {
+            "correct": 3,
+            "precision": 0.2,
+            "predicted": 15,
+            "recall": 0.01744186046511628,
+            "references": 172
+          },
+          "E": {
+            "correct": 4219,
+            "precision": 0.7450114780151863,
+            "predicted": 5663,
+            "recall": 0.9268453427065027,
+            "references": 4552
+          },
+          "I": {
+            "correct": 131,
+            "precision": 0.3659217877094972,
+            "predicted": 358,
+            "recall": 0.20926517571884984,
+            "references": 626
+          },
+          "S": {
+            "correct": 174,
+            "precision": 0.3558282208588957,
+            "predicted": 489,
+            "recall": 0.14808510638297873,
+            "references": 1175
+          }
+        },
+        "unfiltered_confusion_true_rows_prediction_columns_ESCI": [
+          [
+            4219,
+            197,
+            10,
+            126
+          ],
+          [
+            908,
+            174,
+            0,
+            93
+          ],
+          [
+            150,
+            11,
+            3,
+            8
+          ],
+          [
+            386,
+            107,
+            2,
+            131
+          ]
+        ]
+      },
+      {
+        "meaningful_to_project": false,
+        "name": "minilm_pair_lr",
+        "predictions_sha256": "c5ab6619b175290a4a95f5d4696a14a8eebf1b34eda68c3a2dceacb110b795ce",
+        "selective_accepted": 0,
+        "selective_added_after_prior_stages": 0,
+        "unfiltered_classes": {
+          "C": {
+            "correct": 5,
+            "precision": 0.1111111111111111,
+            "predicted": 45,
+            "recall": 0.029069767441860465,
+            "references": 172
+          },
+          "E": {
+            "correct": 3895,
+            "precision": 0.767941640378549,
+            "predicted": 5072,
+            "recall": 0.8556678383128296,
+            "references": 4552
+          },
+          "I": {
+            "correct": 132,
+            "precision": 0.3870967741935484,
+            "predicted": 341,
+            "recall": 0.2108626198083067,
+            "references": 626
+          },
+          "S": {
+            "correct": 337,
+            "precision": 0.3158388003748828,
+            "predicted": 1067,
+            "recall": 0.2868085106382979,
+            "references": 1175
+          }
+        },
+        "unfiltered_confusion_true_rows_prediction_columns_ESCI": [
+          [
+            3895,
+            505,
+            26,
+            126
+          ],
+          [
+            751,
+            337,
+            7,
+            80
+          ],
+          [
+            128,
+            36,
+            5,
+            3
+          ],
+          [
+            298,
+            189,
+            7,
+            132
+          ]
+        ]
+      },
+      {
+        "meaningful_to_project": false,
+        "name": "minilm_pair_mlp",
+        "predictions_sha256": "cec88a6fdc816fc15cefac48d4da172c1ee989b68ff4ea6252cb720c00177fb6",
+        "selective_accepted": 0,
+        "selective_added_after_prior_stages": 0,
+        "unfiltered_classes": {
+          "C": {
+            "correct": 10,
+            "precision": 0.11235955056179775,
+            "predicted": 89,
+            "recall": 0.05813953488372093,
+            "references": 172
+          },
+          "E": {
+            "correct": 3676,
+            "precision": 0.7645590682196339,
+            "predicted": 4808,
+            "recall": 0.8075571177504394,
+            "references": 4552
+          },
+          "I": {
+            "correct": 108,
+            "precision": 0.2577565632458234,
+            "predicted": 419,
+            "recall": 0.17252396166134185,
+            "references": 626
+          },
+          "S": {
+            "correct": 351,
+            "precision": 0.2903225806451613,
+            "predicted": 1209,
+            "recall": 0.2987234042553191,
+            "references": 1175
+          }
+        },
+        "unfiltered_confusion_true_rows_prediction_columns_ESCI": [
+          [
+            3676,
+            627,
+            55,
+            194
+          ],
+          [
+            699,
+            351,
+            15,
+            110
+          ],
+          [
+            131,
+            24,
+            10,
+            7
+          ],
+          [
+            302,
+            207,
+            9,
+            108
+          ]
+        ]
+      }
+    ],
+    "gate_eligible": false,
+    "kind": "esci-fitted-specialists-class-support-audit",
+    "limits": [
+      "This audit opens only already exposed development references and frozen candidate predictions.",
+      "No thresholds are changed or selected here. Unfiltered confusion is descriptive, not a deployment policy."
+    ],
+    "reference_class_support": {
+      "C": 172,
+      "E": 4552,
+      "I": 626,
+      "S": 1175
+    },
+    "survey_report_sha256": "3a7c9e690ed5abdc4a998c7c9adba47d561c86e62f426001585d2244838cd282"
+  },
+  "class_support_audit_sha256": "9df0a684cec75c0b3b75fce071e91f73ae5037d6fe8c97d61ccc59fe2d84f4aa",
+  "executed_source_receipt_sha256": "239c8f107e5d10f3e0fa501779e6a110b50570aef148b63d8de17bc9b5918c68",
+  "validation": {
+    "platform": "Windows local lab host",
+    "focused_tests": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    "ruff": "passed",
+    "whitespace": "passed",
+    "cli_help": "fitting-pool and executed-source specialist runner passed",
+    "documentation": "Five Gitea-rendered static previews inspected in headless Chrome; tables, Unicode and horizontal overflow checked. New local file links resolve.",
+    "limits": [
+      "No model activation, fresh confirmation or serving qualification in this batch.",
+      "CPU trials for pair adaptation and prompt inference belong to the following batch."
+    ]
+  }
+}

@@ -1,8 +1,16 @@
 # CPU judgement surveys
 
 These experiments screen inexpensive classifiers for filling ESCI judgement
-gaps. They use only the **already exposed development cohort**. They cannot
+gaps. Most use the **already exposed development cohort**; `fitting_pool.py`
+materialises a separately reserved training pool for the
+[larger fitting survey](../esci-fitted-specialists/README.md). They cannot
 qualify a model, activate its labels or open a merge gate.
+
+The [fitting plan](../../../docs/plans/esci-fitted-specialists.md) owns selection
+and exclusion requirements. `fitting_pool.py` verifies the owner's reservation,
+source hashes and current exposure metadata, freezes label-free product sampling
+and catalogue inputs, then opens only the selected published references. The
+pool stays excluded from future confirmation.
 
 `specialist_survey.py` compares nine small classifiers using query/product word
 overlap, product categories and probabilities from the existing classifier.

@@ -1,7 +1,8 @@
 # Fit complementary ESCI specialists
 
-Status: the research owner has reserved 1,000 previously unused official-training
-query groups. Labels and fitting outcomes have not yet been opened in this batch.
+Status: the reserved pool and six fixed CPU classifiers have been measured.
+None adds useful labels at the required precision. Actual gate coverage remains
+29.71%. See the [results](../research/evidence/esci-fitted-specialists.md).
 
 ## Intent
 
@@ -38,6 +39,13 @@ labels over the simpler candidate.
 | Measure actual residual value | Score only unresolved, exception-eligible pairs; distinguish hypothetical coverage from current qualified coverage |
 | Choose the next candidate | Prioritise a material addition to coverage subject to precision and harmful-error evidence; reject added complexity with negligible benefit |
 
+The pool contains 16,768 pairs. Whole-query splitting assigns 11,749 pairs from
+700 queries to fitting and 5,019 pairs from 300 queries to calibration. Sampling
+was frozen before selected published labels were opened. The six candidates
+were frozen before fitting outcomes; the exposed 400-query cohort was used only
+for development screening.
+
+The next batch tests [CPU pair models and prompt inference](esci-cpu-pair-judges.md).
 A useful screen does not qualify a model. A selected candidate proceeds to the
 [independent cascade confirmation](esci-residual-cascade.md#next-batch-qualify-complementary-stages)
 with a frozen contract. Keep newly labelled gap-reference work separate from
