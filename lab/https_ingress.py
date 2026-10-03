@@ -29,6 +29,7 @@ ENDPOINTS = {
     'signoz': ('lab-observability', 'signoz', 8080),
     'nexus': ('platform', 'nexus', 8081),
     'headlamp': ('lab-headlamp', 'headlamp', 80),
+    'identity': ('lab-identity', 'keycloak', 8080),
 }
 
 
@@ -116,7 +117,7 @@ def route(cert_path, key_path, browser_names=None):
     browser_names = tuple(browser_names or ENDPOINTS)
     for name in browser_names:
         namespace, service, port = ENDPOINTS[name]
-        if name == 'headlamp' and k('get', 'service', service, '-n', namespace, check=False).returncode:
+        if name in ('headlamp', 'identity') and k('get', 'service', service, '-n', namespace, check=False).returncode:
             continue
         host = name + '.localhost'
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'type': 'kubernetes.io/tls',
@@ -196,7 +197,7 @@ def verify(ca_path, names=None):
     import ssl
     context = ssl.create_default_context(cafile=str(ca_path))
     for name in (names or ENDPOINTS):
-        if name == 'headlamp' and k('get', 'service/headlamp', '-n', 'lab-headlamp', check=False).returncode:
+        if name in ('headlamp', 'identity') and k('get', 'service/' + ENDPOINTS[name][1], '-n', ENDPOINTS[name][0], check=False).returncode:
             continue
         host = name + '.localhost'
         # Some host DNS resolvers do not implement the browser's .localhost rule.
@@ -217,7 +218,7 @@ def main():
     args = parser.parse_args()
     if args.action == 'verify':
         for name in ENDPOINTS:
-            if name == 'headlamp' and k('get', 'service/headlamp', '-n', 'lab-headlamp', check=False).returncode:
+            if name in ('headlamp', 'identity') and k('get', 'service/' + ENDPOINTS[name][1], '-n', ENDPOINTS[name][0], check=False).returncode:
                 continue
             host = name + '.localhost'
             try:

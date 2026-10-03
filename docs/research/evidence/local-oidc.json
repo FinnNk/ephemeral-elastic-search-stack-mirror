@@ -1,0 +1,70 @@
+{
+  "checked_on": "2026-10-03",
+  "environment": "Windows x64 / Docker Linux / local k3s 1.35.8",
+  "source_hashes": {
+    "lab\\install_oidc.py": "4d50a82d0dcebee8896dcbf9985b991b0190a8c532b2cd5d9bf381c1f9e0011c",
+    "lab\\verify_oidc.py": "28644255186629834e99d713dd847bb1d9c5070a08821b512fa05569e61acecc",
+    "lab\\install_headlamp.py": "86610704d7cd68af9f3d8ed28ef7185e6cc8e0faec077163b628263143d6f367",
+    "lab\\https_ingress.py": "89fef055997ef002ed13970f52a886546851eab4fdbdbb1ebe06694c1c0698d3",
+    "lab\\test_oidc_security.py": "ded8d223e04ee2cf01e10e470c52a7a470d31ee1c830c44922bd458587ac28ab"
+  },
+  "runtime": {
+    "issuer": "https://identity.localhost:34443/realms/relevance-lab",
+    "scope": "disposable users, real authorization-code callbacks and live permissions",
+    "checks": {
+      "admin": {
+        "headlamp_callback": true,
+        "namespace_listing_allowed": true,
+        "secrets_read_allowed": true,
+        "configmap_create_allowed": true,
+        "argocd_callback": true,
+        "argocd_group": "lab-admins",
+        "argocd_sync_allowed": true
+      },
+      "reader": {
+        "headlamp_callback": true,
+        "namespace_listing_allowed": true,
+        "secrets_read_allowed": false,
+        "configmap_create_allowed": false,
+        "argocd_callback": true,
+        "argocd_group": "lab-readers",
+        "argocd_sync_allowed": false
+      },
+      "unassigned": {
+        "headlamp_callback": true,
+        "namespace_listing_allowed": false,
+        "secrets_read_allowed": false,
+        "configmap_create_allowed": false,
+        "argocd_callback": true,
+        "argocd_group": null,
+        "argocd_sync_allowed": false
+      },
+      "wrong_audience_rejected": true,
+      "discovery_https": true
+    }
+  },
+  "repeat_install": {
+    "identity_ids_preserved": true,
+    "server_restarted": false,
+    "users": [
+      "finnnk",
+      "lab-reader"
+    ],
+    "keycloak_restart_identity_ids_preserved": true
+  },
+  "checks": {
+    "unit_tests": {
+      "passed": 6,
+      "failed": 0,
+      "scope": "OIDC security guards and existing preview routing"
+    },
+    "ruff": "passed",
+    "structurizr": "nine views validated and SVG/PNG exported"
+  },
+  "limits": [
+    "Native Apple silicon not tested",
+    "Real Azure or enterprise identity not tested",
+    "Human initial-password update not automated",
+    "Other application OIDC integration not included"
+  ]
+}

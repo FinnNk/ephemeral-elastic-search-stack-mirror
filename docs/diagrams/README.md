@@ -1,6 +1,6 @@
 # Architecture diagrams
 
-Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These twenty-four views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
+Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These twenty-five views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
 
 ## Reading order
 
@@ -21,6 +21,7 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 | [02 · C4 containers: control](rendered/02-control.svg) | Environment state, leases and deployment. | [Structurizr DSL](workspace.dsl) |
 | [03 · C4 containers: evaluation](rendered/03-evaluation.svg) | API capture, shared index, workloads, optional exploratory notebook and diagnostics. The context view shows independent input and scoring owners. | [Structurizr DSL](workspace.dsl) |
 | [05 · C4 local deployment](rendered/05-local.svg) | HTTPS ingress, Kubernetes control Pod, ESO, locally emulated Azure Key Vault, SigNoz, Headlamp, host Nexus/PostgreSQL and S3 storage. | [Structurizr DSL](workspace.dsl) |
+| [09 · C4 identity](rendered/09-identity.svg) | Keycloak, group permissions and native Headlamp/Argo sign-in. | [Structurizr DSL](workspace.dsl) |
 | [07 · C4 preview access](rendered/07-preview.svg) | CoreDNS, HTTPS ingress and namespace-scoped preview routing. | [Structurizr DSL](workspace.dsl) |
 | [06 · C4 Azure deployment](rendered/06-azure.svg) | Ingress, GHES, Nexus, optional ACR, Blob Storage, Key Vault, AKS and OTel collection. | [Structurizr DSL](workspace.dsl) |
 
@@ -166,7 +167,7 @@ Prerequisites: Node.js, Git, a working Docker daemon with Linux containers and, 
    node docs/diagrams/render.mjs --browser
    ```
 
-   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders eight C4 SVGs and PNG inspection copies, validates and delivers sixteen Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
+   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders nine C4 SVGs and PNG inspection copies, validates and delivers sixteen Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
 
    For a focused rebuild, use `--c4` or `--archify`, optionally with `--browser`. The script checks the Archify commit before use. Docker pulls the pinned Structurizr image when missing. A Docker connection failure means the daemon must be started before retrying.
 
@@ -176,6 +177,6 @@ The Node entry point avoids shell-specific build commands. It has been exercised
 
 ## Validation and provenance
 
-The retained rendering receipts record Structurizr validation for eight C4 views. Each recorded Archify artefact passed 9/9 showcase checks with zero errors and warnings, plus desktop browser checks at 1440×900, 1600×1000, 1920×1080 and 2048×1320. These checks validate the diagrams, not system behaviour. The [visual review record](receipts/visual-review.json) identifies the reviewed artefacts separately from the generated delivery and browser receipts.
+The retained rendering receipts record Structurizr validation for nine C4 views. Each recorded Archify artefact passed 9/9 showcase checks with zero errors and warnings, plus desktop browser checks at 1440×900, 1600×1000, 1920×1080 and 2048×1320. These checks validate the diagrams, not system behaviour. The [visual review record](receipts/visual-review.json) identifies the reviewed artefacts separately from the generated delivery and browser receipts.
 
 Useful upstream references: [Structurizr DSL](https://docs.structurizr.com/dsl/language), [local binaries](https://docs.structurizr.com/binaries), [PNG/SVG export](https://docs.structurizr.com/export/png-and-svg) and [Archify](https://github.com/tt-a1i/archify). Archify's [MIT licence](notices/Archify-LICENSE.txt) and [third-party notices](notices/Archify-third-party.md) accompany the generated viewer code. No external brand marks are selected in these diagrams.

@@ -31,7 +31,7 @@ It lets the lab use these service APIs without an Azure subscription.
 | Frozen inputs and index recovery | Azure Blob Storage, index recipes and a local snapshot store |
 | Judgement gaps | Separate judgement API, MLflow model registry and KServe inference |
 | Observability | OpenTelemetry and SigNoz |
-| Secrets and browser access | External Secrets Operator, Azure Key Vault and local HTTPS ingress |
+| Secrets and browser access | External Secrets Operator, Azure Key Vault, local HTTPS ingress and [named sign-in](docs/oidc-access.md) |
 
 The default catalogue contains 1,215,854 English ESCI products and 1,000 test queries. A configurable 10,000-product demo subset uses the same source. See [catalogue setup and pricing](docs/esci-catalogue.md). [Scale](docs/research/evidence/million-scale.md) and [40-environment isolation](docs/research/evidence/concurrency-isolation.md) checks have local evidence. Published labels support offline comparisons; their coverage and the lab pricing assumptions do not establish customer search quality.
 

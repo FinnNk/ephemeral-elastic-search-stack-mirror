@@ -14,6 +14,7 @@ They are not the current installation procedure.
 | Restore an index or change schema | [Index recovery](../index-recovery.md) |
 | Provide independent synthetic inputs | [Data contracts](../data-evaluation-contracts.md) |
 | Resolve missing labels or replace a model | [Judgements](../judgement-resolution.md), [model installation](../esci-model-installation.md) |
+| Sign in to Headlamp or Argo CD | [Named OIDC access](../oidc-access.md) |
 | Manage secrets and HTTPS | [Key Vault](../keyvault-secrets.md), [HTTPS](../https-ingress.md) |
 | Investigate telemetry | [SigNoz](../observability-backend.md) |
 | Check current status | [Roadmap](../plans/roadmap.md) |

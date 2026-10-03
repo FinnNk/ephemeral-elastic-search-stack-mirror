@@ -16,11 +16,15 @@ def install():
     guard()
     k('get', 'deployment/lab-traefik', '-n', 'lab-ingress')
     k('get', 'configmap/lab-preview-code', '-n', 'lab-ingress')
-    run([HELM, 'upgrade', '--install', 'headlamp', 'headlamp', '--repo',
-         'https://kubernetes-sigs.github.io/headlamp/', '--version', CHART_VERSION,
-         '--namespace', NAMESPACE, '--create-namespace', '--values',
-         str(ROOT / 'lab/headlamp-values.yaml'), '--wait', '--timeout', '5m',
-         '--kubeconfig', str(STATE / 'kubeconfig.yaml')])
+    if k('get', 'secret/lab-oidc-client', '-n', NAMESPACE, check=False).returncode == 0:
+        from install_oidc import reconcile_headlamp
+        reconcile_headlamp()
+    else:
+        run([HELM, 'upgrade', '--install', 'headlamp', 'headlamp', '--repo',
+             'https://kubernetes-sigs.github.io/headlamp/', '--version', CHART_VERSION,
+             '--namespace', NAMESPACE, '--create-namespace', '--values',
+             str(ROOT / 'lab/headlamp-values.yaml'), '--wait', '--timeout', '5m',
+             '--kubeconfig', str(STATE / 'kubeconfig.yaml')])
     apply({'apiVersion': 'v1', 'kind': 'ServiceAccount',
            'metadata': {'name': USER, 'namespace': NAMESPACE},
            'automountServiceAccountToken': False})
@@ -38,7 +42,7 @@ def install():
     k('rollout', 'status', 'deployment/lab-dns', '-n', 'lab-ingress', '--timeout=120s')
     verify(ca, ['headlamp'])
     print(URL)
-    print('Run python lab/install_headlamp.py token to obtain a one-hour login token.')
+    print('Use OIDC sign-in when installed; python lab/install_headlamp.py token provides recovery access.')
 
 
 def main():

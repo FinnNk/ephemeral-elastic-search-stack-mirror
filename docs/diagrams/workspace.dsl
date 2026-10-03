@@ -24,7 +24,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                 tags "Future"
             }
         }
-        platform = softwareSystem "Deployment platform" "Runs workloads through Argo CD, Kubernetes, ECK and ESO." {
+        platform = softwareSystem "Deployment platform" "Runs workloads and authenticates lab users." {
             localDns = container "Local lab DNS" "Resolves fixed platform and wildcard preview names to loopback." "CoreDNS / UDP and TCP" {
                 tags "Platform"
             }
@@ -33,6 +33,12 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
             }
             edge = container "HTTPS ingress" "Routes platform and preview requests over TLS." "Traefik locally / ingress on AKS" {
                 tags "Platform"
+            }
+            identity = container "Keycloak" "Authenticates named lab users and issues group claims." "OIDC / Keycloak 26.6.4" {
+                tags "Platform"
+            }
+            identitydb = container "Identity database" "Retains realm, clients, users and sessions." "PostgreSQL 17.6" {
+                tags "Store"
             }
             headlamp = container "Headlamp" "Inspects cluster workloads using the signed-in user identity." "Headlamp / Kubernetes API" {
                 tags "Platform"
@@ -148,7 +154,15 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         edge -> argo "Routes deployment UI" "HTTP in cluster"
         edge -> ui "Routes lab UI and API" "HTTP in cluster"
         edge -> signoz "Routes observability UI" "HTTP in cluster"
-        operator -> headlamp "Inspects and manages lab workloads" "HTTPS / expiring Kubernetes token"
+        operator -> headlamp "Inspects and manages lab workloads" "HTTPS / OIDC"
+        engineer -> headlamp "Inspects lab workloads" "HTTPS / OIDC"
+        engineer -> argo "Reviews deployments" "HTTPS / OIDC"
+        engineer -> identity "Signs in" "HTTPS"
+        headlamp -> identity "Authenticates users" "OIDC / verified TLS"
+        argo -> identity "Authenticates users" "OIDC / verified TLS"
+        kube -> identity "Verifies issuer and signing keys" "OIDC discovery / verified TLS"
+        identity -> identitydb "Retains identity state" "SQL"
+        edge -> identity "Routes sign-in" "HTTP in cluster"
         edge -> headlamp "Routes cluster UI" "HTTP in cluster"
         headlamp -> kube "Uses the signed-in user permissions" "Kubernetes API / TLS"
         edge -> nexus "Routes artifact UI" "HTTP in cluster"
@@ -291,7 +305,7 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance signoz
                         containerInstance telemetrydb
                     }
-                    deploymentNode "Cluster UI" "Separate human token login" "lab-headlamp namespace" {
+                    deploymentNode "Cluster UI" "Named user sign-in" "lab-headlamp namespace" {
                         containerInstance headlamp
                     }
                     deploymentNode "Log collection" "One scoped agent on each node" "lab-observability / DaemonSet" {
@@ -304,6 +318,10 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
                         containerInstance judgementApi
                         containerInstance kserve
                         containerInstance mlflow
+                    }
+                    deploymentNode "Identity services" "Persistent users, clients and sessions on the CPU worker" "lab-identity namespace / PVC" {
+                        containerInstance identity
+                        containerInstance identitydb
                     }
                     deploymentNode "Optional GPU worker" "CUDA predictor after qualification; omitted on Apple silicon" "NVIDIA / separate k3s agent / lab-models" {
                         containerInstance kserve
@@ -413,6 +431,11 @@ workspace "Ephemeral search relevance lab" "Local reference topology • Septemb
         container platform "07-preview" {
             title "C4 Containers — local DNS and preview access"
             include engineer localDns edge previewRouter kube search
+            autolayout lr
+        }
+        container platform "09-identity" {
+            title "C4 Containers — lab identity and permissions"
+            include engineer identity identitydb headlamp argo kube eso keyvault
             autolayout lr
         }
         dynamic lab "04-create" {

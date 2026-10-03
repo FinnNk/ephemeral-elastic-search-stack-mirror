@@ -287,5 +287,18 @@
     "preview": "rendered/label-qualification.png",
     "artifact_sha256": "40012f20c745ba08a25e9c89f0e7bb32c64b137667ee1e223a602b86a6af3a0f",
     "review": "Inspected the 1440x900 light preview: development and confirmation are separate; threshold freezing and the unresolved gap-transfer decision are readable. Showcase validation and all configured desktop browser sizes/themes passed."
+  },
+  "localOidc20261003": {
+    "reviewed_on": "2026-10-03",
+    "validation": "Nine C4 views validated and SVG/PNG exported",
+    "visual_review": "09-identity and 05-local inspected; external user placed outside the platform boundary and sign-in routes separated from nodes. Unchanged exports restored to avoid timestamp-only changes.",
+    "sources": {
+      "docs\\diagrams\\workspace.dsl": "1af5b762436369c757d7b21954c76d9c30ee07b78815b3af317d613289b30b1c",
+      "docs\\diagrams\\layout.mjs": "7474ae97490e901b40e288116a9cf06f4fe73c2fb0617c7330502350b9159026"
+    },
+    "svg_sha256": {
+      "09-identity.svg": "2b51c1a10bb7af4f93279edf291262ed2962a002c45a7226aeda47221009433d",
+      "05-local.svg": "e491cc89cb24ca567de415a99d81a79bde813fb5fe216735ad79623838abff74"
+    }
   }
 }

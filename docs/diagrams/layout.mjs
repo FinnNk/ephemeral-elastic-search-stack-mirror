@@ -53,7 +53,7 @@ position(context, {'Lab user':[100,100],'Platform engineer':[100,1050],
   'Judgement supply':[1900,650],'Deployment platform':[1900,1250]});
 // The context focuses on explicit system contracts; detailed ECK control is in the model.
 context.relationships = context.relationships.filter(r => {
-  const m=relationships.get(r.id); return m.sourceId!==m.destinationId && m.description!=='Resolves local lab names' && !edgeRoute(r) &&
+  const m=relationships.get(r.id); return m.sourceId!==m.destinationId && !['Resolves local lab names','Inspects lab workloads','Reviews deployments','Signs in'].includes(m.description) && !edgeRoute(r) &&
     !(name(m.sourceId)==='Deployment platform' && name(m.destinationId)==='Search relevance lab');
 });
 route(context,'Lab user','Source and build platform',[[650,80],[1910,80]],70);
@@ -105,7 +105,7 @@ position(releaseDelivery, {'Lab user':[100,100],'Gitea':[900,100],'Build runner'
   'Argo CD':[1700,850],'Kubernetes API':[2500,850],'Search API':[900,1600]});
 releaseDelivery.relationships = releaseDelivery.relationships.filter(r=>{
   const m=relationships.get(r.id);
-  return !((name(m.sourceId)==='Build runner' && name(m.destinationId)==='Gitea') ||
+  return m.description!=='Reviews deployments' && !((name(m.sourceId)==='Build runner' && name(m.destinationId)==='Gitea') ||
            (name(m.sourceId)==='Search API' && name(m.destinationId)==='Azure Blob Storage'));
 });
 route(releaseDelivery,'Delivery coordinator','Nexus',[[1350,690],[2710,690]],60);
@@ -146,6 +146,7 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='05-local'),{
   'Exploratory notebooks':{x:2080,y:6250,cols:1},
   'Independent input and scoring jobs':{x:1480,y:5550,cols:2},
   'Judgement and model services':{x:160,y:6250,cols:3},
+  'Identity services':{x:720,y:6950,cols:2},
   'Optional GPU worker':{x:160,y:6950,cols:1}
 });
 placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
@@ -163,12 +164,21 @@ placeDeployment(workspace.views.deploymentViews.find(v=>v.key==='06-azure'),{
 });
 const canvases = {'01-context':[2900,2300], '02-control':[2380,2250],
   '03-evaluation':[2380,3450], '04-create':[2850,1450],
-  '05-local':[2800,8300], '06-azure':[2800,6250], '18-delivery':[3250,2150], '07-preview':[2800,2000]};
+  '05-local':[2800,8300], '06-azure':[2800,6250], '18-delivery':[3250,2150], '07-preview':[2800,2000], '09-identity':[3800,2600]};
 position(workspace.views.containerViews.find(v=>v.key==='07-preview'), {
   'Lab user':[100,100], 'Local lab DNS':[1050,850],
   'HTTPS ingress':[1050,100], 'Search API':[2050,100],
   'Preview route reconciler':[1050,1400], 'Kubernetes API':[2050,1400]
 });
+const identityView = workspace.views.containerViews.find(v=>v.key==='09-identity');
+position(identityView, {
+  'Lab user':[100,1000], 'Headlamp':[2050,100], 'Argo CD':[3050,100],
+  'Keycloak':[1050,1000], 'Kubernetes API':[2050,1000], 'External Secrets Operator':[3050,1000],
+  'Identity database':[1050,1900], 'Azure Key Vault':[3050,1900]
+});
+route(identityView, 'Lab user', 'Headlamp', [[660,1130],[660,230]], 80);
+route(identityView, 'Lab user', 'Argo CD', [[660,1130],[660,80],[3260,80]], 85);
+route(identityView, 'Argo CD', 'Keycloak', [[2790,550],[1260,550]], 65);
 for (const collection of ['systemContextViews','containerViews','dynamicViews','deploymentViews']) {
   for (const view of workspace.views[collection] || []) {
     const [width,height]=canvases[view.key];
@@ -176,4 +186,4 @@ for (const collection of ['systemContextViews','containerViews','dynamicViews','
   }
 }
 fs.writeFileSync(path.join(dir,'.structurizr/workspace-layout.json'),JSON.stringify(workspace,null,2)+'\n');
-console.log('Applied presentation layout to eight C4 views.');
+console.log('Applied presentation layout to nine C4 views.');

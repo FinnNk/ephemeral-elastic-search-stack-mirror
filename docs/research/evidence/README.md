@@ -77,3 +77,5 @@ that was completed later.
 - [Seven-day SLO window: fixture verification](signoz-window-2026-09-28.md)
 - [Connected SigNoz investigation: local evidence](signoz-investigation-2026-09-28.md)
 - [Model observability: local proof, 29 September 2026](model-observability-2026-09-29.md)
+
+- [Local OIDC login and permissions](local-oidc.md)

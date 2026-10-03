@@ -124,3 +124,12 @@ passed source PR #22 release and relevance CI on predetermined synthetic labels.
 Its application, chart and index-contract trees are unchanged. Review and merge
 are required before installing its trusted pins and recording a real ESCI
 result-preservation decision. The fixture does not qualify model predictions.
+
+
+The [local OIDC batch](local-oidc.md) adds persistent Keycloak identity,
+Headlamp sign-in, Kubernetes group permissions and native Argo CD sign-in.
+[Measured checks](../research/evidence/local-oidc.md) distinguish administrator,
+reader and unassigned identities and reject a wrong-audience token. Repeating
+installation preserves users and clients without another server restart.
+The next identity batch is [Gitea and control UI integration](oidc-application-integration.md).
+Label-quality qualification remains independent and unresolved.
