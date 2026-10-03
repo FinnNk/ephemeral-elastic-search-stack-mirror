@@ -40,6 +40,7 @@ that was completed later.
 - [Exploratory notebook verification](exploratory-notebook.md)
 
 - [ESCI singleton inference contract — 3 October 2026](esci-inference-contract.md)
+- [Frozen ESCI kernels — 3 October 2026](esci-frozen-kernels.md)
 
 ## Build and deployment
 

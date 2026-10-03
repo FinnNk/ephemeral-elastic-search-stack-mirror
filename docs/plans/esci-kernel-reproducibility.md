@@ -1,8 +1,8 @@
 # Freeze ESCI kernel configurations
 
-Status: next batch after the [singleton investigation](../research/evidence/esci-inference-contract.md). The candidate
-must remain inactive until its numerical checks and independent label assessment
-pass.
+Status: completed. [Full serving evidence](../research/evidence/esci-frozen-kernels.md)
+records six successful 7,393-pair HTTP passes, including a fresh Pod. Candidate
+version 4 remains inactive pending [independent label assessment](esci-label-quality.md).
 
 ## Intent and constraints
 

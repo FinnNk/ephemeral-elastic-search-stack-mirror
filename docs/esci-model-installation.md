@@ -1,15 +1,16 @@
-# Install the v3 ESCI candidate through MLflow
+# Install the calibrated ESCI candidate through MLflow
 
-This package installs **Larger v3 + learned score mapping** as a numbered MLflow
-model. It contains the Decider 4B base, the unmerged 8,192-row v3 LoRA adapter,
+Register and deploy the calibrated ESCI judgement model through MLflow and
+KServe. MLflow assigns its own numbered version to the package. It contains the Decider 4B base, the unmerged 8,192-row v3 LoRA adapter,
 the learned four-score mapping, the exact question and a versioned abstention
 policy. The CUDA serving image is separate from the weights.
 
 Registration is possible on a CPU machine. Activation requires a GPU and passing
 serving and quality checks. The lab still uses the abstaining bootstrap model;
-the registered singleton candidate is inactive because its independent
-probability comparison failed. See the [qualification evidence](research/evidence/esci-inference-contract.md)
-for measurements and remaining work. Coordinate competing GPU work before
+the frozen-kernel candidate passed numerical qualification but remains inactive
+pending independent label-quality checks. See the
+[serving evidence](research/evidence/esci-frozen-kernels.md) and
+[label-quality plan](plans/esci-label-quality.md). Coordinate competing GPU work before
 qualification; registration alone does not activate the candidate.
 
 ## Candidate behaviour and evidence
@@ -25,8 +26,7 @@ accuracy on the lab's GBP catalogue.
 The mapping transforms the four Decider probabilities with clipped logarithms,
 standardisation and a multinomial logistic model. Only its numerical parameters
 are exported. The training pickle, source examples and query identifiers stay in
-ignored research storage. This release uses no embeddings or tabular foundation
-model. It does not use the merged checkpoint, whose earlier parity check failed.
+ignored research storage. The release contains the base weights and an unmerged adapter.
 
 Inputs are the query, product title and final taxonomy element. A product's
 `category` string is used when no `taxonomy_path` array is present. Model errors
@@ -45,7 +45,7 @@ source, and the existing 80% judged-coverage gate remains in force.
 | Ignored release directory | Base weights, adapter, mapping, policy and per-file SHA-256 manifest |
 | Ignored registration receipt | Numbered MLflow URI, model-tree digest and implementation digest |
 
-The built assets occupy **8,691,340,329 bytes (8.69 GB / 8.09 GiB)**, excluding the
+The built assets occupy **8,691,343,471 bytes (8.69 GB / 8.09 GiB)**, excluding the
 small MLflow wrapper and the CUDA image (`docker image inspect` reports **3.46 GB** for the CUDA image). Allow at least three copies of the model
 during registration/download/staging, plus the source checkpoint, runtime image
 and registry storage. The storage initialiser stages a download before copying it
@@ -53,8 +53,7 @@ to `/mnt/models`; budget at least 18 GB of temporary space for that step.
 KServe's default model volume is per Pod, so a replacement Pod downloads again.
 A persistent shared model cache is not included. The in-cluster initializer uses
 MLflow direct multipart downloads from the object store with 16 MiB chunks and
-a 2 GiB memory limit. The default 100 MiB chunks exhausted the previous 1 GiB
-limit; 16 MiB chunks alone also failed on a later fresh download. These settings apply to the storage initializer,
+a 2 GiB memory limit. These settings apply to the storage initializer,
 not the host-side registration commands below.
 
 The candidate requests one NVIDIA GPU, two CPUs and 16 GiB host RAM, with a 24 GiB
@@ -63,7 +62,13 @@ The laptop has 16 GB VRAM. Inference uses BF16 and evaluates one pair at a time
 internally, so companion requests do not change its tensor batch. The API accepts at most 128 pairs and serialises GPU calls. CUDA
 graphs are disabled. The frozen protocol declares the 1,536-token context budget, right padding to
 a multiple of 64, SDPA attention, FLA gated-delta kernels and PyTorch convolution.
-Startup rejects a failed FLA import or a different selected backend. The image
+The release also fixes six FLA kernel settings. Its initial hardware profile
+requires the RTX 4090 Laptop GPU, compute capability 8.9 and CUDA 12.4; other
+GPUs need a separately qualified profile. Startup rejects an incomplete or
+changed profile, environment overrides, a failed FLA import or a different
+selected backend. Warmup and predictions verify the settings actually selected
+by FLA before returning outputs. The default CPU lab remains usable on Apple
+Silicon; this optional CUDA candidate requires the declared NVIDIA worker. The image
 includes the C compiler, headers and checksum-pinned NVIDIA CUDA driver SDK stub
 required by Triton. The stub is used only for linking; the NVIDIA runtime supplies
 the real driver. Its directory is never added to `LD_LIBRARY_PATH`. Numerical
@@ -114,7 +119,7 @@ Choose one route:
 
 | Route | Required input |
 | --- | --- |
-| Install a supplied bundle | Complete portable bundle and its file-hash manifest from the model author; copy it to `$pack/esci-v3-singleton-fla` and run `inspect` |
+| Install a supplied bundle | Complete portable bundle and its file-hash manifest from the model author; copy it to `$pack/esci-v3-frozen-fla` and run `inspect` |
 | Build the research candidate | Checkout containing the pinned base weights, adapter, saved predictions and learned mapping expected by `judgements/esci/release.py` |
 
 The research assets are not generated by cloning this repository. Obtain them
@@ -127,8 +132,8 @@ $researchRoot = Read-Host 'Absolute path to the pinned model research checkout'
 Then:
 
 ```powershell
-& $py lab/install_judgement_model.py build --research-root $researchRoot --output "$pack/esci-v3-singleton-fla"
-& $py lab/install_judgement_model.py inspect --bundle "$pack/esci-v3-singleton-fla"
+& $py lab/install_judgement_model.py build --research-root $researchRoot --output "$pack/esci-v3-frozen-fla"
+& $py lab/install_judgement_model.py inspect --bundle "$pack/esci-v3-frozen-fla"
 ```
 
 The builder accepts the pinned adapter and frozen mapping source only. The bundle
@@ -170,7 +175,7 @@ through `kubectl port-forward` stalled during verification. The helper keeps
 large transfers on the lab's Docker network:
 
 ```powershell
-& $py lab/register_esci_local.py --bundle "$pack/esci-v3-singleton-fla" --receipt "$pack/registration.json" --image $image
+& $py lab/register_esci_local.py --bundle "$pack/esci-v3-frozen-fla" --receipt "$pack/registration.json" --image $image
 ```
 
 It runs without GPU access, mounts the bundle and source read-only, and shares
@@ -191,7 +196,7 @@ For another installation with a directly reachable tracking endpoint, the
 portable registration command is:
 
 ```powershell
-& $py lab/install_judgement_model.py register --bundle "$pack/esci-v3-singleton-fla" --tracking-uri $trackingUri --receipt "$pack/registration.json"
+& $py lab/install_judgement_model.py register --bundle "$pack/esci-v3-frozen-fla" --tracking-uri $trackingUri --receipt "$pack/registration.json"
 ```
 
 Set `$trackingUri` to that installation's reachable MLflow URL before running the
@@ -224,8 +229,8 @@ with the original research loader, run this **before starting the candidate**:
 
 ```powershell
 $localImage = $image -replace '^nexus\.localhost:', '127.0.0.1:'
-docker run --rm --gpus all --mount "type=bind,source=$((Get-Location).Path),target=/repo,readonly" --mount "type=bind,source=$researchRoot,target=/research,readonly" --mount "type=bind,source=$pack/esci-v3-singleton-fla,target=/bundle,readonly" --mount "type=bind,source=$pack,target=/output" $localImage /repo/lab/generate_esci_references.py --research /research --bundle /bundle --inputs /output/inputs.json --exclusions /output/exclusions.json --output /output/references.json
-& $py lab/install_judgement_model.py canaries --reference "$pack/references.json" --bundle "$pack/esci-v3-singleton-fla" --output "$pack/canaries.json"
+docker run --rm --gpus all --mount "type=bind,source=$((Get-Location).Path),target=/repo,readonly" --mount "type=bind,source=$researchRoot,target=/research,readonly" --mount "type=bind,source=$pack/esci-v3-frozen-fla,target=/bundle,readonly" --mount "type=bind,source=$pack,target=/output" $localImage /repo/lab/generate_esci_references.py --research /research --bundle /bundle --inputs /output/inputs.json --exclusions /output/exclusions.json --output /output/references.json
+& $py lab/install_judgement_model.py canaries --reference "$pack/references.json" --bundle "$pack/esci-v3-frozen-fla" --output "$pack/canaries.json"
 ```
 
 The generator verifies assets, runtime versions and reservations, uses the
@@ -255,11 +260,57 @@ non-zero and retains its results. Do not loosen this gate or silently change the
 policy. The image digest in the qualification command is operator-supplied; the
 separate Pod image-ID check is required to tie it to the actual runtime.
 
-Repeat after a cold Pod restart with a new evidence filename. Numerical agreement
-is separate from accuracy: inspect representative labelled lab pairs, acceptance
-coverage and Irrelevant-to-Exact errors before describing the model as meeting a
-lab precision target. The generated manifest gates on the supplied numerical
-evidence; it does not certify a lab accuracy SLA.
+The `qualify` command is a canary smoke check. Full release acceptance also
+requires the complete independently generated reference set:
+
+1. Collect every reference pair in batch, reversed and singleton requests:
+
+   ```powershell
+   $endpoint = 'http://127.0.0.1:18087/v1/models/judgement-model:predict'
+   $captures = [ordered]@{
+       batch = 'batch'; 'batch-repeat' = 'batch'; reversed = 'reversed'
+       singletons = 'singletons'; 'singletons-repeat' = 'singletons'
+   }
+   foreach ($capture in $captures.GetEnumerator()) {
+       $name = $capture.Key
+       & $py lab/diagnose_esci_parity.py collect --endpoint $endpoint --inputs "$pack/references.json" --receipt "$pack/registration.json" --output "$pack/$name.jsonl" --arrangement $capture.Value
+       if ($LASTEXITCODE -ne 0) { throw "Capture failed: $name" }
+   }
+   ```
+
+2. Set `$podName` to the ready candidate Pod's `metadata.name` from the earlier
+   JSON output. Replace it:
+
+   ```powershell
+   kubectl --kubeconfig $kubeconfig -n lab-models delete pod $podName --wait=true --timeout=90s
+   kubectl --kubeconfig $kubeconfig -n lab-models get pods -l serving.kserve.io/inferenceservice=esci-v3-candidate -w
+   ```
+
+   Once the replacement is Ready, stop the watch with Ctrl+C, record its new UID
+   and actual image ID, and restart the port forward. Collect a fresh-Pod batch and repeat the canary smoke check
+   with a new output filename:
+
+   ```powershell
+   & $py lab/diagnose_esci_parity.py collect --endpoint $endpoint --inputs "$pack/references.json" --receipt "$pack/registration.json" --output "$pack/cold-batch.jsonl" --arrangement batch
+   ```
+
+3. Report all six captures. This checks probabilities and the labels or
+   abstentions actually returned, rejects duplicate or missing pairs, and exits
+   non-zero on disagreement:
+
+   ```powershell
+   & $py lab/diagnose_esci_parity.py report --inputs "$pack/references.json" --run "batch=$pack/batch.jsonl" --run "batch-repeat=$pack/batch-repeat.jsonl" --run "reversed=$pack/reversed.jsonl" --run "singletons=$pack/singletons.jsonl" --run "singletons-repeat=$pack/singletons-repeat.jsonl" --run "cold-batch=$pack/cold-batch.jsonl" --output "$pack/full-http-report.json"
+   ```
+
+Each run must cover every reference pair, stay within the probability tolerance
+and return zero changed decisions. Retain the full report, reference and capture
+hashes, both Pod identities and the canary records. A new hardware profile or
+runtime needs its own qualification.
+
+Numerical agreement is separate from label quality. Complete the
+[independent quality assessment](plans/esci-label-quality.md) before activation.
+The generated manifest validates supplied canary evidence; the operator must
+also review the full report and quality evidence before applying live pins.
 
 ## 6. Promote and retain rollback
 

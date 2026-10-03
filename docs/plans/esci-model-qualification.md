@@ -20,8 +20,10 @@ The optional worker is ready for review. The original serving attempt and the
 identified silent kernel fallback and batch-size sensitivity. The explicit
 singleton release starts with verified FLA but still fails independent numerical
 agreement; [evidence](../research/evidence/esci-inference-contract.md) records the
-results. Next, [freeze and qualify the kernel profile](esci-kernel-reproducibility.md).
-Quality assessment has not started.
+results. The immutable profile and runtime guards now pass
+[full numerical qualification](../research/evidence/esci-frozen-kernels.md):
+44,358 predictions across six runs, with no changed decisions.
+[Independent label assessment](esci-label-quality.md) is next; version 4 remains inactive.
 
 ## Batches and acceptance
 

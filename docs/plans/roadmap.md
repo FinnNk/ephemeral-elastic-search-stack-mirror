@@ -89,6 +89,8 @@ still fails numerical agreement and remains inactive. The
 [current evidence](../research/evidence/esci-inference-contract.md) records the
 scope and controlled replay: process-dependent tuning choices change scores;
 fixing the reference settings restores agreement on all 7,393 pairs in the
-request-thread diagnostic. Next,
-[freeze and qualify the kernel profile](esci-kernel-reproducibility.md), then
-complete [independent label quality](esci-label-quality.md) and the developer walkthrough.
+request-thread diagnostic. The immutable profile and runtime guards now pass
+[full numerical qualification](../research/evidence/esci-frozen-kernels.md): six
+7,393-pair HTTP passes agree, including after a fresh Pod starts. Version 4 remains
+inactive. Next, complete [independent label quality](esci-label-quality.md) and the
+developer walkthrough.

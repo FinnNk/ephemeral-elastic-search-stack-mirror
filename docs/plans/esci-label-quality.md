@@ -1,8 +1,9 @@
 # Qualify ESCI labels on lab gaps
 
-Status: blocked by numerical serving qualification. The
-[singleton release](../research/evidence/esci-inference-contract.md) is inactive;
-[process reproducibility](esci-kernel-reproducibility.md) comes first.
+Status: next batch. Candidate `synthetic-esci-judge/4` passed
+[numerical serving qualification](../research/evidence/esci-frozen-kernels.md) and
+remains inactive. Freeze and audit the independent cohorts before requesting
+another GPU window.
 
 ## Intent and constraints
 
@@ -16,6 +17,11 @@ lab's 80% judged-coverage gate. A first pass need not close every gap.
   the ongoing research final assessment and SPECIALIST-01.
 - Treat an unavailable cohort manifest as an unresolved independence constraint,
   not evidence of no overlap. The research session owns its reservations.
+- The 7,393-pair diagnostic cohort across 457 queries is already exposed; do not
+  reuse it as independent quality confirmation.
+- Pin version 4, its release and serving image to the
+  [qualification receipt](../research/evidence/esci-frozen-kernels.json). A new
+  release requires its own serving qualification.
 - Do not select examples or alter thresholds after viewing confirmation results.
 - Run only during another agreed GPU window; retain inputs, model identity,
   predictions and assessment hashes in ignored frozen evidence.
