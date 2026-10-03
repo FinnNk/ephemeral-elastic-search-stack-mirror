@@ -49,3 +49,15 @@ then. The judgement API returned its stored Exact label, left the missing pair
 unjudged and rejected forged product content. Repeated installation passed.
 These checks establish local operation, not judgement quality or Apple silicon
 compatibility. Aggregate results are in `.lab/kserve-upgrade/verification.json`.
+
+## Proposed ingress correction
+
+The deployed controller still inherits `ingressClassName=istio` and
+`disableIstioVirtualHost=false`. The latter causes the recurring missing-Istio
+warning. The prepared installer sets the class to `traefik` and disables Istio
+virtual hosts. Applying this correction awaits user approval after automatic
+approval review rejected the live routing change.
+
+The advertised `example.com` model URL remains a placeholder; the judgement
+API uses its internal Kubernetes Service address. This correction does not
+create public model DNS names or change model selection.

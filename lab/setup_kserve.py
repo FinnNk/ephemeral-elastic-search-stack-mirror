@@ -46,6 +46,9 @@ def install():
             controller = values['kserve'].setdefault('controller', {})
             controller.update(deploymentMode='Standard', image=pins['controller'].split(':v')[0],
                               tag=pins['controller'].split(':', 1)[1])
+            gateway = controller.setdefault('gateway', {})
+            gateway['disableIstioVirtualHost'] = True
+            gateway.setdefault('ingressGateway', {})['className'] = 'traefik'
         path = snapshot / (component + '-values.json')
         path.write_text(json.dumps(values), encoding='utf-8')
         run(args + ['upgrade', '--install', release, str(VENDOR / pins['charts'][component]['file']),
