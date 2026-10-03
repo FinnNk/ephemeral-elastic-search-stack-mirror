@@ -60,11 +60,21 @@ would not establish that this model alone can close the coverage gap.
 
 [Immutable file hashes](esci-label-quality.json) identify the retained evidence.
 
+## Maintenance benchmark
+
+The separate trusted-checker rollout exposed a missing `brand` field in the
+small independent generator. The current generator now emits `North` and uses
+a new immutable release; current guide paths were updated. Six existing
+producer-contract tests passed. The failed frozen benchmark was retained;
+its replacement adds the declared brand without changing the 36 labels fixed
+before capture. Neither benchmark replaces the ESCI application evidence.
+
 ## Follow-up
 
 The runner completed cleanup at 18:15:02 BST, before its 18:17:16 deadline.
 The candidate Pod, InferenceService, ServingRuntime and own client containers
-were absent; own port forwards were terminated. Explicit handback was sent.
+were absent; own port forwards were terminated. Explicit handback was sent. The research owner verified all protected saved
+files and the cache, then resumed its original frozen research command.
 A requested extra two minutes was rejected by automatic approval review because
 it required explicit human approval; the existing cutoff was honoured.
 Retain the incomplete confirmation directory. A future authorised retry needs

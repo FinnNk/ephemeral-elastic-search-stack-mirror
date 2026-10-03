@@ -6,7 +6,7 @@ from pathlib import Path
 
 from contracts import canonical
 
-RELEASE = 'retail-gb-independent-example-v2'
+RELEASE = 'retail-gb-independent-example-v3'
 
 
 def build(directory):
@@ -20,7 +20,8 @@ def build(directory):
             products.append({'product_id': f'example-{len(products):03d}',
                              'title': f'North {kind} {variant + 1}',
                              'description': f'Synthetic {category} product.',
-                             'category': category, 'price_minor': price + variant * 100,
+                             'category': category, 'brand': 'North',
+                             'price_minor': price + variant * 100,
                              'available': True, 'country': 'GB', 'currency': 'GBP'})
     queries = [{'query_id': f'example-q{index + 1}', 'query': phrase,
                 'country': 'GB', 'currency': 'GBP'}
