@@ -1,0 +1,294 @@
+{
+  "actual_gap_human_references_present": false,
+  "analysis_source_revision": "732390dfdfbaa696b168683a0cfc059d68a8bf5c",
+  "contrasts": {
+    "B-A": {
+      "correct_addition_difference_identical": true,
+      "coverage_difference": -0.001953125,
+      "denominator": 512,
+      "net_pairs": -1,
+      "whole_query_interval_95": [
+        -0.011029411764705883,
+        0.006036217303822937
+      ]
+    },
+    "C-B": {
+      "correct_addition_difference_identical": true,
+      "coverage_difference": -0.005859375,
+      "denominator": 512,
+      "net_pairs": -3,
+      "whole_query_interval_95": [
+        -0.017208413001912046,
+        0.002070393374741201
+      ]
+    },
+    "D-C": {
+      "correct_addition_difference_identical": true,
+      "coverage_difference": 0.001953125,
+      "denominator": 512,
+      "net_pairs": 1,
+      "whole_query_interval_95": [
+        0.0,
+        0.006085192697768763
+      ]
+    }
+  },
+  "date": "2026-10-04",
+  "diagnostic": {
+    "all_changing_pairs_reference_exact": true,
+    "changing_acceptance_pairs": 8,
+    "errors_identical": true,
+    "harmful_I_C_error_query_groups": 6,
+    "harmful_I_C_with_category": 6,
+    "mapped_residual_Exact_winners": {
+      "A": 230,
+      "B": 231,
+      "C": 232,
+      "D": 230
+    },
+    "raw_mapped_winner_changes_all": {
+      "A": 16,
+      "B": 16,
+      "C": 13,
+      "D": 15
+    },
+    "raw_residual_Exact_winners": {
+      "A": 243,
+      "B": 244,
+      "C": 243,
+      "D": 244
+    },
+    "role_prompt_raw_winner_changes_all": 1,
+    "shared_error_query_groups": 12,
+    "shared_error_truth": {
+      "C": 3,
+      "I": 4,
+      "S": 7
+    },
+    "shared_errors": 14,
+    "shared_errors_raw_argmax": "Exact in all4contracts",
+    "unanimous_additions": 75,
+    "unanimous_errors": 14
+  },
+  "diagnostic_sha256": "93d4567fc8137748d4b6cca7a812f43189d89b8cb3c1fa556545d770d3d3977f",
+  "document_preview": "Six Gitea-rendered static pages checked in local Chrome at1280x1000; no horizontal overflow. Visual review covered each opening and the results diagnostic/next-survey acceptance sections.",
+  "fresh_output_replay_matches_original_result_sha256": true,
+  "gate_relaxed": false,
+  "host_jobs_verified": 12,
+  "host_verification_sha256": "023db59220a2babd921083f87e3b96e14601d40a2af0b7c17511ef17061892d4",
+  "independent_document_review": "Five routing, timing, interpretation, repeat-command and roadmap findings fixed; read-only follow-up confirms closure",
+  "independent_result_review": "joins, masks, counts, intervals and exact shared errors reproduced",
+  "kind": "esci-category-survey-development-evidence",
+  "limitations": [
+    "Published references and the partly fitted prefix are exposed development evidence.",
+    "All coverage and gold-class risk denominators use the complete matched survey.",
+    "Zero-event bootstrap intervals do not establish rare-error protection.",
+    "These results neither qualify predictions nor change the gate."
+  ],
+  "model_activated": false,
+  "new_proposal": {
+    "calls_maximum": 384,
+    "cleanup_minutes": 5,
+    "execution_registered": false,
+    "grant_authorised": false,
+    "model_calls": 0,
+    "pairs": 128,
+    "prediction_minutes": 15,
+    "query_groups": 108
+  },
+  "numerical": {
+    "contracts": 4,
+    "decision_flips": 0,
+    "forward_reverse": true,
+    "maximum_absolute_probability_difference": 0.0,
+    "pairs_per_contract": 32,
+    "tolerance": 1e-05
+  },
+  "pairs": 512,
+  "per_job_cleanup_verified": true,
+  "platform_checked": "Windows",
+  "prefix_accepted": 150,
+  "proposal_sha256": "9bade8cd69eddcc984cf38138128a5318d47239ffa70b2263e32493c253ff9ed",
+  "protocol_sha256": "499816707f7af473067facb584c695490fb965d4542ec66b57858b3033e4c737",
+  "qualified_coverage": {
+    "labelled": 2946,
+    "pairs": 9915
+  },
+  "qualified_labels_added": 0,
+  "query_groups": 295,
+  "reference_scope": "Only already-exposed quick512 published development; no new reference cohort",
+  "residual_groups": 229,
+  "residual_pairs": 362,
+  "result_sha256": "81da80fa5b313bcafc247fb1d5452e8c3b8a9b9699fe58554c0163baf5884684",
+  "variants": {
+    "A": {
+      "E_to_I": {
+        "denominator": 356,
+        "numerator": 0,
+        "rare_error_upper_available": false
+      },
+      "I_in_accepted_Exact": {
+        "denominator": 80,
+        "estimate": 0.05,
+        "numerator": 4,
+        "whole_query_bootstrap_interval_95": [
+          0.011232833957553059,
+          0.10257352941176465
+        ]
+      },
+      "I_to_E": {
+        "denominator": 51,
+        "estimate": 0.0784313725490196,
+        "numerator": 4,
+        "whole_query_bootstrap_interval_95": [
+          0.01665983606557377,
+          0.16400273224043677
+        ]
+      },
+      "accepted_labels": [
+        "E"
+      ],
+      "accepted_query_groups": 64,
+      "accuracy": 0.825,
+      "accuracy_whole_query_interval_95": [
+        0.7303326199393615,
+        0.9080721003134795
+      ],
+      "additional_errors": 14,
+      "additional_pairs": 80,
+      "correct": 66,
+      "error_true_labels": {
+        "C": 3,
+        "I": 4,
+        "S": 7
+      }
+    },
+    "B": {
+      "E_to_I": {
+        "denominator": 356,
+        "numerator": 0,
+        "rare_error_upper_available": false
+      },
+      "I_in_accepted_Exact": {
+        "denominator": 79,
+        "estimate": 0.05063291139240506,
+        "numerator": 4,
+        "whole_query_bootstrap_interval_95": [
+          0.011621300211416491,
+          0.1044776119402985
+        ]
+      },
+      "I_to_E": {
+        "denominator": 51,
+        "estimate": 0.0784313725490196,
+        "numerator": 4,
+        "whole_query_bootstrap_interval_95": [
+          0.01665983606557377,
+          0.16400273224043677
+        ]
+      },
+      "accepted_labels": [
+        "E"
+      ],
+      "accepted_query_groups": 64,
+      "accuracy": 0.8227848101265823,
+      "accuracy_whole_query_interval_95": [
+        0.7297297297297297,
+        0.9066923076923075
+      ],
+      "additional_errors": 14,
+      "additional_pairs": 79,
+      "correct": 65,
+      "error_true_labels": {
+        "C": 3,
+        "I": 4,
+        "S": 7
+      }
+    },
+    "C": {
+      "E_to_I": {
+        "denominator": 356,
+        "numerator": 0,
+        "rare_error_upper_available": false
+      },
+      "I_in_accepted_Exact": {
+        "denominator": 76,
+        "estimate": 0.05263157894736842,
+        "numerator": 4,
+        "whole_query_bootstrap_interval_95": [
+          0.011904761904761904,
+          0.109375
+        ]
+      },
+      "I_to_E": {
+        "denominator": 51,
+        "estimate": 0.0784313725490196,
+        "numerator": 4,
+        "whole_query_bootstrap_interval_95": [
+          0.01665983606557377,
+          0.16400273224043677
+        ]
+      },
+      "accepted_labels": [
+        "E"
+      ],
+      "accepted_query_groups": 61,
+      "accuracy": 0.8157894736842105,
+      "accuracy_whole_query_interval_95": [
+        0.7213114754098361,
+        0.9041095890410958
+      ],
+      "additional_errors": 14,
+      "additional_pairs": 76,
+      "correct": 62,
+      "error_true_labels": {
+        "C": 3,
+        "I": 4,
+        "S": 7
+      }
+    },
+    "D": {
+      "E_to_I": {
+        "denominator": 356,
+        "numerator": 0,
+        "rare_error_upper_available": false
+      },
+      "I_in_accepted_Exact": {
+        "denominator": 77,
+        "estimate": 0.05194805194805195,
+        "numerator": 4,
+        "whole_query_bootstrap_interval_95": [
+          0.011764705882352941,
+          0.10770270270270266
+        ]
+      },
+      "I_to_E": {
+        "denominator": 51,
+        "estimate": 0.0784313725490196,
+        "numerator": 4,
+        "whole_query_bootstrap_interval_95": [
+          0.01665983606557377,
+          0.16400273224043677
+        ]
+      },
+      "accepted_labels": [
+        "E"
+      ],
+      "accepted_query_groups": 62,
+      "accuracy": 0.8181818181818182,
+      "accuracy_whole_query_interval_95": [
+        0.7216494845360825,
+        0.9041258969341159
+      ],
+      "additional_errors": 14,
+      "additional_pairs": 77,
+      "correct": 63,
+      "error_true_labels": {
+        "C": 3,
+        "I": 4,
+        "S": 7
+      }
+    }
+  },
+  "whole_window_gpu_handback_verified": false
+}

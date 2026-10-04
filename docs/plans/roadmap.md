@@ -2,13 +2,12 @@
 
 The lab has demonstrated a million-product catalogue, 1,000 queries, frozen API comparisons, Gatling load profiles, index recovery, a 40-API fleet and a three-target release path. These are local measurements, not evidence that the same capacity or latency will hold on Apple silicon or Azure. The [design targets](../prototype-design.md#provisional-quantitative-targets) remain provisional.
 
-The [category additional-label analysis](esci-category-increment.md) is prepared
-for review. It compares four fixed contracts after the retained experimental
-prefix; its 512-pair survey contains 362 residual pairs. Synthetic checks cover
-prefix preservation, matched differences and absent error support. GPU results
-remain pending. The next judgement batch is the
-[category survey and signal selection](esci-category-cascade-selection.md);
-qualified coverage remains 2,946/9,915 (29.71%).
+The [category survey](../research/evidence/esci-category-survey-results.md) is
+complete: finer categories and role instructions supply no useful additional
+precision. Every contract makes the same 14 additional Exact errors, including
+four Irrelevant → Exact errors. The next proposal is a bounded
+[cached-model Exact check](esci-exact-veto-survey.md). Qualified coverage
+remains 2,946/9,915 (29.71%); no model labels or gate exceptions are active.
 
 The control-runtime consolidation and delivery rehearsal are merged to `main`. Earlier batch plans remain in this directory, with measured results such as the [million-product](../research/evidence/million-scale.md) and [control-runtime](../research/evidence/kubernetes-control-services.md) evidence. A merged implementation does not close a measurement or integration gate.
 
@@ -29,18 +28,18 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 The current priority is [closing ESCI judgement gaps](esci-residual-cascade.md).
 The [residual audit and CPU surveys](../research/evidence/esci-gap-surveys.md)
 found a useful selective recalibrator, but actual qualified coverage remains
-29.71%. Granular category and prompt experiments run alongside complementary
-CPU surveys. Qualify the complete cascade before adding its labels to gates;
+29.71%. The quick category experiment is complete and does not justify the full
+four-pass study. Qualify the complete cascade before adding its labels to gates;
 control UI improvements and further identity work wait behind this priority.
 The [larger fitting-pool screen](../research/evidence/esci-fitted-specialists.md)
 is complete: six inexpensive classifiers add no useful labels at the required
 precision. [CPU pair models and prompt inference](esci-cpu-pair-judges.md) are
 also measured: one trained pair model selects no labels, and a 32-pair prompt
-probe is inconclusive. The next detailed batch is
-[category-aware cascade selection](esci-category-cascade-selection.md). The user
-has prioritised gap filling and halted the unrelated research run. The explicit interrupted-run GPU hand-over
-and quick survey are approved; the revised grant needs implementation and
-verification before category measurements start. [Blinded gap-review preparation](esci-gap-review-packet.md)
+probe is inconclusive. The next detailed batch is the bounded
+[cached-model Exact check](esci-exact-veto-survey.md): its input-only packet
+is prepared, but execution requires a separate valid grant. The unrelated
+research run remains halted; the completed quick-only grant cannot authorise
+new-model inference. [Blinded gap-review preparation](esci-gap-review-packet.md)
 now supplies input-only reviewer packets, with no labels or confirmed cohort.
 The owner's separate
 fitting pool remains excluded from confirmation. The
@@ -70,9 +69,11 @@ The [documentation relevance gate batch](documentation-relevance-gate.md) is acc
 
 The [MLflow and KServe judgement coverage plan](mlflow-kserve-judgement-coverage.md) adds a two-stage relevance evaluation: capture both recall sets, resolve their union, freeze one judgement snapshot and score both sides. Its first model abstains on every pair. The local implementation batches are accepted on main; the existing control UI retains its selected-judgement route. The [local evidence](../research/evidence/mlflow-kserve-judgement-coverage.md) records the 1M cache correction and low coverage. This does not close the unrelated gates below.
 
-The next judgement-specific batch is [control UI integration](judgement-control-integration.md): launch the verified resolver as a finite Job from retained observations and show frozen coverage and lineage in the UI.
+The earlier [control UI integration plan](judgement-control-integration.md)
+describes finite resolver Jobs and frozen coverage/lineage in the UI. It is
+deferred behind the current judgement-gap qualification work.
 
-The [model observability batch](model-observability.md) adds a source-controlled SigNoz dashboard, bounded inference and coverage metrics, an input-selection shift signal and connected judgement/KServe tracing. Its [local evidence](../research/evidence/model-observability-2026-09-29.md) shows the exact scope and older-release deployment caveat. Control UI integration remains the next judgement workflow batch.
+The [model observability batch](model-observability.md) adds a source-controlled SigNoz dashboard, bounded inference and coverage metrics, an input-selection shift signal and connected judgement/KServe tracing. Its [local evidence](../research/evidence/model-observability-2026-09-29.md) shows the exact scope and older-release deployment caveat. Control UI integration is deferred behind the current judgement-gap qualification work.
 
 The four [offline variant batches](offline-variants-and-gates.md) are merged on Gitea `main`: N-way capture and scoring, a selected-variant merge gate, a [live million-product proof](../research/evidence/offline-variants-million.md), and an [Argo-managed source CI rehearsal](../research/evidence/managed-variant-gate.md). The live model abstained on 10,946 gaps, leaving coverage below the 80% minimum; CI blocked the result. A separate, explicitly synthetic full-coverage fixture passed CI. The [operator decision rehearsal](variant-gate-operator-validation.md) is the next variant-specific check; it needs a real human release choice and better judged evidence. A two-version replacement needs no online traffic split. The GitHub offsite review stack remains open.
 

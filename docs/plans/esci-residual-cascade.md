@@ -1,8 +1,8 @@
 # Close the remaining ESCI judgement gaps
 
-Status: CPU surveys and the residual audit are measured. Category and prompt
-inference is being coordinated with the research session. No new model labels
-are qualified or active.
+Status: CPU surveys, the residual audit and the quick category survey are
+measured. Categories and role instructions supplied no useful additional
+precision. No new model labels are qualified or active.
 
 ## Intent
 
@@ -48,7 +48,7 @@ source rows found no additional published matches.
 | Published support retrieval | Predict withheld products from a fixed 30% same-query support set | Title similarity alone is insufficiently precise |
 | Compact NLI and instruction models | Short CPU throughput and matched prompt surveys before larger runs | Complete: NLI decoder lacks a useful signal; both prompt runtimes exceed their inference budget |
 | CPU pair-model adaptation | Separate published fitting/calibration queries; incremental precision on development | Complete: one epoch selects no class at the required precision and adds zero labels |
-| Granular Decider categories and prompts | Broad category, leaf, hierarchy and role instructions on matched inputs | Await measured inference; prepared contracts are not results |
+| Granular Decider categories and prompts | Broad category, leaf, hierarchy and role instructions on matched inputs | Complete: 76–80 additional Exact labels per contract, identical 14 errors; no useful precision improvement |
 
 Freeze each small survey before opening its outcomes. Retain all candidates,
 including unsuccessful ones. Use these screens to choose the next experiment;
@@ -59,9 +59,11 @@ their intervals do not confirm a winner selected from many alternatives.
 The [larger fitting-pool screen](esci-fitted-specialists.md) is complete: six
 fixed classifiers add no useful labels at the required precision.
 [CPU pair models and prompt inference](esci-cpu-pair-judges.md) are also complete:
-neither adds qualified labels. Next prioritise
-[category-aware cascade selection](esci-category-cascade-selection.md) at the
-research owner's saved GPU boundary. The separate 1,000-query training pool
+neither adds qualified labels. The completed
+[category results](../research/evidence/esci-category-survey-results.md) do not
+justify repeating the full four-pass study. Next prepare the bounded
+[cached-model Exact check](esci-exact-veto-survey.md) with a separate valid
+exclusive GPU grant. The separate 1,000-query training pool
 remains excluded from confirmation.
 
 | Work | Acceptance criterion |
@@ -80,8 +82,8 @@ zero-error bootstrap or model agreement cannot establish gap quality.
 
 Stop expanding an approach when it adds negligible coverage, lacks adequate
 precision or consumes disproportionate compute. Spend the next GPU window on
-the strongest category/prompt signals and necessary confirmation, rather than
-repeating failed threshold searches.
+a distinct model/decision hypothesis and necessary confirmation, guided by
+the shared errors rather than repeating failed threshold searches.
 
 If these stages cannot meet the gate, report the remaining gap and measured
 quality trade-offs. Prepare a clearly bounded exception for human review. Do

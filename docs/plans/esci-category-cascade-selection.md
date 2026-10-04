@@ -1,15 +1,10 @@
 # Select a category-aware judgement cascade
 
-Status: the CPU surveys are measured. The research-owned category study is
-prepared, but its guarded GPU execution and quality results are pending.
-No candidate from these surveys is active.
-
-On 4 October the user prioritised gap filling and authorised halting the
-unrelated T1 research assessment. Its unsaved attempt is recorded as interrupted;
-saved results remain preserved. Automatic approval review blocked replacing the
-completed-classifier prerequisite. The user subsequently approved the proposed
-interrupted-run grant and quick survey. The revised controller still requires
-implementation, tests and a verified grant before GPU execution.
+Status: the approved quick GPU survey and fixed residual analysis are complete.
+Richer categories add no useful precision: all four contracts make the same
+14 additional-label errors. No candidate from these surveys is active. See the
+[results and execution evidence](../research/evidence/esci-category-survey-results.md).
+The next proposal is a [small cached-model Exact check](esci-exact-veto-survey.md).
 
 ## Intent and constraints
 
@@ -20,10 +15,9 @@ authoritative; a later stage sees only gaps left by earlier qualified stages.
 
 - Keep the 80% gate and existing label-quality requirements. A temporary
   exception requires a recorded human decision.
-- Protect the research process's unsaved predictions. Start at a completed,
-  saved classifier boundary with its owner's exclusive GPU guard, or use an
-  explicitly approved interrupted-run hand-over with verified cleanup. The
-  interrupted-run proposal is approved; its implementation and verification are pending.
+- Keep the unrelated T1 research run halted and preserve its saved artefacts.
+  The completed interrupted-run grant covers only the approved quick category
+  study. New inference requires its own valid exclusive grant and scope.
 - Keep the original and fresh confirmation reservations, specialist queries,
   official test and the complete 1,000-query fitting pool out of adaptive work.
 - Freeze input fields, prompts, weights, score mapping and thresholds before
@@ -37,9 +31,10 @@ authoritative; a later stage sees only gaps left by earlier qualified stages.
 
 | Step | Required result | Next action |
 | --- | --- | --- |
-| Guarded quick survey | Four category/prompt contracts on the same 512 label-free selected development pairs; numerical repeats, truncation audit and durable completion records | Compare broad category, leaf, full hierarchy and hierarchy with product-role instructions |
-| Signal selection | Additional accepted labels, accuracy and harmful errors after the retained comparator; matched whole-query differences and class support | Continue a credible signal; retain inconclusive or negative results without declaring a winner |
-| Deeper assessment | Completed, numerically verified matched development outputs and a frozen selection rule | Run the four full 6,525-pair passes when the quick survey justifies the reserved cost |
+| Guarded quick survey | Complete: four matched 512-pair passes, successful numerical repeats, token audit and per-job cleanup | Retain the completed evidence; whole-window handback remains separate |
+| Signal selection | Complete: 76–80 additions per contract, all Exact, same 14 errors including four I → E | No useful category precision signal; keep the full four-pass study unstarted |
+| New model hypothesis | Raw Exact decisions already contain every shared error | Prepare the bounded cached-model role check; do not repeat the same four contracts |
+| Deeper assessment | A distinct measured signal, frozen selection rule and valid new grant | Spend further compute only when that signal justifies the cost |
 | Calibration, if needed | A separately frozen procedure using the reserved fitting/calibration split; no development or confirmation references enter fitting | Assess one specified recalibration or training change, rather than an unrestricted feature search |
 | Actual-gap projection | Eligible residual pairs only, with all stage releases and decisions retained | Report hypothetical additional coverage and cost separately from qualified coverage |
 | Confirmation preparation | Complete cascade hash, fresh independent published references and a blinded actual-gap annotation packet | Apply the [confirmation specification](esci-cascade-confirmation.md); missing references or unsupported error bounds remain explicit |

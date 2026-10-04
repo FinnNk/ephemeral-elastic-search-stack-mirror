@@ -1,8 +1,10 @@
 # Measure additional category-aware labels
 
-Status: the analysis tool is prepared and tested on synthetic fixtures. The
-four GPU passes and their quality results are pending. This batch adds no labels.
-See the [preparation evidence](../research/evidence/esci-category-increment.md).
+Status: the four GPU passes and frozen residual analysis are complete. All four
+contracts make the same 14 additional-label errors; richer categories supply no
+useful precision improvement. See the [measured results](../research/evidence/esci-category-survey-results.md)
+and original [preparation evidence](../research/evidence/esci-category-increment.md).
+No labels are qualified or active.
 
 Measure which category inputs add useful labels after the frozen experimental
 prefix: the Exact 0.95 stage followed by the retained recalibrator. All four
@@ -27,36 +29,33 @@ Additional-label accuracy uses only additional accepted pairs. Empty support
 remains unavailable; zero observed errors do not establish a rare-error bound.
 The fixed contrasts are exploratory and do not qualify a model or change the gate.
 
-## Run the analysis
+## Verify the retained analysis
 
-These commands are for the lab operator, from this repository checkout in
-PowerShell. They use the existing CPU analysis environment; no GPU is needed.
-The Windows host is the checked platform.
+The registered protocol and original result already exist. To repeat the fixed
+analysis, use the retained protocol and a fresh output file. These commands are
+for the lab operator, from this repository checkout in PowerShell. They use the
+existing CPU analysis environment; the Windows host is the checked platform.
+
+First verify the owner's per-job completion, numerical and cleanup receipts
+for the retained run. The statistical tool does not perform host cleanup.
 
 ```powershell
 $state = 'D:\codex\Ephemeral Elasticsearch\.lab'
 $owner = Join-Path $state 'esci-model-agent-repo\esci-tfm-experiment'
-$packet = Join-Path $owner 'data\interim\category-input-study-20261003\quick-512-registration-01'
 $analysis = Join-Path $state 'esci-category-increment\registered-01'
 $python = Join-Path $state 'esci-packaging\.venv\Scripts\python.exe'
-& $python lab/experiments/esci-category-increment/analyse_increment.py freeze `
-  --packet $packet --prefix "$state\esci-fitted-specialists\development-prefix.jsonl" `
-  --owner $owner --output $analysis
-```
-
-Freeze prints the protocol hash and the prefix/residual counts. It creates a
-fresh directory and refuses to replace an existing registration. Preserve a
-failed attempt and use a new directory if the registered code needs correction.
-
-Before running, verify the active grant's output directory and the owner's
-per-job completion, numerical and cleanup receipts. Set `$runs` to **that exact
-output directory**, rather than guessing it from an earlier plan.
-
-```powershell
+$runs = Join-Path $owner 'data\interim\category-input-study-20261003\gap-quick-launcher-01'
+$repeat = Join-Path $analysis ('result-recheck-' + [guid]::NewGuid().ToString('N') + '.json')
 & $python lab/experiments/esci-category-increment/analyse_increment.py run `
   --protocol "$analysis\protocol.json" --runs-root $runs `
-  --output "$analysis\result.json"
+  --output $repeat
+Get-FileHash -LiteralPath $repeat -Algorithm SHA256
 ```
+
+The command prints the new result path and additional counts A=80, B=79, C=76,
+D=77. Unchanged inputs and source produce result hash
+`81da80fa5b313bcafc247fb1d5452e8c3b8a9b9699fe58554c0163baf5884684`.
+It leaves the original `result.json` intact.
 
 The existing research validator checks all four completed inference outputs
 and successful numerical repeats before this tool opens reference values. A
@@ -64,10 +63,14 @@ missing or changed output stops analysis. The tool checks source and input
 hashes and refuses to replace a result. Host ownership and cleanup remain
 separate operating checks; this statistical tool does not manage GPU execution.
 
+The original `freeze` command was executed before outcomes were opened. It
+created `registered-01` and refused replacement. Do not recreate or overwrite
+that registration. A changed method needs a new protocol and must record that
+these development outcomes have already been exposed.
+
 ## Next batch
 
-Complete the [category survey and signal selection](esci-category-cascade-selection.md).
-Use measured additional labels, harmful errors and compute cost to choose deeper
-work. Retain inconclusive results without declaring a winner. Independent
+The next proposal is a [small cached-model Exact check](esci-exact-veto-survey.md).
+The quick category results do not justify the full four-pass study. Independent
 [cascade confirmation](esci-cascade-confirmation.md), including actual-gap human
 references, remains required before activation.
