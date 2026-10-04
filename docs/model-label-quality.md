@@ -22,6 +22,10 @@ candidate's predictions. A published-label result cannot establish gap accuracy.
 Public ESCI may have appeared in upstream pretraining; the audit establishes
 independence from recorded local training and assessments only.
 
+The [gap-review preparation tool](gap-review.md) creates input-only reviewer
+packets and blank answer templates from current frozen gap inputs. It does not
+create the independent audit/reservation or a completed reference cohort below.
+
 1. Audit normalised query overlap with training, mapping fit/tuning, earlier
    assessment and reserved research queries. An incomplete audit stops inference.
 2. Select whole queries deterministically, then select their product pairs.

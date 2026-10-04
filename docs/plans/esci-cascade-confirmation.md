@@ -100,6 +100,10 @@ counts do not establish bounds for differently weighted pair populations.
 
 Prepare the annotation packet while CPU fitting continues:
 
+Use the [input-only packet tool](../gap-review.md) for reviewer files and the
+operator mapping. Its preparation manifest is not a confirmation reservation;
+the remaining steps and independent audit still apply.
+
 1. Freeze an input-only sample from the actual unresolved, exception-eligible
    recall pool. Preserve the specialist exclusions. Record sampling strata,
    inclusion probabilities and hashes; do not select examples from known errors.

@@ -1,0 +1,51 @@
+{
+  "kind": "esci-gap-review-packet-validation",
+  "date": "2026-10-04",
+  "platform": "Windows",
+  "status": "passed",
+  "source_base_commit": "8edda1281afc3797e8c545ead7a9248cf43b7991",
+  "code_sha256": {
+    "evaluation/prepare_gap_review.py": "e8451f14d36eab7dd4e7993bcdde741c2c379957da656e0058f8d61f31c9f071",
+    "evaluation/test_prepare_gap_review.py": "aa394a806271414dbadf403307f85ea03463f8b925f3efa9b4ab681876f14877"
+  },
+  "software_tests": {
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0
+  },
+  "ruff": "passed",
+  "real_packet": {
+    "manifest_sha256": "7d95e88a713e6897186fb968e5d9e2abeb77a20b7e0563d0331a7e282bd9251e",
+    "eligible_queries": 944,
+    "eligible_pairs": 6920,
+    "selected_queries": 100,
+    "selected_pairs": 754,
+    "reference_labels_created": 0,
+    "all_hashes_verified": true
+  },
+  "gate_changed": false,
+  "model_requests": 0,
+  "limits": [
+    "Input-only preparation, not a confirmed independent cohort.",
+    "No human references, model accuracy, inference, activation or portability verified."
+  ],
+  "documentation": {
+    "renderer": "Gitea Markdown API, local static preview",
+    "browser": "installed headless Chrome",
+    "viewport": [
+      1280,
+      1000
+    ],
+    "rendered_pages": 6,
+    "changed_sections_visually_inspected": true,
+    "local_links_checked": true,
+    "page_horizontal_overflow": false,
+    "scope": "Static document previews and local workspace image, not an authenticated browser workflow."
+  },
+  "review": {
+    "separate_agent_read_only_review": true,
+    "initial_nested_leakage_finding": "fixed with shared filter validation and scalar/text-list type checks before output creation",
+    "remaining_blocking_findings": 0
+  },
+  "whitespace": "passed"
+}

@@ -4,6 +4,12 @@ Status: the CPU surveys are measured. The research-owned category study is
 prepared, but its guarded GPU execution and quality results are pending.
 No candidate from these surveys is active.
 
+On 4 October the user prioritised gap filling and authorised halting the
+unrelated T1 research assessment. Its unsaved attempt is recorded as interrupted;
+saved results remain preserved. Automatic approval review blocked replacing the
+completed-classifier prerequisite. A concrete interrupted-run hand-over awaits
+explicit human approval before category GPU execution.
+
 ## Intent and constraints
 
 Find stages that add enough accurate labels to approach 80% coverage of the
@@ -14,7 +20,9 @@ authoritative; a later stage sees only gaps left by earlier qualified stages.
 - Keep the 80% gate and existing label-quality requirements. A temporary
   exception requires a recorded human decision.
 - Protect the research process's unsaved predictions. Start at a completed,
-  saved classifier boundary with its owner's exclusive GPU guard.
+  saved classifier boundary with its owner's exclusive GPU guard, or use an
+  explicitly approved interrupted-run hand-over with verified cleanup. The
+  latter approval is pending; the halt does not itself grant GPU execution.
 - Keep the original and fresh confirmation reservations, specialist queries,
   official test and the complete 1,000-query fitting pool out of adaptive work.
 - Freeze input fields, prompts, weights, score mapping and thresholds before
