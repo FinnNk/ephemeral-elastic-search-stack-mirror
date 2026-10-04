@@ -9,3 +9,8 @@ judgements/esci/kernel-profile.json -text whitespace=blank-at-eol,blank-at-eof,s
 
 # Quality confirmation binds the acceptance policy before opening outputs.
 evaluation/specs/esci-label-quality-v1.json -text
+
+# Source Actions checks these exact bytes against operator-configured pins.
+lab/variant_gate.py text eol=lf
+lab/delivery/policies/variant-merge-v1.json text eol=lf
+lab/delivery/ci/lab_delivery.py text eol=lf

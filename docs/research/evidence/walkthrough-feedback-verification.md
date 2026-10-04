@@ -63,3 +63,14 @@ New OIDC delivery clients, manual Actions submission, automatic PR capture,
 required extra-suite behaviour and the Gitea setting correction still need the
 [accepted runtime activation](../../plans/walkthrough-activation.md).
 Their isolated checks do not substitute for that live rehearsal.
+
+## Windows checkout bytes
+
+The lab's gate code, merge policy and remote client now declare LF checkout
+endings in `.gitattributes`. These files supply exact source Actions hash pins;
+Windows line-ending conversion must not alter those pins after a fresh checkout.
+
+With the actual `core.autocrlf=true` setting, `git checkout-index` produced LF
+files for all three paths. Their bytes and SHA-256 values matched source PR #27's
+published files. This verifies the packaging contract; it does not establish a
+live remote Actions run. Frozen datasets and earlier evidence were unchanged.

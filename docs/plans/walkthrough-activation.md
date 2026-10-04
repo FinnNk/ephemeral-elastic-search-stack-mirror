@@ -26,7 +26,8 @@ release unchanged unless a separate deployment proposal is approved.
 3. Run `lab/setup_delivery_actions.py` and `lab/setup_relevance_gate.py` from
    the lab repository root with `LAB_STATE_DIR` pointing to retained lab state.
    Confirm External Secrets is healthy before removing old source signing
-   secrets. Reconfigure the proxy to admit verified bearer tokens.
+   secrets. Reconfigure the proxy to admit verified bearer tokens. Confirm the
+   configured client/code/policy pins match source main's exact published bytes.
 4. Apply the accepted allowlist correction with `lab/update_gitea_allowlist.py`.
    Inspect the effective sections without printing secret values; confirm the
    warning disappears and Gitea's version remains unchanged.

@@ -14,6 +14,8 @@ Source PR #27 passed release CI and the installed relevance gate after a fresh
 1,000-query capture. A small verification follow-up corrects Gitea workflow
 selection and separates local checkout preparation from repository settings.
 See the [verification record](../research/evidence/walkthrough-feedback-verification.md).
+The final checkout check fixes LF endings for the three exact-byte workflow
+pins, so Windows Git conversion cannot change their configured hashes.
 
 The lab has demonstrated a million-product catalogue, 1,000 queries, frozen API comparisons, Gatling load profiles, index recovery, a 40-API fleet and a three-target release path. These are local measurements, not evidence that the same capacity or latency will hold on Apple silicon or Azure. The [design targets](../prototype-design.md#provisional-quantitative-targets) remain provisional.
 
