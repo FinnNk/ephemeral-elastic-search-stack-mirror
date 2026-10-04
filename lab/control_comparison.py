@@ -121,6 +121,18 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
                 row[side]['judged_top_10_count'] = len(ids) - len(row[side]['unjudged_top_10_ids'])
                 row[side]['ndcg_at_10'] = per_query[side].get(qid, 0.0)
             row['ndcg_delta_at_10'] = round(row['candidate']['ndcg_at_10'] - row['baseline']['ndcg_at_10'], 6)
+    source_coverage = None
+    if mode == 'relevance' and complete:
+        sources = {(r['query_id'], r['product_id']): r.get('provenance', {'kind': 'published'}) for r in judgements}
+        source_coverage = {}
+        for side in ('baseline', 'candidate'):
+            counts = {}
+            for row in results:
+                for pid in row[side]['ids']:
+                    provenance = sources.get((row['query_id'], pid))
+                    kind = provenance['kind'] if provenance else 'unjudged'
+                    counts[kind] = counts.get(kind, 0) + 1
+            source_coverage[side] = counts
     coverage = None
     if mode == 'relevance' and complete:
         coverage = {side: {'judged': sum(row[side]['judged_top_10_count'] for row in results),
@@ -180,9 +192,13 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
               if mode == 'relevance' else None,
               'judgement_provenance': selected['judgement_manifest']['producer']
               if mode == 'relevance' else None,
-              'judgement_coverage': coverage,
+              'judgement_coverage': coverage, 'judgement_source_counts': source_coverage,
               'judgement_coverage_status': coverage_status,
-              'judgement_usage': ('Selected published labels; unjudged products remain unknown.'
+              'judgement_selection': selected['judgement_manifest']['producer'].get('selection', 'gate')
+              if mode == 'relevance' else None,
+              'judgement_usage': (('Lab demo: published labels and authorised model predictions; accuracy remains unqualified.'
+                                   if selected['judgement_manifest']['producer'].get('selection') == 'demo'
+                                   else 'Selected judgement labels; unjudged products remain unknown.')
                                   if mode == 'relevance' else 'Not used for result preservation.'),
               'query_count': len(suite), 'completed_query_count': len(results), 'zero_result_counts': zero_counts,
               'changed_query_ids': changed, 'metrics': metrics, 'errors': errors, 'queries': results}
@@ -196,5 +212,5 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
             'changed_query_ids': changed, 'zero_result_counts': zero_counts,
             'query_manifest_sha256': selected['query_manifest_sha256'],
             'judgement_manifest_sha256': selected.get('judgement_manifest_sha256'),
-            'metrics': metrics, 'judgement_coverage': coverage,
+            'metrics': metrics, 'judgement_coverage': coverage, 'judgement_source_counts': source_coverage,
             'judgement_coverage_status': coverage_status, 'errors': errors}

@@ -3,15 +3,15 @@
   "ok": true,
   "command": "deliver",
   "type": "workflow",
-  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\archify\\variant-merge-gate.json",
-  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\interactive\\variant-merge-gate.html",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\archify\\variant-merge-gate.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\variant-merge-gate.html",
   "specification": {
-    "sha256": "a99b904c4221c97f96f168a963e8d07c612852ae8f0eac19751fb9c763f62325",
-    "bytes": 2787
+    "sha256": "e60078268a68780777c6d8491b8e8733322c74863da5576b6a5d7130fc990ffc",
+    "bytes": 3759
   },
   "artifact": {
-    "sha256": "6ce42a8e796e77e82c8c27b65dab4f0a3427cb7b4bc5b0e8cca89ae954a6c754",
-    "bytes": 807308
+    "sha256": "82bd9b9c096700a83ec1a1ee0767d0fb6cd6fbb886c2238c6b035d61467f60ec",
+    "bytes": 807280
   },
   "validation": {
     "checksPassed": 9,

@@ -53,7 +53,7 @@ def main():
                  'query-manifest', 'source-judgements', 'source-manifest', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--resolve-url', required=True)
-    parser.add_argument('--selection', choices=('gate', 'exploratory'), default='gate')
+    parser.add_argument('--selection', choices=('gate', 'exploratory', 'demo'), default='gate')
     parser.add_argument('--resolve-timeout', type=float, default=10,
                         help='Seconds per resolution batch; use 130 for the v3 candidate')
     parser.add_argument('--model-name', required=True)

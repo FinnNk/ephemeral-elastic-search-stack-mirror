@@ -76,7 +76,7 @@
       "col": 4,
       "type": "database",
       "label": "Select and freeze",
-      "sublabel": "Gate or exploratory",
+      "sublabel": "Strict, demo or explore",
       "width": 130
     },
     {
@@ -142,8 +142,8 @@
       "dot": "emerald",
       "title": "Select labels before scoring",
       "items": [
-        "Exploratory selection may include unqualified predictions",
-        "Merge gates reject exploratory or unqualified labels"
+        "Strict gates exclude unqualified predictions",
+        "Lab demo: approved model and policy; accuracy unqualified"
       ]
     }
   ]

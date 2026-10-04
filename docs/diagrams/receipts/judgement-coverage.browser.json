@@ -6,9 +6,9 @@
   "status": "pass",
   "visualReview": "pending",
   "artifact": {
-    "path": "C:\\Users\\finnn\\.codex\\worktrees\\exploratory-notebooks\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\judgement-coverage.html",
-    "sha256": "7e319e3a9261a43c61e8eed98ff0454f889f946067c507df4834d9e640132905",
-    "bytes": 803032
+    "path": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\judgement-coverage.html",
+    "sha256": "65d65edca2f4ea35a4b8f30d42160b7147cdb2903b2b38471d7081a583d962e2",
+    "bytes": 803040
   },
   "state": {
     "detail": "read",

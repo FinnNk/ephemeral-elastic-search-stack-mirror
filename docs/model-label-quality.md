@@ -216,8 +216,14 @@ published labels, human labels and each model pass.
 The normal merge gate requires 80% eligible coverage. The prepared fallback
 allows a human decision only for `preserve-results` with identical ordered IDs
 and total counts at capture depth, equal scores and coverage, and exact-build
-signed evidence. Qualified-label controls remain mandatory; unknown judgements
+signed evidence. Strict qualified-label controls remain mandatory; unknown judgements
 stay unknown. Low-coverage ranking changes remain blocked. Review and protected
 source/policy pin updates are still needed before existing CI can use it.
 [The evaluation runbook](evaluation-runbook.md#human-exceptions) describes the
 existing authenticated approval command. Assessment commands grant no exception.
+
+## Temporary lab demo exception
+
+The human has authorised lower model-4 confidence thresholds for local ESCI demos. This is separate from the independent quality protocol above: model predictions remain unqualified, and strict `gate` selection excludes them. The protected demo policy permits only their exact source scope and policy identity while retaining 80% coverage.
+
+See [demo label selection and restoration](judgement-resolution.md#temporary-esci-demo-labels). Resume independent qualification before presenting these predictions as quality evidence. The separate Decider2B execution remains held for review.

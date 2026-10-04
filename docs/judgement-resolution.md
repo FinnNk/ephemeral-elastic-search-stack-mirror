@@ -2,7 +2,7 @@
 
 A ranking change may retrieve products outside the existing label pool. This workflow collects missing query/product pairs from **all** variants, asks a separate judgement service for labels and freezes one set before scoring. Published source labels take precedence. Each model pass retains its own predictions, abstentions and provenance behind the API.
 
-The default model abstains. A candidate can fill gaps for exploratory comparisons before its label quality is qualified. Gate selection excludes unqualified predictions.
+The live inference fallback abstains. The full ESCI lab catalogue currently uses published labels plus cached model-4 predictions under a **temporary demo policy**. Strict gate selection excludes those predictions; demo reports disclose their unqualified accuracy.
 
 ## Services and outcomes
 
@@ -33,6 +33,7 @@ These services are shared in `lab-models`, outside search experiment namespaces.
 | --- | --- |
 | `gate` (default) | Published and human labels, plus model labels explicitly qualified by the operator's pinned policy |
 | `exploratory` | Also accepts unqualified candidate predictions |
+| `demo` | Adds only model predictions authorised by the configured lab demo policy; they remain unqualified |
 
 Published labels win, followed by human labels, then the earliest accepted model
 pass allowed by the selection. Model versions do not overwrite each other.
@@ -48,7 +49,39 @@ predictions gate-eligible. Both require the exact source context and at most
 Use `--selection exploratory` with `judgements/evaluate.py` for exploratory
 scores. Frozen rows retain provenance and eligibility. Reports identify their
 selection and unqualified label count; the trusted merge gate rejects exploratory
-reports or any unqualified labels, regardless of coverage or a business override.
+reports. Strict gates reject unqualified labels. The temporary demo gate accepts only the exact model, source scope and acceptance policy recorded in its protected policy. A business override cannot authorise other model labels.
+
+## Temporary ESCI demo labels
+
+The default full-catalogue comparison uses the [demo policy](../judgements/policies/esci-lab-demo.json): Exact confidence at least **0.75**, and Substitute, Complement or Irrelevant at least **0.40**. Published labels always win. Predictions below their class threshold remain unknown.
+
+The measured frozen recall set has **81.22% coverage**: 2,946 published labels and 5,107 model predictions over 9,915 returned pairs. Coverage measures labels available, not their correctness. New search results can lower coverage.
+
+To replay a saved pass, use PowerShell from the reference repository root. `$savedPass` is the complete model-4 pass retained in `.lab/esci-packaging/progressive-20261003/first-pass/pass.json` on this lab host. Use a new output path. Set the retained state directory first:
+
+```powershell
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
+$savedPass = Join-Path $env:LAB_STATE_DIR 'esci-packaging/progressive-20261003/first-pass/pass.json'
+python judgements/demo.py --saved-pass $savedPass --policy judgements/policies/esci-lab-demo.json --output "$env:LAB_STATE_DIR/esci-demo-coverage/pass.json"
+```
+
+Keep this command running in a separate PowerShell terminal from the reference repository root:
+
+```powershell
+kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-models port-forward service/judgement-service-million 18089:18086 --address 127.0.0.1
+```
+
+Then import the replayed pass in the first terminal:
+
+```powershell
+python judgements/fill_gaps.py import --pass-file "$env:LAB_STATE_DIR/esci-demo-coverage/pass.json" --import-url http://127.0.0.1:18089/v1/judgements:import
+```
+
+Its Deployment mounts `judgement-demo-policy`. Imports validate the probabilities, label and policy pin; the original pass stays unchanged. The API continues to report model **1** as its abstaining inference fallback, while cached predictions retain model **4** in their provenance. No GPU is needed for replay or lookup.
+
+Add `--selection demo` to the evaluation command below to select these cached labels. The control page already selects the published demo snapshot by default for `esci-gb-v1`; the small demo catalogue retains its published labels.
+
+To restore strict behaviour, select the original published judgement manifest, remove `lab_demo_judgements` from the protected merge policy and update its trusted pin after review. Keep retained demo reports as evidence. See the [batch plan](plans/esci-demo-coverage.md) and [measured results](research/evidence/esci-demo-coverage.md).
 
 ## Install or verify
 

@@ -72,3 +72,9 @@ Retain catalogue/query/label/traffic manifests and bytes, observations, specific
 The catalogue-only recipe keeps index identity independent of query and label revisions. The controller verifies its catalogue bytes before reuse or rebuild. Historical restore uses the explicitly retained recipe, never today's mapping by assumption.
 
 Producer/evaluator Jobs use separate namespaces, scoped Blob access and no Kubernetes API token. They emit safe outcome/hash logs through the scoped log agent. The local Blob Storage emulator (Floci) shares an account credential and cannot prove independent Azure write scopes. See [finite-Job evidence](research/evidence/signoz-finite-jobs-2026-09-28.md) and [contract evidence](research/evidence/independent-data-evaluation-contracts.md) for dated scope.
+
+## Retain the ESCI demo snapshot
+
+Published catalogue/query/source-label manifests can be regenerated from the frozen ESCI import. The selected full-catalogue **demo** judgement manifest also needs the retained model-4 prediction pass: its labels cannot be recovered from published ESCI alone.
+
+The lab stores the immutable demo rows and manifest in Azure Blob Storage, alongside the replay pass. Keep those objects with retained lab storage when recreating nodes. On empty storage, replay the saved pass using [the judgement guide](judgement-resolution.md#temporary-esci-demo-labels), resolve and freeze a new demo set, then publish that snapshot before selecting its reviewed default pin. Alternatively select the original published-label manifest and retain strict low coverage. `publish_default_inputs.py` verifies an existing selected demo snapshot; it does not substitute newly generated published labels for it.

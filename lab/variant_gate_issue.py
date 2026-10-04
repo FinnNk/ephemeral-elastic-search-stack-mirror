@@ -70,7 +70,9 @@ def main():
     if args.action == 'attest':
         receipt = attest(args.report.read_bytes(), args.source_sha,
                          args.build_receipt.read_bytes(),
-                         operator_key('LAB_VARIANT_EVIDENCE_KEY'), now)
+                         operator_key('LAB_VARIANT_EVIDENCE_KEY'), now,
+                         json.loads((Path(__file__).resolve().parent /
+                             'delivery/policies/variant-merge-v1.json').read_bytes()))
     else:
         receipt = issue_approval(args.report.read_bytes(), args.policy.read_bytes(),
             args.selection.read_bytes(), json.loads(args.attestation.read_bytes()),

@@ -131,6 +131,7 @@ def evaluate(observation_path, judgement_path, specification_path,
         raise ValueError('Judgement manifest record count differs.')
     observed_ids = {row['query_id'] for row in observations['observations']}
     judgements = {}
+    sources = {}
     for row in rows:
         key = (row['query_id'], row['product_id'])
         if key in judgements:
@@ -140,6 +141,15 @@ def evaluate(observation_path, judgement_path, specification_path,
         if type(row.get('grade')) is not int or row['grade'] not in range(4):
             raise ValueError('Judgement grade must be 0, 1, 2 or 3.')
         judgements[key] = row['grade']
+        provenance = row.get('provenance', {'kind': 'published',
+                                           'source_id': judgement_manifest['content']['sha256']})
+        eligible = row.get('gate_eligible', True)
+        if not isinstance(provenance, dict) or type(eligible) is not bool:
+            raise ValueError('Selected judgement provenance or eligibility is invalid.')
+        identity = sha(canonical({'provenance': provenance, 'gate_eligible': eligible}))
+        source = sources.setdefault(identity, {'provenance': provenance,
+                                                'gate_eligible': eligible, 'count': 0})
+        source['count'] += 1
     qrels = [ir_measures.Qrel(qid, pid, grade)
              for (qid, pid), grade in judgements.items()]
     results = {}
@@ -175,7 +185,10 @@ def evaluate(observation_path, judgement_path, specification_path,
     return {'kind': 'variant-evaluation-report', 'schema_version': SCHEMA,
             'complete': True, 'query_count': len(observed_ids),
             'judgement_selection': judgement_manifest.get('producer', {}).get('selection', 'gate'),
-            'unqualified_judgements': sum(row.get('gate_eligible') is False for row in rows),
+            'judgement_rubric': judgement_manifest.get('producer', {}).get('rubric'),
+            'judgement_sources': [sources[identity] for identity in sorted(sources)],
+            'unqualified_judgements': sum(source['count'] for source in sources.values()
+                                         if not source['gate_eligible']),
             'default_variant': observations['default_variant'],
             'baseline_variant': baseline, 'variants': observations['variants'],
             'variant_set_sha256': observations.get('variant_set_sha256'),

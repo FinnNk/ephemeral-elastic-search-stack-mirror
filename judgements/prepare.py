@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 from urllib import request
 
-from core import canonical, digest, pool, resolve
+from core import canonical, digest, pool, resolve, selected
 from drift import input_shift
 from telemetry import telemetry
 
@@ -108,7 +108,7 @@ def prepare(observation_path, specification_path, catalogue_path, catalogue_mani
         raise ValueError('Selected frozen inputs do not match the observations.')
     needed, _ = pool(observations, specification)
     known = {(row['query_id'], row['product_id']) for row in read_rows(source_path)
-             if selection == 'exploratory' or row.get('gate_eligible', True)}
+             if selected(row, selection)}
     missing_ids = {pair['product_id'] for pair in needed
                    if (pair['query_id'], pair['product_id']) not in known}
     products = selected_products(catalogue_path, missing_ids)
@@ -129,13 +129,23 @@ def prepare(observation_path, specification_path, catalogue_path, catalogue_mani
     manifest_path = output / 'judgement-set.json'
     immutable(rows_path, b''.join(canonical(row) for row in frozen))
     immutable(receipt_path, canonical(attempts))
+    demo_sources = [row['provenance'] for row in frozen if
+                    row.get('gate_eligible') is False and selection == 'demo']
+    demo_metadata = {}
+    if demo_sources:
+        policies = {row['policy_sha256'] for row in demo_sources}
+        approvals = {canonical(row['authorisation']) for row in demo_sources}
+        if len(policies) != 1 or len(approvals) != 1:
+            raise ValueError('Freeze one authorised demo policy per judgement snapshot.')
+        demo_metadata = {'demo_policy_sha256': next(iter(policies)),
+                         'authorisation': demo_sources[0]['authorisation']}
     manifest = envelope('judgement-set', rows_path, 'pooled-judgement-resolution',
                         source_manifest['dependencies'], len(frozen),
                         {**{key: value for key, value in source_manifest['producer'].items() if key != 'name'},
                          'source_judgement_sha256': source_manifest['content']['sha256'],
                          'observation_sha256': digest(observation_bytes),
                          'resolution_sha256': digest(canonical(attempts)),
-                         'model': model_identity, 'selection': selection})
+                         'model': model_identity, 'selection': selection, 'rubric': 'esci-v1', **demo_metadata})
     immutable(manifest_path, canonical(manifest))
     return {'judgements': manifest['content']['sha256'],
             'manifest': digest(canonical(manifest)),
@@ -149,7 +159,7 @@ def main():
                  'query-manifest', 'source-judgements', 'source-manifest', 'output'):
         parser.add_argument('--' + name, required=True, type=Path)
     parser.add_argument('--resolve-url', required=True)
-    parser.add_argument('--selection', choices=('gate', 'exploratory'), default='gate')
+    parser.add_argument('--selection', choices=('gate', 'exploratory', 'demo'), default='gate')
     parser.add_argument('--resolve-timeout', type=float, default=10,
                         help='Seconds per resolution batch; use 130 for the v3 candidate')
     parser.add_argument('--model-name', required=True)

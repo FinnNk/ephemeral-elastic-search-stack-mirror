@@ -12,7 +12,32 @@
   "pass_min_delta": 0.0,
   "exception_min_delta": -0.03,
   "changed_query_fraction": {
-    "preserve-results": {"pass": 0.0, "exception": 0.01},
-    "ranking-change": {"pass": 1.0, "exception": 1.0}
+    "preserve-results": {
+      "pass": 0.0,
+      "exception": 0.01
+    },
+    "ranking-change": {
+      "pass": 1.0,
+      "exception": 1.0
+    }
+  },
+  "lab_demo_judgements": {
+    "context": {
+      "catalogue_sha256": "dfe6cecbc7d745a728fbed59679be10af0532be69583f65dc078c8108c25ff50",
+      "query_suite_sha256": "cf2c0d3117850272e154174c584a62f8c2276f1092b5e24c3962135ca362c99c",
+      "rubric": "esci-v1"
+    },
+    "model": {
+      "name": "synthetic-esci-judge",
+      "version": "4",
+      "artifact_sha256": "6a4d9dc3ff4edb2ea9c3f071fc64973724b9a90f6db8f71d5aa85102e9e6dc2f"
+    },
+    "policy_sha256": "115f725f9c66c867f6db65b48b6103b6ba487e4dfc5d58f0cbbec722a165cb17",
+    "authorisation": {
+      "reviewer": "finnnk",
+      "decided_at": "2026-10-04",
+      "purpose": "local ESCI demos",
+      "reason": "Use the current model and reduce confidence thresholds to reach 80% coverage, temporarily unblocking ESCI lab demos. Independent label-quality qualification remains pending."
+    }
   }
 }

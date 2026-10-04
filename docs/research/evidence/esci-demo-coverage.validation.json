@@ -1,0 +1,249 @@
+{
+  "kind": "esci-lab-demo-validation",
+  "schema_version": 1,
+  "measured_at": "2026-10-04",
+  "quality": "human-authorised lab demo; independently unqualified",
+  "thresholds": {
+    "E": 0.75,
+    "S": 0.4,
+    "C": 0.4,
+    "I": 0.4
+  },
+  "tests": {
+    "tests": 68,
+    "failures": 0,
+    "errors": 0,
+    "passed": true
+  },
+  "image": {
+    "image": "nexus.localhost:18185/relevance-judge:j1-189d1321a6521877-amd64",
+    "platforms": [
+      "linux/amd64"
+    ],
+    "source_sha256": "189d1321a6521877406b6a2b3feb9c1de273ce8aeb960413ed430b4c72306a09",
+    "pinned_image": "nexus.localhost:18185/relevance-judge:j1-189d1321a6521877-amd64@sha256:a0cf1792b3d255167bc60fec994dcc3f8423ebc4850719eb9a68ebf3894e7a6b"
+  },
+  "control_image": "nexus.localhost:18185/lab-control@sha256:d917e97316c803bf97cde52477260ebe086b6dad65127b72b08ef34732dca84a",
+  "frozen": {
+    "pass.json": {
+      "sha256": "0892d3f498de955e7d501d5c225acfa4b2d7441033206f201e6f1f9b30a53349",
+      "bytes": 9364026
+    },
+    "frozen/judgements.jsonl": {
+      "sha256": "1fdfc905cd2a58027198f40fcfa8ccf0d454f9b2229bc8bc5240cec3b0e2003d",
+      "bytes": 11203511
+    },
+    "frozen/judgement-set.json": {
+      "sha256": "ee2c9c9cdc835604b74dd368381061f5c227689ea6ad736ed76c7b9fe25d4b8b",
+      "bytes": 2562
+    },
+    "evaluation.json": {
+      "sha256": "cf7ac904c5e5150fe601c7f645d93653546d8aee5b2ed3ff56f6c16f5edf8332",
+      "bytes": 83567
+    },
+    "control-report-full.json": {
+      "sha256": "ac5343518c6c4096f626d464e32cc18f6e8bc4a073d037a3570c75f399549848",
+      "bytes": 1137578
+    },
+    "api-import.json": {
+      "sha256": "41debdae30034bf8c72716e946032793fb83a60e2f89ac1c9790811eb3f1cba5",
+      "bytes": 291
+    },
+    "api-restart-check.json": {
+      "sha256": "b8feb1503162c657f8d8b3a6e3721ba3da1e4fd4b8d454b61788900363b32438",
+      "bytes": 4657
+    }
+  },
+  "captures": [
+    {
+      "source_pr": 19,
+      "report_sha256": "f6f8a89ceb89f87ba9dc948bf67a958e3746e2ec22a596212e2ff8f526aa010b",
+      "source_sha": "3a09c51c92e3045f1558ac11f95ad35bd82eb11c",
+      "observations_sha256": "b55e7aa2660c1e88231a3d7f8521b19b5a23ced033c94cceb2942b076f498ee1",
+      "configuration": {
+        "ranker-a": {
+          "configuration_sha256": "047f11df6c57b60a0f424e185042bb91039c3c29436091f227eaafed38ed3acc",
+          "environment_fingerprint": "a01d5dc52d386c027358e17dba7d24d8842bed671bcbcafb7e076c3581551181",
+          "image": "nexus.localhost:18185/search-api@sha256:48aa5277bfd1f6bf317d4fdb94e5027eac6dad78f7a33ba14099d0f9996899b0"
+        },
+        "ranker-baseline": {
+          "configuration_sha256": "047f11df6c57b60a0f424e185042bb91039c3c29436091f227eaafed38ed3acc",
+          "environment_fingerprint": "74ec866e2f3b4c448ec02bc15d798c74a2e05bcabc05e63fc5ba1ac9dc706676",
+          "image": "nexus.localhost:18185/search-api@sha256:9fd558aeaccc9abfb859cc3cb18e79d8ca726284a22c31a8940cfd8106233bbe"
+        }
+      },
+      "query_count": 1000,
+      "coverage": {
+        "ranker-a": {
+          "fraction": 0.812204,
+          "judged": 8053,
+          "returned": 9915
+        },
+        "ranker-baseline": {
+          "fraction": 0.812204,
+          "judged": 8053,
+          "returned": 9915
+        }
+      },
+      "unqualified": 5107,
+      "local_verdict": "pass",
+      "published_to_commit_gate": false
+    },
+    {
+      "source_pr": 20,
+      "report_sha256": "3ca1eede785f719598c37443f9b862a0d57c669a440a8a3799b6efdcdc63c340",
+      "source_sha": "1fe0b9f636b885630eae080efd20d54164f82ff6",
+      "observations_sha256": "612dd3bfbfeeb28470da3a4470503cd710edde8ee0ad7dd79f4f38fe5c7f06e8",
+      "configuration": {
+        "ranker-a": {
+          "configuration_sha256": "047f11df6c57b60a0f424e185042bb91039c3c29436091f227eaafed38ed3acc",
+          "environment_fingerprint": "4790e8c7fe451e4c8df06baf9f63ba580f2aaa979b68f614f144e4708f6c29be",
+          "image": "nexus.localhost:18185/search-api@sha256:225d09dcda50c66ccb0152fdd1fe6687b183dbd085db4bddf21765171f720eb2"
+        },
+        "ranker-baseline": {
+          "configuration_sha256": "047f11df6c57b60a0f424e185042bb91039c3c29436091f227eaafed38ed3acc",
+          "environment_fingerprint": "74ec866e2f3b4c448ec02bc15d798c74a2e05bcabc05e63fc5ba1ac9dc706676",
+          "image": "nexus.localhost:18185/search-api@sha256:9fd558aeaccc9abfb859cc3cb18e79d8ca726284a22c31a8940cfd8106233bbe"
+        }
+      },
+      "query_count": 1000,
+      "coverage": {
+        "ranker-a": {
+          "fraction": 0.812204,
+          "judged": 8053,
+          "returned": 9915
+        },
+        "ranker-baseline": {
+          "fraction": 0.812204,
+          "judged": 8053,
+          "returned": 9915
+        }
+      },
+      "unqualified": 5107,
+      "local_verdict": "pass",
+      "published_to_commit_gate": true
+    },
+    {
+      "source_pr": 23,
+      "report_sha256": "2e6a90d9c80782db47733ccd6323d29c7a089a3ea0460598781282f364653ff8",
+      "source_sha": "344662fc7c3b9035ca8b71369ac524bab2a68788",
+      "observations_sha256": "6a9ccb2d8388bd4055705e8db6618aa8b2707e5619b929b6ef90530936af972a",
+      "configuration": {
+        "ranker-a": {
+          "configuration_sha256": "047f11df6c57b60a0f424e185042bb91039c3c29436091f227eaafed38ed3acc",
+          "environment_fingerprint": "1cf7dc806c0a22183e09104b670e317fb2910370019affeffdbc148275d23cb8",
+          "image": "nexus.localhost:18185/search-api@sha256:c558a51967c2812f0e8f6a7c0e6932acda8da45637d546594892fe20f244205c"
+        },
+        "ranker-baseline": {
+          "configuration_sha256": "047f11df6c57b60a0f424e185042bb91039c3c29436091f227eaafed38ed3acc",
+          "environment_fingerprint": "74ec866e2f3b4c448ec02bc15d798c74a2e05bcabc05e63fc5ba1ac9dc706676",
+          "image": "nexus.localhost:18185/search-api@sha256:9fd558aeaccc9abfb859cc3cb18e79d8ca726284a22c31a8940cfd8106233bbe"
+        }
+      },
+      "query_count": 1000,
+      "coverage": {
+        "ranker-a": {
+          "fraction": 0.812204,
+          "judged": 8053,
+          "returned": 9915
+        },
+        "ranker-baseline": {
+          "fraction": 0.812204,
+          "judged": 8053,
+          "returned": 9915
+        }
+      },
+      "unqualified": 5107,
+      "local_verdict": "pass",
+      "published_to_commit_gate": true
+    }
+  ],
+  "source_ci": [
+    {
+      "id": 85,
+      "run_attempt": 2,
+      "head_sha": "1fe0b9f636b885630eae080efd20d54164f82ff6",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "pull_request_target"
+    },
+    {
+      "id": 93,
+      "run_attempt": 2,
+      "head_sha": "344662fc7c3b9035ca8b71369ac524bab2a68788",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "pull_request_target"
+    }
+  ],
+  "merge_state": "No implementation/source main merges; trusted Actions variables unchanged",
+  "source_order": "Review source23, verify accepted protected pins, then rebase source19 and capture its final exact-head evidence; source20 gate work superseded by23",
+  "control_report": {
+    "complete": true,
+    "judgement_selection": "demo",
+    "judgement_usage": "Lab demo: published labels and authorised model predictions; accuracy remains unqualified.",
+    "judgement_coverage": {
+      "baseline": {
+        "fraction": 0.812204,
+        "judged": 8053,
+        "returned": 9915
+      },
+      "candidate": {
+        "fraction": 0.812204,
+        "judged": 8053,
+        "returned": 9915
+      }
+    },
+    "judgement_source_counts": {
+      "baseline": {
+        "model": 5107,
+        "published": 2946,
+        "unjudged": 1862
+      },
+      "candidate": {
+        "model": 5107,
+        "published": 2946,
+        "unjudged": 1862
+      }
+    }
+  },
+  "research": "Decider2B held; no GPU or broader research restart",
+  "superseded_source_pr": {
+    "number": 20,
+    "state": "closed",
+    "head_sha": "1fe0b9f636b885630eae080efd20d54164f82ff6",
+    "superseded_by": 23,
+    "branch_retained": true,
+    "no_main_merge": true
+  },
+  "browser": {
+    "verification": "Client rendering of captured live control report; API responses mocked for isolated browser check",
+    "summary": "Verdict measured · 1000/1000 queries · Lab demo labels · model accuracy unqualified · judged baseline 0.812204, candidate 0.812204 · coverage reported · published 2946/2946 · model 5107/5107",
+    "errors": [],
+    "horizontal_overflow": false
+  },
+  "docs": {
+    "markdown_renderer": "Gitea",
+    "browser": "headless Chrome",
+    "pages": 11,
+    "local_links": "exist",
+    "horizontal_overflow": false,
+    "screenshots": "Inspected evidence page, judgement guide and judgement workflow; other guides have automated render receipts"
+  },
+  "control_list_tests": {
+    "passed": 5
+  },
+  "optional_ui_test": {
+    "command": "node lab/test_control_ui.cjs",
+    "result": "Not run: standalone Node playwright dependency absent; targeted Python Playwright check of current client/live frozen report passed"
+  },
+  "verification_failures_preserved": {
+    "records": "Retained ignored runtime logs and earlier receipts",
+    "failures": [
+      "Merged-source promotion helper rejected PR receipt; separate development previews used verified bundle without relaxing promotion guard",
+      "Standalone development proof omitted standard control ingress; corrected with the existing scoped policy",
+      "Capture rejected implicit default variant identity; explicit named configurations frozen before fresh searches"
+    ],
+    "final_result": "All exact-image previews, captures, scoped checks and installed control comparison passed"
+  }
+}

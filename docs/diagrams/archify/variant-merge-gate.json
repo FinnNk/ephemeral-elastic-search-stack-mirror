@@ -43,8 +43,8 @@
       "The evaluation baseline may be another variant"
     ]},
     {"dot": "emerald", "title": "Decision retains the evidence", "items": [
-      "A selected replacement becomes the new default on promotion",
-      "An exception records a reason without changing measured scores"
+      "80% coverage; source and model policy checked",
+      "Demo verdict records human quality authorisation"
     ]}
   ]
 }

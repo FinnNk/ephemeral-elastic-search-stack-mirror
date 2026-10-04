@@ -102,6 +102,47 @@ class OfflineContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'cut-off exceeds'):
             self.evaluate()
 
+    def test_demo_sources_remain_distinct_and_only_observed_queries_are_counted(self):
+        model = {'kind': 'model', 'source_id': 'demo-pass',
+                 'model': {'name': 'judge', 'version': '4', 'artifact_sha256': 'c' * 64},
+                 'pass_id': 'demo', 'policy_sha256': 'd' * 64,
+                 'qualification': 'lab-demo-authorised'}
+        published = {'kind': 'published', 'source_id': 'esci'}
+        rows = [
+            {'query_id': 'q1', 'product_id': 'p1', 'grade': 3,
+             'provenance': published, 'gate_eligible': True},
+            {'query_id': 'q1', 'product_id': 'p2', 'grade': 0,
+             'provenance': model, 'gate_eligible': False},
+            {'query_id': 'q1', 'product_id': 'p3', 'grade': 2,
+             'provenance': model, 'gate_eligible': False},
+            {'query_id': 'q-unused', 'product_id': 'p4', 'grade': 1,
+             'provenance': model, 'gate_eligible': False}]
+        payload = b''.join(canonical(row) for row in rows)
+        (self.root / 'judgements.jsonl').write_bytes(payload)
+        manifest = json.loads((self.root / 'judgement-manifest.json').read_bytes())
+        manifest.update(record_count=4, producer={'selection': 'demo', 'rubric': 'esci-v1'})
+        manifest['content']['sha256'] = sha(payload)
+        self.write('judgement-manifest.json', manifest)
+        report = self.evaluate()
+        self.assertEqual(report['judgement_selection'], 'demo')
+        self.assertEqual(report['judgement_rubric'], 'esci-v1')
+        self.assertEqual(report['unqualified_judgements'], 2)
+        by_kind = {source['provenance']['kind']: source for source in report['judgement_sources']}
+        self.assertEqual(by_kind['published'], {
+            'provenance': published, 'gate_eligible': True, 'count': 1})
+        self.assertEqual(by_kind['model'], {
+            'provenance': model, 'gate_eligible': False, 'count': 2})
+
+    def test_selected_eligibility_cannot_be_truthy_text(self):
+        row = {'query_id': 'q1', 'product_id': 'p1', 'grade': 3,
+               'gate_eligible': 'false'}
+        self.write('judgements.jsonl', row)
+        manifest = json.loads((self.root / 'judgement-manifest.json').read_bytes())
+        manifest['content']['sha256'] = sha((self.root / 'judgements.jsonl').read_bytes())
+        self.write('judgement-manifest.json', manifest)
+        with self.assertRaisesRegex(ValueError, 'provenance or eligibility'):
+            self.evaluate()
+
 
 if __name__ == '__main__':
     unittest.main()

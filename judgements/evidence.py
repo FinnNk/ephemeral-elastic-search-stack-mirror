@@ -3,7 +3,7 @@
 import json
 import math
 
-from core import LABEL_TO_GRADE, canonical, digest
+from core import LABEL_TO_GRADE, canonical, digest, selected
 
 
 def validate(record):
@@ -59,11 +59,11 @@ class EvidenceStore:
                     (self.scope, query_id, product_id))]
 
     def select(self, query_id, product_id, selection):
-        if selection not in ('gate', 'exploratory'):
-            raise ValueError('Judgement selection must be gate or exploratory.')
+        if selection not in ('gate', 'exploratory', 'demo'):
+            raise ValueError('Judgement selection must be gate, exploratory or demo.')
         rows = [row for row in self.records(query_id, product_id)
                 if row['outcome'] == 'labelled' and
-                (selection == 'exploratory' or row['gate_eligible'])]
+                selected(row, selection)]
         # Authoritative sources win, then the earliest accepted eligible pass.
         priority = {'published': 0, 'human': 1, 'model': 2}
         rows.sort(key=lambda row: priority[row['provenance']['kind']])

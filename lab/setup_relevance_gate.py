@@ -13,6 +13,7 @@ def install():
         'ci/relevance_gate.py': ROOT / 'lab/delivery/ci/relevance_gate.py',
         'ci/variant_gate_store.py': ROOT / 'lab/delivery/ci/variant_gate_store.py',
         'ci/variant_gate.py': ROOT / 'lab/variant_gate.py',
+        'gate/policy.json': ROOT / 'lab/delivery/policies/variant-merge-v1.json',
     }
     for name, expected in files.items():
         try:

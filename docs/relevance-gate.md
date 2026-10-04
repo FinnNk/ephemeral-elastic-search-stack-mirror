@@ -19,6 +19,14 @@ The target's `ci/relevance_scope.py` owns the allowlist. A candidate editing tha
 
 The ordinary `pull_request` workflow still runs the candidate's tests and image build on the trusted-contributor lab runner. The relevance workflow holds the evaluation signing keys separately. Neither an exemption nor a passing evaluation approves a deployment.
 
+## Temporary ESCI demo policy
+
+The lab retains the **80% coverage requirement** and its relevance/result-preservation rules. A human-authorised quality exception allows `demo` reports for one exact ESCI catalogue, query suite, model and acceptance policy. Other exploratory or unqualified model sources remain invalid.
+
+Demo verdicts include the recorded authorisation and unqualified label count. A passing demo gate demonstrates the delivery workflow; it does not qualify the model’s accuracy. [Judgement resolution](judgement-resolution.md#temporary-esci-demo-labels) explains the thresholds and strict-mode restoration.
+
+The source gate and policy must first be merged to its trusted target. Then update the protected `LAB_VARIANT_GATE_CODE_SHA256` and `LAB_VARIANT_POLICY_SHA256` variables and publish fresh evidence for each exact source commit. Changing candidate code or the lab runtime cannot bypass this installation step.
+
 ## Check the installed gate
 
 On a source PR, confirm **Reference release CI** and **Offline relevance gate** both report on the current head. A README-only change should record `evaluation_not_required` with its changed paths. Any other change needs the signed evidence described in the [operator runbook](evaluation-runbook.md).

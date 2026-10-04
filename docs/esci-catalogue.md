@@ -32,6 +32,9 @@ python lab/publish_default_inputs.py
 python lab/load_release.py
 ```
 
+The full-catalogue default also needs the retained, hash-checked demo judgement snapshot in Blob storage. Published ESCI files alone cannot reproduce the model predictions. See [recover selected inputs](data-evaluation-contracts.md#retain-the-esci-demo-snapshot).
+
+
 The importer checks the [source lock](../data/esci-sources.json), writes deterministic compressed products, queries, labels and provenance, and refuses to replace frozen bytes. A repeat with the same inputs verifies and reuses the release. The publisher requires the running Blob Storage endpoint; the loader requires the lab kubeconfig and Elasticsearch endpoint. Follow the [operator access guide](control-runtime.md) for retained state and [index recovery](index-recovery.md) for index access.
 
 `lab/default_inputs.json` pins the independent manifest hashes. Publication must reproduce them. A source, selection or augmentation change requires a new release ID and reviewed hashes; it cannot silently replace an existing default.

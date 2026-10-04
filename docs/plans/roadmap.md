@@ -2,19 +2,9 @@
 
 The lab has demonstrated a million-product catalogue, 1,000 queries, frozen API comparisons, Gatling load profiles, index recovery, a 40-API fleet and a three-target release path. These are local measurements, not evidence that the same capacity or latency will hold on Apple silicon or Azure. The [design targets](../prototype-design.md#provisional-quantitative-targets) remain provisional.
 
-The [category survey](../research/evidence/esci-category-survey-results.md) is
-complete: finer categories and role instructions supply no useful additional
-precision. Every contract makes the same 14 additional Exact errors, including
-four Irrelevant → Exact errors. The bounded
-[cached-model Exact check](esci-exact-veto-survey.md) now has a CPU-tested runner,
-analysis and [verified runtime preflight](../research/evidence/esci-role-runtime-preflight.md).
-Its next batch is [separate execution](esci-role-check-execution.md), pending
-new scope approval and explicit old handback.
-Qualified coverage
-remains 2,946/9,915 (29.71%); no model labels or gate exceptions are active.
-The [saved-score diagnostic](../research/evidence/esci-score-separation.md)
-finds weak general separation and no convincing confidence/margin/entropy signal
-for I → E protection. Keep the role check ahead of confidence-only recalibration.
+The full ESCI catalogue now uses a **temporary, human-authorised demo policy**: published labels plus cached calibrated-model predictions provide 81.22% coverage on the captured recall set. Model accuracy remains unqualified. Strict selection still has 29.71% published coverage. The next review batch accepts the scoped policy and default snapshot; later investigation restores qualified-only defaults.
+
+The [category survey](../research/evidence/esci-category-survey-results.md) and [saved-score diagnostic](../research/evidence/esci-score-separation.md) did not establish sufficient label quality. The [role-check runtime](../research/evidence/esci-role-runtime-preflight.md) is prepared but execution remains held for human review. The demo decision does not authorise that survey.
 
 The control-runtime consolidation and delivery rehearsal are merged to `main`. Earlier batch plans remain in this directory, with measured results such as the [million-product](../research/evidence/million-scale.md) and [control-runtime](../research/evidence/kubernetes-control-services.md) evidence. A merged implementation does not close a measurement or integration gate.
 
@@ -32,31 +22,15 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
-The current priority is [closing ESCI judgement gaps](esci-residual-cascade.md).
-The [residual audit and CPU surveys](../research/evidence/esci-gap-surveys.md)
-found a useful selective recalibrator, but actual qualified coverage remains
-29.71%. The quick category experiment is complete and does not justify the full
-four-pass study. Qualify the complete cascade before adding its labels to gates;
-control UI improvements and further identity work wait behind this priority.
-The [larger fitting-pool screen](../research/evidence/esci-fitted-specialists.md)
-is complete: six inexpensive classifiers add no useful labels at the required
-precision. [CPU pair models and prompt inference](esci-cpu-pair-judges.md) are
-also measured: one trained pair model selects no labels, and a 32-pair prompt
-probe is inconclusive. The [role-check preparation](../research/evidence/esci-role-check-preparation.md)
-passes 71 synthetic CPU tests and compiles the fixed 128-pair packet without
-changing its input text. The isolated runtime now passes its actual tokenizer
-audit and cleanup rehearsal. Numerical prerequisites, guardian launch and
-startup projection issues are corrected and reviewed; see the
-[preflight evidence](../research/evidence/esci-role-runtime-preflight.md).
-The next detailed batch is [bounded execution and analysis](esci-role-check-execution.md),
-requiring new scope approval, explicit old handback and a valid grant. The unrelated
-research run remains halted; the completed quick-only grant cannot authorise
-new-model inference. [Blinded gap-review preparation](esci-gap-review-packet.md)
-now supplies input-only reviewer packets, with no labels or confirmed cohort.
-The owner's separate
-fitting pool remains excluded from confirmation. The
-[confirmation specification](esci-cascade-confirmation.md) keeps independent
-published and blinded gap references separate.
+The [temporary ESCI demo batch](esci-demo-coverage.md) uses the current calibrated model with reduced acceptance thresholds. The full English catalogue contains 1,215,854 products. Captured recall has **81.22% demo coverage**, including 5,107 unqualified model predictions; strict published-label coverage remains **29.71%**. The 80% coverage requirement is unchanged. See [measured evidence](../research/evidence/esci-demo-coverage.md).
+
+| Batch | State | Next action |
+| --- | --- | --- |
+| Temporary demo coverage | Implemented locally; scoped gate and source policy prepared for review | Accept implementation/source PRs, then update trusted target pins |
+| Qualified-only defaults | [Detailed follow-up plan](esci-qualified-defaults.md) | Resume investigation when requested; independent references and serving checks precede activation |
+| Decider2B role check | Held for human review | Requires explicit execution approval; no GPU run authorised by the demo decision |
+
+The completed [category survey](../research/evidence/esci-category-survey-results.md), [CPU surveys](../research/evidence/esci-gap-surveys.md), [fitting-pool screen](../research/evidence/esci-fitted-specialists.md) and [role runtime preflight](../research/evidence/esci-role-runtime-preflight.md) remain evidence for later investigation. The owner's fitting reservation and excluded specialist queries remain protected. Model agreement does not replace independent ground truth.
 
 The [lab storefront](lab-storefront.md) simplifies the search page and replaces its
 hard-coded size with the current catalogue count. Review it before resuming the

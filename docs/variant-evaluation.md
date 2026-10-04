@@ -19,9 +19,7 @@ Compare the results returned by two or more Search API configurations. Use the s
 
 Offline evaluation does not allocate online traffic. A recorded exception can accept a bounded regression for business reasons.
 
-Exploratory comparisons may include unqualified model labels. Their reports retain
-that selection and each label’s provenance; merge gates require gate selection
-and reject unqualified labels. See [judgement resolution](judgement-resolution.md).
+Exploratory comparisons may include unqualified model labels. Strict gates exclude them. The full ESCI lab has a temporary, human-authorised `demo` selection; its model predictions remain unqualified. The protected demo gate checks their exact source scope and policy. See [judgement resolution](judgement-resolution.md#temporary-esci-demo-labels).
 
 ## Prepare the comparison
 
@@ -60,7 +58,7 @@ For complete operator commands, use the [evaluation runbook](evaluation-runbook.
 | Changed-result fraction | How many queries changed returned IDs or total match count |
 | Retained API observations | The ordered IDs and totals behind each changed query |
 
-Read coverage beside the scores. Synthetic fixtures demonstrate the process, not real search quality. [Result-preservation comparisons](prototype-design.md#result-regression-preserve-ranking-and-membership) also provide RBO and Jaccard diagnostics.
+Reports identify judgement selection and count each source. **Demo** means that model accuracy is unqualified, even when the gate passes. Read coverage beside the scores. Synthetic fixtures demonstrate the process, not real search quality. [Result-preservation comparisons](prototype-design.md#result-regression-preserve-ranking-and-membership) also provide RBO and Jaccard diagnostics.
 
 The lab operator runs capture, judgement resolution and scoring. The expected output is one frozen report containing every variant, its baseline deltas and the exact inputs used. If capture fails, correct the missing API response or deployment mismatch before scoring. If labels are missing, inspect coverage before treating scores as evidence.
 

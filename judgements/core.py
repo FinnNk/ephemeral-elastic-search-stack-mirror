@@ -68,20 +68,29 @@ def validate_labels(rows):
     return labels
 
 
+def selected(row, selection):
+    """Keep demo authorisation separate from qualified gate eligibility."""
+    if selection not in ('gate', 'exploratory', 'demo'):
+        raise ValueError('Judgement selection must be gate, exploratory or demo.')
+    return (selection == 'exploratory' or row.get('gate_eligible', True) or
+            (selection == 'demo' and row.get('provenance', {}).get('qualification') ==
+             'lab-demo-authorised'))
+
+
 def resolve(observations, specification, source_rows, products, infer, batch_size=64, selection='gate'):
     """Resolve only missing pooled pairs; return frozen rows and an attempt report.
 
     ``infer`` accepts a list of synthetic query/product records and returns one
     outcome per input. It may return ``labelled``, ``abstain`` or ``error``.
     """
-    if selection not in ('gate', 'exploratory'):
-        raise ValueError('Judgement selection must be gate or exploratory.')
+    if selection not in ('gate', 'exploratory', 'demo'):
+        raise ValueError('Judgement selection must be gate, exploratory or demo.')
     if type(batch_size) is not int or batch_size < 1:
         raise ValueError('Batch size must be positive.')
     pairs, sides = pool(observations, specification)
     labels = validate_labels(source_rows)
     labels = {key: row for key, row in labels.items()
-              if selection == 'exploratory' or row.get('gate_eligible', True)}
+              if selected(row, selection)}
     missing = [pair for pair in pairs
                if (pair['query_id'], pair['product_id']) not in labels]
     attempts = []
@@ -118,7 +127,7 @@ def resolve(observations, specification, source_rows, products, infer, batch_siz
                           if key not in ('outcome', 'scope')}
                 record.update(query_id=key[0], product_id=key[1], label=label,
                               grade=LABEL_TO_GRADE[label])
-                if selection == 'exploratory' or outcome['gate_eligible']:
+                if selected(outcome, selection):
                     labels[key] = record
                 receipt.update(label=label, provenance=outcome['provenance'],
                                gate_eligible=outcome['gate_eligible'])

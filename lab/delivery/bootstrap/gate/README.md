@@ -3,10 +3,7 @@
 Before merging a search change, compare its lab API results with a baseline using the same saved queries and relevance labels. **Offline relevance gate** checks that report against [the merge policy](policy.json).
 
 
-Exploratory reports and unqualified model labels cannot satisfy this gate, even
-when their coverage is high. Use a frozen gate selection that retains each
-label’s source and qualification provenance. A business exception cannot bypass
-this requirement.
+Strict gates exclude exploratory reports and unqualified model labels. The lab’s temporary ESCI **demo** policy allows one explicitly authorised model/source/policy combination. These model labels remain unqualified; the verdict records the human authorisation and their count. A business exception cannot admit other unqualified sources.
 
 Application tests and builds run separately. If a PR changes only `README.md`, `gate/README.md`, or both, the relevance check passes with `evaluation_not_required`.
 
@@ -50,11 +47,9 @@ exception is available only for `preserve-results` when every captured query
 has identical ordered product IDs and total count, and both scores and coverage
 match exactly. It checks results at the saved capture depth. A human
 administrator must accept the disclosed gap; selecting this intent does not
-approve it. Low-coverage ranking changes and unqualified labels remain blocked.
+approve it. Low-coverage ranking changes remain blocked. Unqualified labels outside the exact demo authorisation remain invalid.
 
-The prepared fallback still requires review, source propagation and protected
-policy/code pin updates before existing CI can use it. It does not make an
-existing PR check pass automatically.
+A gate update requires review and protected policy/code pin updates after merging to its trusted target. Existing PRs also need fresh evidence for their exact commits.
 
 An exception preserves the scores and binds the decision to the report, source commit, policy and selected variant. It does not approve deployment. Merge still requires an approving PR review and the passing build check.
 

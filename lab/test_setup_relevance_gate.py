@@ -14,7 +14,8 @@ class RelevanceProtectionTests(unittest.TestCase):
         source_path = args[1].split(':', 1)[1]
         mapping = {'.github/workflows/relevance.yaml': 'lab/delivery/workflows/relevance.yaml',
                    '.github/workflows/release.yaml': 'lab/delivery/workflows/release.yaml',
-                   'ci/variant_gate.py': 'lab/variant_gate.py'}
+                   'ci/variant_gate.py': 'lab/variant_gate.py',
+                   'gate/policy.json': 'lab/delivery/policies/variant-merge-v1.json'}
         path = mapping.get(source_path, 'lab/delivery/' + source_path)
         return (setup.ROOT / path).read_text(encoding='utf-8').strip()
 
@@ -38,6 +39,17 @@ class RelevanceProtectionTests(unittest.TestCase):
         self.assertIn('Additional check', rule['status_check_contexts'])
         self.assertTrue(rule['block_admin_merge_override'])
         self.assertFalse(rule['enable_push'])
+
+    def test_unaccepted_policy_does_not_change_protection(self):
+        def deployed(repository, *args):
+            if args[0] == 'show' and args[1].endswith(':gate/policy.json'):
+                return 'different gate policy'
+            return self.deployed_file(repository, *args)
+
+        with patch.object(setup, 'git', side_effect=deployed), patch.object(setup, 'api') as api:
+            with self.assertRaisesRegex(ValueError, 'gate/policy.json'):
+                setup.install()
+            api.assert_not_called()
 
 
 if __name__ == '__main__':

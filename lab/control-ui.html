@@ -82,9 +82,10 @@
       (openReport.judgement_coverage&&['baseline','candidate'].some(side=>
        (openReport.judgement_coverage[side].fraction??0)<.8)?'insufficient':'reported');
     document.querySelector('#report-summary').textContent='Verdict '+openReport.verdict+' · '+openReport.completed_query_count+'/'+openReport.query_count+
-      ' queries · '+(openReport.judgement_provenance?.name||'no judgements')+
+      ' queries · '+(openReport.judgement_selection==='demo'?'Lab demo labels · model accuracy unqualified':(openReport.judgement_provenance?.name||'no judgements'))+
       (openReport.judgement_coverage?' · judged baseline '+openReport.judgement_coverage.baseline.fraction+
        ', candidate '+openReport.judgement_coverage.candidate.fraction+' · coverage '+coverageState:'');
+    if(openReport.judgement_source_counts){const counts=openReport.judgement_source_counts;document.querySelector('#report-summary').textContent+=' · published '+(counts.baseline.published||0)+'/'+(counts.candidate.published||0)+' · model '+(counts.baseline.model||0)+'/'+(counts.candidate.model||0)}
     document.querySelector('#report-download').href='/api/comparisons/'+id+'/report';
     document.querySelector('#query-filter').value='changed';listQueries();panel.scrollIntoView({behavior:'smooth'});
   }

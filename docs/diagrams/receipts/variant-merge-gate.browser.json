@@ -6,9 +6,9 @@
   "status": "pass",
   "visualReview": "pending",
   "artifact": {
-    "path": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\keyvault-secrets-sync\\docs\\diagrams\\interactive\\variant-merge-gate.html",
-    "sha256": "6ce42a8e796e77e82c8c27b65dab4f0a3427cb7b4bc5b0e8cca89ae954a6c754",
-    "bytes": 807308
+    "path": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\variant-merge-gate.html",
+    "sha256": "82bd9b9c096700a83ec1a1ee0767d0fb6cd6fbb886c2238c6b035d61467f60ec",
+    "bytes": 807280
   },
   "state": {
     "detail": "read",

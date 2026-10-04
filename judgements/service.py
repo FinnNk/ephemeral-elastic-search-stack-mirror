@@ -19,11 +19,17 @@ from evidence import EvidenceStore, validate
 
 class JudgementService:
     def __init__(self, database, source_rows, query_rows, product_rows,
-                 context, model, predict, source_identity=None, model_policy=None):
+                 context, model, predict, source_identity=None, model_policy=None, demo_policy=None):
         self.database = sqlite3.connect(database, check_same_thread=False)
         self.lock = threading.RLock()
         self.context = context
         self.model = model
+        self.demo_policy = demo_policy
+        if demo_policy is not None:
+            from demo import validate_policy
+            validate_policy(demo_policy)
+            if demo_policy["context"] != context:
+                raise ValueError("Demo policy has another source scope.")
         self.predict = predict
         self.scope = digest(canonical(context))
         if source_identity is None:
@@ -90,7 +96,11 @@ class JudgementService:
 
     def lookup(self, query_id, product_id, selection='gate'):
         with self.lock:
-            return self.evidence.select(query_id, product_id, selection)
+            row = self.evidence.select(query_id, product_id, selection)
+            if row and selection == 'demo' and not row['gate_eligible']:
+                from demo import validate_record
+                validate_record(row, self.demo_policy)
+            return row
 
     def records(self, context, pairs):
         if context != self.context or not isinstance(pairs, list) or not 0 < len(pairs) <= 128:
@@ -109,6 +119,11 @@ class JudgementService:
         with self.lock, self.database:
             identities = []
             for row in rows:
+                if row.get('provenance', {}).get('qualification') == 'lab-demo-authorised':
+                    from demo import validate_record
+                    if self.demo_policy is None:
+                        raise ValueError('No demo policy is configured.')
+                    validate_record(row, self.demo_policy)
                 if row.get('gate_eligible') is not False or row.get('provenance', {}).get('kind') != 'model':
                     raise ValueError('Imported predictions must be unqualified model evidence.')
                 query = self.database.execute('SELECT 1 FROM queries WHERE scope=? AND query_id=?',
@@ -122,8 +137,10 @@ class JudgementService:
         return {'evidence_sha256': identities}
 
     def resolve(self, context, pairs, selection='gate'):
-        if selection not in ('gate', 'exploratory'):
-            raise ValueError('Judgement selection must be gate or exploratory.')
+        if selection not in ('gate', 'exploratory', 'demo'):
+            raise ValueError('Judgement selection must be gate, exploratory or demo.')
+        if selection == 'demo' and self.demo_policy is None:
+            raise ValueError('No demo policy is configured.')
         if context != self.context:
             raise ValueError('Requested source or rubric differs from this service.')
         if not isinstance(pairs, list) or not 0 < len(pairs) <= 128:
@@ -277,6 +294,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=Path, required=True)
     parser.add_argument('--predict-url', required=True)
     parser.add_argument('--model-policy', type=Path)
+    parser.add_argument('--demo-policy', type=Path)
     parser.add_argument('--port', type=int, default=18086)
     parser.add_argument('--host', default='0.0.0.0')
     args = parser.parse_args()
@@ -291,5 +309,6 @@ if __name__ == '__main__':
         lambda pairs: kserve_predict(args.predict_url, pairs,
                                     json.loads(args.model.read_bytes()), timeout=model_timeout),
         source_identity={'kind': 'published', 'source_id': digest(args.source_judgements.read_bytes())},
-        model_policy=json.loads(args.model_policy.read_bytes()) if args.model_policy else None)
+        model_policy=json.loads(args.model_policy.read_bytes()) if args.model_policy else None,
+        demo_policy=json.loads(args.demo_policy.read_bytes()) if args.demo_policy else None)
     serve(instance, host=args.host, port=args.port)

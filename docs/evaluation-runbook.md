@@ -83,18 +83,21 @@ The command prints the retained executed-notebook reference. This saved analysis
 
 ## Human exceptions
 
+The temporary ESCI [demo policy](judgement-resolution.md#temporary-esci-demo-labels) is a separate human-authorised quality allowance. Its predictions remain unqualified, and strict selection excludes them. The protected policy permits only the recorded model and source scope; other exploratory labels cannot pass.
+
+
 Only a `decision_required` result is eligible for a bounded exception. The
 normal coverage requirement remains 80%. The prepared checker and policy also
 allow a low-coverage decision for `preserve-results` when all these conditions hold:
 
 - Every captured query returns identical ordered product IDs and total counts.
 - Candidate and baseline scores and coverage are exactly equal.
-- The report uses published or qualified labels, without exploratory predictions.
+- The report uses published or qualified labels, or the exact authorised lab demo policy, without exploratory predictions.
 - The evaluated image and signed evidence match the exact source PR build.
 
 This checks the saved results at the capture depth, not the whole catalogue.
 A human administrator must approve the disclosed coverage gap. Low-coverage
-`ranking-change` reports, changed results and unqualified labels stay blocked.
+`ranking-change` reports, changed results and unqualified labels outside the authorised lab demo policy stay blocked.
 The new fallback is prepared for review; existing CI needs the reviewed source
 copy and protected policy/code pins before it can use it. No approval or passing
 gate is created by preparing the policy.

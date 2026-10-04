@@ -4,7 +4,7 @@ import argparse
 import json
 import re
 
-from common import HELM, IN_CLUSTER, ROOT, STATE, guard, k, run
+from common import HELM, IN_CLUSTER, ROOT, STATE, apply, guard, k, run
 from setup_judgement_secrets import configure as configure_secrets
 from setup_nexus import configure_network
 from publish_judgement_image import source_sha256
@@ -115,6 +115,9 @@ def install(million=False):
       '-n', 'lab-models')
     manifest('judgement-service.yaml')
     if million:
+        apply({'apiVersion': 'v1', 'kind': 'ConfigMap',
+               'metadata': {'name': 'judgement-demo-policy', 'namespace': 'lab-models'},
+               'data': {'policy.json': (ROOT / 'judgements/policies/esci-lab-demo.json').read_text(encoding='utf-8')}})
         manifest('judgement-service-million.yaml')
     return wait_ready(million)
 

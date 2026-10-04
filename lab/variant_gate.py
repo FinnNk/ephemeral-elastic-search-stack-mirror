@@ -1,7 +1,7 @@
 """Portable merge gate for attested offline variant evidence and human exceptions."""
 
 import argparse
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 import hashlib
 import hmac
 import json
@@ -44,15 +44,86 @@ def verify(value, key, kind):
         raise ValueError('Trusted ' + kind + ' signature differs.')
 
 
-def require_gate_judgements(report):
-    if (report.get('judgement_selection') != 'gate' or
-            type(report.get('unqualified_judgements')) is not int or
-            report['unqualified_judgements'] != 0):
+def require_gate_judgements(report, policy=None):
+    """Require qualified labels or the explicitly authorised local demo scope."""
+    selection = report.get('judgement_selection')
+    unqualified = report.get('unqualified_judgements')
+    if selection == 'gate' and type(unqualified) is int and unqualified == 0:
+        return None
+    if selection != 'demo' or type(unqualified) is not int or unqualified < 0:
         raise ValueError('Exploratory or unqualified judgements cannot be used in merge gates.')
+    demo = policy.get('lab_demo_judgements') if isinstance(policy, dict) else None
+    if not isinstance(demo, dict) or set(demo) != {
+            'context', 'model', 'policy_sha256', 'authorisation'}:
+        raise ValueError('Demo judgements need an explicit trusted lab authorisation.')
+    context = demo['context']
+    model = demo['model']
+    authorisation = demo['authorisation']
+    if (not isinstance(context, dict) or set(context) != {
+            'catalogue_sha256', 'query_suite_sha256', 'rubric'} or
+            not all(re.fullmatch('[0-9a-f]{64}', str(context.get(name, '')))
+                    for name in ('catalogue_sha256', 'query_suite_sha256')) or
+            context.get('rubric') != 'esci-v1' or
+            not isinstance(model, dict) or set(model) != {
+                'name', 'version', 'artifact_sha256'} or
+            not all(isinstance(model.get(name), str) and model[name]
+                    for name in ('name', 'version')) or
+            not re.fullmatch('[0-9a-f]{64}', str(model.get('artifact_sha256', ''))) or
+            not re.fullmatch('[0-9a-f]{64}', str(demo['policy_sha256']))):
+        raise ValueError('Demo authorisation scope or model identity is invalid.')
+    if (not isinstance(authorisation, dict) or set(authorisation) != {
+            'reviewer', 'decided_at', 'purpose', 'reason'} or
+            any(not isinstance(authorisation.get(name), str) or not authorisation[name].strip()
+                for name in ('reviewer', 'decided_at', 'purpose', 'reason')) or
+            len(authorisation['reason'].strip()) < 20):
+        raise ValueError('Demo authorisation needs a recorded human decision and purpose.')
+    try:
+        decided = date.fromisoformat(authorisation['decided_at'])
+        evaluated = utc(report['evaluated_at']).date()
+    except (KeyError, TypeError, ValueError) as error:
+        raise ValueError('Demo authorisation date is invalid.') from error
+    if decided > evaluated:
+        raise ValueError('Demo authorisation cannot follow the evaluation.')
+    if (report.get('catalogue_sha256') != context['catalogue_sha256'] or
+            report.get('query_suite_sha256') != context['query_suite_sha256'] or
+            report.get('judgement_rubric') != context['rubric']):
+        raise ValueError('Demo judgements belong to another authorised context.')
+    sources = report.get('judgement_sources')
+    if not isinstance(sources, list) or not sources:
+        raise ValueError('Demo report needs explicit judgement source counts.')
+    seen = set()
+    counted = 0
+    for source in sources:
+        if (not isinstance(source, dict) or set(source) != {
+                'provenance', 'gate_eligible', 'count'} or
+                type(source['count']) is not int or source['count'] < 1 or
+                type(source['gate_eligible']) is not bool or
+                not isinstance(source['provenance'], dict)):
+            raise ValueError('Demo judgement source counts are invalid.')
+        identity = sha(canonical({name: source[name] for name in ('provenance', 'gate_eligible')}))
+        if identity in seen:
+            raise ValueError('Demo judgement source counts are duplicated.')
+        seen.add(identity)
+        provenance = source['provenance']
+        if source['gate_eligible']:
+            if provenance.get('qualification') == 'lab-demo-authorised':
+                raise ValueError('Demo predictions must remain unqualified.')
+            continue
+        if (provenance.get('kind') != 'model' or provenance.get('model') != model or
+                provenance.get('qualification') != 'lab-demo-authorised' or
+                provenance.get('policy_sha256') != demo['policy_sha256'] or
+                provenance.get('authorisation') != authorisation or
+                not isinstance(provenance.get('source_id'), str) or not provenance['source_id'] or
+                not isinstance(provenance.get('pass_id'), str) or not provenance['pass_id']):
+            raise ValueError('Demo report includes an unauthorised unqualified source.')
+        counted += source['count']
+    if counted != unqualified:
+        raise ValueError('Demo source counts differ from the unqualified judgement count.')
+    return authorisation
 
 
-def attest(report_bytes, source_sha, build_receipt_bytes, key, issued_at):
-    require_gate_judgements(json.loads(report_bytes))
+def attest(report_bytes, source_sha, build_receipt_bytes, key, issued_at, policy=None):
+    require_gate_judgements(json.loads(report_bytes), policy)
     if not re.fullmatch('[0-9a-f]{40}', source_sha):
         raise ValueError('Attestation needs an exact source commit.')
     build = json.loads(build_receipt_bytes)
@@ -106,7 +177,7 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
     if report.get('kind') != 'variant-evaluation-report' or \
             report.get('schema_version') != 1 or report.get('complete') is not True:
         raise ValueError('A complete current variant report is required.')
-    require_gate_judgements(report)
+    demo_authorisation = require_gate_judgements(report, policy)
     variants = report.get('variants')
     baseline = report.get('baseline_variant')
     if not isinstance(variants, dict) or len(variants) < 2 or \
@@ -249,7 +320,10 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
     return {'kind': 'variant-gate-verdict', 'schema_version': 1,
             'state': overall, 'report_sha256': sha(report_bytes),
             'policy_sha256': sha(policy_bytes), 'selection_sha256': sha(selection_bytes),
-            'source_sha': source_sha, 'variants': receipts}
+            'source_sha': source_sha, 'variants': receipts,
+            'judgement_selection': report['judgement_selection'],
+            'unqualified_judgements': report['unqualified_judgements'],
+            'demo_authorisation': demo_authorisation}
 
 
 def main():

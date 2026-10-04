@@ -3,15 +3,15 @@
   "ok": true,
   "command": "deliver",
   "type": "workflow",
-  "input": "C:\\Users\\finnn\\.codex\\worktrees\\exploratory-notebooks\\Ephemeral Elasticsearch\\docs\\diagrams\\archify\\judgement-coverage.json",
-  "output": "C:\\Users\\finnn\\.codex\\worktrees\\exploratory-notebooks\\Ephemeral Elasticsearch\\docs\\diagrams\\interactive\\judgement-coverage.html",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\archify\\judgement-coverage.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\judgement-coverage.html",
   "specification": {
-    "sha256": "8dcf5849bb9c350cb16cad73083d8530f82c8691ae0bd564e1ad0f1bf8f61add",
-    "bytes": 3179
+    "sha256": "1c6bed4b51567e1501a866f7f771e581e91a59054651d652c838c8c6b09f96ae",
+    "bytes": 3175
   },
   "artifact": {
-    "sha256": "7e319e3a9261a43c61e8eed98ff0454f889f946067c507df4834d9e640132905",
-    "bytes": 803032
+    "sha256": "65d65edca2f4ea35a4b8f30d42160b7147cdb2903b2b38471d7081a583d962e2",
+    "bytes": 803040
   },
   "validation": {
     "checksPassed": 9,
