@@ -24,6 +24,7 @@ RUN apk add --no-cache --virtual .build-deps build-base && \
 
 COPY lab/ /app/lab/
 COPY data/ /app/data/
+COPY evaluation/ /app/evaluation/
 
 ENV LAB_IN_CLUSTER=1 LAB_STATE_DIR=/state PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 USER 10001:10001

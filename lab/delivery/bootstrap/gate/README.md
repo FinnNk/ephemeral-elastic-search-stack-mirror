@@ -31,6 +31,25 @@ Application tests and builds run separately. If a PR changes only `README.md`, `
 4. **Publish the evidence.** Give the frozen report and build receipt to the lab operator. The operator signs and publishes them to Nexus, the artefact repository. The signed record binds the report to the exact source commit and evaluated image.
 5. **Rerun Offline relevance gate on the same commit.** If you change the source commit, obtain evidence for the new commit. A passing build alone does not satisfy this check.
 
+## Add a query set
+
+Add `additional_query_sets` to `selection.json` for queries specific to your
+change. For example:
+
+```json
+"additional_query_sets": [
+  {"name": "trainers", "path": "evaluation/queries/trainers.jsonl", "required": false}
+]
+```
+
+The supplied file contains the rewrite, its case variant and two controls.
+Extra sets report only by default. Their separate metrics and the combined view
+are retained in the report; the standard frozen suite remains required.
+An unlabelled set reports overlap and ordering, with relevance shown as unavailable.
+To require an extra set, set `required` to `true` and supply a `judgements` path
+to reviewed reference labels. Each required set passes independently. See the
+[query-set contract](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/variant-evaluation.md#add-queries-for-your-change).
+
 ## Read the outcome
 
 | Outcome | What to do |
@@ -51,6 +70,6 @@ approve it. Low-coverage ranking changes remain blocked. Unqualified labels outs
 
 A gate update requires review and protected policy/code pin updates after merging to its trusted target. Existing PRs also need fresh evidence for their exact commits.
 
-An exception preserves the scores and binds the decision to the report, source commit, policy and selected variant. It does not approve deployment. Merge still requires an approving PR review and the passing build check.
+An exception preserves the scores and binds the decision to the report, source commit, policy and selected variant. It does not approve deployment. Source merge requires passing checks; the lab allows authors to merge their own demonstration changes. Deployment requires a separate approving reviewer.
 
 The [variant evaluation guide](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/variant-evaluation.md) explains report fields and evidence publication. Synthetic fixture scores demonstrate the workflow, not real search quality.

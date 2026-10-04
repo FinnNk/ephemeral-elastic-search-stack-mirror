@@ -158,6 +158,75 @@ def number(value, name, low=0, high=1):
     return value
 
 
+def additional_suite_states(report, selection, policy, variant, intent):
+    """Check each required extra suite; combined averages never decide a gate."""
+    declarations = selection.get('additional_query_sets', [])
+    if not isinstance(declarations, list) or len(declarations) > 8:
+        raise ValueError('Additional query-set selection is invalid.')
+    if not declarations:
+        if report.get('query_sets', {}).keys() - {'standard'}:
+            raise ValueError('Report contains additional sets that were not selected.')
+        return []
+    if report.get('additional_query_sets_selection_sha256') != sha(canonical(declarations)):
+        raise ValueError('Report used another additional query-set selection.')
+    suites, metadata = report.get('query_sets', {}), report.get('query_set_metadata', {})
+    names = {'standard'}
+    states = []
+    baseline, metric = report['baseline_variant'], policy['metric']
+    for item in declarations:
+        if (not isinstance(item, dict) or set(item) - {'name', 'path', 'required', 'judgements'}
+                or not {'name', 'path'} <= set(item)
+                or not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', str(item.get('name', '')))
+                or item['name'] in names or type(item.get('required', False)) is not bool):
+            raise ValueError('Additional query-set declaration is invalid.')
+        name = item['name']
+        names.add(name)
+        meta = metadata.get(name, {})
+        if any(meta.get(key) != value for key, value in item.items()) or \
+                meta.get('required') != item.get('required', False):
+            raise ValueError('Frozen additional query-set settings differ.')
+        for pin in ('query_sha256', 'judgement_sha256'):
+            if not re.fullmatch('[0-9a-f]{64}', str(meta.get(pin, ''))):
+                raise ValueError('Additional query set has no content pin.')
+        suite = suites.get(name, {})
+        if (suite.get('complete') is not True or suite.get('variants') != report['variants']
+                or suite.get('baseline_variant') != baseline
+                or suite.get('catalogue_sha256') != report['catalogue_sha256']
+                or suite.get('query_suite_sha256') != meta['query_sha256']):
+            raise ValueError('Additional query set is incomplete or uses another frozen context.')
+        if not item.get('required', False):
+            continue
+        if not item.get('judgements') or suite.get('relevance_available') is not True:
+            raise ValueError('Required additional query sets need reference labels.')
+        require_gate_judgements(suite)  # The ESCI demo allowance is standard-suite only.
+        coverage = min(number(suite['coverage'][v].get('fraction'), 'Additional judged coverage')
+                       for v in (baseline, variant))
+        delta = round(number(suite['metrics'][variant].get(metric), 'Additional metric') -
+                      number(suite['metrics'][baseline].get(metric), 'Additional baseline'), 6)
+        if suite.get('delta_from_baseline', {}).get(variant, {}).get(metric) != delta:
+            raise ValueError('Additional metric delta differs.')
+        changes = suite['result_changes'][variant]
+        count = suite.get('query_count')
+        changed = changes.get('changed_queries')
+        fraction = number(changes.get('fraction'), 'Additional changed-query fraction')
+        if type(count) is not int or count < 1 or type(changed) is not int or not 0 <= changed <= count \
+                or abs(fraction - round(changed / count, 6)) > 1e-6:
+            raise ValueError('Additional changed-query count differs.')
+        limits = policy['changed_query_fraction'][intent]
+        if coverage < policy['minimum_judged_fraction'] or delta < policy['exception_min_delta'] \
+                or fraction > limits['exception']:
+            state = 'blocked'
+        elif delta >= policy['pass_min_delta'] and fraction <= limits['pass']:
+            state = 'pass'
+        else:
+            state = 'decision_required'
+        states.append({'name': name, 'state': state, 'delta': delta,
+                       'judged_fraction': coverage, 'changed_query_fraction': fraction})
+    if set(suites) != names or set(metadata) != names:
+        raise ValueError('Report query sets differ from the selected sets.')
+    return states
+
+
 def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
           evidence_key, approval_key, trusted_policy_sha, source_sha,
           build_receipt_bytes, source_repository, now=None):
@@ -171,8 +240,8 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
     if policy.get('kind') != 'variant-merge-policy' or policy.get('schema_version') != 1:
         raise ValueError('Unsupported variant merge policy.')
     if selection.get('kind') != 'variant-gate-selection' or \
-            selection.get('schema_version') != 1 or set(selection) != {
-                'kind', 'schema_version', 'selected'}:
+            selection.get('schema_version') != 1 or set(selection) - {
+                'kind', 'schema_version', 'selected', 'additional_query_sets'}:
         raise ValueError('Selection contract is invalid.')
     if report.get('kind') != 'variant-evaluation-report' or \
             report.get('schema_version') != 1 or report.get('complete') is not True:
@@ -288,6 +357,11 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
             state = 'pass'
         else:
             state = 'decision_required'
+        suite_states = additional_suite_states(report, selection, policy, variant, intent)
+        if any(item['state'] == 'blocked' for item in suite_states):
+            state = 'blocked'
+        elif state == 'pass' and any(item['state'] == 'decision_required' for item in suite_states):
+            state = 'decision_required'
         matching_approvals = [item for item in approvals if isinstance(item, dict) and
                               item.get('variant') == variant]
         if len(matching_approvals) > 1:
@@ -305,6 +379,7 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
             if state == 'decision_required':
                 state = 'approved_exception'
         receipts.append({'variant': variant, 'intent': intent, 'state': state,
+                         'additional_query_sets': suite_states,
                          'baseline': baseline, 'metric': metric, 'value': score,
                          'delta': delta, 'judged_fraction': coverage,
                          'baseline_judged_fraction': baseline_coverage,

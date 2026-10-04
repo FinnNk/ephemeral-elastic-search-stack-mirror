@@ -68,6 +68,7 @@ def seed_source(path):
     shutil.copytree(ROOT / 'lab/delivery/ci', path / 'ci', ignore=shutil.ignore_patterns('__pycache__'), dirs_exist_ok=True)
     shutil.copyfile(ROOT / 'lab/variant_gate.py', path / 'ci/variant_gate.py')
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/chart', path / 'chart', dirs_exist_ok=True)
+    shutil.copytree(ROOT / 'lab/delivery/bootstrap/evaluation', path / 'evaluation', dirs_exist_ok=True)
     chart = path / 'chart/templates/environment.yaml'
     chart.write_text(chart.read_text().replace('name: registry-read', 'name: nexus-read'),
                      encoding='utf-8', newline='\n')

@@ -71,6 +71,35 @@ The summary and full variant report include their per-variant averages; the
 report retains per-query scores for investigation. A future policy may require
 a recorded decision for a large change in results. That rule is not enabled.
 
+### Add queries for your change
+
+Keep the standard frozen suite and add named JSONL query files in the source
+repository. For the trainers example, select the supplied four-query file:
+
+```json
+"additional_query_sets": [
+  {"name": "trainers", "path": "evaluation/queries/trainers.jsonl", "required": false}
+]
+```
+
+Add this field to `gate/selection.json`. Each row needs `query_id`, `query`,
+`country`, `currency` and optional `filters`. Query IDs must be unique within
+that file. The coordinator reads and freezes the files from the exact PR commit.
+Each suite sends fresh requests, including requests repeated in another suite.
+
+The report contains separate suites and a combined view. Combined scores give
+each query case equal weight and disclose repeated requests. Relevance scores
+include only labelled suites; unlabelled suites still report result overlap,
+order and unknown coverage. The combined view never decides the gate.
+
+Extra suites report only by default. To require one, set `required` to `true`
+and provide `judgements`, the path to its matching reference-label JSONL file.
+Labels need `query_id`, `product_id` and an ESCI `grade` from 0 to 3. Review
+authored labels as reference data; do not paste model predictions into this file.
+Model predictions retain their qualification behind the judgement API.
+Every required suite must pass independently. The standard ESCI demo allowance
+does not apply to extra suites.
+
 | Step | Required record |
 | --- | --- |
 | Declare intent in the source PR | `gate/selection.json`: one or more variant names, each with `ranking-change` or `preserve-results`; no source SHA |

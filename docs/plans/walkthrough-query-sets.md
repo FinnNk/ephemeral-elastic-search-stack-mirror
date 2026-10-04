@@ -25,6 +25,16 @@ controls. Tests cover input rejection, repeated queries, combined weighting,
 report-only missing labels and a failing required suite. Update the variant
 guide, source gate guide and workflow diagram to match the contract.
 
+## Verification and next batch
+
+Input freezing, original-byte hashes, labelled and unlabelled scoring, explicit
+combined weighting and a failing required suite are covered by focused tests.
+The query-set core is ready for review. The next workflow batch wires these
+contracts into the authenticated coordinator and automatic source comparisons;
+no runtime workflow is installed from this branch.
+
+Next: [remote developer operations](walkthrough-actions.md).
+
 ## References
 
 - [Feedback plan](walkthrough-feedback.md)

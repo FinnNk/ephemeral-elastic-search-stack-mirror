@@ -21,6 +21,27 @@ POLICY = Path(__file__).resolve().parent / 'delivery/policies/variant-merge-v1.j
 
 
 class VariantGateTests(unittest.TestCase):
+    def test_required_suite_cannot_hide_behind_combined_improvement(self):
+        self.selection['additional_query_sets'] = [{'name': 'rewrite',
+            'path': 'evaluation/queries/rewrite.jsonl', 'judgements': 'evaluation/labels/rewrite.jsonl',
+            'required': True}]
+        extra = json.loads(canonical(self.report))
+        extra.update(relevance_available=True, query_suite_sha256='9' * 64)
+        extra['coverage']['ranker-a']['fraction'] = 0.1
+        self.report['query_sets'] = {'standard': dict(self.report), 'rewrite': extra}
+        self.report['query_set_metadata'] = {'standard': {'required': True}, 'rewrite': {
+            **self.selection['additional_query_sets'][0], 'query_sha256': '9' * 64,
+            'judgement_sha256': '8' * 64}}
+        self.report['additional_query_sets_selection_sha256'] = sha(canonical(
+            self.selection['additional_query_sets']))
+        self.report['combined'] = {'metrics': {'ranker-a': {'nDCG@10': 1}}}
+        self.assertEqual(self.check()['state'], 'blocked')
+        self.selection['additional_query_sets'][0]['required'] = False
+        self.report['query_set_metadata']['rewrite']['required'] = False
+        self.report['additional_query_sets_selection_sha256'] = sha(canonical(
+            self.selection['additional_query_sets']))
+        self.assertEqual(self.check()['state'], 'decision_required')
+
     def setUp(self):
         self.policy = POLICY.read_bytes()
         self.report = {'kind': 'variant-evaluation-report', 'schema_version': 1,
