@@ -30,12 +30,13 @@ def install():
     rule = {**(current or {}), 'branch_name': 'main', 'rule_name': 'main',
             'enable_push': False, 'enable_force_push': False,
             'enable_status_check': True, 'status_check_contexts': contexts,
-            'required_approvals': max(1, (current or {}).get('required_approvals', 0)),
+            'required_approvals': (current or {}).get('required_approvals', 0),
             'block_on_rejected_reviews': True, 'block_on_outdated_branch': True,
             'dismiss_stale_approvals': True, 'block_admin_merge_override': True}
     api(endpoint(SOURCE, '/branch_protections' + ('/main' if current else '')),
         'PATCH' if current else 'POST', rule)
-    print('delivery-source main requires review, build checks and the trusted offline relevance gate.')
+    print('delivery-source main requires build checks and the trusted offline relevance gate; '
+          f"required approvals: {rule['required_approvals']}.")
 
 
 if __name__ == '__main__':

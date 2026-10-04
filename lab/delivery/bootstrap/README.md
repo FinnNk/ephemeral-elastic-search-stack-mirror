@@ -76,6 +76,10 @@ For a small query-understanding demo, copy the function from
 [`examples/trainers_rewrite.py`](examples/trainers_rewrite.py) into
 [`app/app.py`](app/app.py), replacing `understand()`. It rewrites `trainers` to
 `running shoes`, ignoring case, and records the decision name in diagnostics.
+Copy the method from
+[`examples/trainers_rewrite_test.py`](examples/trainers_rewrite_test.py) into the
+`AppTests` class in `app/test_app.py`. The comments in each snippet explain its
+placement and what it checks. Keep the examples separate from the application.
 
 1. Create a branch, change the API or ranking settings, and run the tests.
 2. Push the branch and open a pull request. **Reference release CI**, visible in Gitea's **Actions** tab, tests and builds that exact commit. It stores the image and release files in Nexus, the lab's artefact repository. The separate **Offline relevance gate** checks the evaluation evidence; changes limited to this README and `gate/README.md` receive a recorded documentation exemption.

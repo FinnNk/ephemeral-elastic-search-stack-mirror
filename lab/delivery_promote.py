@@ -231,6 +231,28 @@ def approved_head(reviews, head_sha):
 
 def merge_reviewed(number, approval_kind='separate reviewer'):
     """Merge a validated fixture PR only after a distinct reviewer approved its exact head."""
+    current_pr = api(endpoint(DESIRED, '/pulls/' + str(number)))
+    if current_pr.get('merged'):
+        if current_pr['base']['ref'] != 'main':
+            raise ValueError('Merged promotion did not target main.')
+        checkout()
+        head = current_pr['head']['sha']
+        branch = current_pr['head']['ref']
+        if not branch.startswith('promote/') or '/' in branch.removeprefix('promote/'):
+            raise ValueError('Merged PR is not a delivery promotion.')
+        git(DESIRED, 'fetch', 'origin', branch)
+        proposal = json.loads(git(DESIRED, 'show', head + ':proposals/' + branch.removeprefix('promote/') + '.json'))
+        target = proposal['target']
+        if target not in TARGETS:
+            raise ValueError('Merged proposal has an unknown target.')
+        declared = json.loads(git(DESIRED, 'show', head + ':targets/' + target + '/deployment.json'))
+        if declared != proposal['deployment']:
+            raise ValueError('Merged proposal differs from its declared deployment.')
+        if read_target(target) != proposal['deployment']:
+            return {'pr': number, 'state': 'already-merged', 'target': target,
+                    'detail': 'The target has moved since this PR. Its older deployment was not reapplied.'}
+        result = verify_target(target, proposal['deployment'])
+        return {**result, 'pr': number, 'merge_state': 'already-merged'}
     checked = validate_pr(number)
     if not checked['passed']:
         raise ValueError(checked['detail'])

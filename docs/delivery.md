@@ -140,6 +140,17 @@ For another published suite, pass the same `--query-manifest` and `--judgement-m
 
 After human approval:
 
+Source PRs in this lab require passing checks but default to zero approvals,
+so an engineer can merge their own demonstration change. Setup preserves any
+stricter existing requirement. Deployment proposals still require a separate
+reviewer to approve their exact commit.
+
+The command waits up to 30 seconds for an active delivery operation, then prints
+a readable busy message. Retry after that operation finishes. If the PR is
+already merged, the command verifies its declared deployment when it is still
+the target's current deployment. It never merges again or reapplies an older
+deployment after the target has moved.
+
 ```powershell
 $promotionPr = Read-Host 'Approved delivery-state PR number'
 kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py merge-reviewed $promotionPr

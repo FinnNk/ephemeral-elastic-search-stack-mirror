@@ -173,7 +173,7 @@ def main():
                 if (STATE / 'control-drain').exists():
                     return
                 try:
-                    with writer():
+                    with writer(timeout=0):
                         result = execute(args)
                     if result:
                         print(json.dumps(result), flush=True)
@@ -181,11 +181,15 @@ def main():
                     print(json.dumps({'error': type(error).__name__, 'detail': str(error)[:180]}), flush=True)
                 time.sleep(30)
     else:
-        with writer():
-            result = execute(args)
-            print(json.dumps(result, indent=2))
-            if isinstance(result, dict) and result.get('passed') is False:
-                sys.exit(1)
+        try:
+            with writer():
+                result = execute(args)
+                print(json.dumps(result, indent=2))
+                if isinstance(result, dict) and result.get('passed') is False:
+                    sys.exit(1)
+        except (ValueError, RuntimeError, TimeoutError) as error:
+            print(str(error), file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == '__main__':

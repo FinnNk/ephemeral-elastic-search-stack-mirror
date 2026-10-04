@@ -12,11 +12,13 @@ BASE = {'title': 4, 'product_type': 3, 'brand': 2, 'description': 1}
 
 
 def canonical(value):
+    """Encode ranking settings consistently for their frozen SHA-256 identity."""
     return json.dumps(value, sort_keys=True, separators=(',', ':')).encode()
 
 
 @lru_cache(maxsize=8)
 def configuration(raw):
+    """Validate named ranking choices and require one default for ordinary requests."""
     value = json.loads(raw) if raw else {'default_variant': 'default',
                                         'variants': {'default': {'field_boosts': BASE}}}
     variants = value.get('variants')
@@ -33,6 +35,7 @@ def configuration(raw):
 
 
 def select(headers):
+    """Choose the requested offline variant or the default, retaining its digest."""
     settings = configuration(os.environ.get('SEARCH_VARIANTS_JSON', ''))
     name = headers.get('X-Lab-Variant') or settings['default_variant']
     if name not in settings['variants']:

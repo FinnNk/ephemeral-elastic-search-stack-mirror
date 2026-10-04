@@ -8,6 +8,15 @@ import setup_relevance_gate as setup
 
 
 class RelevanceProtectionTests(unittest.TestCase):
+    def test_new_lab_source_requires_checks_without_author_approval(self):
+        with patch.object(setup, 'git', side_effect=self.deployed_file), \
+                patch.object(setup, 'api', side_effect=[[], None]) as api:
+            setup.install()
+        rule = api.call_args.args[2]
+        self.assertEqual(rule['required_approvals'], 0)
+        self.assertFalse(rule['enable_push'])
+        self.assertEqual(len(rule['status_check_contexts']), 2)
+
     def deployed_file(self, repository, *args):
         if args[0] == 'fetch':
             return ''

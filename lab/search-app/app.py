@@ -18,6 +18,7 @@ DIAGNOSTIC_SCHEMA = 1
 
 
 def validated_query(path):
+    """Normalise and validate a public search URL, including retail filters."""
     params = urllib.parse.parse_qs(urllib.parse.urlparse(path).query)
     query = ' '.join(params.get('q', [''])[0].split())
     country = params.get('country', ['GB'])[0]
@@ -41,6 +42,7 @@ def understand(query):
 
 
 def query_body(query, country, currency, variant=None, filters=None):
+    """Build a deterministic retail query from understood text and ranking boosts."""
     understood_query, _decision = understand(query)
     boosts = (variant or {'field_boosts': BASE})['field_boosts']
     return {
@@ -57,6 +59,7 @@ def query_body(query, country, currency, variant=None, filters=None):
 
 
 def diagnostic_options(path):
+    """Return a validated correlation ID when request diagnostics are selected."""
     params = urllib.parse.parse_qs(urllib.parse.urlparse(path).query)
     if params.get('diagnostics', ['0'])[0] != '1':
         return None
@@ -67,6 +70,7 @@ def diagnostic_options(path):
 
 
 def diagnostic_record(raw_query, query, body, result, correlation_id, api_ms, es_ms):
+    """Describe query processing and retrieval without exposing index credentials."""
     understood_query, decision = understand(query)
     canonical_request = json.dumps(body, sort_keys=True, separators=(',', ':')).encode()
     return {
@@ -84,6 +88,7 @@ def diagnostic_record(raw_query, query, body, result, correlation_id, api_ms, es
 
 
 def api_response(query, country, currency, elastic_response, elapsed_ms, filters=None):
+    """Expose retail products, their order and the original request context."""
     hits = elastic_response['hits']
     products = []
     for hit in hits['hits']:

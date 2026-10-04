@@ -31,14 +31,20 @@ LOCAL = STATE / DESIRED
 
 
 @contextmanager
-def writer():
+def writer(timeout=30):
     """One host coordinator owns the delivery checkout and evaluation slot at a time."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as lock:
-        try:
-            lock.bind(('127.0.0.1', 18086))
-            lock.listen(1)
-        except OSError:
-            raise RuntimeError('Another delivery operation is active; retry when it finishes.') from None
+        deadline = time.monotonic() + timeout
+        while True:
+            try:
+                lock.bind(('127.0.0.1', 18086))
+                lock.listen(1)
+                break
+            except OSError:
+                if time.monotonic() >= deadline:
+                    raise RuntimeError('Another delivery operation is active. '
+                                       'The wait expired; retry when it finishes.') from None
+                time.sleep(min(0.25, max(0, deadline - time.monotonic())))
         guard()
         yield
 

@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'lab/search-app'))
 from search_filters import validate_filters
 
 import ir_measures
+from result_similarity import summarise
 
 SCHEMA = 1
 METRICS = {'nDCG@5': ir_measures.nDCG @ 5,
@@ -203,6 +204,7 @@ def evaluate(observation_path, judgement_path, specification_path,
             'evaluator_sha256': source_identity(),
             'metrics': results, 'delta_from_baseline': deltas,
             'result_changes': result_changes,
+            'result_similarity': summarise(observations, baseline),
             'coverage': coverage, 'per_case': per_case,
             'unjudged_policy': specification['unjudged_policy']}
 
@@ -228,7 +230,10 @@ def main():
     if not args.output.exists():
         args.output.write_bytes(payload)
     print(json.dumps({'report_sha256': sha(payload), 'complete': result['complete'],
-                      'query_count': result['query_count'], 'metrics': result['metrics']}))
+                      'query_count': result['query_count'], 'metrics': result['metrics'],
+                      'result_similarity': {name: {key: value for key, value in scores.items()
+                                                   if key != 'per_query'}
+                                            for name, scores in result['result_similarity'].items()}}))
 
 
 if __name__ == '__main__':

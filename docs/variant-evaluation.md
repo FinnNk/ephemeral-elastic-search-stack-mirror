@@ -56,6 +56,8 @@ For complete operator commands, use the [evaluation runbook](evaluation-runbook.
 | Judged coverage | Share of captured query/product results with labels; low coverage weakens the evidence |
 | Delta from baseline | Whether a variant's measured relevance improved or declined |
 | Changed-result fraction | How many queries changed returned IDs or total match count |
+| RBO@10, persistence 0.9 | Result-order similarity, weighted towards the highest ranks; 1 means identical |
+| Jaccard@10 | Product-set overlap, ignoring order; 1 means the same products |
 | Retained API observations | The ordered IDs and totals behind each changed query |
 
 Reports identify judgement selection and count each source. **Demo** means that model accuracy is unqualified, even when the gate passes. Read coverage beside the scores. Synthetic fixtures demonstrate the process, not real search quality. [Result-preservation comparisons](prototype-design.md#result-regression-preserve-ranking-and-membership) also provide RBO and Jaccard diagnostics.
@@ -63,6 +65,11 @@ Reports identify judgement selection and count each source. **Demo** means that 
 The lab operator runs capture, judgement resolution and scoring. The expected output is one frozen report containing every variant, its baseline deltas and the exact inputs used. If capture fails, correct the missing API response or deployment mismatch before scoring. If labels are missing, inspect coverage before treating scores as evidence.
 
 ## Supply merge evidence
+
+Similarity scores describe change risk and do not change the gate outcome.
+The summary and full variant report include their per-variant averages; the
+report retains per-query scores for investigation. A future policy may require
+a recorded decision for a large change in results. That rule is not enabled.
 
 | Step | Required record |
 | --- | --- |

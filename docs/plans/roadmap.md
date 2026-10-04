@@ -1,5 +1,10 @@
 # Lab delivery roadmap
 
+The [walkthrough feedback plan](walkthrough-feedback.md) adds copyable examples,
+similarity summaries, additional query sets, remote Actions workflows and
+adaptive request pacing in four review batches. The running production load
+evaluation retains its installed revision throughout this work.
+
 The lab has demonstrated a million-product catalogue, 1,000 queries, frozen API comparisons, Gatling load profiles, index recovery, a 40-API fleet and a three-target release path. These are local measurements, not evidence that the same capacity or latency will hold on Apple silicon or Azure. The [design targets](../prototype-design.md#provisional-quantitative-targets) remain provisional.
 
 The full ESCI catalogue now uses a **temporary, human-authorised demo policy**: published labels plus cached calibrated-model predictions provide 81.22% coverage on the captured recall set. Model accuracy remains unqualified. Strict selection still has 29.71% published coverage. The scoped source policy is accepted and active: a fresh 1,000-query capture passed CI, and the catalogue change is on source main. Later investigation restores qualified-only defaults.

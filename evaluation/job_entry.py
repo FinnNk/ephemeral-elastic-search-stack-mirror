@@ -43,7 +43,12 @@ def run(inputs, client, workdir, evaluated_at=None):
     output.write_bytes(canonical(result))
     reference = retain(output, 'evaluation-report', 'runs')
     return {'report': reference, 'complete': result['complete'],
-            'query_count': result['query_count']}
+            'query_count': result['query_count'],
+            'metrics': result['metrics'], 'delta_from_baseline': result['delta_from_baseline'],
+            'result_changes': result['result_changes'],
+            'result_similarity': {name: {key: value for key, value in scores.items()
+                                        if key != 'per_query'}
+                                 for name, scores in result['result_similarity'].items()}}
 
 
 def main():

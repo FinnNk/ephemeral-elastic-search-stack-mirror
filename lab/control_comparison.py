@@ -97,6 +97,16 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
             errors.append({'query_id': query['query_id'], 'kind': type(error).__name__,
                            'detail': str(error)[:120]})
     complete = not errors and len(results) == len(suite)
+    similarity = {
+        'jaccard_at_10': round(sum(row['jaccard_at_10'] for row in results) / len(results), 6)
+        if results else None,
+        'rbo_at_10_p_0_9': round(sum(row['rbo_at_10_p_0_9'] for row in results
+                                   if row['rbo_at_10_p_0_9'] is not None) /
+                                sum(row['rbo_at_10_p_0_9'] is not None for row in results), 6)
+        if any(row['rbo_at_10_p_0_9'] is not None for row in results) else None,
+        'rbo_query_count': sum(row['rbo_at_10_p_0_9'] is not None for row in results),
+        'query_count': len(results),
+    }
     changed = [row['query_id'] for row in results if not row['equal_top_10']]
     if not complete:
         verdict = 'incomplete'
@@ -201,7 +211,8 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
                                    else 'Selected judgement labels; unjudged products remain unknown.')
                                   if mode == 'relevance' else 'Not used for result preservation.'),
               'query_count': len(suite), 'completed_query_count': len(results), 'zero_result_counts': zero_counts,
-              'changed_query_ids': changed, 'metrics': metrics, 'errors': errors, 'queries': results}
+              'changed_query_ids': changed, 'metrics': metrics, 'result_similarity': similarity,
+              'errors': errors, 'queries': results}
     payload = (json.dumps(report, sort_keys=True, indent=2) + '\n').encode()
     digest = hashlib.sha256(payload).hexdigest()
     location = immutable_blob('runs', digest + '/controlled-comparison.json', payload)
@@ -212,5 +223,6 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
             'changed_query_ids': changed, 'zero_result_counts': zero_counts,
             'query_manifest_sha256': selected['query_manifest_sha256'],
             'judgement_manifest_sha256': selected.get('judgement_manifest_sha256'),
-            'metrics': metrics, 'judgement_coverage': coverage, 'judgement_source_counts': source_coverage,
+            'metrics': metrics, 'result_similarity': similarity,
+            'judgement_coverage': coverage, 'judgement_source_counts': source_coverage,
             'judgement_coverage_status': coverage_status, 'errors': errors}

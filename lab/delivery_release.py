@@ -1,7 +1,7 @@
 """Verify retained release descriptors, bundles and successful provider build receipts."""
 import io
 import json
-from pathlib import Path, PurePosixPath
+from pathlib import PurePosixPath
 import tarfile
 
 from delivery.ci.release import canonical, digest, validate
@@ -43,15 +43,23 @@ def load(release_id):
 
 
 def from_run(run_id):
+    """Return a verified receipt, release and files for an exact successful build."""
+    receipt, release, files, _payload = from_run_bytes(run_id)
+    return receipt, release, files
+
+
+def from_run_bytes(run_id):
+    """Also retain the original receipt bytes for evidence signing."""
     run = api(endpoint(SOURCE, '/actions/runs/' + str(run_id)))
     if run['status'] != 'completed' or run['conclusion'] != 'success':
         raise ValueError('Source build has not succeeded.')
     path = 'builds/' + run['head_sha'] + '/' + str(run['id']) + '-' + str(run['run_attempt']) + '.json'
-    receipt = json.loads(request('/repository/lab-releases/' + path, identity='reader'))
+    payload = request('/repository/lab-releases/' + path, identity='reader')
+    receipt = json.loads(payload)
     release, files = load(receipt['release_id'])
     if (receipt['source_sha'] != run['head_sha'] or release['source_sha'] != run['head_sha'] or
             receipt['event_kind'] != run['event'] or receipt['source_repository'] != 'elastic-agent/' + SOURCE or
             release['source_repository'] != receipt['source_repository'] or receipt['image'] != release['image'] or
             str(receipt['run_id']) != str(run['id']) or str(receipt['run_attempt']) != str(run['run_attempt'])):
         raise ValueError('Build receipt does not match the exact successful source run.')
-    return receipt, release, files
+    return receipt, release, files, payload

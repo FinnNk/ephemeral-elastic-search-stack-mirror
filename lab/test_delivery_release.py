@@ -5,12 +5,27 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import json
+from unittest.mock import patch
 
 from delivery.ci.release import bundle, canonical, digest, validate
 from delivery_release import validate_bundle
+import delivery_release
 
 
 class ReleaseIntegrityTests(unittest.TestCase):
+    def test_original_receipt_bytes_survive_verification(self):
+        receipt = {'release_id': 'r', 'source_sha': 'a' * 40, 'event_kind': 'pull_request',
+                   'source_repository': 'elastic-agent/delivery-source', 'image': 'image',
+                   'run_id': 106, 'run_attempt': 1}
+        payload = json.dumps(receipt, indent=3).encode()  # Deliberately not canonical.
+        run = {'status': 'completed', 'conclusion': 'success', 'head_sha': 'a' * 40,
+               'event': 'pull_request', 'id': 106, 'run_attempt': 1}
+        with patch.object(delivery_release, 'api', return_value=run), \
+                patch.object(delivery_release, 'request', return_value=payload), \
+                patch.object(delivery_release, 'load', return_value=(receipt, {})):
+            self.assertEqual(delivery_release.from_run_bytes(106)[3], payload)
+
     def fixture(self, root):
         worker = b'print("indexer")\n'
         contract = {'engine_version': '9.5.4', 'definitions': [{'mappings': {}, 'settings': {}}],

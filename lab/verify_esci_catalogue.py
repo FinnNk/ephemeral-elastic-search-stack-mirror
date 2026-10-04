@@ -90,7 +90,8 @@ def verify(baseline_run, candidate_run, release=DEFAULT_RELEASE, gatling_probe=F
         summary={'release':release,'count':catalogue['record_count'],'build_runs':[baseline_run,candidate_run],
                  'source_shas':[record['source_sha'] for record in records],
                  'index':index,'recipe_sha256':recipe_sha,'query_count':report['query_count'],
-                 'result_changes':report['result_changes'],'coverage':report['coverage'],'metrics':report['metrics'],
+                 'result_changes':report['result_changes'],'result_similarity':report['result_similarity'],
+                 'coverage':report['coverage'],'metrics':report['metrics'],
                  'capture_and_score_seconds':round(time.monotonic()-started,3),'observation':reference,
                  'sample_ids':sample['ids'],'output':str(output)}
         if gatling_probe:
