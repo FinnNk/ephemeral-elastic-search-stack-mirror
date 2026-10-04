@@ -72,6 +72,11 @@ the results for request timing. Try `running shoes`. The page calls `GET /search
 
 ## Contributors guide
 
+For a small query-understanding demo, copy the function from
+[`examples/trainers_rewrite.py`](examples/trainers_rewrite.py) into
+[`app/app.py`](app/app.py), replacing `understand()`. It rewrites `trainers` to
+`running shoes`, ignoring case, and records the decision name in diagnostics.
+
 1. Create a branch, change the API or ranking settings, and run the tests.
 2. Push the branch and open a pull request. **Reference release CI**, visible in Gitea's **Actions** tab, tests and builds that exact commit. It stores the image and release files in Nexus, the lab's artefact repository. The separate **Offline relevance gate** checks the evaluation evidence; changes limited to this README and `gate/README.md` receive a recorded documentation exemption.
 3. Deploy the built version to a lab environment and compare it with a baseline using the same frozen products and queries. Frozen inputs are saved versions that stay the same throughout the comparison.
@@ -84,6 +89,7 @@ The lab also supports named ranking variants: alternative settings evaluated aga
 | Path | Contents |
 | --- | --- |
 | `app/` | Search API, browser page, tests and Docker image definition |
+| `examples/` | Copyable code snippets for contributor demos |
 | `chart/` | Kubernetes deployment template |
 | `contracts/` | Supported Elasticsearch index definitions and index-building code |
 | `ci/` | Build, release and evaluation gate scripts |

@@ -84,6 +84,8 @@ def seed_source(path):
     (path / 'contracts/index.json').write_bytes(canonical(contract))
     (path / 'contracts/indexer.py').write_bytes(worker)
     (path / '.gitignore').write_text('__pycache__/\n.docker-ci/\nimage-metadata.json\n', encoding='utf-8')
+    shutil.copytree(ROOT / 'lab/delivery/bootstrap/examples', path / 'examples',
+                    ignore=shutil.ignore_patterns('__pycache__'), dirs_exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/bootstrap/README.md', path / 'README.md')
     shutil.copyfile(ROOT / 'lab/delivery/bootstrap/gate/README.md', path / 'gate/README.md')
     git(SOURCE, 'add', '.')

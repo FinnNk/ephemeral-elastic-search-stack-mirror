@@ -19,14 +19,15 @@ comparisons; the standalone demo is for disconnected development only.
 ## Progress and next step
 
 The contributor has opened the full ESCI storefront, tried a search, updated a
-clean checkout and found `understand()`. Its comment explains that `'none'`
-records an unchanged query; a demo rewrite returns its own decision name.
-The source copy, lab template and supplied rewrite patch are kept in sync.
+clean checkout and read `understand()` and `query_body()`. They have created
+`codex/walkthrough-trainers` and added the `trainers` → `running shoes` rewrite.
+The source repository includes a copyable function in
+`examples/trainers_rewrite.py`; the lab seeds the same example and contributor guide.
 
-Next, read `query_body()` together and explain how it builds the Elasticsearch
-request. Then create a contributor branch and make one small query change,
-with feedback between steps. Cloning and local image building have already
-succeeded; continue from this point after the comment batch is accepted.
+Next, build and run the application tests together, explain their output, then
+add a focused check for the rewrite before committing the contributor's change.
+Continue one step at a time with feedback. After the walkthrough, make one pass
+over public-function comments, as requested by the contributor.
 
 ## References
 

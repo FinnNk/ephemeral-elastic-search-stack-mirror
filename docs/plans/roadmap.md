@@ -4,10 +4,10 @@ The lab has demonstrated a million-product catalogue, 1,000 queries, frozen API 
 
 The full ESCI catalogue now uses a **temporary, human-authorised demo policy**: published labels plus cached calibrated-model predictions provide 81.22% coverage on the captured recall set. Model accuracy remains unqualified. Strict selection still has 29.71% published coverage. The scoped source policy is accepted and active: a fresh 1,000-query capture passed CI, and the catalogue change is on source main. Later investigation restores qualified-only defaults.
 
-The [developer walkthrough](developer-walkthrough.md) has reached query
-understanding. The comment batch explains the no-rewrite decision and keeps the
-source template and demo patch aligned. The next step is to read the request
-builder before making a small contributor change.
+The [developer walkthrough](developer-walkthrough.md) has reached the first
+query rewrite. A copyable function snippet is linked from the contributor guide
+and included in source bootstrap. Next, build and test the contributor change;
+review public-function comments in one pass after the walkthrough.
 
 The [category survey](../research/evidence/esci-category-survey-results.md) and [saved-score diagnostic](../research/evidence/esci-score-separation.md) did not establish sufficient label quality. The [role-check runtime](../research/evidence/esci-role-runtime-preflight.md) is prepared but execution remains held for human review. The demo decision does not authorise that survey.
 
