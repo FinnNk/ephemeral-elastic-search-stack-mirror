@@ -47,8 +47,9 @@
       "Demo verdict records human quality authorisation"
     ]},
     {"dot": "cyan", "title": "Read each suite", "items": [
-      "Standard required; extra suites explicitly required",
-      "Combined scores and RBO describe change risk"
+      "Standard required; extras report only by default",
+      "Combined scores and RBO describe change risk",
+      "Eight workers adapt to API overload"
     ]}
   ]
 }

@@ -43,6 +43,18 @@ variants sequentially; observations retain the frozen query order. The Search AP
 reuses verified Elasticsearch connections, while every request still executes a
 new search. Load testing remains a separate Gatling workflow.
 
+Workers share an adaptive pacer for each API. HTTP 429, transient server errors
+and connection failures slow further requests; successful responses gradually
+remove that spacing. Requests have at most three attempts and a 30-second
+retry/pacing budget. Long `Retry-After` values can exhaust that budget. Failed
+queries remain visible and invalidate a complete capture.
+
+Retained execution records include attempts, retries, failures, spacing and
+cumulative worker wait for each API. Read these beside elapsed time: the pacer
+may make a functional evaluation slower to avoid overload. It does not change
+Gatling load profiles or their performance verdicts. See the
+[pacing measurements](research/evidence/evaluation-pacing.md).
+
 Capture prints its observation hash/Blob reference and retains ordered results. Scoring prints completeness, query count and per-variant metrics. Inspect `evaluation.json`, coverage and changed queries; positive deltas with poor coverage are not sufficient evidence.
 
 If responses or identities mismatch, fix the deployed definition before recapturing. For missing labels, use [pooled judgement resolution](judgement-resolution.md#capture-resolve-and-score) instead of the direct scoring command. Every variant must use the same frozen labels. Changed bytes require a new output directory; frozen reports are not overwritten.

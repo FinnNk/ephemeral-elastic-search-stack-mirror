@@ -4,14 +4,13 @@ import json
 import os
 import re
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'search-app'))
 from search_filters import encode_filters, validate_filters
+from adaptive_pacing import Pacer
 
 
 def traceparent():
@@ -24,26 +23,13 @@ def traceparent():
     return None
 
 
-def request(name, row):
+def request(name, row, pacer=None):
     filters = validate_filters(row.get('filters', {}))
     query = urllib.parse.urlencode({'q': row['query'], 'country': row['country'],
                                     'currency': row['currency'], 'filters': encode_filters(filters)})
     url = f'http://search.{name}.svc.cluster.local:8080/search?' + query
-    for attempt in range(3):
-        try:
-            headers = {'traceparent': parent} if (parent := traceparent()) else {}
-            call = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(call, timeout=10) as reply:
-                value = json.load(reply)
-            break
-        except urllib.error.HTTPError as error:
-            if error.code < 500 or attempt == 2:
-                raise
-            time.sleep(0.2 * (attempt + 1))
-        except (urllib.error.URLError, TimeoutError):
-            if attempt == 2:
-                raise
-            time.sleep(0.2 * (attempt + 1))
+    headers = {'traceparent': parent} if (parent := traceparent()) else {}
+    value = (pacer or Pacer()).fetch(url, headers)
     if (value.get('query'), value.get('country'), value.get('currency')) != (row['query'], row['country'], row['currency']):
         raise ValueError('Search API did not echo the frozen request.')
     if value.get('filters') != filters:
@@ -54,28 +40,35 @@ def request(name, row):
     return {'ids': ids, 'total': value['total']}
 
 
-def run(rows, baseline, candidate, worker_count=8):
+def run(rows, baseline, candidate, worker_count=8, diagnostics=None):
     if not 1 <= worker_count <= 16:
         raise ValueError('Evaluator concurrency must be between 1 and 16.')
+    pacers = {name: Pacer() for name in (baseline, candidate)}
+
     def one(row):
         try:
-            return {'query_id': row['query_id'], 'baseline': request(baseline, row),
-                    'candidate': request(candidate, row)}
+            return {'query_id': row['query_id'], 'baseline': request(baseline, row, pacers[baseline]),
+                    'candidate': request(candidate, row, pacers[candidate])}
         except Exception as error:
             return {'query_id': row['query_id'], 'error': {'kind': type(error).__name__,
                     'detail': str(error)[:120]}}
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker_count) as pool:
-        return list(pool.map(one, rows))
+        result = list(pool.map(one, rows))
+    if diagnostics is not None:
+        diagnostics.update({name: pacer.summary() for name, pacer in pacers.items()})
+    return result
 
 
 if __name__ == '__main__':
     rows = [json.loads(line) for line in Path('/input/queries.jsonl').read_text(encoding='utf-8').splitlines()]
     started = time.monotonic()
-    result = run(rows, os.environ['BASELINE'], os.environ['CANDIDATE'])
+    pacing = {}
+    result = run(rows, os.environ['BASELINE'], os.environ['CANDIDATE'], diagnostics=pacing)
     event = {'event': 'lab.job.completed', 'service': 'lab-comparison-worker',
              'operation': 'comparison.capture', 'job_name': os.environ.get('LAB_JOB_NAME'),
              'state': 'complete' if all('error' not in item for item in result) else 'incomplete',
              'query_count': len(rows), 'error_count': sum('error' in item for item in result),
+             'pacing': pacing,
              'duration_ms': round((time.monotonic() - started) * 1000, 3)}
     for field in ('trace_id', 'span_id'):
         if os.environ.get('LAB_' + field.upper()):

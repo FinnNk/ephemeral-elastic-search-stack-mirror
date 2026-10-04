@@ -5,23 +5,20 @@ similarity summaries, additional query sets, remote Actions workflows and
 adaptive request pacing in four review batches. Build 108 completed the existing
 production-load gate and was approved, deployed and verified through PR 16.
 
-The guidance batch is in PR #105. The query-set batch freezes extra source
-files and separates suite metrics from the combined view. Its next batch is
-[remote developer operations](walkthrough-actions.md), including automatic PR
-comparisons and public report links. Remote operations and automatic capture are
-implemented on the review branch; runtime activation remains after acceptance.
-The next detailed batch is [adaptive request pacing](walkthrough-pacing.md).
+The four feedback batches are implemented on review branches: guidance and
+evidence, additional query sets, remote delivery/automatic comparisons, and
+adaptive request pacing. Source templates are published separately, preserving
+the walkthrough's accepted rewrite. The next batch is
+[activation and a live rehearsal](walkthrough-activation.md), after acceptance.
 
 The lab has demonstrated a million-product catalogue, 1,000 queries, frozen API comparisons, Gatling load profiles, index recovery, a 40-API fleet and a three-target release path. These are local measurements, not evidence that the same capacity or latency will hold on Apple silicon or Azure. The [design targets](../prototype-design.md#provisional-quantitative-targets) remain provisional.
 
 The full ESCI catalogue now uses a **temporary, human-authorised demo policy**: published labels plus cached calibrated-model predictions provide 81.22% coverage on the captured recall set. Model accuracy remains unqualified. Strict selection still has 29.71% published coverage. The scoped source policy is accepted and active: a fresh 1,000-query capture passed CI, and the catalogue change is on source main. Later investigation restores qualified-only defaults.
 
-The [developer walkthrough](developer-walkthrough.md) has reached source PR #26.
-Its rewrite passes application tests and release CI; relevance CI is waiting for
-the exact-commit report. The [PR preview correction](pr-build-previews.md) has
-deployed that build through the normal CLI and awaits review and control-runtime
-installation. Next, inspect the preview together before evaluation. Collected
-example and public-function comment feedback remains for the walkthrough's end.
+The [developer walkthrough](developer-walkthrough.md) completed build 108's
+promotion through integration, staging and production. The user confirmed the
+rewrite in each storefront. The feedback batches improve the next walkthrough;
+their new remote workflow is not yet installed or demonstrated live.
 
 The [category survey](../research/evidence/esci-category-survey-results.md) and [saved-score diagnostic](../research/evidence/esci-score-separation.md) did not establish sufficient label quality. The [role-check runtime](../research/evidence/esci-role-runtime-preflight.md) is prepared but execution remains held for human review. The demo decision does not authorise that survey.
 

@@ -62,6 +62,14 @@ views were regenerated and passed automated browser checks; their light previews
 were inspected. Runtime activation follows human acceptance. Next:
 [request pacing](walkthrough-pacing.md).
 
+Batch 4 keeps eight workers and adds per-API overload pacing. In three sustained
+overload trials, adaptive captures completed all 48 queries; fixed retries lost
+12–14. Healthy trials had no waits or retries. Recovery deliberately trades
+duration for fewer failed requests. See the [measurements](../research/evidence/evaluation-pacing.md).
+59 focused capture, queue, scoring and gate checks passed. Source application
+tests passed with the accepted trainers rewrite preserved. Next:
+[activation and a live rehearsal](walkthrough-activation.md).
+
 The existing production loop completed with build 108. Desired-state PR 16 was
 approved, merged and verified; retained verification SHA-256 is
 `d581ada3fff08bfeae966e47efb693ccbd4c96dbec063d49f7e1a8ee89642a44`.

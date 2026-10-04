@@ -48,6 +48,11 @@ For complete operator commands, use the [evaluation runbook](evaluation-runbook.
 3. **Fill label gaps.** The [judgement workflow](judgement-resolution.md) pools query/product pairs from all variants. Stored labels take precedence; the pinned model supplies missing labels or abstains. Freeze one judgement set for all variants.
 4. **Score.** The [offline evaluator](../evaluation/offline.py) reports metrics, coverage and deltas from the baseline. An abstention remains unknown.
 
+Capture uses eight workers and adapts request spacing separately for each API
+when transient failures occur. Retries are bounded and incomplete responses
+remain errors. Reports retain pacing diagnostics; load tests continue to use
+Gatling's declared arrival rates. See [capture execution](evaluation-runbook.md#capture-and-score).
+
 ## Read the report
 
 | Result | What it tells you |

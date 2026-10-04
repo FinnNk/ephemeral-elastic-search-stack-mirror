@@ -216,8 +216,8 @@
     {
       "diagram_type": "workflow",
       "output": "interactive/variant-merge-gate.html",
-      "specification_sha256": "57ce88452e80dc5080d9bff1e56a3484e08fdbcd24c427158356fe0942f4445a",
-      "artifact_sha256": "190af038571d52d6008a373b85ea4da5666b81c8d7d4534de89441b63c5d41a9",
+      "specification_sha256": "3838934cd2e509529a0eec0bfbd66e328514c11ea11d01e0e6d1472e92ab09b2",
+      "artifact_sha256": "3772ba4abbe3abe596720d58f40dd8af9b6806afb672ac90ff218383d365f76a",
       "validation": "Showcase checks passed",
       "browser_evidence": "passed",
       "visual_review": "passed",
@@ -225,7 +225,7 @@
       "review_scope": [
         "1440x900 light screenshot"
       ],
-      "observations": "Reviewed fresh suite capture, required-set scope and CLI/Actions entry. Labels and routes remain legible. Other viewport checks are automated; export interactions were not manually exercised.",
+      "observations": "Reviewed extra-suite default and adaptive capture labels. The regenerated light view is legible; other viewports were checked automatically, not manually.",
       "reviewed_on": "2026-10-04"
     }
   ],

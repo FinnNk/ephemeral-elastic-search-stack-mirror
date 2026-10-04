@@ -7,8 +7,8 @@
   "visualReview": "pending",
   "artifact": {
     "path": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\variant-merge-gate.html",
-    "sha256": "190af038571d52d6008a373b85ea4da5666b81c8d7d4534de89441b63c5d41a9",
-    "bytes": 807667
+    "sha256": "3772ba4abbe3abe596720d58f40dd8af9b6806afb672ac90ff218383d365f76a",
+    "bytes": 807726
   },
   "state": {
     "detail": "read",
@@ -95,8 +95,8 @@
         "overflowX": false,
         "overflowY": false,
         "ok": true,
-        "readerWidth": 1776,
-        "diagramWidth": 1746,
+        "readerWidth": 1725,
+        "diagramWidth": 1695,
         "viewBoxWidth": 1226,
         "minimumProjectedNodeTextPx": 8,
         "minimumProjectedNodeText": "PR source SHA + intent",
@@ -225,8 +225,8 @@
         "overflowX": false,
         "overflowY": false,
         "ok": true,
-        "readerWidth": 1776,
-        "diagramWidth": 1746,
+        "readerWidth": 1725,
+        "diagramWidth": 1695,
         "viewBoxWidth": 1226,
         "minimumProjectedNodeTextPx": 8,
         "minimumProjectedNodeText": "PR source SHA + intent",
@@ -354,8 +354,8 @@
         "overflowX": false,
         "overflowY": false,
         "ok": true,
-        "readerWidth": 1776,
-        "diagramWidth": 1746,
+        "readerWidth": 1725,
+        "diagramWidth": 1695,
         "viewBoxWidth": 1226,
         "minimumProjectedNodeTextPx": 8,
         "minimumProjectedNodeText": "PR source SHA + intent",

@@ -32,7 +32,7 @@ class EvaluatorContract(unittest.TestCase):
     def test_worker_keeps_frozen_order_and_isolates_request_errors(self):
         rows = [{'query_id': 'q1', 'query': 'shoes', 'country': 'GB', 'currency': 'GBP'},
                 {'query_id': 'q2', 'query': 'coat', 'country': 'GB', 'currency': 'GBP'}]
-        def answer(side, row):
+        def answer(side, row, pacer):
             if side == 'candidate' and row['query_id'] == 'q2':
                 raise ValueError('bad candidate response')
             return {'ids': [side + row['query_id']], 'total': 1}

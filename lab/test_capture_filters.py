@@ -16,7 +16,7 @@ class CaptureFilters(unittest.TestCase):
         for variants in (False, True):
             with self.subTest(variants=variants), patch.object(evaluation_job, 'guard'), \
                     patch.object(evaluation_job, 'apply'), patch.object(evaluation_job, 'k') as command:
-                command.return_value.stdout = '[{"query_id":"q1"}]'
+                command.return_value.stdout = '{"pacing":{"lab-base":{"attempts":1}}}\n[{"query_id":"q1"}]'
                 suite = json.dumps({'query_id': 'q1'}).encode()
                 if variants:
                     _, metadata = evaluation_job.run_variants(suite, self.variants)
@@ -28,6 +28,10 @@ class CaptureFilters(unittest.TestCase):
                 self.assertEqual(metadata['request_contract_sha256'],
                                  hashlib.sha256(contract.encode()).hexdigest())
                 self.assertIn('def validate_filters', contract)
+                self.assertIn('class Pacer', config['data']['adaptive_pacing.py'])
+                self.assertEqual(metadata['pacing']['lab-base']['attempts'], 1)
+                self.assertEqual(metadata['adaptive_pacing_sha256'],
+                                 hashlib.sha256(config['data']['adaptive_pacing.py'].encode()).hexdigest())
 
     def setUp(self):
         self.row = {'query_id': 'q1', 'query': 'lamp', 'country': 'GB', 'currency': 'GBP',
