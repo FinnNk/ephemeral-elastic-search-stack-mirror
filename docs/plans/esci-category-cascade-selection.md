@@ -46,6 +46,10 @@ authoritative; a later stage sees only gaps left by earlier qualified stages.
 
 The quick survey's 512 pairs are already exposed development inputs. Its results
 help choose the next experiment; they do not independently qualify that choice.
+The [fixed additional-label analysis](esci-category-increment.md) measures the
+362 pairs left by the retained experimental prefix, using all 512 pairs for
+matched coverage differences and gold-class error denominators. It preserves
+the fixed decisions and does not recalibrate the new contracts.
 The reserved fresh category cohort contains 400 queries and 6,562 pairs with
 references unopened. Its size alone does not establish enough Irrelevant or
 accepted Exact support for the required error bounds.
