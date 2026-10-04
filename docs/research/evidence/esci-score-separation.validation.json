@@ -1,0 +1,117 @@
+{
+  "AUROC_interval_calculated": false,
+  "aggregate_sha256": "541e8325b1691e550a5257e4234e8ec3e8ff9392d0a76ca8c2a72b69d9765e7b",
+  "auroc": {
+    "mapped_confidence": {
+      "correct_vs_4_I_to_E": 0.4469696969696969,
+      "correct_vs_all_14_errors": 0.6190476190476191
+    },
+    "mapped_entropy_nats": {
+      "correct_vs_4_I_to_E": 0.45454545454545453,
+      "correct_vs_all_14_errors": 0.6222943722943723
+    },
+    "mapped_top_two_margin": {
+      "correct_vs_4_I_to_E": 0.4696969696969697,
+      "correct_vs_all_14_errors": 0.6277056277056277
+    },
+    "raw_confidence": {
+      "correct_vs_4_I_to_E": 0.4318181818181819,
+      "correct_vs_all_14_errors": 0.6114718614718614
+    },
+    "raw_entropy_nats": {
+      "correct_vs_4_I_to_E": 0.45075757575757575,
+      "correct_vs_all_14_errors": 0.6147186147186148
+    },
+    "raw_top_two_margin": {
+      "correct_vs_4_I_to_E": 0.43560606060606055,
+      "correct_vs_all_14_errors": 0.6255411255411255
+    }
+  },
+  "bootstrap": {
+    "null_interval": "At least one whole-query sample had no denominator support",
+    "pair_weighted_ratios": true,
+    "population": "query groups represented by the 80 frozen A additional Exact claims",
+    "repetitions": 2000,
+    "seed": 20261004,
+    "unit": "whole_normalised_query"
+  },
+  "cohort": {
+    "A_additional_Exact": {
+      "pairs": 80,
+      "query_groups": 64
+    },
+    "full_pairs": 512,
+    "full_query_groups": 295,
+    "gold_classes": {
+      "C": {
+        "pairs": 3,
+        "query_groups": 2
+      },
+      "E": {
+        "pairs": 66,
+        "query_groups": 56
+      },
+      "I": {
+        "pairs": 4,
+        "query_groups": 4
+      },
+      "S": {
+        "pairs": 7,
+        "query_groups": 6
+      }
+    },
+    "prefix_accepted_pairs": 150,
+    "residual_pairs": 362
+  },
+  "date_utc": "2026-10-04",
+  "fixed_mapped_confidence_band_counts": [
+    80,
+    0,
+    0,
+    0
+  ],
+  "fresh_replay_matches": true,
+  "gate_eligible": false,
+  "kind": "saved-score-development-screen-v1",
+  "limits": [
+    "Retrospective descriptions of exposed, selected development claims after a partly fitted prefix; no independent predictive validation.",
+    "Conditional on the 80 additional Exact claims, not full-pool risk or coverage; S/C/I class supports outside these claims are excluded.",
+    "Four I-to-E errors and three C-to-E errors provide weak harmful-error support, with no rare-error protection claim.",
+    "Fixed bands are descriptive and no band or score threshold is selected for deployment.",
+    "No inputs, labels or pair/query identities are retained in this aggregate output."
+  ],
+  "mapped_confidence_medians": {
+    "Complement_to_Exact": 0.9210821509857481,
+    "Irrelevant_or_Complement_to_Exact": 0.9291125003875081,
+    "Irrelevant_to_Exact": 0.9332083808483371,
+    "Substitute_to_Exact": 0.9201523221091019,
+    "all_incorrect_Exact": 0.9216357337419434,
+    "correct_Exact": 0.9327363442244052
+  },
+  "model_calls": 0,
+  "model_fit_performed": false,
+  "new_reference_cohort_opened": false,
+  "qualification": false,
+  "source_base": "22330f4a31a304de5a4bd5a6c1a5b17d970490a0",
+  "source_files_sha256": {
+    ".lab/esci-category-increment/exact-veto-proposal-03/proposal.json": "9bade8cd69eddcc984cf38138128a5318d47239ffa70b2263e32493c253ff9ed",
+    ".lab/esci-category-increment/registered-01/protocol.json": "499816707f7af473067facb584c695490fb965d4542ec66b57858b3033e4c737",
+    ".lab/esci-category-increment/registered-01/result.json": "81da80fa5b313bcafc247fb1d5452e8c3b8a9b9699fe58554c0163baf5884684",
+    ".lab/esci-fitted-specialists/development-prefix.jsonl": "cbebf1e00dc51437786013c8b9e6880b7400a12789e3480cb368e59592227018",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/data/interim/category-input-study-20261003/gap-quick-launcher-01/development/A/inference.json": "d7b0f4b5cdff2af4a9fe92e3db58c97676cfbb5ea5d101b1f5043fdad189f230",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/data/interim/category-input-study-20261003/gap-quick-launcher-01/development/A/predictions.jsonl": "d1a55bbcc848102f33341bf71da46ff5d8b584273da6b95bc18bc43beee40aec",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/data/interim/category-input-study-20261003/quick-512-registration-01/analysis/protocol.json": "a6728540121970901376af023d820e9e73f1b819b138445884e86d20f837b5f0",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/data/interim/category-input-study-20261003/quick-512-registration-01/development/inputs.jsonl": "7b4f5d38908b947fca05f976afd79849253fd9e0eaeb15b670a2e13f292670d1",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/data/interim/category-input-study-20261003/quick-512-registration-01/development/references.jsonl": "6147bcb0a63192307e65e7e544cde378af7744131e98e8997cd797431298f3a8",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/data/interim/category-input-study-20261003/quick-512-registration-01/study/registration.json": "1ee0da2cfd78e71cf72c7522b43814b42b17a8995df6d8f58f7724fa263a2acd",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/operations/category_input_experiment.py": "b5108dcdd60a140b3b75ab1e3361a00ae8e9e6307e20c84206df632737aee982",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/operations/category_metrics.py": "d3bb665a5d7b553593f66727270a512f31dc914ffbe0dca7f3a88f34daca46c3",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/operations/category_numerical_checks.py": "1b48d5488fe278e1bb5ae10959378e68fab25e69d9369863d2e2762e6d545200",
+    ".lab/worktrees/esci-category-increment-analysis/evaluation/label_quality.py": "f7103f33361e07e8cf0321c9ea6425ab98f641a81480377d1e43366042d18cfe",
+    ".lab/worktrees/esci-category-increment-analysis/lab/experiments/esci-category-increment/analyse_increment.py": "db47eff5516f5631a392b6f340efeebb09af97ec3fe0e0b49405aa8d481f4e0f",
+    ".lab/worktrees/esci-category-increment-analysis/lab/experiments/esci-fitted-specialists/fit_specialists.py": "cf384ea69cc324611cf4d1ffa6132e82705add7173805083f6938e79546e2b3b",
+    ".lab/worktrees/esci-category-increment-analysis/lab/experiments/esci-gap-surveys/specialist_survey.py": "d03d5f23c3204e43cbe150adf6bed48a56b7746643c631ba422eb3cee4360653"
+  },
+  "threshold_selection_performed": false,
+  "tool_sha256": "47cb118cc6f239f05a993601445212ce553dedd6ea20ea07f0ff9f89ef7ed7d6"
+}

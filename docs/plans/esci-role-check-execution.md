@@ -7,6 +7,9 @@ runner and analysis are registered against a new exclusive GPU grant.
 The aim is a useful incremental signal: reject harmful Exact decisions or add
 accurate non-Exact labels. Keep the 80% gate and current qualification policy.
 No result from this exposed development sample is independently qualified.
+The [saved-score diagnostic](../research/evidence/esci-score-separation.md)
+offers no convincing confidence-only protection for the four known I → E
+errors. This different-model role check remains the next experiment.
 
 ## Register before inference
 

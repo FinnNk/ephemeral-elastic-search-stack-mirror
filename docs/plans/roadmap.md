@@ -10,6 +10,9 @@ four Irrelevant → Exact errors. The bounded
 and analysis; its next batch is [separate execution](esci-role-check-execution.md).
 Qualified coverage
 remains 2,946/9,915 (29.71%); no model labels or gate exceptions are active.
+The [saved-score diagnostic](../research/evidence/esci-score-separation.md)
+finds weak general separation and no convincing confidence/margin/entropy signal
+for I → E protection. Keep the role check ahead of confidence-only recalibration.
 
 The control-runtime consolidation and delivery rehearsal are merged to `main`. Earlier batch plans remain in this directory, with measured results such as the [million-product](../research/evidence/million-scale.md) and [control-runtime](../research/evidence/kubernetes-control-services.md) evidence. A merged implementation does not close a measurement or integration gate.
 
