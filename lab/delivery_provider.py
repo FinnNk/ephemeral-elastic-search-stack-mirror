@@ -2,7 +2,6 @@
 import base64
 import json
 import os
-from pathlib import Path
 import subprocess
 import time
 
@@ -37,6 +36,17 @@ def git(repo, *args, raw=False):
     return result.stdout if raw else result.stdout.decode('utf-8').strip()
 
 
+def ensure_checkout(repo):
+    """Initialise a local checkout without changing remote repository settings."""
+    endpoint(repo)  # Validate the repository before forming its local path.
+    path = STATE / repo
+    if not (path / '.git').exists():
+        path.mkdir(exist_ok=True)
+        git(repo, 'init', '-b', 'main')
+        git(repo, 'remote', 'add', 'origin', GITEA_GIT_URL + '/' + OWNER + '/' + repo + '.git')
+    return path
+
+
 def ensure_repo(repo, actions=False):
     existing = api('/user/repos?limit=100')
     if not any(row['name'] == repo for row in existing):
@@ -45,11 +55,9 @@ def ensure_repo(repo, actions=False):
     api(endpoint(repo), 'PATCH', {'has_actions': actions, 'allow_merge_commits': False,
                                   'allow_squash_merge': True, 'default_merge_style': 'squash'})
     api(endpoint(repo, '/collaborators/finnnk'), 'PUT', {'permission': 'admin'})
-    path = STATE / repo
-    if not (path / '.git').exists():
-        path.mkdir(exist_ok=True)
-        git(repo, 'init', '-b', 'main')
-        git(repo, 'remote', 'add', 'origin', GITEA_GIT_URL + '/' + OWNER + '/' + repo + '.git')
+    new_checkout = not (STATE / repo / '.git').exists()
+    path = ensure_checkout(repo)
+    if new_checkout:
         if not api(endpoint(repo))['empty']:
             git(repo, 'fetch', 'origin', 'main')
             git(repo, 'checkout', '-B', 'main', 'origin/main')

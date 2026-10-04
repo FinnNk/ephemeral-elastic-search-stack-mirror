@@ -16,9 +16,10 @@ release unchanged unless a separate deployment proposal is approved.
 
 ## Sequence
 
-1. Finish the source PR's checks using the installed gate and fresh exact-image
-   evidence. Its current base predates the new remote client and configuration
-   files, so that first PR uses the existing operator publication procedure.
+1. Review source PR #27's passing release and relevance checks. Its base predates
+   the new remote client and configuration files, so its fresh exact-image
+   evidence used the existing operator publication procedure. See the
+   [verification record](../research/evidence/walkthrough-feedback-verification.md).
 2. After acceptance, merge the source/template PR and lab review stack. Build
    and install the accepted control image using `lab/install_control_oidc.py
    --image <digest-pinned-image>`. Check the existing deployment and PVC first.

@@ -10,7 +10,7 @@ import urllib.error
 from urllib.parse import quote
 
 from common import ROOT
-from delivery_provider import SOURCE, api, endpoint, git, ensure_repo
+from delivery_provider import SOURCE, api, endpoint, git, ensure_checkout
 from delivery_release import from_run_bytes
 from delivery_runtime import resolve, preview
 from input_selection import select
@@ -48,7 +48,7 @@ def source_bytes(path, revision):
 def build_for(revision, event):
     runs = api(endpoint(SOURCE, '/actions/runs?limit=100'))['workflow_runs']
     matching = [row for row in runs if row['head_sha'] == revision and row['event'] == event
-                and row['name'] == 'Reference release CI']
+                and row['path'].partition('@')[0] == 'release.yaml']
     if not matching:
         raise BuildPending('Waiting for the exact source build')
     newest = max(matching, key=lambda row: row['id'])
@@ -109,7 +109,7 @@ def compare(request, progress, operation_id):
     number = request.get('pr')
     if number:
         current_pr(number, request['source_sha'], request['baseline_sha'])
-        ensure_repo(SOURCE)
+        ensure_checkout(SOURCE)
         git(SOURCE, 'fetch', '--no-tags', 'origin', request['baseline_sha'], request['source_sha'])
         changes = git(SOURCE, 'diff', '--raw', '--no-abbrev', '--no-renames', '-z',
                       request['baseline_sha'] + '...' + request['source_sha'], raw=True)

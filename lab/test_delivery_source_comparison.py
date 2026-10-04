@@ -6,11 +6,34 @@ import unittest
 from unittest.mock import Mock, patch
 
 import delivery_source_comparison as comparison
+import delivery_provider as provider
 from variant_gate import canonical, sha
 import test_offline
 
 
 class SourceComparisonTests(unittest.TestCase):
+    def test_checkout_preparation_does_not_change_remote_settings(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(provider, 'STATE', Path(directory)), \
+                patch.object(provider, 'git') as git, patch.object(provider, 'api') as api:
+            path = provider.ensure_checkout(provider.SOURCE)
+            self.assertEqual(path, Path(directory) / provider.SOURCE)
+            api.assert_not_called()
+            self.assertEqual(git.call_args_list[0].args, (provider.SOURCE, 'init', '-b', 'main'))
+            self.assertEqual(git.call_args_list[1].args[1:4], ('remote', 'add', 'origin'))
+    def test_build_selection_uses_gitea_workflow_path_not_display_title(self):
+        runs = [{'id': 108, 'path': 'release.yaml@refs/heads/main',
+                 'head_sha': 'a'*40, 'event': 'push', 'status': 'completed', 'conclusion': 'success'},
+                {'id': 109, 'path': 'delivery.yaml@refs/heads/main',
+                 'head_sha': 'a'*40, 'event': 'push', 'status': 'completed', 'conclusion': 'success'}]
+        with patch.object(comparison, 'api', return_value={'workflow_runs': runs}):
+            self.assertEqual(comparison.build_for('a'*40, 'push'), 108)
+            with self.assertRaises(comparison.BuildPending):
+                comparison.build_for('b'*40, 'pull_request')
+        runs.append({**runs[0], 'id': 110, 'status': 'running', 'conclusion': None})
+        with patch.object(comparison, 'api', return_value={'workflow_runs': runs}):
+            with self.assertRaises(comparison.BuildPending):
+                comparison.build_for('a'*40, 'push')
+
     def test_moved_baseline_rejected(self):
         pr = {'state': 'open', 'head': {'sha': 'a'*40, 'repo': {'full_name': 'elastic-agent/delivery-source'}},
               'base': {'sha': 'b'*40, 'ref': 'main'}}
@@ -22,7 +45,7 @@ class SourceComparisonTests(unittest.TestCase):
     def test_documentation_exemption_does_not_capture(self):
         payload = b':100644 100644 ' + b'a'*40 + b' ' + b'b'*40 + b' M\0README.md\0'
         request = {'pr': 1, 'source_sha': 'b'*40, 'baseline_sha': 'a'*40}
-        with patch.object(comparison, 'current_pr'), patch.object(comparison, 'ensure_repo'), \
+        with patch.object(comparison, 'current_pr'), patch.object(comparison, 'ensure_checkout'), \
                 patch.object(comparison, 'git', return_value=payload), \
                 patch.object(comparison, 'immutable_blob', side_effect=lambda container, name, data: container+'/'+name), \
                 patch.object(comparison, 'status') as status, patch.object(comparison, 'run_variants') as capture:

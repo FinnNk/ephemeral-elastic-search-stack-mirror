@@ -70,6 +70,12 @@ duration for fewer failed requests. See the [measurements](../research/evidence/
 tests passed with the accepted trainers rewrite preserved. Next:
 [activation and a live rehearsal](walkthrough-activation.md).
 
+The initial source/template PR #27 now has passing release and relevance checks.
+Its new pacing Job captured both exact-image APIs in 32.047 seconds without
+retries. Provider verification also corrected workflow selection and ensured
+comparison checkout preparation cannot disable Actions. See the
+[live record](../research/evidence/walkthrough-feedback-verification.md).
+
 The existing production loop completed with build 108. Desired-state PR 16 was
 approved, merged and verified; retained verification SHA-256 is
 `d581ada3fff08bfeae966e47efb693ccbd4c96dbec063d49f7e1a8ee89642a44`.
