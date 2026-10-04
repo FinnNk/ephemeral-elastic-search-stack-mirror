@@ -1,0 +1,120 @@
+{
+  "source_sha": "12404ff259984040e7a74d0015410b9a872e2363",
+  "base_sha": "b44d5748b6cdad314da1ec0c00c71fafb35e820c",
+  "gate_state": "pass",
+  "policy_sha256": "96b5156d93e9d0a68e0f0f3b3f915d5b5567c5c502c08a6610810c9f6d907bfd",
+  "demo_authorisation": {
+    "decided_at": "2026-10-04",
+    "purpose": "local ESCI demos",
+    "reason": "Use the current model and reduce confidence thresholds to reach 80% coverage, temporarily unblocking ESCI lab demos. Independent label-quality qualification remains pending.",
+    "reviewer": "finnnk"
+  },
+  "unqualified_judgements": 5107,
+  "ci_run": 96,
+  "ci_attempt": 2,
+  "nexus_exact_bytes_verified": {
+    "report.json": "9936f54265da8ab365f329f41cd5b3b5ea8210959584db2cc4124ca5d5cee509",
+    "attestation.json": "f68b9c631089615fe1a9e4111e1206df5112ab18013321037dacf93372248f4d"
+  },
+  "ci_variants": [
+    {
+      "approval_sha256": null,
+      "baseline": "ranker-baseline",
+      "baseline_judged_fraction": 0.812204,
+      "changed_query_fraction": 0.0,
+      "coverage_exception": false,
+      "delta": 0.0,
+      "intent": "preserve-results",
+      "judged_fraction": 0.812204,
+      "metric": "nDCG@10",
+      "required_judged_fraction": 0.8,
+      "state": "pass",
+      "value": 0.702599,
+      "variant": "ranker-a"
+    }
+  ],
+  "accepted_policy": {
+    "pr": 23,
+    "main": "b44d5748b6cdad314da1ec0c00c71fafb35e820c",
+    "trusted_pins": {
+      "LAB_VARIANT_GATE_CODE_SHA256": "c905493730fab35a3d0140b3cfbd984495d2681327b8638b292ffdf6877d98bc",
+      "LAB_VARIANT_POLICY_SHA256": "96b5156d93e9d0a68e0f0f3b3f915d5b5567c5c502c08a6610810c9f6d907bfd"
+    }
+  },
+  "rebase": {
+    "old_head": "3a09c51c92e3045f1558ac11f95ad35bd82eb11c",
+    "new_head": "12404ff259984040e7a74d0015410b9a872e2363",
+    "accepted_base": "b44d5748b6cdad314da1ec0c00c71fafb35e820c",
+    "unchanged_patch_sha256": "bbe176d2d1e40de84786fb7d247a74f085fdb31f9af5299dc2da0f7b22af03bf",
+    "changed_files": [
+      "README.md",
+      "app/index.html",
+      "contracts/index.json"
+    ],
+    "clean": true
+  },
+  "query_count": 1000,
+  "coverage": {
+    "ranker-a": {
+      "fraction": 0.812204,
+      "judged": 8053,
+      "returned": 9915
+    },
+    "ranker-baseline": {
+      "fraction": 0.812204,
+      "judged": 8053,
+      "returned": 9915
+    }
+  },
+  "observation_sha256": "75aa12deaa2badb9a832ae454f9e273310b0add50a856fb27015d83d19fd095a",
+  "judgement_manifest_sha256": "ee2c9c9cdc835604b74dd368381061f5c227689ea6ad736ed76c7b9fe25d4b8b",
+  "source_previews": {
+    "94": {
+      "name": "lab-delivery-run-94-6719336e",
+      "fingerprint": "6719336ebca5f1d92365e6b80b7a9fcf942a07fd1d142d5753cc4a4ad7cd207d",
+      "source_sha": "b44d5748b6cdad314da1ec0c00c71fafb35e820c",
+      "image": "nexus.localhost:18185/search-api@sha256:08d215b15f5352ef49e43e6c5f56394a6f18d4a90d6b796f8ee5e9823375e364"
+    },
+    "95": {
+      "name": "lab-delivery-run-95-c671ce6a",
+      "fingerprint": "c671ce6adf2f20ca29c273193e2b01fb2ef0c38e3b9dcb7b7bc9c7017fddc976",
+      "source_sha": "12404ff259984040e7a74d0015410b9a872e2363",
+      "image": "nexus.localhost:18185/search-api@sha256:d942a48e7a2607b89d96a8da774b239a2380ed1f1cbd0f1f8bef73203553adbe"
+    }
+  },
+  "build": {
+    "run": 95,
+    "attempt": 1,
+    "state": "success"
+  },
+  "old_exact_commit_report": {
+    "source_sha": "3a09c51c92e3045f1558ac11f95ad35bd82eb11c",
+    "sha256": "7cd2b9ba8f5b8f0222845bd463edc4559310c6edd5b0788177d86dc2c107e267",
+    "coverage": {
+      "ranker-a": {
+        "fraction": 0.297126,
+        "judged": 2946,
+        "returned": 9915
+      },
+      "ranker-baseline": {
+        "fraction": 0.297126,
+        "judged": 2946,
+        "returned": 9915
+      }
+    },
+    "preserved": true
+  },
+  "limitations": [
+    "Model predictions remain unqualified; this is the authorised lab demo policy.",
+    "No new inference, independent actual-gap reference labels or GPU work.",
+    "Apple silicon and Azure deployment not checked.",
+    "No GitHub backup merge inferred from Gitea acceptance."
+  ],
+  "source_acceptance": {
+    "source19_merged": true,
+    "main": "12404ff259984040e7a74d0015410b9a872e2363",
+    "merge_commit_sha": "12404ff259984040e7a74d0015410b9a872e2363",
+    "merged_by": "finnnk",
+    "head": "12404ff259984040e7a74d0015410b9a872e2363"
+  }
+}

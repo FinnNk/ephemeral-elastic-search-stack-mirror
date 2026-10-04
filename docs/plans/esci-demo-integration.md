@@ -1,8 +1,8 @@
 # Integrate the ESCI demo policy
 
-Accept the scoped demo policy, then publish fresh evidence for the remaining
-storefront change. The lab already serves the full ESCI catalogue with the
-human-authorised demo judgement snapshot.
+Completed locally on 4 October 2026. The scoped demo policy and catalogue
+change are on source main. A fresh comparison passed the trusted CI gate with
+81.22% coverage on both variants. See [the evidence](../research/evidence/esci-demo-source-integration.md).
 
 ## Intent and constraints
 
@@ -23,7 +23,7 @@ human-authorised demo judgement snapshot.
 | Evaluation | Fresh API capture meets 80% coverage for both selected variants and passes the scoped verifier |
 | CI | Signed evidence binds to the new commit; a fresh current-base event passes |
 | History | Old reports and the superseded PR #20 remain available |
-| Review | PR #19 ready for human acceptance; no automatic merge |
+| Review | Human acceptance of source PR #19; no automatic merge |
 
 ## Work sequence
 
@@ -33,6 +33,17 @@ human-authorised demo judgement snapshot.
 4. Capture baseline and candidate results through the public search API using the frozen demo snapshot.
 5. Publish the signed new-commit report and trigger a fresh CI event. Do not rerun an event containing the old base commit.
 6. Record results, update the roadmap and hand back PR #19 for review.
+
+## Result and next batch
+
+Source PR #23 was accepted before the trusted pins changed. PR #19 was rebased
+without altering its three-file patch; build 95/1 and relevance 96/2 passed. The
+human merged PR #19, and source main equals the evaluated commit. The old
+29.71% coverage report remains unchanged.
+
+The [next implementation plan](esci-qualified-defaults.md) restores qualified-only
+defaults after investigation resumes. It requires independent quality evidence
+and does not authorise the held role check.
 
 ## More information
 

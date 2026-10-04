@@ -58,3 +58,10 @@ The acceptance thresholds are a human-authorised demo compromise, not quality qu
 Native Apple silicon and Azure identity/storage behaviour were not exercised. Recreating empty storage requires retained prediction evidence; published ESCI alone cannot regenerate these model labels. See [snapshot retention](../../data-evaluation-contracts.md#retain-the-esci-demo-snapshot).
 
 Use [the restore plan](../../plans/esci-qualified-defaults.md) to return to qualified-only defaults. The original published manifest and historical reports remain available.
+
+## Accepted source integration
+
+The subsequent [source integration](esci-demo-source-integration.md) verified the
+accepted policy, updated trusted CI pins and captured fresh results for the
+rebased catalogue change. Relevance run 96/2 passed; source PR #19 is merged.
+The earlier measurements and CI conditions above remain their original evidence.

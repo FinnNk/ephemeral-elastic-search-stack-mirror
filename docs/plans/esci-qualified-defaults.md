@@ -1,6 +1,6 @@
 # Restore qualified ESCI defaults
 
-Replace the temporary demo judgement policy with independently qualified labels after the investigation resumes. This plan does not authorise the held Decider2B survey.
+Replace the temporary demo judgement policy with independently qualified labels after the investigation resumes. The [demo source integration](../research/evidence/esci-demo-source-integration.md) is complete and its gate is active. This plan does not authorise the held Decider2B survey.
 
 ## Intent and constraints
 
