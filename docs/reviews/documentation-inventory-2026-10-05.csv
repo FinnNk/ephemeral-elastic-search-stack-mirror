@@ -1,0 +1,233 @@
+path,sha256,review_scope
+AGENTS.md,d8298ab5a42281c41752a6ebec2f9734b378b1238e85c86adac72fe428f29e33,Current-reference consistency scan and local links; prior authorship review retained
+CONTRIBUTING.md,bb38ee132fa1c7b31a15e0d1c643dc71dcde7243409004a7f8e33d3025dc2da7,Current-reference consistency scan and local links; prior authorship review retained
+README.md,413ac97d014c93689bc664b59d4d9233a9e7170f9cc142a501615b831d609257,Current reader path and affected contracts reviewed; links checked
+docs/adr/ADR-0001-reconcile-environments-from-git.md,ff96266bd14e03b9515ad12632f3097f956c2adc311a4db00fc7722c87a5ecf7,Historical/plan context and links; current status owned by roadmap
+docs/adr/README.md,58ef9f269a9914927df4ab4079d4fcc3bb65f2f423520b5bbf8e501c54a5b27d,Historical/plan context and links; current status owned by roadmap
+docs/adr/template.md,3d6187ca894ba3d71b50a5b06fce2654e01732bb2d00442488eed17798c8ff2a,Historical/plan context and links; current status owned by roadmap
+docs/control-runtime.md,6ff5dfa7febd27d832384e51d43aab33a9abbb62c89b68dd5b7f49a89d2b1595,Current-reference consistency scan and local links; prior authorship review retained
+docs/data-evaluation-contracts.md,42b2a7708c1919310f354f8aa1383cc14b392a4af04010b9c951a9132f6ebea1,Current-reference consistency scan and local links; prior authorship review retained
+docs/delivery.md,c39d1f78af8c321a7935e6773e160e60afe89b9290b6f98d24174b1ae9031379,Current reader path and affected contracts reviewed; links checked
+docs/diagrams/README.md,530c581e81bf2dde966698f1c39a9fa1c83ce6c01c070250373f10570690253e,Current-reference consistency scan and local links; prior authorship review retained
+docs/diagrams/notices/Archify-third-party.md,0b7fb59365dc21c93b0f62526d74ee913aeec9ae532c112bc76afa7edcd56e14,Imported notice: preserved; local links checked
+docs/esci-catalogue.md,1b908a2ac3459643c2492b8332d9004782d3745b11f8c47ec1d68127fc3c4361,Current-reference consistency scan and local links; prior authorship review retained
+docs/esci-model-installation.md,4fab714a8c15d10f9dec253164dfe6afb311b73af70429a7b99a6226f7b857cb,Current reader path and affected contracts reviewed; links checked
+docs/evaluation-runbook.md,a13a6ae1196921252634b936c2607c1cf9724c01908ab5c112c456bdb8113bc2,Current reader path and affected contracts reviewed; links checked
+docs/gap-review.md,2cbe69a76d909cdf79eadc4d95faa115f0febdb23ce3964b722bee62318f56dc,Current-reference consistency scan and local links; prior authorship review retained
+docs/gpu-worker.md,3215b9f50d5b020b73b751e01f228aafa63c7e93bc59b1fa8de46277b39252a9,Current-reference consistency scan and local links; prior authorship review retained
+docs/headlamp.md,b1f4664b21fbc4ba1c5d5e6935394b84ad43602aba4adaee962ef50d8f4e6d6d,Current-reference consistency scan and local links; prior authorship review retained
+docs/https-git-transport.md,ed44cf11c9411c0bd15811e82cae1011629de01c3eda2487b73ee5b6a2709cff,Current reader path and affected contracts reviewed; links checked
+docs/https-ingress.md,bbdd59fb3db1df497ce5c794ff184df38f31d5fa207c9aa58083235f11fa9fd1,Current-reference consistency scan and local links; prior authorship review retained
+docs/identity-boundary.md,89f4c8a8b95eecac52417513e6f376175ddbcbf004027f28d8e38b8787a0c7f3,Current reader path and affected contracts reviewed; links checked
+docs/index-recovery.md,a1961899ae4cac7503da7070677f96c0c4fe02ce5f65412ca6315023cc7e1fdf,Current-reference consistency scan and local links; prior authorship review retained
+docs/judgement-resolution.md,f8bbabe407f312892c6687af97caae35e4581de96bbfbca6ab690e11aa8afbf6,Current-reference consistency scan and local links; prior authorship review retained
+docs/keyvault-secrets.md,9cfbf03ccac6aaaf9e5cf9e57cf67979f4254a786933b44acc9a0043e72f060a,Current-reference consistency scan and local links; prior authorship review retained
+docs/kserve-installation.md,5c5fb95623d39fa69abc6590c66f1f231abfeb235fd847c2b91026de4145850e,Current-reference consistency scan and local links; prior authorship review retained
+docs/model-label-quality.md,9fa4a5f978b1ea1e62433b882c96420006c3e5382b33c77201255b97a74b7f31,Current reader path and affected contracts reviewed; links checked
+docs/nexus.md,a9a413df8843a8b822140c86c79b02580fae1b4e383ae0e1206e1852099b8fde,Current-reference consistency scan and local links; prior authorship review retained
+docs/observability-backend.md,465f4fda850d42b50d3438275795adc5a0dbce59112f4a915fd4d76df4017540,Current-reference consistency scan and local links; prior authorship review retained
+docs/observability-foundation.md,a89f885600938af1806de450a467c1e85a26d2a48172a53eff30ebade9d62da8,Current-reference consistency scan and local links; prior authorship review retained
+docs/oidc-access.md,28dc541e102356085c1f7e46d178805a165c4b49f34b2cee9a0dd3f3abdb4c69,Current-reference consistency scan and local links; prior authorship review retained
+docs/plans/README.md,007e662e23c1966e68f189a6dd1e3ac00c17199b5abf229060c2c1fcb84e04ee,Historical/plan context and links; current status owned by roadmap
+docs/plans/automatic-preview-urls.md,535fd854ed1b788cda4157e31d039768e60198ce142afb11a12bdb309e3f7944,Historical/plan context and links; current status owned by roadmap
+docs/plans/azure-keyvault-validation.md,70142e30f884c88ea23288252c6157b6aaf71e29c594b18ccaee394dc9f9baf9,Historical/plan context and links; current status owned by roadmap
+docs/plans/azure-service-terminology.md,f1707dd6fbfa62113ad667ff3ab0e31203fe67b891bdb1b6d5db5a2d1bf1d080,Historical/plan context and links; current status owned by roadmap
+docs/plans/catalogue-recipe-delivery.md,7077f0871cd4b42098605f42db5d7b9dbaa2ce7ee8d2523b89c00c472bd37085,Historical/plan context and links; current status owned by roadmap
+docs/plans/comparison-diagnostics.md,983bb18149d8df6fc8b0fae01fbf8da2b1f2afe0c3b49be3d77dcf4e47a168d4,Historical/plan context and links; current status owned by roadmap
+docs/plans/concurrency-isolation.md,51ac918a2731c658be0e0aedf28ca0db2b42bf4e590e215d52953bd8e42e2d7b,Historical/plan context and links; current status owned by roadmap
+docs/plans/control-list-navigation.md,e1bc0bc1757ef63a85cca0ff1e7d4c3c4757a1c55b8e125e2786dc1eb57ea0ce,Historical/plan context and links; current status owned by roadmap
+docs/plans/developer-delivery-docs.md,49c86e9965368f99f4077cd2b1d6f83c8a58625688900a2290ed175a849e1765,Historical/plan context and links; current status owned by roadmap
+docs/plans/developer-evaluation-loop.md,b30466443f8e3aba9e6b77fda302e0d7bfda9ae237fea7089f3dbe3dbc5d0fe3,Historical/plan context and links; current status owned by roadmap
+docs/plans/developer-guide-demo.md,342d6df157cd65b482094714759400191779593b138f8a2a61ac781606dc114c,Historical/plan context and links; current status owned by roadmap
+docs/plans/developer-walkthrough.md,1191e5b3129ecccb4db3479d9ea02af63ffe0881a119b6dbb735dd5f376bdf77,Historical/plan context and links; current status owned by roadmap
+docs/plans/documentation-authorship.md,cd8422b0132b5bd7596c22bc05fe2049548edeb106b677a93f453a9a6c0304a4,Historical/plan context and links; current status owned by roadmap
+docs/plans/documentation-design-navigation.md,6093be0aec4c72585f385fcfdbb32b79848517ab7358d1c18d78577b586d2cc7,Historical/plan context and links; current status owned by roadmap
+docs/plans/documentation-evaluation-delivery.md,41ebdbafd1a59d2e344209c884c73d75c45c97b1e07ee57217a21452762c4470,Historical/plan context and links; current status owned by roadmap
+docs/plans/documentation-historical-final-review.md,66296e1c4a90904b215523e2898e897e44222b9a7f1ee740c4aeb1dd6341c5fd,Historical/plan context and links; current status owned by roadmap
+docs/plans/documentation-model-observability.md,01acf3ae5566cb1f93447d38880588d88541722406c58981c502ce4410508da1,Historical/plan context and links; current status owned by roadmap
+docs/plans/documentation-relevance-gate.md,b7b5b6308ecbffc53821918097b1a312c64ef319a07bb778779b613eb9ccc822,Historical/plan context and links; current status owned by roadmap
+docs/plans/durable-snapshot-repository.md,eaf4acab4833946aa3d66d44d6b606c3aca022007321ecd7598f596e7db09168,Historical/plan context and links; current status owned by roadmap
+docs/plans/environment-lifecycle.md,65a76e34420530928a4b2122a85ef4ea47d675337ee1221bbfaa40ec157f3ba9,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-cascade-confirmation.md,69fd3e01d5815c9a4cc6ac7200875159096d63d0dd2d7d18a606f0d6931cd722,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-catalogue.md,eba9f317378d0417c4fef38801e556da05c5fcacb1f5af9d91376f9320803bbe,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-category-cascade-selection.md,b929c706b0c8299068fa20f030d0cf60adbcd69347bb91adc153d7c320753835,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-category-increment.md,42edf69faad9e77b20069bf99a8cc1582c109626c76c2444dbf041e683076d94,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-coverage-gates.md,9f740f740e3ea43a3003959e0ce384960f13d3044d7af9ded24e5ef288efcebb,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-cpu-pair-judges.md,2f79b4c2dc4ffd934dc71136ea627d2f83137d9498ac3f17aa26c5e1005ea493,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-demo-coverage.md,20e30998f6d73e21bc76bf2a8f124ceef05d1ba093d0cca4b90c674e40b500b2,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-demo-integration.md,53e7e91be901da2b2bb1020c691b848cefbba847abc74917c820838e746d188c,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-exact-veto-survey.md,7776658e95e3d87ada8974104c5b3b9ed2a38245f9da592814de77fbef6da48a,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-fitted-specialists.md,e18e1a990fd1e9858549e3d1fba19ece70bf20397e4887fee60fff250973dbe1,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-gap-review-packet.md,0ff7b8e0d259abffa3e8c30a65884932ba9509e66e2b202b5fc7e7585154a676,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-inference-contract.md,e180a3194e25a09cdbac09d815d9aa254c621f7b9244fcb80b03315c97cbea89,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-kernel-reproducibility.md,532fc8ce9764556daa6f461d67014cec321d00f2654021091b72cf3a6bfdaa6c,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-label-quality.md,9a78e4d299f7cf493bcc6eec369f30d91e24586afea6e67c789ec5eab92f1375,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-model-qualification.md,348dda8e90c1fa4c0b287134f126fadd9667dbacc7cf33e79c95694f4d6ff63c,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-progressive-judgements.md,3396349999b59c59a763ba45e611969e297f35c2df6b8ef2261413fcc1760f69,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-qualified-defaults.md,0a41baf18b85c8268869b651ef6a55fcc184abe3fda0b83e1cb2d83c7061f016,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-quality-next.md,97e6e9628b3e4b1f552b2c0c7c5701535dbf3b92c9c5d75feb55f6559e2702e0,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-residual-cascade.md,7dafd91c9006db8b38d342ad5a6239e25ba5fc656b71b8a266bed0adfcc48741,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-role-check-execution.md,cf3fadb5a74a7e5f86772eca6cb808b060f1c2cd7ae00d99533ea285b9f5b984,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-runtime-parity.md,5d7494cc0782602276e9ab1df4d9e49f0ddeed8a5fc9de71d3679c99e3187596,Historical/plan context and links; current status owned by roadmap
+docs/plans/esci-serving-qualification.md,01eaf41b930b9105874966c9d0aaf4ec70980244aa022cd9371b06e57b99a952,Historical/plan context and links; current status owned by roadmap
+docs/plans/evaluation-throughput-adoption.md,6638fa8fdaeb4e6fb5ce93af0b7693eda8e95329d0c1fde91d068b509d904b62,Historical/plan context and links; current status owned by roadmap
+docs/plans/evaluation-throughput.md,4ca93da21c5c67b5b20abe93b38d19ce7e40d0677040eb10f4ebf15d96b4a407,Historical/plan context and links; current status owned by roadmap
+docs/plans/headlamp-kserve-plugin.md,a89e80d68e61af36671675c83c17aa78706e6871b3e18a28a9de854d46fbd62a,Historical/plan context and links; current status owned by roadmap
+docs/plans/headlamp.md,22b68434596b4bebb818109dafef4fa8309d97f64832b3268793fab041c7e223,Historical/plan context and links; current status owned by roadmap
+docs/plans/historical-index-recipes.md,69d85dcc9b1dbec9e47cf721e365f7671337c379586e6b18d7c3ba3d0aabe70a,Historical/plan context and links; current status owned by roadmap
+docs/plans/https-client-transport.md,aefad7af4cafaf35adbc7f90ded3c790e07a50b9014d3b7d1d7cf4b7c69f7171,Historical/plan context and links; current status owned by roadmap
+docs/plans/https-oci-transport.md,e7c50c127beeae276dc4820e0f5ab08736e9f11b64c538cb17980044e59e625f,Historical/plan context and links; current status owned by roadmap
+docs/plans/independent-data-evaluation-contracts.md,b39f7cbfa81121d689de40b47150b0ae762bacd8db954057d30837d43cca806d,Historical/plan context and links; current status owned by roadmap
+docs/plans/index-change.md,346a54190f36d694045212c9b0e5ac76ce23fdf98e6b6ae2b84e24d10b656832,Historical/plan context and links; current status owned by roadmap
+docs/plans/judgement-control-integration.md,fde4f656b4a2b26a07cb863e47deddc1748fff245858b3cb07607a7270e54199,Historical/plan context and links; current status owned by roadmap
+docs/plans/kserve-021.md,ed294dacc0960d19f6819005b2b9ac9926fcb681508d32f4c0a534839d47e651,Historical/plan context and links; current status owned by roadmap
+docs/plans/kubernetes-control-services.md,55147ff5e52f608125503abbe4c04fdeb4ecdb8b91cd0ccad9433f8061174676,Historical/plan context and links; current status owned by roadmap
+docs/plans/lab-storefront.md,1419c040948389916379b31372d8f57fa6af43b1f97f2349edbfbfb9821d9a6b,Historical/plan context and links; current status owned by roadmap
+docs/plans/lifecycle-completion.md,24578f08015a0d71a29e8935f4d94729a1c1eb6e76b66e7fa98ade3f181b61af,Historical/plan context and links; current status owned by roadmap
+docs/plans/lifecycle-identity-and-measurement.md,e47173f504f350d30729eed03218563bc6591b4bbdcc3e41b5e9b0504e46a136,Historical/plan context and links; current status owned by roadmap
+docs/plans/local-oidc.md,203ff82128ac174f710d01792c7b7bba3ec550e3111095623323be0cfb52a2fb,Historical/plan context and links; current status owned by roadmap
+docs/plans/local-reference-boundaries.md,9743c7a52a118bb4365e50c5fec5a81a4a48195e4b18c68e420c563396ea40dd,Historical/plan context and links; current status owned by roadmap
+docs/plans/million-product-scale.md,135b67d4b54bb08c7c1c2f60c52dc713148a2446d2a75c0c783691a8b1221a28,Historical/plan context and links; current status owned by roadmap
+docs/plans/mlflow-kserve-judgement-coverage.md,cf8ef4433cdb2109f6e23bb23916e710f9b8eb1d18248a0d8f7aeede50b58873,Historical/plan context and links; current status owned by roadmap
+docs/plans/model-observability.md,25a532a223e7f119afeb19c74d4dc5033c1726ac272616173d8cc2964c530b60,Historical/plan context and links; current status owned by roadmap
+docs/plans/native-cloud-validation.md,c1522633b0b641ace96fd87d2d10b5ed4f6ec4ed1e724b64fe353d164b472ad5,Historical/plan context and links; current status owned by roadmap
+docs/plans/nexus-artifacts.md,6623648668a5927c670a294b8ed1af60c8f9b19cfc81b3df5e198369bb71ae19,Historical/plan context and links; current status owned by roadmap
+docs/plans/offline-variants-and-gates.md,15d8a8edc6f3d3663631ce924d4ee05783a50366f51b150db59446413d385527,Historical/plan context and links; current status owned by roadmap
+docs/plans/oidc-application-integration.md,b33a5404b63e8fb24d15bab743d014dc20f91eb67114e096cce29b64307f6fd1,Historical/plan context and links; current status owned by roadmap
+docs/plans/oidc-control-access.md,1e364c6609e8d59bc00ceaa1af6252f82c63ef6e898e649cb3ad9426fc1aefc0,Historical/plan context and links; current status owned by roadmap
+docs/plans/oidc-recorded-decisions.md,605cf9a805ca37a816133c292940c3d54c8e866fb9cdf66b903bda21a130af49,Historical/plan context and links; current status owned by roadmap
+docs/plans/otel-observability.md,fe4fffbb6fe4de46ca24c73c1534be25f0a46b94d0e150fa6bdb5a50694a53fb,Historical/plan context and links; current status owned by roadmap
+docs/plans/portability-azure.md,d8308b3950790641e847e4270959dce6fcd3aaf86b317ead3d9c1dcce07632ce,Historical/plan context and links; current status owned by roadmap
+docs/plans/portable-ci.md,78df1fb31bbba509464a5cac43b408b2117c10efdbab675569ca32ebdc45b932,Historical/plan context and links; current status owned by roadmap
+docs/plans/pr-build-previews.md,045961dd2d1ae4e304fc33f91b77d38caf912dd58cf3c58528290fbe9f7b6ae9,Historical/plan context and links; current status owned by roadmap
+docs/plans/production-load-activation.md,fe405fa34e3b114f3aff4a5b814fe7dc0dc58167ed89ae7804c7985710205d80,Historical/plan context and links; current status owned by roadmap
+docs/plans/production-load-gate.md,92a64f982c450aef6c1c046cdeb9411d413d8046409a5f7e85de3d22e5a877a1,Historical/plan context and links; current status owned by roadmap
+docs/plans/promotion-deployment.md,4a8d4c2f28cad3dc1b05b005bb96335e20e83d95f816221ef44286727582a183,Historical/plan context and links; current status owned by roadmap
+docs/plans/reference-ci-cd.md,a0447d30fef199114072d41849860aaa590dc74b60c505b346b826e1f634d120,Historical/plan context and links; current status owned by roadmap
+docs/plans/reference-clarity.md,49e1cb81ae941478f6e350ba744fcdff6a2d80ad8221a9b9434219829fd83713,Historical/plan context and links; current status owned by roadmap
+docs/plans/reference-https-control-session.md,9a4eb4d0b8f419c9acff865b7c25f351119cda0269c13759efec03068b30fdd4,Historical/plan context and links; current status owned by roadmap
+docs/plans/reference-request-contract.md,9367cc2f0563320b43032620e0f8ea311625979400ce07e2f7062c4e804ee877,Historical/plan context and links; current status owned by roadmap
+docs/plans/reference-runtime-consolidation.md,1f159f4da4a272403e77c0d5a5150d20553b82942f17704d5fba6bea15fc9ac3,Historical/plan context and links; current status owned by roadmap
+docs/plans/roadmap.md,780e76a00bcae01d39d35632d34bea2f2ff5185ac3e2840322a3edacb62d90b3,Historical/plan context and links; current status owned by roadmap
+docs/plans/signoz-backend-and-investigation.md,e207c1fe0372569966456b4636282110b87bbdc25cc90897aaef20bb887cb4f8,Historical/plan context and links; current status owned by roadmap
+docs/plans/signoz-connected-investigation.md,0838b0c75f64e6ed214085bc5a59c41b6caccf9bfac9085b336c928ae1496164,Historical/plan context and links; current status owned by roadmap
+docs/plans/signoz-connected-runtime.md,ba68225144a3c5551ad65f7e87d0a83fb68fda89ce543fb1cb17a1bef63b5eb7,Historical/plan context and links; current status owned by roadmap
+docs/plans/signoz-investigation-overhead.md,1e15b966cda2254ede370188d61200728ee8fcc1b62d13a1dd98a276d3b26cdf,Historical/plan context and links; current status owned by roadmap
+docs/plans/signoz-merged-release-rehearsal.md,2f14b30c95a8d609483d0448906ca0e19f7d0241cc9f41fa7deed60a40581d57,Historical/plan context and links; current status owned by roadmap
+docs/plans/signoz-window-coverage.md,55287758853f7c11f753f19257d77453e89b5f46df471d35430a86754e6de6df,Historical/plan context and links; current status owned by roadmap
+docs/plans/snapshot-restoration-integration.md,5bce3044b7b9868aa6909385a93531ce1c6b478f40cffea4bcb8aa626fbd58b5,Historical/plan context and links; current status owned by roadmap
+docs/plans/snapshot-restoration-research.md,c9fff9bd2cb1207e5a6ce83051c722469ae3201e88fb509999a1a1d33d906541,Historical/plan context and links; current status owned by roadmap
+docs/plans/source-merge-readiness.md,b5fb0affddd37c8923608623d16c179fce0a3e1ce7acb62a0fcd72f8ac8b7eb4,Historical/plan context and links; current status owned by roadmap
+docs/plans/synthetic-traffic-gatling.md,395c3c17a759ca7865b6e752f2bf2890ff0d9f679d65cf4a75607caa986c2270,Historical/plan context and links; current status owned by roadmap
+docs/plans/user-owned-git-ca.md,33c6c288caf8c2e00616e9da323581d4f9e387a8684574b8258d3d42e4aff81a,Historical/plan context and links; current status owned by roadmap
+docs/plans/variant-gate-operator-validation.md,6db711e17b33ed48eb9e0f4b8400c7ded29829cabc31f870ba78179caf918492,Historical/plan context and links; current status owned by roadmap
+docs/plans/variant-managed-gate-rehearsal.md,827039218ea957106d8ad48b760d5670e5b3531d5368eb231bed7ba792b0997a,Historical/plan context and links; current status owned by roadmap
+docs/plans/variant-merge-gate.md,596ccbf250b60894a6d95343cff14d1ecf04e819aa1dc6dfbf9f8ea60f7f1652,Historical/plan context and links; current status owned by roadmap
+docs/plans/variant-reference-proof.md,a70940d75855a4e40265349bbed51664723fd9acc45d2f0a6a26c557108e54b4,Historical/plan context and links; current status owned by roadmap
+docs/plans/walkthrough-actions.md,f4ccdab10d90626dd54b08c738df6d4d18deacfa0506bde2d5e90b50e1dc8e3c,Historical/plan context and links; current status owned by roadmap
+docs/plans/walkthrough-activation.md,b3010c57b8fafd2e4ef55cbcffcafa4488b3ac8db7936563bc06962765cc1f90,Historical/plan context and links; current status owned by roadmap
+docs/plans/walkthrough-feedback.md,8db8b7a87c82320f1f50227922c1835c6160b6ada9aae517f3d892630f9e425b,Historical/plan context and links; current status owned by roadmap
+docs/plans/walkthrough-pacing.md,5255df2bd8606e47fdbd7f90db0a0ac37e715b4f9d31531fc28992e38c6525b0,Historical/plan context and links; current status owned by roadmap
+docs/plans/walkthrough-query-sets.md,85731a250c46b885b00b7975e9ccfd7d9cb5bcc511bd1d79fdc112606a3b2b4d,Historical/plan context and links; current status owned by roadmap
+docs/preview-access.md,92c6ef82f6c00197ac958d035c037d95babf2835f87c0552e9e9f4b82cb2b078,Current-reference consistency scan and local links; prior authorship review retained
+docs/prototype-design.md,5c2500414011434ac3e0a3ac739349c11ab37b5e64a8a69e354d662fab1a4ba5,Current reader path and affected contracts reviewed; links checked
+docs/relevance-gate.md,c29a80d0199f06eb418bde363090e5525ebfaf7672b3e5ef78ca788ce58645d7,Current reader path and affected contracts reviewed; links checked
+docs/remote-delivery.md,9e0a7f50c6c71340d265582fd911a4b1eb425ccd42aee70b5037d2e2b6bdf862,Current reader path and affected contracts reviewed; links checked
+docs/research/README.md,959eed93888bc2c427c21784fdbed451c38b1ceb40e64da8c6f9e96224a9982b,Historical/plan context and links; current status owned by roadmap
+docs/research/esci-synthetic-calibration.md,5e57cd9325d608107091b096a54fbc84aa30cf8c7392761df1bc1e96c0e49b33,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/README.md,1699041a31144ba3d8ebd34959e7be2c0a5e7d7e1ab70491d2b15b4a83ffd6e8,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/automatic-preview-urls.md,8fd6a31e0e1f6378e2a78539ad7b37014ebc1be3276c20f3e9eea7300f7a6d38,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/catalogue-recipe-delivery.md,7eca66e72f301664a15a21a004427bb9e2c26abded9f424da1d3c4e0270e385b,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/concurrency-isolation.md,51ceb9a2eebae22c6b05d281e47c4fcdd6a4d6bbd289778f83f4d0b8fb9ca2f9,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/control-list-navigation.md,fe8a5fda0013913210d9f188a22fcb4ad990fc96e49fbd6bba016090e095fc04,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/control-oidc.md,037993bdfc33e780619a0ec7ae1d0d3b4f63e69435880b89500d0347eb7ab814,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/developer-evaluation-loop.md,64345ea8fdd10a87f6184c90d9d969b1b880bcc358df496de0944f38c9db1c3d,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/documentation-relevance-gate.md,dbef394e8bdc72d2038609a8d5639ab745fd70463487a990fd00174769340a23,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/durable-snapshot-repository.md,d4cf1a78b062c6455a899c3a7891d2f6b955b64491910daf248ab59c2f52ba37,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-catalogue.md,c4477f7c58f7b8a13be9d22df651dd3acb7d1b94c640b9c813541605bd881277,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-category-increment.md,37e3f23d7646d13c34e5a7ceefbb74fc5449b902515c9783511be806633921af,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-category-survey-results.md,641a979be84eb9f12c4efe94069d94429aa1327d6f3f666c5aea0d07b7c52326,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-cpu-pair-judges.md,592b3ddf18ef1708bdb81596d5dcd6a57fbde32c0e7e877415c013841f005a37,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-demo-coverage.md,3ca3b856c460c9e6d179be2e1689b91a7d928a372ef9ccf37c198248e14ed84a,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-demo-source-integration.md,cb85b07aef49feb58bfd89d677e0181350db95712687242311a8930e4a1bcfd2,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-fitted-specialists.md,b83c4cfff108a94d8ed84df1c178846ca411d69a1103904e25f88646f1629948,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-frozen-kernels.md,d0f9c411360d090c4daf11addef78fcf75ad6949d5e2eda492ef73dc54a6c7e9,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-gap-review-packet.md,15c8e73ba155ab11c6f5c7fb1c21764defebec97ad0916ccef2559942f51f4ad,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-gap-surveys.md,d1883b65a3f48fe2d5c38dd58855354d39b782828063f017a0c58ad831c26ff6,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-inference-contract.md,de7fc91900160fa83a9ef6f94a17baa378d0c0cb2a2362806b4427242382e6cd,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-label-quality.md,c19dbb69922c465a4fc039110411a48ece912e44bf754c89282973f54d798b0f,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-model-bundle.md,e8e2fd5fc057dcda447be5a6b5fc46ce00252046349dfad5c5dd36bd1cfb1557,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-probability-diagnostics.md,4b2f472294a9911271f85ae30c618a1a9de4f544529b547df5b0c08de0e324f3,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-progressive-judgements.md,6d487daab33ba9b5b2364b7bab1cf7d06ac1be43ee026c63fb32f044f8e57556,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-role-check-preparation.md,2e860fa1ac90d32184bf1a66896656e6a99a129794ac24d71267d71f32ba2fc9,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-role-runtime-preflight.md,c5ad6fbf375fdc1c1507fb41ed31e0904a626ba7ea850ea36d0dddeee2a28b39,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-score-separation.md,6e1279fdc35011e65ea8573d9bd874723258b6cc150a3a2463a64761dbbc910d,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/esci-serving-qualification.md,42622424a4c873f96e334863271120f76030cd3c4acc9bbbef1f872f84495d53,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/evaluation-pacing.md,48ddf58cec18b2c2fef7454ed569fc791ec59f537ee56ea649ec92249dbdff81,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/evaluation-throughput-adoption.md,80acb5d226bcd0f681cd3cb2c0ceee93db6e46a71a7810ef23350bd10f6fcd36,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/evaluation-throughput.md,a22e14b8fec4fd4599bba10b7cc292662fc4e26774c62a3640dbcd730832a04f,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/exploratory-notebook.md,63460637f0642d99148b9add9df423884e5a0bb2bd4782483f51f6788905cbdc,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/gate-maintenance-benchmark.md,5be6001b6aca932c0880d9d70b579d20722daf862f36443c50022cab838ecf41,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/gatling.md,1a1c364349d7e164f8148094c2a8c020a80e6c45d4f7e7c38b7ebaa8a6289c24,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/gitea-oidc.md,b7fb8df2cca4e3cafe54ff3e8739e977d1b28b32ca26c1dce3d1c2f0736e238f,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/historical-index-recipes.md,be2b6e5148c93e7244084921395dc5de92afd62e28f331b06862d903e05d3dfe,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/https-git-transport-2026-09-28.md,406424c4af0bc379a52f5d0e8315fd2368a9f1a33cba78aedd0344e11e097d91,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/independent-comparison-inputs.md,7a9d6dd4fa7c52968a91b7be569d9479893259c86bae4cb01d683e191d7d8dbf,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/independent-data-evaluation-contracts.md,091c74689e4095a5278d771bc3a4ee413c4897ec947302a351086127f4ea98dc,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/index-change.md,837be68ff8cb539bb7841031ca5747d71d082c09b7fc890ed19aad57759ee3ab,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/index-recovery-workflows.md,34d82cc4cedb20b8cf34d4bb3af63f3793e33332f0e1029110e32899ab58e85c,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/kubernetes-control-services.md,8027b3c0ace54a4799c784082af56a7ef22a795d265d18db56c22fb1f8959926,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/lab-storefront.md,21b72112a2db83776d2b7cd6f00915da092eb0d2cad8814cff38831f6d550d71,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/lifecycle-measurement/README.md,171d3713d53db00803446a7b071ab86e0af8d5f7185d74ba23b94553487c27e5,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/local-oidc.md,16f95450b81100c3a243b5de33ef0ee7036777b7e5fdc20fd25631554627774b,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/managed-variant-gate.md,27a26849db6529758cf2c4a6b9a04319e6370938dcca131b2ca99ce7127df0cc,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/million-scale.md,5a8088a425e1685cdac9243f4ca417780662a920155caaf9a4bfa664b8a5a5ba,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/mlflow-kserve-judgement-coverage.md,330835f61ded092e4c0c6c023b00405d707949fd954ec6cdf6133e8e03b7e0c9,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/model-observability-2026-09-29.md,9129910b839f3c2bbbfacadb8fcc21057110d141f0c940501f46db70774aeffe,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/nexus-artifacts.md,af48c5d951f570738f9061d466331ae115ed754781e1a0224d31292806699e9f,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/offline-variants-million.md,dffe7ea0269a2f9a8d6b6a57950547a811832750619dc82ec7bcc53fa1d4af59,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/optional-gpu-worker.md,597c0066132faa89170d6ccf4aae9f818b6af775ea2f9156fad83414b7ffe63d,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/otel-observability-foundation.md,7f1011ec60d40dd18518b9a3d956a6654d46d2663d5458317b56ba21c0c2d236,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/portability-azure.md,d0ae8a9441d9e3aa43186da3ee73cada67e4641b89a7f3b15f2d18d4ad33e49c,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/portable-ci.md,c62ae8fde98fd3eb84a034184640d64ed8f014e1618e365f4013f2195c9f308b,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/promotion-deployment.md,7d3be4ecd107922b60e68b5980524c139b0ded73b1bf0e8519232ba3dcfe3e76,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/runtime-consolidation-delivery.md,0b344a005d9565eee0912463a292e6f2c18057e058abdf74bb0735be3c54bc5b,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/search-request-filters.md,6de63aa2b02873af91dda9c2c7d84d9826771311cd05b3c0b7aef67e4e2f4ba7,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/signoz-backend-2026-09-27.md,41394d750c4ef6271a0eb1409ebfbdef46c6bbf6b0ea3bf55f985d2815afd6df,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/signoz-dashboard-2026-09-28.md,b5ef12e247e943d1ff8cd4d23b4545a6a3bcabc626f897dc12e4fb3f32ea1014,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/signoz-finite-jobs-2026-09-28.md,655b116383c43130fa6cebeae1a39d8356645946f5c835d9703ff95f1903e45b,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/signoz-investigation-2026-09-28.md,27dc2161e769a3098a475efae19e4470916f250b74cff63c8f219e49d06fbab3,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/signoz-window-2026-09-28.md,2f6807bff16a3d3d3c058a4749d5c3b442ed807c9d50059ffcd0d0a1ee9efe32,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/source-merge-readiness.md,94dfc49afd483b5f19b33c8a6c09bb47ec6ed2a82ba3a59c50ae3d8a3fa64335,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/user-owned-git-ca.md,9b8790b702b42359c48321d042ce1df271ca6f12b3794ed9a1c4f92684b2164e,Historical/plan context and links; current status owned by roadmap
+docs/research/evidence/walkthrough-feedback-verification.md,fb66cfe09e5f97b2bc79234e543d239749f68253d05b53d2946f11270126a419,Historical/plan context and links; current status owned by roadmap
+docs/research/gitea-lifecycle.md,b6905d5c57c51af1a0501e8a1331dacf2a90b738059d9b3503297e9242ea4d26,Historical/plan context and links; current status owned by roadmap
+docs/research/index-restoration-options.md,4dea271aec90339c8ec9316d707aa6967dc8cc9dd59e73f6163d8be751cb8c19,Historical/plan context and links; current status owned by roadmap
+docs/research/lifecycle-signadot-coolify.md,7fe56c67e1263041ea8b83afe1e3b1a95174d090432005bae89b017fe94065d4,Historical/plan context and links; current status owned by roadmap
+docs/research/million-synthetic-release.md,1ea319e82d13b3ffae4b7a62aa005b07cc6b390a84203548265b1afeb9f8e5e8,Historical/plan context and links; current status owned by roadmap
+docs/research/okteto-uffizzi.md,52c2247ae71d52d8bc1d38bff7d0ad5212348653d748d889acdbb28f166dc022,Historical/plan context and links; current status owned by roadmap
+docs/research/platform-spike.md,ad92c80b3e24da5e5be7d9f81ff891b6c1d29e27c7d1020012e20568520f8660,Historical/plan context and links; current status owned by roadmap
+docs/research/portability-azure.md,13187020158226465f26fd5dc3011f193628c7bac262412f7296c49b127d61cb,Historical/plan context and links; current status owned by roadmap
+docs/research/synthetic-traffic.md,5c9b67775957649f39ce3aaddbc097eff9969c2ef606cba3e78f962f54b97ac9,Historical/plan context and links; current status owned by roadmap
+docs/reviews/documentation-2026-10-01.md,ef499ad99d723176e56fd51fa63ae06c3599e674ce66496996064eeea920f43c,Current-reference consistency scan and local links; prior authorship review retained
+docs/reviews/documentation-2026-10-05.md,9bc67812fb166360318d55369d3e5194ea482d2f71f10a2bdae86eadca03077d,Current-reference consistency scan and local links; prior authorship review retained
+docs/screenshots/README.md,65b3f3f578a7111df40845e3639a41530f7d83a121ac299f5c00047d166cd96a,Current-reference consistency scan and local links; prior authorship review retained
+docs/search-request.md,0a704210091bb77a85e7224de68d8dd0b27542902d939ba6c71aa3498b1f0623,Current-reference consistency scan and local links; prior authorship review retained
+docs/technical-authorship.md,2cdd96b634367930be74b85843f8b8fd999e63c9249ba2402e3f24856c317cb2,Current reader path and affected contracts reviewed; links checked
+docs/variant-evaluation.md,930fb0c308f48f05105a9e2cf7049e6e1bd9fdf100dcde218ebc26d0f2acbf32,Current reader path and affected contracts reviewed; links checked
+docs/workstation-access.md,2471add623a40e39b38041dcffb5cd331d336f44584e8883a41274fb8b18f2a8,Current-reference consistency scan and local links; prior authorship review retained
+lab/README.md,cdc09c72c503c7e3d47b18529543e05076d88d08c3f934ecd056fc44bcc307b1,Current reader path and affected contracts reviewed; links checked
+lab/delivery/bootstrap/README.md,973749596338496571d875398b70ee01062ae75dbe9f8fa62283caac1373a479,Current reader path and affected contracts reviewed; links checked
+lab/delivery/bootstrap/gate/README.md,3ebce6ace05a5f36eb0f0bf480afed326394ffe05b62105c37b6923f5597bcab,Current-reference consistency scan and local links; prior authorship review retained
+lab/experiments/esci-fitted-specialists/README.md,4ebf775bafe85635eb1074024df7927cf623d24ec511b5644b77293ba5bebaca,Current-reference consistency scan and local links; prior authorship review retained
+lab/experiments/esci-gap-surveys/CPU-PAIR-MODEL.md,1baa9c53ccd822e8f242e8537f02005c03f497014d6205141bdf62629efc9dc0,Current-reference consistency scan and local links; prior authorship review retained
+lab/experiments/esci-gap-surveys/README.md,172b68d40baf6e533688902beadbe53bdfe8d70a3c4669e9c7e56ae5ee39237d,Current-reference consistency scan and local links; prior authorship review retained
+lab/experiments/esci-llamacpp-survey/README.md,740d6ef6bd6304a25ae685414439e0dae03becded4fa6c743ab03ccacd7b91de,Current-reference consistency scan and local links; prior authorship review retained
+lab/experiments/esci-role-check/README.md,1673b983354fe5da6e2617adb44816a931e52a0e7264c7a5d9cb2f9d8af2c47e,Current-reference consistency scan and local links; prior authorship review retained
+lab/experiments/evaluation-throughput/README.md,271051600900b9a7efa245c0fd03a7feb33193c7473ca8bc7890dd3a84716a73,Current-reference consistency scan and local links; prior authorship review retained
+lab/gatling/README.md,330b43637dc7da9bf952cf6f9cb4a57de38e45370639976d6e4660ea16651218,Current-reference consistency scan and local links; prior authorship review retained
+lab/headlamp-plugins/README.md,af7deb098a82c3224cf4ea49b58913c86dab23ce4d58b1fc4c9f0889121c3314,Current-reference consistency scan and local links; prior authorship review retained
+lab/vendor/kserve-0.21.0/README.md,1750f13c0bdd4732972f896edf9b2cf31d421f31d3dc9efc65b64c33c98cf744,Current-reference consistency scan and local links; prior authorship review retained
+research/keyvault-eso-spike/README.md,3c4f98d73ca49768df89033110e293dc7b32df12934a4c91186a12635eb3ce28,Historical/plan context and links; current status owned by roadmap
+research/platform-spike/README.md,b337399f5e56c31e01704722ca0ba6f90c658d654465a6203741acc8bce5082e,Historical/plan context and links; current status owned by roadmap
+research/snapshot-restore/README.md,b43b7a6fc4ff3b3fe030c5b8eed41b26021c386fb16801ef613a76cffcf11c01,Historical/plan context and links; current status owned by roadmap

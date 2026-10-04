@@ -31,6 +31,6 @@ adjustment.
 
 ## References
 
-- [Delivery commands and phase budgets](../delivery.md#evaluate-and-propose-deployment)
+- [Delivery commands and phase budgets](../delivery.md#promote-a-merged-release)
 - [Control runtime](../control-runtime.md)
 - [Production gate implementation](../../lab/delivery_load_policy.py)

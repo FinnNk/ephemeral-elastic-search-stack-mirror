@@ -2,6 +2,10 @@
 
 Use the lab control UI to deploy a pinned Search API, compare it with a baseline and remove it when finished. Each comparison keeps the environment definitions, selected inputs and report so it can be reproduced.
 
+This is the separate control-UI experiment workflow. Search API contributors
+normally use [Actions-based delivery](../docs/delivery.md), with automatic PR
+comparisons and no kubectl commands.
+
 This guide assumes an **installed lab**. Operators should start with [control runtime](../docs/control-runtime.md); first-time platform experiments have a separate [bootstrap guide](../research/platform-spike/README.md). Search API development and the disconnected mock demo are in the [source README](delivery/bootstrap/README.md).
 
 To inspect Pods, deployments, events and logs, use [Headlamp](../docs/headlamp.md).
@@ -60,7 +64,7 @@ page** on a ready card. Its URL is
 separately without local port selection. Workstation DNS and browser trust are
 one-off setup steps.
 
-For diagnosis or a workstation without preview DNS, use a port forward in a separate terminal:
+For **operator diagnosis only**, use a port forward in a separate terminal:
 
 ```powershell
 # PowerShell, repository root. Select the existing retained state directory.

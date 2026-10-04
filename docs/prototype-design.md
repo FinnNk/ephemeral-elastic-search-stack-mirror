@@ -37,7 +37,7 @@ This is a relevance lab, not a production commerce platform. Products, queries a
 
 ## Architecture
 
-The local reference runs on Kubernetes. The [diagram gallery](diagrams/index.html) contains eight Structurizr C4 views and fifteen Archify views; [the diagram guide](diagrams/README.md) identifies their sources and scope. Azure placement remains proposed.
+The local reference runs on Kubernetes. The [diagram gallery](diagrams/index.html) contains nine Structurizr C4 views and sixteen Archify views; [the diagram guide](diagrams/README.md) identifies their sources and scope. Azure placement remains proposed.
 
 ![C4 system context: lab users and supporting platforms](diagrams/rendered/01-context.svg)
 
@@ -87,7 +87,8 @@ engine or queue only when measured retries, fan-out or contention justify it.
    evidence. Leased previews can be deleted or expire; stable targets do not expire.
 
 See [delivery](delivery.md), [variants and decisions](variant-evaluation.md) and
-[the operator runbook](evaluation-runbook.md) for executable procedures. A passing
+[remote delivery](remote-delivery.md) for developer procedures. The
+operator [evaluation runbook](evaluation-runbook.md) covers standalone studies. A passing
 source check does not itself approve a deployment. The three targets share one
 local cluster; they are not separate failure domains.
 
@@ -291,11 +292,11 @@ Shared immutable indices may outlive one environment while another uses them. Re
 
 A pairwise check names frozen baseline B and candidate C definitions. N-way relevance capture names two or more variants, one required runtime default and one metric baseline; default and baseline may differ. Each participating definition pins its API image/configuration, index, catalogue and engine. Verify every runtime against its own definition before capture. Variants can share one deployment or compatible index; shared resources do not merge their identities.
 
-The local control UI offers a **quick** 50-query result preflight and a **full** frozen suite. An in-cluster evaluation Job sends each request through both public APIs, records the ordered responses and cleans up after a bounded run. The query inspector shows changed queries, largest relevance losses, ordered results and selected diagnostic records. The complete content-addressed report remains downloadable. A labelled Gitea PR can trigger this sequence against an exact successful build; the [PR-to-verdict workflow](diagrams/interactive/pr-to-verdict.html) shows the local polling, two environments, checks and report links. The PR status reports tooling completion, while relevance interpretation remains a review decision.
+The local control UI offers a **quick** 50-query result preflight and a **full** frozen suite. An in-cluster evaluation Job sends each request through both public APIs, records the ordered responses and cleans up after a bounded run. The query inspector shows changed queries, largest relevance losses, ordered results and selected diagnostic records. The complete content-addressed report remains downloadable. A labelled Gitea PR can trigger this sequence against an exact successful build; the [PR-to-verdict workflow](diagrams/interactive/pr-to-verdict.html) shows the local polling, two environments, checks and report links. That fixture status reports tooling completion. The delivery-source workflow separately queues a fresh exact-commit comparison and requires the coordinator merge verdict; submission success alone cannot pass its gate.
 
 Both APIs receive the same frozen original queries and request context. Relevance comparisons score their final results against the same frozen judgements; result-regression comparisons check whether those results changed; performance comparisons replay the same workload separately against each API. The comparison record retains both definition fingerprints, runtime IDs, evaluation-input hashes, responses and diagnostics. Creating a comparison must not silently substitute the latest baseline or candidate.
 
-For standalone variant evaluation, capture every named Search API result list before resolving judgements. The variant set requires one runtime default and one evaluation baseline; they may differ. Pool distinct query–product pairs across all variants through the deepest metric cut-off. The independent judgement service returns stored published labels first and asks a pinned MLflow model served by KServe about gaps. The default model abstains on every gap. Exploratory passes can add predictions from other pinned models while preserving each source, version, policy and confidence. Published labels take precedence. Gate selection excludes unqualified predictions; exploratory selection can use them. Freeze the selected judgement set and attempt receipt, then score every variant against that one set. A changed recall set gets a new snapshot and report. An abstention is unknown, whereas `I` is an explicit irrelevant judgement. [The contract](judgement-resolution.md#capture-resolve-and-score) records the hashes and coverage.
+For standalone variant evaluation, capture every named Search API result list before resolving judgements. The variant set requires one runtime default and one evaluation baseline; they may differ. Pool distinct query–product pairs across all variants through the deepest metric cut-off. The independent judgement service returns stored published labels first and asks a pinned MLflow model served by KServe about gaps. The default model abstains on every gap. Exploratory passes can add predictions from other pinned models while preserving each source, version, policy and confidence. Published labels take precedence. Strict gate selection excludes unqualified predictions; exploratory selection can use them. The temporary ESCI demo policy admits only its authorised cached model/source scope and reports those labels as unqualified. Freeze the selected judgement set and attempt receipt, then score every variant against that one set. A changed recall set gets a new snapshot and report. An abstention is unknown, whereas `I` is an explicit irrelevant judgement. [The contract](judgement-resolution.md#capture-resolve-and-score) records the hashes and coverage.
 
 Variants can share compatible immutable resources. In the [API-only example](diagrams/interactive/shared-index-reuse.html), separate API deployments read one frozen index. One API can also serve several pinned ranking configurations. A mapping change builds a different index from the same dataset. The [variant evaluation](diagrams/interactive/evaluation-dataflow.html) shows the named result paths; the [merge gate](diagrams/interactive/variant-merge-gate.html) shows source-bound evidence and the recorded release decision.
 
@@ -507,7 +508,10 @@ The UI has four small views:
 - Side-by-side search.
 - Comparison report with mode selection, per-query inspection and Gatling report links.
 
-The control UI supports the core paired workflow. Advanced variant capture, pooled judgement resolution and release operation use the documented operator tools; the UI does not yet integrate every standalone path.
+The control UI supports the core paired workflow. Source comparisons and release operations use the coordinator through Actions
+or the authenticated delivery client. Routine development needs no kubectl.
+Standalone pooled judgement studies and platform administration retain operator
+tools; the control UI does not integrate every study path.
 
 ## Startup and scale validation
 

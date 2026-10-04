@@ -74,3 +74,24 @@ With the actual `core.autocrlf=true` setting, `git checkout-index` produced LF
 files for all three paths. Their bytes and SHA-256 values matched source PR #27's
 published files. This verifies the packaging contract; it does not establish a
 live remote Actions run. Frozen datasets and earlier evidence were unchanged.
+## Delivery completion follow-up — 5 October 2026
+
+Source PR 27 was updated to commit
+`b1c66eea06b628096ded5c6dc265450fb6e77b49` with approved merge, verification,
+rollback and gate-check Actions choices and matching contributor instructions.
+Release run 111 passed. A fresh capture compared its image with baseline run 108;
+the signed evidence passed protected relevance run 112 on that exact head.
+
+| Check | Observed result |
+| --- | --- |
+| Fresh searches | 1,000 per API, eight workers, 30.156 seconds |
+| Request failures / retries | Zero / zero on both APIs |
+| Demo coverage | 8,053 / 9,915 = 81.22% on both sides |
+| Observations SHA-256 | `a698d8dbb42c852a22a27dd2b2afad216257106baa87ac73efeee95ef18698ec` |
+| Report SHA-256 | `0f131e6332881629b710a717becdc91d6b5a942b95a2b5a44387c89beb560dbb` |
+| Candidate environment | `lab-delivery-run-111-2da57323` |
+
+The earlier capture above is preserved. This follow-up proves the new source
+commit and its evidence pass the installed gate. It does not demonstrate the
+uninstalled remote coordinator or grant a new model-quality exception.
+

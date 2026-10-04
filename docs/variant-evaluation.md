@@ -25,7 +25,7 @@ Exploratory comparisons may include unqualified model labels. Strict gates exclu
 
 For a source PR, start in the Search API repository's `gate/README.md`. Declare which variants you want to release and whether the change should preserve results or change ranking. CI must build the exact PR commit before its image is evaluated.
 
-Agree these inputs with the lab operator:
+Declare the source settings below; the coordinator selects compatible retained inputs:
 
 | Input | Where it comes from |
 | --- | --- |
@@ -37,7 +37,8 @@ Agree these inputs with the lab operator:
 
 The default and baseline are independent choices. The baseline supplies the comparison; it cannot also be a selected candidate in that gate decision.
 
-For complete operator commands, use the [evaluation runbook](evaluation-runbook.md).
+Use [Actions or remote commands](remote-delivery.md) for developer operations.
+The [evaluation runbook](evaluation-runbook.md) covers separate operator studies.
 
 ## Capture and score
 

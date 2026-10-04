@@ -50,7 +50,7 @@ Actions workflows, automatic PR comparisons and report similarity metrics.
 
 ## References
 
-- [Delivery procedure and budgets](../delivery.md#evaluate-and-propose-deployment)
+- [Delivery procedure and budgets](../delivery.md#promote-a-merged-release)
 - [Pinned production workload](../../lab/traffic/production-load-v1.json)
 - [Target policy](../../lab/delivery_load_policy.py)
 - [Gatling runner](../../lab/run_gatling_job.py)

@@ -213,12 +213,12 @@ Review independent gap evidence and the frozen cascade before granting labels
 gate eligibility. Preserve source identities so comparisons can distinguish
 published labels, human labels and each model pass.
 
-The normal merge gate requires 80% eligible coverage. The prepared fallback
+The normal merge gate requires 80% eligible coverage. The result-preservation policy
 allows a human decision only for `preserve-results` with identical ordered IDs
 and total counts at capture depth, equal scores and coverage, and exact-build
 signed evidence. Strict qualified-label controls remain mandatory; unknown judgements
 stay unknown. Low-coverage ranking changes remain blocked. Review and protected
-source/policy pin updates are still needed before existing CI can use it.
+policy changes require review and matching protected coordinator pins.
 [The evaluation runbook](evaluation-runbook.md#human-exceptions) describes the
 existing authenticated approval command. Assessment commands grant no exception.
 

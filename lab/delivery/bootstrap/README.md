@@ -55,17 +55,9 @@ one-off workstation DNS and browser certificate setup, it opens directly. Each
 preview has its own URL: `https://<namespace>.preview.relevance.test:34443/`.
 Choose **Open search page** on a ready lab environment card.
 
-For diagnosis or a workstation without preview DNS, use a port forward. Run this
-with kubectl and the lab kubeconfig, replacing `<lab-kubeconfig>` with the absolute
-path to the lab's `.lab/kubeconfig.yaml`:
-
-```sh
-kubectl --kubeconfig "<lab-kubeconfig>" -n lab-delivery-integration port-forward service/search 18088:8080
-```
-
-Keep the terminal open and visit **http://127.0.0.1:18088/** after kubectl prints
-`Forwarding from 127.0.0.1:18088 -> 8080`. For a preview, substitute its namespace.
-Stop with Ctrl+C when finished.
+If the address does not resolve or the certificate is untrusted, complete the
+workstation setup linked above. Ask the operator to repair lab access if that
+does not resolve it; development does not require a port forward or kubeconfig.
 
 The **Lab storefront** shows the catalogue size. Open **Search details** below
 the results for request timing. Try `running shoes`. The page calls `GET /search?q=running%20shoes`; the response includes matching product IDs, product details and total match count. The deployment supplies a frozen index, read credentials and the Elasticsearch certificate.
@@ -83,10 +75,23 @@ placement and what it checks. Keep the examples separate from the application.
 
 1. Create a branch, change the API or ranking settings, and run the tests.
 2. Push the branch and open a pull request. **Reference release CI**, visible in Gitea's **Actions** tab, tests and builds that exact commit. It stores the image and release files in Nexus, the lab's artefact repository. The separate **Offline relevance gate** checks the evaluation evidence; changes limited to this README and `gate/README.md` receive a recorded documentation exemption.
-3. Deploy the built version to a lab environment and compare it with a baseline using the same frozen products and queries. Frozen inputs are saved versions that stay the same throughout the comparison.
+3. Open the PR comment's preview and comparison links. The coordinator deploys
+   both versions and compares fresh results using the same frozen products and
+   queries. Wait for `relevance-lab/merge-gate`, rather than treating submission
+   or a successful build as the final result.
 4. Review the changed results, relevance scores and judgement coverage. Judgements are labels indicating how relevant a product is to a query; coverage tells you how many returned products have those labels. A passing build alone does not show that ranking improved.
 
 The lab also supports named ranking variants: alternative settings evaluated against the same inputs. One variant is always the default for requests without a selector. The evaluation chooses its baseline separately. See the [offline gate guide](gate/README.md) for the checks that can be required before a pull request is merged.
+
+## Preview and promote from Actions
+
+Open **Actions** → **Lab delivery** → **Run workflow** on **main**. Choose a
+preview, comparison or promotion operation and supply its successful build run
+ID from `/actions/runs/<id>`. Follow the printed progress URL to completion.
+Promotions need a reviewed `delivery-state` PR; `merge-reviewed` checks its
+separate approval and verifies deployment. No kubectl commands are needed.
+See the [delivery guide](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/delivery.md)
+for the target sequence, production load gate and rollback.
 
 ## Repository layout
 

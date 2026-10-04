@@ -31,7 +31,7 @@ A page can serve more than one purpose when the sections are clear. Link to deta
 - Put likely failures and recovery beside the relevant step. Do not add generic warnings unrelated to the task.
 - Use a diagram when relationships or workflow order are clearer visually. Explain its relevant boundaries, keep it aligned with the implementation and link to editable sources when useful.
 
-For example, replace “CI consumes an attested immutable evidence bundle” with “After evaluation, ask the lab operator to publish the signed report for your PR commit. Rerun the relevance check; it verifies that the report used the image built from that commit.” Retain exact contract names in the reference where they are needed.
+For example, replace “CI consumes an attested immutable evidence bundle” with “Open the report linked from your PR. Check its source commit and image before reviewing the changed results.” Retain exact contract names in the reference where they are needed.
 
 ## Describe the current system
 

@@ -7,8 +7,10 @@ policy. The CUDA serving image is separate from the weights.
 
 Registration is possible on a CPU machine. Activation requires a GPU and passing
 serving and quality checks. The lab still uses the abstaining bootstrap model;
-the frozen-kernel candidate passed numerical qualification but remains inactive
-pending independent label-quality checks. See the
+the frozen-kernel candidate passed numerical qualification, but its predictions
+are not independently quality-qualified. The full catalogue uses cached model-4
+predictions under the temporary [demo policy](judgement-resolution.md#temporary-esci-demo-labels);
+live fallback inference still abstains. See the
 [serving evidence](research/evidence/esci-frozen-kernels.md) and
 [label-quality plan](plans/esci-label-quality.md). Coordinate competing GPU work before
 qualification; registration alone does not activate the candidate.

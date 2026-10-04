@@ -1,195 +1,124 @@
 # Build, promote and roll back a release
 
-CI builds the exact Search API revision and publishes it to Nexus. A source PR needs its own merge evidence. After source merge, promotion deploys the **merged-source release** through reviewed desired-state changes; Argo CD applies them and the coordinator verifies the serving API.
+Develop the Search API in `delivery-source`. Actions builds it and the coordinator
+compares its results with the baseline. After source merge, promote the new build
+through integration, staging and simulated production. Argo CD deploys reviewed
+state; the coordinator checks the image, index and public API.
+
+The remote workflow needs the accepted source templates and matching control
+installation. See [activation status](plans/roadmap.md) before using it on an
+existing lab. Developers do not need a kubeconfig. Operators install and repair
+the lab using [control runtime](control-runtime.md).
 
 ![Source build, frozen comparison and merge decision](diagrams/rendered/variant-merge-gate.png)
 
-## Choose the workflow
+## Make and evaluate a change
 
-| Repository/service | Use |
-| --- | --- |
-| [delivery-source](https://gitea.localhost:34443/elastic-agent/delivery-source) | API/UI, tests, chart, index contract and shared Actions workflows |
-| [delivery-state](https://gitea.localhost:34443/elastic-agent/delivery-state) | Reviewed deployment/promotion definitions |
-| Nexus | Images, bundles, receipts and signed gate evidence |
-| `search-spike` / `environment-state` | Leased lab comparisons; distinct from release promotion |
+1. In `delivery-source`, create a branch, change the API or ranking settings and
+   run its application tests. The [source contributors guide](../lab/delivery/bootstrap/README.md#contributors-guide)
+   includes a copyable query rewrite and test.
+2. Declare variants and intent in `gate/selection.json`. Use `ranking-change`
+   for intentional changes, or `preserve-results` for a release expected to
+   return the same products in the same order. `gate/evaluation.json` names the
+   baseline and default; `configurations/` contains their settings.
+3. Push and open a PR. **Reference release CI** builds its exact commit and stores
+   the image, bundle and receipt in Nexus. **Offline relevance gate** submits
+   a comparison; its completion alone is not a relevance verdict.
+4. Open the PR comment's storefront and report links. Review relevance, label
+   coverage and changed results using the [variant guide](variant-evaluation.md).
+   Add report-only queries for your change, or explicitly require a labelled set.
+5. Wait for `relevance-lab/merge-gate` on the current head. Every new commit needs
+   fresh evidence. A bounded exception records a human decision without changing
+   scores; invalid evidence and hard blocks cannot be approved away.
+6. Merge when the required checks pass. CI builds the merged commit separately.
+   Use that successful run for deployment, rather than the PR-head build.
 
-**Engineer:** change source and declare variants/intent. **Operator:** capture frozen evidence and propose deployment. **Reviewer:** decide on source acceptance, bounded exceptions and promotion. The watcher validates and verifies; it does not approve or merge PRs.
+Changes confined to the two source README paths receive the
+[documentation exemption](relevance-gate.md); tests and builds still run.
+Source repositories default to no required approvals for the lab, while setup
+preserves stricter existing rules. Deployment proposals require a separate reviewer.
 
-Operator setup is `python lab/setup_nexus.py`, then `python lab/setup_delivery.py`, from the repository root after platform, HTTPS and frozen-input bootstrap. Setup seeds source once and creates the trusted local runner. Repeated source edits use PRs. Its privileged build runner is for trusted contributors, not arbitrary public fork code.
+## Preview or compare manually
 
-## Build and evaluate a source PR
+In `delivery-source` → **Actions** → **Lab delivery** → **Run workflow**, select
+**main** and choose `preview` or `compare`. Supply the successful build run ID
+from its `/actions/runs/<id>` URL; compare also needs a baseline run.
 
-1. Open a branch and PR in `delivery-source`.
-2. Commit `gate/selection.json` naming release candidates and `preserve-results` or `ranking-change` intent. Choose one default; the metric baseline may differ.
-3. Wait for **Reference release CI** to test and build the exact head. It publishes multi-platform images, the deterministic bundle, release descriptor and build receipt, in that order. A failed build does not publish a successful receipt.
-4. Follow the automatic comparison's PR comment for both storefronts and its report. The coordinator captures fresh results and signs the exact build receipt. Inspect [scores, coverage and gate outcomes](variant-evaluation.md).
-5. Wait for `relevance-lab/merge-gate`. It stays pending during the comparison; missing, stale, blocked or mismatched evidence fails. A recorded bounded exception preserves the score and reason; it does not alter the result.
-6. Review and merge when the required checks pass. CI builds that merged SHA separately; promotion uses this new release and matching evidence.
+The workflow prints a durable progress URL and releases the runner. Follow that
+record to completion and open the returned storefront or report. **Submitted**
+does not mean evaluated or deployed. Both comparison revisions must contain the
+current evaluation/configuration contract.
 
-Changes confined to the two source README paths have a [recorded relevance exemption](relevance-gate.md); application checks still run. Source gate approval does not deploy anything.
+For workstation commands and retry behaviour, see [remote delivery](remote-delivery.md).
+Both paths call the same coordinator; neither requires kubectl.
 
-| Retained artefact | Identity |
-| --- | --- |
-| `releases/<release-id>.json` | Source revision, image, bundle, file hashes and index compatibility |
-| `bundles/<sha256>.tar.gz` | Deterministic source, chart and index/indexer contract |
-| `builds/<source-sha>/<run>-<attempt>.json` | Exact provider build attempt; published last |
-| Image | Digest-pinned API/UI/query code and source revision |
+## Promote a merged release
 
-Verification checks bundle paths/checksums and rejects mutable images or incompatible indexers. Credentials, namespace and dataset selection belong to the deployment, not the release bundle.
+![Reviewed release deployment across three local targets](diagrams/rendered/release-promotion.png)
 
-## Open a source PR preview
+The three targets share one cluster. They are separate deployment namespaces,
+not separate failure domains or performance-isolated systems.
 
-For ordinary developer operations, use [remote commands or the manual Actions
-workflow](remote-delivery.md). The commands below remain operator tools.
+1. Run **Lab delivery** on **main** with `propose-promotion`. Enter the successful
+   merged-source run ID, target `integration`, frozen dataset and intent.
+2. Follow the operation to its `delivery-state` PR. The coordinator first
+   evaluates the candidate against the target, then proposes the pinned release.
+   A failed evaluation cannot create a valid promotion.
+3. Review the evidence and wait for `delivery/validation`. A permitted reviewer
+   must approve the exact PR head. Approval does not deploy it.
+4. Run **Lab delivery** with `merge-reviewed` and that **desired-state PR number**.
+   The coordinator rechecks the proposal and approval, merges it, then waits for
+   Argo CD and the public API. The operation must finish with `state: verified`.
+5. Repeat for `staging`, then `production`, using the **same merged build** and
+   frozen inputs. Each preceding target must be verified first. No image is rebuilt.
 
-An operator can deploy a successful PR build before source merge. Use PowerShell
-from the lab repository root, with `lab-control` installed and the
-[workstation access setup](preview-access.md) complete:
+If desired-state main or the target baseline changes, create a fresh proposal.
+Evidence must match the exact inputs and intent and be no more than three days old.
+A merge without successful deployment verification is not a completed promotion.
+Use `verify` with the target to recheck after an operator repairs a failed deployment.
 
-```powershell
-$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-$kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
-$previewRun = Read-Host 'Successful Reference release CI run ID from the delivery-source Actions URL'
-$preview = kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py preview --run $previewRun --dataset esci-gb-v1 --variant-config lab/delivery/configurations/ranker-a.json | ConvertFrom-Json
-'https://{0}.preview.relevance.test:34443/' -f $preview.name
-```
-
-Use the numeric ID in `/actions/runs/<id>`, not the displayed run sequence or PR
-number. A successful command returns `state: ready`, the exact source revision
-and a frozen environment fingerprint. Open the printed URL and try the change.
-The preview expires after 72 hours.
-
-The example configuration names `ranker-a` as the default with the API's standard
-field boosts. Supply another JSON file to freeze other named variants. Use
-`lab/delivery/configurations/ranker-baseline.json` for a baseline preview with
-the same boosts. Both previews can reuse a compatible frozen index.
-
-Preview creation verifies the build receipt, image, bundle and frozen inputs.
-It does not publish comparison evidence or pass the relevance gate. If the build
-failed or its index contract is incompatible, fix that before retrying. Follow
-the [evaluation runbook](evaluation-runbook.md) to compare the two APIs.
-Promotion still requires a separate successful build of the merged source.
-
-## Evaluate and propose deployment
-
-![Reviewed immutable release deployment across three local targets](diagrams/rendered/release-promotion.png)
-
-Integration, staging and simulated production are local namespaces sharing one cluster. They are not separate failure domains or performance-isolated environments.
-
-Use PowerShell from the repository root with installed `lab-control`. Commands execute in the authoritative Pod, which owns checkout and evidence files.
-
-```powershell
-$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-$kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py status
-$candidateRun = Read-Host 'Successful merged-source push build run ID from delivery-source Actions'
-$dataset = 'esci-gb-v1'
-$recipe = Read-Host 'Compatible retained index recipe SHA-256'
-$intent = 'preserve-results'
-```
-
-Get the recipe from the retained environment/deployment definition; [index recovery](index-recovery.md) explains its identity. Check `contracts/index.json` in the release for compatibility. Use `ranking-change` only when changed results are intentional, in evaluation and proposal alike. A PR number or PR-head build cannot replace the merged-source run.
-
-For a **new** demonstration without changed targets, initialise them once:
-
-```powershell
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py bootstrap --run $candidateRun --dataset $dataset --recipe $recipe
-```
-
-Do not use bootstrap to overwrite an already promoted target.
-
-```powershell
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py evaluate-target integration --run $candidateRun --dataset $dataset --recipe $recipe --intent $intent
-$evidence = Read-Host 'reference_file printed by evaluate-target (path inside the Pod)'
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py promote integration --run $candidateRun --dataset $dataset --recipe $recipe --evidence $evidence --intent $intent
-```
-
-Evaluation captures the current target as baseline and the proposed release as candidate. It uses the same selected frozen query/label set and a sequential paired Gatling workload. Failed evaluations retain evidence but cannot pass validation.
-
-| Target | Default performance profile | Requirement |
+| Target | Gatling profile | Required evidence |
 | --- | --- | --- |
-| Integration / staging | `probe` | Short wiring check; `smoke` provides five minutes of measured normal load |
-| Simulated production | `production-load` | One minute of warmup, five minutes at 10 requests/second, then fifteen minutes at 20 requests/second, for each release |
+| Integration / staging | `probe` | Short wiring/regression check |
+| Simulated production | `production-load` | One minute warmup, five minutes at 10 requests/s and fifteen minutes at 20 requests/s, for each release |
 
-For production, pass `--profile production-load` to `evaluate-target`; omitting it
-selects the same profile. `probe` and `smoke` cannot satisfy its promotion gate.
-The paired runs take at least 42 minutes plus setup and report collection. They
-run against temporary release previews, not the deployed production service.
+Production tests run sequentially against temporary baseline/candidate previews,
+not the deployed production service. They take at least 42 minutes plus setup.
+Both runs must complete every scheduled arrival and satisfy the pinned
+[workload](../lab/traffic/production-load-v1.json). Normal-load budgets are
+p95 ≤250 ms and p99 ≤500 ms; peak budgets are p95 ≤400 ms and p99 ≤800 ms.
+Both phases require fewer than 1% failed requests. These are lab thresholds,
+not production capacity claims. Probes, smoke checks and stress tests cannot
+replace this gate. Validation checks the load evidence again before merge.
 
-Both runs must complete every scheduled arrival, satisfy arrival validity and
-use the pinned [production workload](../lab/traffic/production-load-v1.json).
-Normal-load budgets are p95 ≤250 ms and p99 ≤500 ms; peak budgets are p95 ≤400 ms
-and p99 ≤800 ms. Both phases require fewer than 1% failed requests. These are
-local lab targets, not a claim of production capacity. Stress tests remain
-separate from promotion.
+## Roll back
 
-Production proposal validation checks this policy again before merge. If an
-earlier report used `probe` or a different recipe, run a fresh production
-evaluation and create a proposal with its new `reference_file`. Production
-rollback proposals also require the full profile in the current → previous
-direction.
+1. Find the previous verified fingerprint under
+   `delivery-state/history/<target>/`. Its retained definition pins the old
+   image, configuration, inputs and index recipe.
+2. Run **Lab delivery** with `propose-rollback`, the target, fingerprint and intent.
+   The coordinator evaluates **current → previous** and creates a new PR.
+   Reversing an old report is insufficient. Production rollback uses the full
+   `production-load` profile too.
+3. Review, approve and run `merge-reviewed` as for promotion. A historical schema
+   uses its retained index recipe; it cannot silently use the latest mapping.
 
-For another published suite, pass the same `--query-manifest` and `--judgement-manifest` hashes to evaluation and proposal. Blank values select pinned defaults. Reports must match both deployment fingerprints, inputs and intent and be at most three days old. Re-evaluate if any of those change.
+## Artefacts and administration
 
-## Review, merge and verify
-
-| State | Meaning / next action |
+| Repository or store | Contents |
 | --- | --- |
-| Proposed | Inspect the returned `delivery-state` PR and its frozen evidence |
-| Validated | `delivery/validation` passes for exact head/current main |
-| Approved | Permitted reviewer approves that head |
-| Deploying | Reviewed state is merged; Argo reconciles it |
-| Verified | Rollout, image/index fingerprint and public API check agree |
+| `delivery-source` | API/UI, tests, ranking settings, index contract and Actions workflows |
+| `delivery-state` | Reviewed target definitions, proposals and deployment history |
+| Nexus | Digest-pinned images, deterministic bundles, build receipts and signed merge evidence |
+| `search-spike` / `environment-state` | Separate leased experiment workflow in the control UI |
 
-After human approval:
+Operators bootstrap empty targets, install the coordinator, manage credentials
+and recover failed resources. See [control runtime](control-runtime.md) and
+[activation](plans/walkthrough-activation.md). Previews expire after 72 hours;
+stable targets do not. Removing a preview retains its source and frozen evidence.
 
-Source PRs in this lab require passing checks but default to zero approvals,
-so an engineer can merge their own demonstration change. Setup preserves any
-stricter existing requirement. Deployment proposals still require a separate
-reviewer to approve their exact commit.
-
-The command waits up to 30 seconds for an active delivery operation, then prints
-a readable busy message. Retry after that operation finishes. If the PR is
-already merged, the command verifies its declared deployment when it is still
-the target's current deployment. It never merges again or reapplies an older
-deployment after the target has moved.
-
-```powershell
-$promotionPr = Read-Host 'Approved delivery-state PR number'
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py merge-reviewed $promotionPr
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py verify integration
-```
-
-A moved desired-state main invalidates the proposal; recreate it. Failed verification is not success merely because merge completed. Inspect coordinator/Argo errors and retry verification after fixing the deployment.
-
-Once integration verifies, repeat target evaluation/proposal for `staging`, then
-`production`, using the **same** release, dataset and recipe. Use the required
-`production-load` profile for production. Reuse evidence only when that target's
-baseline matches, its profile satisfies the target policy and evidence remains
-fresh. Promotion performs no image rebuild.
-
-## Roll back a target
-
-Select the previous verified fingerprint from `delivery-state/history/<target>/`. Rollback needs fresh evidence in the direction **current → previous**; reversing an old report is insufficient.
-
-```powershell
-$previous = Read-Host 'Previous verified production fingerprint from retained history'
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py evaluate-target production --fingerprint $previous --intent $intent
-$reverseEvidence = Read-Host 'reference_file from this rollback evaluation'
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py rollback production --fingerprint $previous --evidence $reverseEvidence --intent $intent
-```
-
-Review and merge the resulting PR by the same procedure. Its complete retained definition supplies the old image, configuration, inputs and recipe. A schema change creates/restores that recipe's index; it never substitutes the latest mapping.
-
-## Operate and migrate
-
-- Inspect the automatic watcher with `kubectl --kubeconfig $kubeconfig -n lab-control logs deployment/lab-control -c delivery-watcher --tail=30`.
-- A preview has a 72-hour lease; stable targets do not. Use `preview`, `delete-preview` and `expire-previews` via the Pod CLI. Source, reports, images and frozen indices survive preview removal.
-- Open a preview or stable target at `https://<namespace>.preview.relevance.test:34443/` after the [one-off workstation setup](preview-access.md). No port forward is needed.
-- A concurrent operation may require retry: the local coordinator has one writer. Export [control state](control-runtime.md#back-up-and-restore-control-state) and back up retained services separately.
-- Historical target NetworkPolicies may need installer-owned ingress reconciliation after cluster restoration. Follow the control update procedure; changing chart source does not rewrite an unchanged frozen bundle.
-- The host-only `demonstrate-merge` harness uses a separate, explicitly simulated reviewer. It is not a human release decision and is not part of ordinary promotion.
-
-GHES migration retains standard Actions syntax, build scripts, Nexus artefacts and frozen contracts. Replace provider-specific repository/run/PR/status calls and configure equivalent branch protection. Validate runner labels, check names, credentials and trusted-target behaviour on the actual GHES installation. Local Gitea execution does not prove GHES compatibility.
-
-[Dated delivery evidence](research/evidence/promotion-deployment.md) retains negative cases and measurements. [The delivery plan](plans/reference-ci-cd.md) owns constraints; [native/cloud validation](plans/native-cloud-validation.md) records remaining external checks.
+For GitHub Enterprise, retain the shared Actions syntax and frozen contracts,
+replace provider-specific repository/run/PR/status calls, and configure runner
+credentials and protection. Local Gitea execution does not establish GHES compatibility.
+See [dated delivery evidence](research/evidence/promotion-deployment.md) and
+[remaining native/cloud checks](plans/native-cloud-validation.md).

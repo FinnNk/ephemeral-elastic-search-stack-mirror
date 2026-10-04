@@ -11,7 +11,7 @@ token and applies its group permissions.
 | `lab-readers` | View environments, search and inspect retained reports |
 | `lab-admins` | Create, compare, renew and delete environments |
 | Neither group | Access denied |
-| Automation | Existing scoped service credentials; separate from browser sign-in |
+| Actions delivery | Verified `lab-delivery-actions` OIDC client; delivery operations only |
 
 The API checks the issuer, audience, expiry, signature and group claims. It
 retains the immutable subject alongside the display name in the authenticated
@@ -50,7 +50,10 @@ can use local Gitea sessions; the installed OIDC API rejects those cookies.
 
 Gitea retains its own repository permissions after account linking. Control
 permissions come from Keycloak groups. A role in one product does not grant a
-role in another. The delivery watcher does not approve or merge promotion PRs.
+role in another. The periodic watcher does not approve or automatically merge promotion PRs.
+A submitted `merge-reviewed` operation uses the same coordinator to check the
+existing separate approval, merge and verify deployment. The Actions credential
+cannot manufacture an approval or administer other control resources.
 
 Recorded gate exceptions still use the existing verified Gitea approval CLI.
 Binding new decisions to an OIDC issuer and subject is the next integration

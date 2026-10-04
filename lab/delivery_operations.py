@@ -14,6 +14,9 @@ FIELDS = {
     'compare': {'baseline_run', 'candidate_run', 'dataset', 'recipe', 'pr', 'source_sha', 'baseline_sha'},
     'promotion': {'target', 'run', 'dataset', 'recipe', 'intent'},
     'gate-check': {'pr', 'source_sha'},
+    'merge-reviewed': {'pr'},
+    'verify': {'target'},
+    'rollback': {'target', 'fingerprint', 'intent'},
 }
 PUBLIC = 'https://control.localhost:34443'
 
@@ -25,24 +28,27 @@ def stamp():
 def validate(payload):
     """Accept named operations, never arbitrary CLI arguments or filesystem paths."""
     if not isinstance(payload, dict) or payload.get('kind') not in FIELDS:
-        raise ValueError('Choose preview, compare, promotion or gate-check.')
+        raise ValueError('Choose a named delivery operation.')
     kind = payload['kind']
     if set(payload) - (FIELDS[kind] | {'kind'}):
         raise ValueError('Unknown delivery operation field.')
     required = {'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
                 else {'baseline_run', 'candidate_run'},
-                'promotion': {'target', 'run', 'intent'}, 'gate-check': {'pr', 'source_sha'}}[kind]
+                'promotion': {'target', 'run', 'intent'}, 'gate-check': {'pr', 'source_sha'},
+                'merge-reviewed': {'pr'}, 'verify': {'target'},
+                'rollback': {'target', 'fingerprint', 'intent'}}[kind]
     if not required <= set(payload):
         raise ValueError('Required delivery operation fields are missing.')
     for field in ('run', 'baseline_run', 'candidate_run', 'pr'):
         if field in payload and (type(payload[field]) is not int or payload[field] < 1):
             raise ValueError('Build and PR numbers must be positive integers.')
-    if kind == 'promotion' and (payload['target'] not in ('integration', 'staging', 'production')
-            or payload['intent'] not in ('ranking-change', 'preserve-results')):
+    if 'target' in payload and payload['target'] not in ('integration', 'staging', 'production'):
+        raise ValueError('Delivery target is invalid.')
+    if 'intent' in payload and payload['intent'] not in ('ranking-change', 'preserve-results'):
         raise ValueError('Promotion target or intent is invalid.')
     if 'dataset' in payload and not re.fullmatch(r'[a-z][a-z0-9-]{0,63}', str(payload['dataset'])):
         raise ValueError('Dataset name is invalid.')
-    for field, size in (('recipe', 64), ('source_sha', 40), ('baseline_sha', 40)):
+    for field, size in (('recipe', 64), ('fingerprint', 64), ('source_sha', 40), ('baseline_sha', 40)):
         if field in payload and not re.fullmatch('[0-9a-f]{' + str(size) + '}', str(payload[field])):
             raise ValueError('Frozen source or recipe identity is invalid.')
     if kind == 'compare' and 'pr' in payload and not {'source_sha', 'baseline_sha'} <= set(payload):
@@ -97,7 +103,7 @@ class Operations:
             else:
                 db.execute('INSERT INTO operations VALUES (?,?,?,?,?,?,?,?,?,?)',
                            (identifier, identity['username'], json.dumps(identity), encoded,
-                            'accepted' if payload.get('pr') else 'queued',
+                            'accepted' if payload.get('source_sha') else 'queued',
                             'Waiting for the delivery coordinator', None, None, stamp(), stamp()))
         return self.get(identifier)
 
@@ -154,6 +160,21 @@ def execute_next():
         elif kind == 'compare':
             from delivery_source_comparison import compare
             result = compare(request, progress, identifier)
+        elif kind == 'merge-reviewed':
+            progress('Checking the exact approval, merging and verifying deployment')
+            result = execute(parser().parse_args(['merge-reviewed', str(request['pr'])]))
+        elif kind == 'verify':
+            progress('Verifying the currently declared deployment')
+            result = execute(parser().parse_args(['verify', request['target']]))
+        elif kind == 'rollback':
+            progress('Evaluating the retained deployment against ' + request['target'])
+            evidence = execute(parser().parse_args(['evaluate-target', request['target'],
+                '--fingerprint', request['fingerprint'], '--intent', request['intent']]))
+            progress('Creating the reviewed rollback proposal')
+            result = execute(parser().parse_args(['rollback', request['target'],
+                '--fingerprint', request['fingerprint'], '--intent', request['intent'],
+                '--evidence', evidence['reference_file']]))
+            result['url'] = 'https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/' + str(result['pr'])
         else:
             target = request['target']
             progress('Evaluating the candidate against ' + target)
@@ -176,7 +197,7 @@ def execute_next():
         import traceback
         traceback.print_exc()
         store.update(identifier, state='failed', progress='Operation failed', error=type(error).__name__)
-        if request.get('pr'):
+        if request.get('source_sha'):
             from delivery_source_comparison import status
             status(request['source_sha'], 'failure', 'Comparison failed: ' + type(error).__name__, identifier)
     return store.get(identifier)

@@ -83,11 +83,48 @@ class DeliveryOperationTests(unittest.TestCase):
                         request.urlopen(raw)
                     self.assertEqual(failure.exception.code, 400)
             finally:
-                server.shutdown(); server.server_close(); thread.join(2)
+                server.shutdown()
+                server.server_close()
+                thread.join(2)
 
     def test_tls_required(self):
         with self.assertRaises(ValueError):
             Client('http://control.test', 'https://identity.test')
+
+    def test_deployment_commands_do_not_enter_source_status_queue(self):
+        for payload in ({'kind': 'merge-reviewed', 'pr': 15},
+                        {'kind': 'verify', 'target': 'staging'},
+                        {'kind': 'rollback', 'target': 'production', 'fingerprint': 'a'*64,
+                         'intent': 'ranking-change'}):
+            with self.subTest(payload=payload):
+                row = self.store.submit(payload, self.identity, payload['kind'])
+                self.assertEqual(row['state'], 'queued')
+
+    def test_remote_merge_uses_protected_merge_and_records_failure_without_source_status(self):
+        row = self.store.submit({'kind': 'merge-reviewed', 'pr': 15}, self.identity, 'merge')
+        with patch('delivery_operations.Operations', return_value=self.store), \
+                patch('delivery_cli.execute', side_effect=ValueError('Approval missing')) as execute, \
+                patch('delivery_source_comparison.status') as status, patch('traceback.print_exc'):
+            self.assertEqual(execute_next()['state'], 'failed')
+        self.assertEqual(execute.call_args.args[0].command, 'merge-reviewed')
+        self.assertEqual(execute.call_args.args[0].pr, 15)
+        status.assert_not_called()
+        self.assertEqual(self.store.get(row['id'])['state'], 'failed')
+
+    def test_rollback_evaluates_before_proposing_and_cannot_receive_evidence_paths(self):
+        payload = {'kind': 'rollback', 'target': 'production', 'fingerprint': 'a'*64,
+                   'intent': 'ranking-change'}
+        self.store.submit(payload, self.identity, 'rollback')
+        with patch('delivery_operations.Operations', return_value=self.store), \
+                patch('delivery_cli.execute', side_effect=[{'reference_file': '/state/evidence.json'},
+                                                          {'pr': 16}]) as execute:
+            self.assertEqual(execute_next()['state'], 'complete')
+        commands = [call.args[0] for call in execute.call_args_list]
+        self.assertEqual([value.command for value in commands], ['evaluate-target', 'rollback'])
+        self.assertEqual(commands[0].fingerprint, 'a'*64)
+        self.assertEqual(commands[1].evidence.as_posix(), '/state/evidence.json')
+        with self.assertRaises(ValueError):
+            validate({**payload, 'evidence': '/arbitrary/file'})
 
     def test_waiting_build_releases_queue_and_terminal_failure_is_recorded(self):
         payload = {'kind': 'compare', 'pr': 1, 'source_sha': 'a'*40, 'baseline_sha': 'b'*40}

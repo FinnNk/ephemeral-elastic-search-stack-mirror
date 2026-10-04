@@ -9,7 +9,7 @@ Use it to compare ranking changes, check that a change preserves results, or mea
 | What you want to do | Guide |
 | --- | --- |
 | Understand the system | [Design](docs/prototype-design.md) and [diagram gallery](docs/diagrams/index.html) |
-| Connect to an existing lab | [Workstation access and certificate trust](docs/workstation-access.md), then [lab workflows](lab/README.md) |
+| Connect to an existing lab | [Workstation access](docs/workstation-access.md), then [developer delivery](docs/delivery.md) |
 | Develop the Search API | [Source README](lab/delivery/bootstrap/README.md), also published in the lab's `delivery-source` repository |
 | Compare variants and interpret the decision | [Variant evaluation](docs/variant-evaluation.md) |
 | Build, promote or roll back a release | [Delivery](docs/delivery.md) |

@@ -121,7 +121,8 @@ def parser():
     root.add_argument('--ca', default=os.environ.get('LAB_CA_BUNDLE'))
     commands = root.add_subparsers(dest='command', required=True)
     commands.add_parser('login')
-    for name in ('preview', 'compare', 'propose-promotion', 'source-compare', 'gate-check'):
+    for name in ('preview', 'compare', 'propose-promotion', 'source-compare', 'gate-check',
+                 'merge-reviewed', 'verify', 'propose-rollback'):
         cmd = commands.add_parser(name)
         cmd.add_argument('--key', help='Stable submission key for retrying this operation')
         cmd.add_argument('--no-wait', action='store_true')
@@ -135,6 +136,13 @@ def parser():
         if name == 'propose-promotion':
             cmd.add_argument('--target', choices=('integration', 'staging', 'production'), required=True)
             cmd.add_argument('--intent', choices=('ranking-change', 'preserve-results'), required=True)
+        if name in ('verify', 'propose-rollback'):
+            cmd.add_argument('--target', choices=('integration', 'staging', 'production'), required=True)
+        if name == 'propose-rollback':
+            cmd.add_argument('--fingerprint', required=True)
+            cmd.add_argument('--intent', choices=('ranking-change', 'preserve-results'), required=True)
+        if name == 'merge-reviewed':
+            cmd.add_argument('--pr', type=int, required=True)
         if name in ('source-compare', 'gate-check'):
             cmd.add_argument('--pr', type=int, required=True)
             cmd.add_argument('--source-sha', required=True)
@@ -151,8 +159,9 @@ def main():
     fields = vars(args)
     payload = {key: value for key, value in fields.items()
                if key not in ('command', 'server', 'issuer', 'ca', 'key', 'no_wait') and value is not None}
-    payload['kind'] = {'propose-promotion': 'promotion', 'source-compare': 'compare'}.get(args.command, args.command)
-    if args.command == 'gate-check':
+    payload['kind'] = {'propose-promotion': 'promotion', 'source-compare': 'compare',
+                       'propose-rollback': 'rollback'}.get(args.command, args.command)
+    if args.command in ('gate-check', 'merge-reviewed', 'verify', 'propose-rollback'):
         payload.pop('dataset', None)
         payload.pop('recipe', None)
     print(json.dumps(client.submit(payload, args.key, not args.no_wait), indent=2))

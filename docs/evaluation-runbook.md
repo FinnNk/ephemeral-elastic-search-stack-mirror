@@ -1,6 +1,9 @@
 # Capture, score and publish variant evidence
 
-Use this operator procedure to compare deployed Search API variants and supply evidence for a source PR. The engineer declares variants and intent in `gate/selection.json`; the operator captures the exact built images; the reviewer decides whether to accept the change.
+Use this operator procedure for standalone studies, recovery and explicit evidence
+publication. Routine source PR comparisons run through the coordinator and
+[Actions](remote-delivery.md); engineers do not need these commands or publisher
+credentials. Both paths retain exact images, frozen inputs and signed evidence.
 
 ## Prepare inputs
 
@@ -22,7 +25,7 @@ New-Item -ItemType Directory -Path $runDir | Out-Null
 | `products.jsonl` or `products.jsonl.gz`, `queries.jsonl`, `judgements.jsonl` | Selected producer's retained pack; [publication procedure](data-evaluation-contracts.md#generate-and-publish-an-input-pack) |
 | `catalogue.json`, `query-suite.json`, `judgement-set.json` | The matching publication output, not a different release's manifests |
 | Variant set | Lab operator's frozen deployment selections; fields below |
-| Metric specification | `evaluation/specs/proxy-v1.json` or a reviewed replacement |
+| Metric specification | `evaluation/specs/proxy-v2.json` or a reviewed replacement |
 | Source commit, run and attempt | Exact successful source PR build and its Nexus receipt |
 
 A variant-set file has `kind: search-variant-set`, `schema_version: 1`, `default_variant`, `baseline_variant` and a `variants` object. Each named entry has `environment`, `environment_fingerprint`, `configuration_sha256` and `selection` (`default` or `explicit`). Obtain the fingerprint from its retained environment definition and configuration digest from that deployed API's echoed response. The names must match the API's variant IDs, including when two releases use separate deployments. Do not fill these fields with illustrative hashes.
@@ -35,7 +38,7 @@ Prepare configurations in the environment-state definition and let Argo reconcil
 
 ```powershell
 python evaluation/capture.py --variant-set $variantSet --queries "$inputDir/queries.jsonl" --query-manifest "$manifestDir/query-suite.json" --catalogue-manifest "$manifestDir/catalogue.json" --output "$runDir/observations.json"
-python evaluation/offline.py --observations "$runDir/observations.json" --judgements "$inputDir/judgements.jsonl" --specification evaluation/specs/proxy-v1.json --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --judgement-manifest "$manifestDir/judgement-set.json" --output "$runDir/evaluation.json"
+python evaluation/offline.py --observations "$runDir/observations.json" --judgements "$inputDir/judgements.jsonl" --specification evaluation/specs/proxy-v2.json --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --judgement-manifest "$manifestDir/judgement-set.json" --output "$runDir/evaluation.json"
 ```
 
 Capture makes fresh API requests with eight query workers. Each worker visits
@@ -91,7 +94,9 @@ The command prints the retained executed-notebook reference. This saved analysis
    ```
 
    The publisher verifies the exact receipt and reads back the stored bytes. A conflict means existing frozen evidence differs; investigate instead of replacing it. Signing confirms provenance, not relevance quality.
-4. Rerun **Offline relevance gate** on the unchanged PR commit. A new commit requires its own build and evidence. A later build attempt can have another image; the attested receipt identifies the evaluated one.
+4. Run `python ci/lab_delivery.py gate-check --pr PR_NUMBER --source-sha SOURCE_SHA`
+   from `delivery-source`, or choose `gate-check` in **Lab delivery**.
+   Use the unchanged PR's number and exact commit. A new commit requires its own build and evidence. A later build attempt can have another image; the attested receipt identifies the evaluated one.
 
 ## Human exceptions
 
@@ -99,7 +104,7 @@ The temporary ESCI [demo policy](judgement-resolution.md#temporary-esci-demo-lab
 
 
 Only a `decision_required` result is eligible for a bounded exception. The
-normal coverage requirement remains 80%. The prepared checker and policy also
+normal coverage requirement remains 80%. The checker and policy also
 allow a low-coverage decision for `preserve-results` when all these conditions hold:
 
 - Every captured query returns identical ordered product IDs and total counts.
@@ -110,9 +115,8 @@ allow a low-coverage decision for `preserve-results` when all these conditions h
 This checks the saved results at the capture depth, not the whole catalogue.
 A human administrator must approve the disclosed coverage gap. Low-coverage
 `ranking-change` reports, changed results and unqualified labels outside the authorised lab demo policy stay blocked.
-The new fallback is prepared for review; existing CI needs the reviewed source
-copy and protected policy/code pins before it can use it. No approval or passing
-gate is created by preparing the policy.
+The protected coordinator must use the accepted policy and code pins. Declaring
+`preserve-results` does not approve the disclosed coverage gap.
 
 Obtain the exact PR's `gate/selection.json` from its source revision and save it
 locally. Use the trusted policy matching the protected gate pin. The human
@@ -131,7 +135,7 @@ Remove-Item Env:NEXUS_PASSWORD
 
 The approval tool prompts for the password, verifies administrator status and
 refuses other result states. The receipt binds report, policy, selection, commit,
-variant, reason and reviewer. Rerun the gate after publication.
+variant, reason and reviewer. Submit `gate-check` after publication.
 
 The verdict retains actual baseline/candidate coverage and required coverage,
 with `coverage_exception: true` for the narrow case above. Hard blocks and
@@ -144,7 +148,7 @@ For installed producer/evaluator images and a local Blob Storage emulator connec
 
 ```powershell
 python evaluation/retain.py --file "$runDir/observations.json" --kind observation-set --output "$runDir/observations.ref.json"
-python evaluation/retain.py --file evaluation/specs/proxy-v1.json --kind evaluation-specification --output "$runDir/spec.ref.json"
+python evaluation/retain.py --file evaluation/specs/proxy-v2.json --kind evaluation-specification --output "$runDir/spec.ref.json"
 python evaluation/run_job.py --observation-reference "$runDir/observations.ref.json" --specification-reference "$runDir/spec.ref.json" --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --judgement-manifest "$manifestDir/judgement-set.json"
 ```
 

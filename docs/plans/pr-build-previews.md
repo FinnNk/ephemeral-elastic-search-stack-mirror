@@ -54,7 +54,7 @@ temporary demo-label policy.
 ## References
 
 - [Source PR #26](https://gitea.localhost:34443/elastic-agent/delivery-source/pulls/26)
-- [Preview procedure](../delivery.md#open-a-source-pr-preview)
+- [Preview procedure](../delivery.md#preview-or-compare-manually)
 - [Evaluation runbook](../evaluation-runbook.md)
 - [Walkthrough and collected feedback](developer-walkthrough.md)
 - Implementation: `lab/delivery_cli.py`, `lab/delivery_runtime.py`

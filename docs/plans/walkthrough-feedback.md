@@ -26,7 +26,7 @@ report publication. Publish the changes as separate review batches.
 - Do not replace the coordinator or run competing load tests while the current
   production evaluation runs. Review branches are not installed automatically.
 
-## Detailed next batch: guidance and evidence
+## Recorded batch 1 scope
 
 Add the rewrite test as a snippet, with placement comments. Review the Search API's
 public functions and the disconnected demo's entry points. Add similarity values
@@ -88,3 +88,10 @@ This confirms the installed delivery path, not the uninstalled feedback changes.
 - `lab/delivery_cli.py`, `lab/delivery_promote.py`, `lab/delivery_release.py`
 - `evaluation/offline.py`, `lab/variant_gate.py`
 - `lab/delivery/bootstrap/`, `lab/search-app/`
+
+## Current follow-up
+
+[Complete Actions delivery and documentation](developer-delivery-docs.md) closes
+the remaining developer kubectl steps. The next executable batch is
+[activation](walkthrough-activation.md), after review; earlier “next” links above
+record the sequence of completed review batches.

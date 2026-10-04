@@ -6,10 +6,18 @@ on:
         description: Operation
         required: true
         type: choice
-        options: [preview, compare, propose-promotion]
+        options: [preview, compare, propose-promotion, merge-reviewed, verify, propose-rollback, gate-check]
       run:
         description: Successful candidate build run
-        required: true
+        type: string
+      pr:
+        description: Desired-state PR (merge-reviewed) or source PR (gate-check)
+        type: string
+      source_sha:
+        description: Exact source commit (gate-check only)
+        type: string
+      fingerprint:
+        description: Previous verified deployment fingerprint (propose-rollback only)
         type: string
       baseline_run:
         description: Successful baseline run (compare only)
@@ -57,6 +65,9 @@ jobs:
           TARGET: ${{ inputs.target }}
           INTENT: ${{ inputs.intent }}
           DATASET: ${{ inputs.dataset }}
+          DELIVERY_PR: ${{ inputs.pr }}
+          SOURCE_COMMIT: ${{ inputs.source_sha }}
+          FINGERPRINT: ${{ inputs.fingerprint }}
           SUBMISSION_KEY: manual-${{ github.run_id }}
           LAB_DELIVERY_URL: ${{ vars.LAB_DELIVERY_URL }}
           LAB_OIDC_ISSUER: ${{ vars.LAB_OIDC_ISSUER }}
@@ -70,12 +81,17 @@ jobs:
           docker run --rm -v "$PWD/source:/trusted:ro" -v /etc/lab-ca:/etc/lab-ca:ro \
             --add-host "control.localhost:$LAB_OIDC_EDGE_IP" --add-host "identity.localhost:$LAB_OIDC_EDGE_IP" \
             -e OPERATION -e BUILD_RUN -e BASELINE_RUN -e TARGET -e INTENT -e DATASET -e SUBMISSION_KEY \
+            -e DELIVERY_PR -e SOURCE_COMMIT -e FINGERPRINT \
             -e LAB_DELIVERY_URL -e LAB_OIDC_ISSUER -e LAB_DELIVERY_CLIENT_SECRET -e LAB_CA_BUNDLE=/etc/lab-ca/root.pem \
             "$PYTHON_IMAGE" sh -ec '
               case "$OPERATION" in
                 preview) set -- preview --run "$BUILD_RUN" ;;
                 compare) set -- compare --baseline-run "$BASELINE_RUN" --candidate-run "$BUILD_RUN" ;;
                 propose-promotion) set -- propose-promotion --target "$TARGET" --run "$BUILD_RUN" --intent "$INTENT" ;;
+                merge-reviewed) set -- merge-reviewed --pr "$DELIVERY_PR" ;;
+                verify) set -- verify --target "$TARGET" ;;
+                propose-rollback) set -- propose-rollback --target "$TARGET" --fingerprint "$FINGERPRINT" --intent "$INTENT" ;;
+                gate-check) set -- gate-check --pr "$DELIVERY_PR" --source-sha "$SOURCE_COMMIT" ;;
                 *) echo "Unknown operation" >&2; exit 1 ;;
               esac
               python /trusted/ci/lab_delivery.py "$@" --dataset "$DATASET" --key "$SUBMISSION_KEY" --no-wait'

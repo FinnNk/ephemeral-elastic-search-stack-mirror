@@ -48,7 +48,10 @@ $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 python lab/setup_relevance_gate.py
 ```
 
-Protection requires both checks, review and an up-to-date branch; direct pushes and administrator merge overrides are disabled. Existing additional checks are retained. Update old source branches from main and rerun their checks if they still contain the previous combined workflow.
+Protection requires the release check, submission workflow, coordinator verdict
+and an up-to-date branch. New lab source repositories default to zero required
+approvals; setup preserves stricter existing rules. Deployment proposals require
+a separate reviewer. For source main, direct pushes and administrator merge overrides are disabled. Existing additional checks are retained. Update old source branches from main and rerun their checks if they still contain the previous combined workflow.
 
 For GitHub Enterprise, require the corresponding build and `pull_request_target` relevance checks through branch protection or a ruleset. Keep the trusted target protected and the same-repository contributor restriction. Validate the check names on that installation rather than copying Gitea's status-context strings.
 

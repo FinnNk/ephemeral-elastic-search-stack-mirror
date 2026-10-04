@@ -20,7 +20,7 @@ release unchanged unless a separate deployment proposal is approved.
    the new remote client and configuration files, so its fresh exact-image
    evidence used the existing operator publication procedure. See the
    [verification record](../research/evidence/walkthrough-feedback-verification.md).
-2. After acceptance, merge the source/template PR and lab review stack. Build
+2. After acceptance, merge the updated source/template PR and the lab review stack. Build
    and install the accepted control image using `lab/install_control_oidc.py
    --image <digest-pinned-image>`. Check the existing deployment and PVC first.
 3. Run `lab/setup_delivery_actions.py` and `lab/setup_relevance_gate.py` from
@@ -35,6 +35,9 @@ release unchanged unless a separate deployment proposal is approved.
    build, automatically created previews, public report links, standard/extra
    metrics, combined weighting, similarity values and required backend status.
 6. Submit a preview through the manual workflow and the workstation client.
+   Exercise `merge-reviewed`, `verify`, `propose-rollback` and `gate-check`
+   through Actions too. A merge must reject missing or stale separate approval;
+   a rollback must create fresh direction-specific evidence before its PR.
    Check device sign-in, machine scope, TLS verification, progress and retry
    safety. A completed submission workflow must not claim evaluation success.
 7. Exercise a required extra set with reviewed labels and a deliberate failing
@@ -50,7 +53,7 @@ release unchanged unless a separate deployment proposal is approved.
 | Credentials | Source Actions receives its scoped delivery client, not coordinator signing keys |
 | Remote actions | Public URLs and durable progress; duplicate submissions do not repeat promotion |
 | Pacing | Eight workers, per-API diagnostics and visible terminal failures; Gatling unchanged |
-| Delivery | Promotion proposes a reviewed desired-state PR; it cannot bypass approval |
+| Delivery | Actions proposes, merges after separate exact-head approval and verifies; rollback retains fresh evidence. No developer kubectl step |
 | Gitea | Supported allowlist section and unchanged application version |
 
 Retain live receipts separately from isolated software tests. Review the current

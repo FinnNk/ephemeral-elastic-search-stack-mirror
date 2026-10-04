@@ -52,7 +52,7 @@ Renewing a server certificate under the same CA does not require new URLs. Repla
 
 | Connection | Transport |
 | --- | --- |
-| Browser ingress | TLS to Traefik; control's canonical redirect remains an exception |
+| Browser ingress | TLS to Traefik; canonical control address is `https://control.localhost:34443` |
 | Control, Argo CD and runners to Gitea | CA-verified internal HTTPS |
 | Host bootstrap to Gitea NodePort | Loopback HTTP |
 | Gitea/Nexus OCI push and pull | HTTP with explicit lab insecure-registry configuration |

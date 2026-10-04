@@ -5,6 +5,10 @@ or the **Lab delivery** Actions workflow. The coordinator keeps the operation
 running if you close your terminal. A promotion still needs a reviewed
 `delivery-state` PR before Argo CD deploys it.
 
+This guide describes the implementation awaiting activation. An existing lab needs its
+matching coordinator and source workflow installed; check [current status](plans/roadmap.md).
+Routine developer operations need no kubeconfig or cluster access.
+
 ## Sign in from a workstation
 
 Use Python 3.13 from your `delivery-source` checkout. Complete the
@@ -23,16 +27,21 @@ long operations. Reader accounts can inspect results but cannot submit commands.
 ## Choose an operation
 
 Use the successful release run's numeric ID from `/actions/runs/<id>`.
+In the examples, replace `BUILD_RUN`, `BASELINE_RUN` and `PR_NUMBER` with those
+values. `PR_NUMBER` for deployment is from `delivery-state`, not `delivery-source`.
 The commands below work in PowerShell, Bash and Zsh.
 
 | Task | Command |
 | --- | --- |
-| Preview build 108 | `python ci/lab_delivery.py preview --run 108` |
-| Compare builds 103 and 108 | `python ci/lab_delivery.py compare --baseline-run 103 --candidate-run 108` |
-| Evaluate and propose staging | `python ci/lab_delivery.py propose-promotion --target staging --run 108 --intent ranking-change` |
+| Preview | `python ci/lab_delivery.py preview --run BUILD_RUN` |
+| Compare | `python ci/lab_delivery.py compare --baseline-run BASELINE_RUN --candidate-run BUILD_RUN` |
+| Propose staging | `python ci/lab_delivery.py propose-promotion --target staging --run BUILD_RUN --intent ranking-change` |
+| Merge an approved deployment | `python ci/lab_delivery.py merge-reviewed --pr PR_NUMBER` |
+| Recheck staging | `python ci/lab_delivery.py verify --target staging` |
+| Propose rollback | `python ci/lab_delivery.py propose-rollback --target staging --fingerprint PREVIOUS_FINGERPRINT --intent ranking-change` |
 
-The build IDs are examples from the walkthrough. Choose current builds for your
-change. Comparisons require the source's `gate/evaluation.json` and named files
+Choose current builds for your change. `PREVIOUS_FINGERPRINT` comes from the
+verified deployment retained in `delivery-state/history/<target>/`. Comparisons require the source's `gate/evaluation.json` and named files
 under `configurations/`. Baseline settings come from the baseline revision;
 candidate settings and additional queries come from the candidate revision.
 
@@ -51,9 +60,12 @@ Its success means **submitted**, not evaluated or deployed. Follow the operation
 to its report or promotion PR. Submission releases the lab's single runner so
 other builds can proceed during a long evaluation.
 
-Production proposals run the full Gatling profile. Preview and comparison
-commands do not approve releases. Merge an approved deployment through the
-existing [promotion procedure](delivery.md).
+The workflow also offers `merge-reviewed`, `verify`, `propose-rollback` and
+`gate-check`. Supply the relevant PR, target, source commit or previous fingerprint;
+unused build fields can stay blank. Production proposals and rollbacks run the
+full Gatling profile. `merge-reviewed` requires an existing, exact-head approval
+from a permitted separate reviewer. It cannot create that approval.
+See the [promotion procedure](delivery.md#promote-a-merged-release).
 
 ## Automatic source comparisons
 
