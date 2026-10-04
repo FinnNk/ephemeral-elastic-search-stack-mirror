@@ -5,8 +5,10 @@ The lab has demonstrated a million-product catalogue, 1,000 queries, frozen API 
 The [category survey](../research/evidence/esci-category-survey-results.md) is
 complete: finer categories and role instructions supply no useful additional
 precision. Every contract makes the same 14 additional Exact errors, including
-four Irrelevant → Exact errors. The next proposal is a bounded
-[cached-model Exact check](esci-exact-veto-survey.md). Qualified coverage
+four Irrelevant → Exact errors. The bounded
+[cached-model Exact check](esci-exact-veto-survey.md) now has a CPU-tested runner
+and analysis; its next batch is [separate execution](esci-role-check-execution.md).
+Qualified coverage
 remains 2,946/9,915 (29.71%); no model labels or gate exceptions are active.
 
 The control-runtime consolidation and delivery rehearsal are merged to `main`. Earlier batch plans remain in this directory, with measured results such as the [million-product](../research/evidence/million-scale.md) and [control-runtime](../research/evidence/kubernetes-control-services.md) evidence. A merged implementation does not close a measurement or integration gate.
@@ -35,9 +37,11 @@ The [larger fitting-pool screen](../research/evidence/esci-fitted-specialists.md
 is complete: six inexpensive classifiers add no useful labels at the required
 precision. [CPU pair models and prompt inference](esci-cpu-pair-judges.md) are
 also measured: one trained pair model selects no labels, and a 32-pair prompt
-probe is inconclusive. The next detailed batch is the bounded
-[cached-model Exact check](esci-exact-veto-survey.md): its input-only packet
-is prepared, but execution requires a separate valid grant. The unrelated
+probe is inconclusive. The [role-check preparation](../research/evidence/esci-role-check-preparation.md)
+passes 71 synthetic CPU tests and compiles the fixed 128-pair packet without
+changing its input text. The next detailed batch is
+[worker integration and bounded execution](esci-role-check-execution.md),
+requiring a separate scope approval and valid grant. The unrelated
 research run remains halted; the completed quick-only grant cannot authorise
 new-model inference. [Blinded gap-review preparation](esci-gap-review-packet.md)
 now supplies input-only reviewer packets, with no labels or confirmed cohort.

@@ -1,0 +1,90 @@
+{
+  "compiled_state_hashes_sha256": "4171129ec451f394978d0dbbd91725618eea44baa155b171e5c7057d5b27abc4",
+  "counts": {
+    "inputs": {
+      "matches_C_and_D_projection": true,
+      "pairs": 128,
+      "query_groups": 108
+    },
+    "numerical": {
+      "matches_C_and_D_projection": true,
+      "pairs": 32,
+      "query_groups": 29
+    }
+  },
+  "date_utc": "2026-10-04",
+  "execution_authorised": false,
+  "format": {
+    "command": "python -m ruff format --check lab/experiments/esci-role-check",
+    "formatted_files": 4,
+    "passed": true
+  },
+  "gate_eligible": false,
+  "gpu_grant_acquired": false,
+  "host": "Windows",
+  "kind": "role-check-cpu-validation-v1",
+  "lint": {
+    "command": "python -m ruff check lab/experiments/esci-role-check",
+    "passed": true
+  },
+  "model_calls": 0,
+  "model_weights_loaded": false,
+  "new_reference_values_opened": false,
+  "packet_files_sha256": {
+    ".lab/esci-category-increment/exact-veto-proposal-03/inputs.jsonl": "48aedefc25a4f235146ad06feb67599af2dc52074740f658fb477ef34076f033",
+    ".lab/esci-category-increment/exact-veto-proposal-03/numerical.jsonl": "c2e9f090b83a222aa7418d7e48017072b8f766477fd425b2a25e98aa3b4a6463"
+  },
+  "preparation_manifest_sha256": "feed77ee49176bff909a55831e0b37ffbacece5f39564c788840383a29df1cd6",
+  "preserved_local_failure": {
+    "output_created": false,
+    "source_sha256": "a083d1ae9621b4ebb232aa51fbbaa7244d7c47ce7435bf2227803cc7d2110e06",
+    "stage": "manifest helper path"
+  },
+  "proposal_sha256": "9bade8cd69eddcc984cf38138128a5318d47239ffa70b2263e32493c253ff9ed",
+  "qualification": false,
+  "qualified_coverage": {
+    "pairs": 2946,
+    "total": 9915,
+    "unchanged": true
+  },
+  "remaining": [
+    "Owner isolated worker/image and complete model/tokenizer hashes",
+    "Exact-runtime CPU preflight and token audit",
+    "New scope approval and source-bound exclusive grant",
+    "Numerical repeats, real predictions, timing and cleanup receipts",
+    "Independent actual-gap human reference labels"
+  ],
+  "runtime_token_audit_complete": false,
+  "scope": "CPU preparation only",
+  "source_base": "7e2464dfbc3a5ffcc6a9509b82fc24a850592a9f",
+  "source_files_sha256": {
+    ".lab/esci-category-increment/prepare_role_sources.py": "702a18b0c9a7bae8aa17bc3b1586219f493dbfc7d638a9e1a26e950d31862fba",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/operations/category_input_experiment.py": "b5108dcdd60a140b3b75ab1e3361a00ae8e9e6307e20c84206df632737aee982",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/runtimes/decider/.venv/Lib/site-packages/decider/infer.py": "cc52121edced1e7f01c286d74554299e1b09a1a49e7ee2a0abd95581dee05321",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/runtimes/decider/.venv/Lib/site-packages/decider/model.py": "2feae466895e84b7637ee3504522d809d88dded0b290f6c87b071e4b7f43e027",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/runtimes/decider/.venv/Lib/site-packages/decider/prompt.py": "f21ae1016a11ca3500b5a8e2e8c3ef524434d196bbd4891199b96a33b3ad6314",
+    ".lab/esci-model-agent-repo/esci-tfm-experiment/runtimes/decider/.venv/Lib/site-packages/decider_ai-1.6.0.dist-info/METADATA": "eea364cf24875c1999276c36e379dae960394c8de288139592980f08a8a21026",
+    ".lab/worktrees/esci-category-increment-analysis/evaluation/label_quality.py": "f7103f33361e07e8cf0321c9ea6425ab98f641a81480377d1e43366042d18cfe",
+    ".lab/worktrees/esci-category-increment-analysis/lab/experiments/esci-fitted-specialists/fit_specialists.py": "cf384ea69cc324611cf4d1ffa6132e82705add7173805083f6938e79546e2b3b",
+    ".lab/worktrees/esci-category-increment-analysis/lab/experiments/esci-role-check/analyse_role_check.py": "dd08f67e8c62aee16a3cd098318f76afd64706817c484460d73e32be06399664",
+    ".lab/worktrees/esci-category-increment-analysis/lab/experiments/esci-role-check/role_check.py": "19f1cb0b3c08e35513bdda328167244c5e53f2e1ff2b26a7118968fc921a8a33",
+    ".lab/worktrees/esci-category-increment-analysis/lab/experiments/esci-role-check/test_analyse_role_check.py": "ef305bff722b2da6ae430ca120091f9a5a2b059ae2b9cd0288869d38a01233a1",
+    ".lab/worktrees/esci-category-increment-analysis/lab/experiments/esci-role-check/test_role_check.py": "40fabf8cf8a96bdd482cadbaf1a829763e0d549e29cd335cbfa86ca404770aff"
+  },
+  "source_review": {
+    "actual_runtime_tested": false,
+    "scope": [
+      "Decider1.6.0 source/metadata, effective choice temperature and prompt chunks",
+      "Fixed questions/probabilities/routing and matched analysis",
+      "README, execution plan and confirmation limits"
+    ],
+    "substantive_blockers": 0
+  },
+  "tests": {
+    "command": "python -m pytest lab/experiments/esci-role-check -q",
+    "elapsed_seconds": 22.52,
+    "passed": 71,
+    "python": ".lab/esci-packaging/.venv/Scripts/python.exe",
+    "synthetic": true
+  }
+}

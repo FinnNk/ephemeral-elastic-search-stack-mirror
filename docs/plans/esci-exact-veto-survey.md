@@ -1,6 +1,8 @@
 # Check Exact decisions with the cached 2B model
 
-Status: input-only proposal prepared; no model calls or new GPU grant. The
+Status: isolated runner and analysis prepared and CPU-tested; no model calls or
+new GPU grant. See the [preparation evidence](../research/evidence/esci-role-check-preparation.md)
+and the next [execution batch](esci-role-check-execution.md). The
 [category survey](../research/evidence/esci-category-survey-results.md) made the
 same 14 errors under every contract, already present in raw model decisions.
 Test whether a different, smaller question-conditioned model can reject those
@@ -39,7 +41,8 @@ not imply equivalent calibration between the two models.
 
 ## Work and acceptance
 
-1. **Verify and register execution.** Implement an isolated direct runner: the
+1. **Verify and register execution.** Integrate the prepared isolated runner with
+   the owner's worker and new source-bound grant: the
    current `FixedDecider` requires four options and the lab engine injects the
    ESCI adapter. Neither supports this contract unchanged. Direct Decider
    supports the proposed three- and four-option questions. Verify the model
