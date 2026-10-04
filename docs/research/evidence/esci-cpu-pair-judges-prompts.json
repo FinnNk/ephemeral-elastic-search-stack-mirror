@@ -1,0 +1,393 @@
+{
+  "artifact_sha256": {
+    "development_references": "5ef90fe3400d3a8f56d2cbde0cbd22ef14c6b35d40c7f389d21a61ad65a31e7e",
+    "diagnostic_plan": "65460ea5a12ee48a686091d2388e7891037a2f1de44df9ff482357eff871dec3",
+    "generation_plan": "3d2e6a9d44bcb1a39c6922e8742b23ad64b369ca36cc84ee50824d4be69a1c30",
+    "input": "ec6958902a308e2764f7d9fb236588623138c1a9257596deff73e895bb778f3a",
+    "paired_amendment": "1c6210fb75ef69d1e9a562ca20786562e33b073f0f4b926444494674107f8fb5",
+    "paired_diagnostic": "68dcf960e4783ba33a233e9b4ea26dd79ba4c01c74b485cc1fa694d96c8a5a0a",
+    "port_closure_check": "6c15bd228261d46651b1e35ab57d5ca4e684d8cff42ba3ae47383a00777638d6",
+    "report": "b6413c958074bd00054c2525162d134ecc53b66984232abd69420fb59b27e35e",
+    "runtime_receipt": "098e0b2a617ae30e698c0a3917e3315d3a1d2836324641f5b1c7c680e464c1f1",
+    "scored_32_input_membership": "0fde7042f700401049a83314d6c6d65db68eb08b4153c6e72d03798a9108ab1e",
+    "scores": "426c5e54b38076a849d33457af2b58efef481a6f045ab2ed970cdf0e6ce3749e",
+    "selected_256_input_membership": "f4eed17c797a1003cec5f749c07fb9bb79bd9fae91d6d97c7ade594734fee716",
+    "source_snapshot_receipt": "d51520a888551ba28afef133520e3cc6c29f837afa617af86fb729f62bbf73b2"
+  },
+  "cleanup": {
+    "check_result": "closed",
+    "owned_process_terminated": true,
+    "port_closure_checked": true
+  },
+  "conditions": {
+    "batch_threads": 4,
+    "context": 1024,
+    "gpu_layers": 0,
+    "input_token_budget": 512,
+    "other_lab_and_research_work_running": true,
+    "platform": "Windows x64",
+    "server_slots": 1,
+    "threads": 4
+  },
+  "contract_results": {
+    "rich-category-role": {
+      "accuracy": 0.625,
+      "confusion": {
+        "C": {
+          "C": 0,
+          "E": 1,
+          "I": 0,
+          "S": 0,
+          "unknown": 0
+        },
+        "E": {
+          "C": 0,
+          "E": 18,
+          "I": 6,
+          "S": 1,
+          "unknown": 0
+        },
+        "I": {
+          "C": 0,
+          "E": 0,
+          "I": 1,
+          "S": 0,
+          "unknown": 0
+        },
+        "S": {
+          "C": 0,
+          "E": 4,
+          "I": 0,
+          "S": 1,
+          "unknown": 0
+        }
+      },
+      "correct": 20,
+      "exact_contamination": 0.0,
+      "irrelevant_to_exact_errors": 0,
+      "irrelevant_to_exact_rate": 0.0,
+      "pairs": 32,
+      "reference_irrelevant_pairs": 1,
+      "truncated": 11,
+      "unknown": 0
+    },
+    "title-broad-category": {
+      "accuracy": 0.6875,
+      "confusion": {
+        "C": {
+          "C": 0,
+          "E": 0,
+          "I": 1,
+          "S": 0,
+          "unknown": 0
+        },
+        "E": {
+          "C": 0,
+          "E": 20,
+          "I": 4,
+          "S": 1,
+          "unknown": 0
+        },
+        "I": {
+          "C": 0,
+          "E": 0,
+          "I": 1,
+          "S": 0,
+          "unknown": 0
+        },
+        "S": {
+          "C": 0,
+          "E": 4,
+          "I": 0,
+          "S": 1,
+          "unknown": 0
+        }
+      },
+      "correct": 22,
+      "exact_contamination": 0.0,
+      "irrelevant_to_exact_errors": 0,
+      "irrelevant_to_exact_rate": 0.0,
+      "pairs": 32,
+      "reference_irrelevant_pairs": 1,
+      "truncated": 0,
+      "unknown": 0
+    },
+    "title-category-role": {
+      "accuracy": 0.78125,
+      "confusion": {
+        "C": {
+          "C": 0,
+          "E": 1,
+          "I": 0,
+          "S": 0,
+          "unknown": 0
+        },
+        "E": {
+          "C": 0,
+          "E": 22,
+          "I": 2,
+          "S": 1,
+          "unknown": 0
+        },
+        "I": {
+          "C": 0,
+          "E": 0,
+          "I": 1,
+          "S": 0,
+          "unknown": 0
+        },
+        "S": {
+          "C": 0,
+          "E": 3,
+          "I": 0,
+          "S": 2,
+          "unknown": 0
+        }
+      },
+      "correct": 25,
+      "exact_contamination": 0.0,
+      "irrelevant_to_exact_errors": 0,
+      "irrelevant_to_exact_rate": 0.0,
+      "pairs": 32,
+      "reference_irrelevant_pairs": 1,
+      "truncated": 0,
+      "unknown": 0
+    }
+  },
+  "executed_sources": {
+    "instruction_survey.py": {
+      "ast_method": "Python ast.dump(include_attributes=False), UTF-8 SHA256",
+      "ast_sha256": "97e8e5d9d0a0207b1bae2f14401694e43e1fe1f25ad0d0b702b98dfdc6c20cf7",
+      "file_sha256": "1af103939f5d53dcc058f1c1500508a297f7de941a42ca5d9fc7a3624bdd6f24",
+      "matches_executed_plan": true
+    },
+    "llamacpp_survey.py": {
+      "ast_method": "Python ast.dump(include_attributes=False), UTF-8 SHA256",
+      "ast_sha256": "2f685823e94bbd8235f1f61b368d785c85648ff289c674d0b17048bc8c176c34",
+      "file_sha256": "1af2ccdd504075d1d99b873f6995cac674732ed2dfaa00aecce08958fc77ebb5",
+      "matches_executed_plan": true
+    }
+  },
+  "gate_eligible": false,
+  "generation": {
+    "gate_eligible": false,
+    "inference_seconds": 213.35999999998603,
+    "kind": "esci-llamacpp-generation",
+    "pairs": 32,
+    "plan_sha256": "3d2e6a9d44bcb1a39c6922e8742b23ad64b369ca36cc84ee50824d4be69a1c30",
+    "references_opened": false,
+    "scores": 96,
+    "scores_sha256": "426c5e54b38076a849d33457af2b58efef481a6f045ab2ed970cdf0e6ce3749e",
+    "status": "probe-projected-time-cap",
+    "total_seconds": 214.9529999999795
+  },
+  "kind": "esci-cpu-pair-judges-prompt-evidence",
+  "limits": [
+    "Exposed development labels only, not confirmation or actual-gap transfer.",
+    "Quantised llama.cpp grammar choices are not parity-equivalent to PyTorch four-token logits.",
+    "No calibrated confidence or selective label acceptance is available.",
+    "Descriptive whole-query intervals conditional on a small exposed development pilot; not adjusted for prompt comparisons or proof of significance.",
+    "Only one Irrelevant reference; zero I-to-E errors do not establish safety.",
+    "Nullable original catalogue fields were preserved in JSON. Rich product text was truncated in11of32pairs; title-only contracts were not truncated.",
+    "The96-score throughput probe projected28.45minutes for768scores, exceeding the frozen15minute limit. No full survey was run.",
+    "Quantisation, grammar-conditioned decoding, native chat formatting and backend caching differ from the earlier PyTorch pilot; no numerical parity claim.",
+    "No labels were imported, activated or made gate eligible; no GPU or fresh/protected references used."
+  ],
+  "model": {
+    "file": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+    "file_sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+    "licence": "Apache-2.0",
+    "quantisation": "Q4_K_M",
+    "repository": "Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+    "revision": "91cad51170dc346986eccefdc2dd33a9da36ead9"
+  },
+  "paired_diagnostic": {
+    "amendment_sha256": "1c6210fb75ef69d1e9a562ca20786562e33b073f0f4b926444494674107f8fb5",
+    "bootstrap_repetitions": 20000,
+    "bootstrap_seed": 20261004,
+    "class_support": {
+      "C": 1,
+      "E": 25,
+      "I": 1,
+      "S": 5
+    },
+    "comparisons": [
+      {
+        "accuracy_difference_right_minus_left": 0.09375,
+        "both_right": 20,
+        "both_wrong": 5,
+        "changed": 8,
+        "descriptive_query_bootstrap_95_interval": [
+          -0.0625,
+          0.25
+        ],
+        "left": "title-broad-category",
+        "left_right_right_wrong": 2,
+        "left_wrong_right_right": 5,
+        "pairs": 32,
+        "query_groups": 32,
+        "right": "title-category-role",
+        "unchanged": 24
+      },
+      {
+        "accuracy_difference_right_minus_left": -0.0625,
+        "both_right": 18,
+        "both_wrong": 8,
+        "changed": 7,
+        "descriptive_query_bootstrap_95_interval": [
+          -0.21875,
+          0.09375
+        ],
+        "left": "title-broad-category",
+        "left_right_right_wrong": 4,
+        "left_wrong_right_right": 2,
+        "pairs": 32,
+        "query_groups": 32,
+        "right": "rich-category-role",
+        "unchanged": 25
+      },
+      {
+        "accuracy_difference_right_minus_left": -0.15625,
+        "both_right": 20,
+        "both_wrong": 7,
+        "changed": 5,
+        "descriptive_query_bootstrap_95_interval": [
+          -0.28125,
+          -0.03125
+        ],
+        "left": "title-category-role",
+        "left_right_right_wrong": 5,
+        "left_wrong_right_right": 0,
+        "pairs": 32,
+        "query_groups": 32,
+        "right": "rich-category-role",
+        "unchanged": 27
+      }
+    ],
+    "gate_eligible": false,
+    "kind": "esci-llamacpp-paired-development-diagnostic",
+    "limits": [
+      "Descriptive whole-query intervals conditional on a small exposed development pilot; not adjusted for prompt comparisons or proof of significance.",
+      "Only one Irrelevant reference; zero I-to-E errors do not establish safety."
+    ],
+    "pairs": 32,
+    "post_probe_analysis": true,
+    "query_groups": 32
+  },
+  "probe": {
+    "pairs": 32,
+    "projected_full_768_score_seconds": 1706.8799999998882,
+    "scores": 96,
+    "seconds": 213.35999999998603
+  },
+  "prompt_contract": {
+    "contracts": [
+      "title-broad-category",
+      "title-category-role",
+      "rich-category-role"
+    ],
+    "definitions_sha256": "33902df82d5e656a10e1086a90f51145256de98de8fa98f4cc517c2183e9a5d0",
+    "grammar": "root ::= \"E\" | \"S\" | \"C\" | \"I\"",
+    "role_rules_sha256": "feb65c1a6e2c2506aca5ab9ec5616b7b6e71c7ae9a1462a22d00fb0f97abe719",
+    "sampling": {
+      "cache_prompt": false,
+      "n_predict": 1,
+      "seed": 20261004,
+      "temperature": 0
+    },
+    "score_meaning": "grammar-constrained greedy one-letter choice; no calibrated confidence",
+    "selective_acceptance": null,
+    "source_sha256": "1af103939f5d53dcc058f1c1500508a297f7de941a42ca5d9fc7a3624bdd6f24"
+  },
+  "runtime": {
+    "archive_sha256": "14cf1303ca9ac3abd94816850532f9f9a69ac66fbaca3776fc6f9061c2fac1d1",
+    "commit": "7fe450e19305b828c199d602c23a8337aaa1f03b",
+    "cpu_only_asset": true,
+    "executed_arguments": [
+      "llama-server.exe",
+      "-m",
+      "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "<temporary-port>",
+      "-ngl",
+      "0",
+      "-t",
+      "4",
+      "-tb",
+      "4",
+      "-c",
+      "1024",
+      "-np",
+      "1",
+      "--no-webui",
+      "--no-context-shift"
+    ],
+    "files_sha256": {
+      "LICENSE-LLVM-OpenMP": "fdad1758a9e1f9d5a81e18879b3406772115edc92c24bfa36b70c654f325e8e4",
+      "ggml-base.dll": "be315e18c795d15658f5d13b4a6e0b4cd534b7d69f6d4093db60ea74b0ada159",
+      "ggml-cpu-alderlake.dll": "ccd9f3c469b360afd285a2a96c84474483e0be728046f4fdd5b1a71ed735648a",
+      "ggml-cpu-cannonlake.dll": "e90b05f511dcc5df41f1a893c2e0aa9d5d20cc1ee41a064b1f85e7ed3c76da5e",
+      "ggml-cpu-cascadelake.dll": "d30b718b83994b5fb582486145cbda054d5431f3699da9e938930132777b2530",
+      "ggml-cpu-cooperlake.dll": "7c31b2439675d8c4be74a6a84d4d7747805ba9c51253ec4d87e7a3f767048877",
+      "ggml-cpu-haswell.dll": "18c5489f5ef7260f198d18ba53056a63bfec625d7f91a9bee1a5226baea167bd",
+      "ggml-cpu-icelake.dll": "55a4dde89c6e27142c7f7157b3eca2cbec15ae2ba6bc14172e4d73bb97bca3de",
+      "ggml-cpu-ivybridge.dll": "bdca4d6649f1776f74d20698dab32f52d7cce4fd3e216facf6d27a461e7d31c6",
+      "ggml-cpu-piledriver.dll": "2daf851d57d4556acafc01cb69626603ce13b7bbbe147ebaa471f67d96b65a8c",
+      "ggml-cpu-sandybridge.dll": "6c6edc12155f798bdb6e82bdf905179f921dc250a8bd81f5a494cdeafa3ceb68",
+      "ggml-cpu-sapphirerapids.dll": "dd05f6c9dfb65141c8532994d0a55014cbf8f1a0400fe83f8ebded6bef3c46e1",
+      "ggml-cpu-skylakex.dll": "8a0b58839ac30b5d72c58808604e33e6f3262a43bd78167e0782f9945357700e",
+      "ggml-cpu-sse42.dll": "9f824721d0df4bd8ec6849b1ff550b4d02dcc5d53a016ec41237ffbbd0417f03",
+      "ggml-cpu-x64.dll": "ff312c4aa238d96ff6297384469235e37dde22a82df442d5b903546cf997b9c2",
+      "ggml-cpu-zen4.dll": "06660a9ef42529bd49ee9f0fbc517a966c8b188097157c0eff0bbda256bdf75b",
+      "ggml-rpc-server.exe": "195514258a15dec60f445222e9d1568af390a4a6ef83ce61484e9f487bd280a5",
+      "ggml-rpc.dll": "a0ce8dca03a4c7dce8c666a908f99ee7ae8ae83ceb410c27d93e9f16cd7d136f",
+      "ggml.dll": "da454325a1cdb658c469983ef78bc7c23a2729394607c2583446db4c19f7bcda",
+      "libomp.dll": "a12116ba72d1d6820407cf30be23da04ce79d6bb8a71a5ee71759c5a1faa6f1c",
+      "llama-batched-bench-impl.dll": "492bbe1f6e56159a2b62976f2e56127d4a4cc70b0f605df07bed0528d1660167",
+      "llama-batched-bench.exe": "c640dcacd0618afac1659a13a3e8fa9c178ac8cd17bba03b2274a59018418444",
+      "llama-bench-impl.dll": "7516b65ad8499d4a2022f6069bb6b9c164ae3da0b510a28beef4b6b8b27ef28e",
+      "llama-bench.exe": "8a465234f89ae29d9a157a2fd8793e012989ec78d3ee21613bc7fcf6126af7c3",
+      "llama-cli-impl.dll": "86ecca1c6ec6fffe31ea10a6632c091b974d0f503cbf1d4ac173b5063688d10c",
+      "llama-cli.exe": "3559db64ff7251d0b66d786aaa3e672d4887b1708c0996c47da92cb52ecc3870",
+      "llama-common.dll": "5a07bd8dfb7626476a47b4931e278c82518991b4faf85ce42cde82eb0ce6bb50",
+      "llama-completion-impl.dll": "0b2d4bff0a64ca77359d186849b725333b2f359b7e85b649cff171758b38e967",
+      "llama-completion.exe": "3427f711f8d20ddb4f141cd89f3ef0c4351e389fa5d54af1d503ff778560518a",
+      "llama-fit-params-impl.dll": "2e5d8f907e6abc792cd8e9b53dfda437db0e8f09f1422e7dd0fbb485d6f5560f",
+      "llama-fit-params.exe": "a26d9a96fdd5a1c5f53988e5f0c5b4146e00d8a9cb34da5a1cf0553064f64332",
+      "llama-gemma3-cli.exe": "565c63eea03ab40c828813ddca9e37d29379bc0ba03bd902c842a7240548d8af",
+      "llama-gguf-split.exe": "5f9352ff45c7b17b0d68f026d65ad10dcd64e806c36e6a2044e759647e5f2f64",
+      "llama-imatrix.exe": "2c941336ca30113977eaf89ad7477225b283ac06dd1908bd48975ea880f990f2",
+      "llama-llava-cli.exe": "565c63eea03ab40c828813ddca9e37d29379bc0ba03bd902c842a7240548d8af",
+      "llama-minicpmv-cli.exe": "565c63eea03ab40c828813ddca9e37d29379bc0ba03bd902c842a7240548d8af",
+      "llama-mtmd-cli.exe": "6c821b51a6b4f9ad84d5f6aefbb86f2b76836a2d6b8e74c92e64dae3a28326a1",
+      "llama-mtmd-debug.exe": "8c6e5635a90b444774c52fa37d587b8de7432b76eaced4f4d102601cda461aef",
+      "llama-perplexity-impl.dll": "6a317e19a995deab3407baa4ba483c63e84240b5596ba3c3ae304b80eb9dcadf",
+      "llama-perplexity.exe": "ea4448fe5454e4180e3b5b1d107c6a7a40b172bd485def154d98d4060bbf5b10",
+      "llama-quantize-impl.dll": "338aa3636cf4061f52ba7c2ef61821a01942804e0a06a01c637fb51676a8b214",
+      "llama-quantize.exe": "dee025c8bd2b3e4679b766aa8fdac9fa393edd8259840f58af8832bf20708cf7",
+      "llama-qwen2vl-cli.exe": "565c63eea03ab40c828813ddca9e37d29379bc0ba03bd902c842a7240548d8af",
+      "llama-results.exe": "5bebde3a60da8c699e99a583470cccb372853e8b4d9cf915d010e79726905324",
+      "llama-server-impl.dll": "fae1ca8959986062a24c7b0a92e12a782f2770fc5448c7cc631f0d4bb6cac4a0",
+      "llama-server.exe": "7b886298b688509ced3e92b420edd57dd3d665da72c1fc207d7a537be5870352",
+      "llama-tokenize.exe": "d2a8210f48fdda714ad7fcb39ea805a20cfd15946bf1a8b93d5feca1b03ffd70",
+      "llama-tts.exe": "9ba966ebc1405dd02281aede18fd572d7cfac5a216179d362b5f4a043c167626",
+      "llama.dll": "8bc4713fde3b48a35c06c6d503c9fd128d349275e6fad6b48d235796c9d9739f",
+      "llama.exe": "f5314e0f1fbce9e15621dd3f127f5ce8222eef05faf204be64fc155a5a9c29a6",
+      "mtmd.dll": "592ed18ee70d874c9d80ec0c9eb014258c10d9087462e03f8fc00b9acfb47b9a"
+    },
+    "release": "b11146"
+  },
+  "schema_version": 1,
+  "sources": {
+    "development_only": true,
+    "official_model": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/tree/91cad51170dc346986eccefdc2dd33a9da36ead9",
+    "official_release": "https://github.com/ggml-org/llama.cpp/releases/tag/b11146",
+    "server_documentation": "https://github.com/ggml-org/llama.cpp/blob/7fe450e19305b828c199d602c23a8337aaa1f03b/tools/server/README.md",
+    "unverified_platforms": [
+      "Linux",
+      "macOS"
+    ]
+  }
+}

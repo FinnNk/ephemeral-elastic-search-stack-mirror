@@ -1,0 +1,943 @@
+{
+  "argmax": {
+    "accepted": 6525,
+    "accepted_query_groups": 400,
+    "accuracy": {
+      "denominator": 6525,
+      "estimate": 0.6979310344827586,
+      "numerator": 4554,
+      "usable_pair_risk_upper": null,
+      "whole_query_bootstrap_interval_95": [
+        0.671416651418141,
+        0.7259717364604489
+      ],
+      "zero_denominator_repetitions": 0
+    },
+    "classes": {
+      "C": {
+        "accepted_queries": 0,
+        "denominator": 0,
+        "estimate": null,
+        "numerator": 0,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": null,
+        "zero_denominator_repetitions": 2000
+      },
+      "E": {
+        "accepted_queries": 387,
+        "denominator": 4815,
+        "estimate": 0.8103842159916926,
+        "numerator": 3902,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": [
+          0.7839302270105194,
+          0.8363390353191973
+        ],
+        "zero_denominator_repetitions": 0
+      },
+      "I": {
+        "accepted_queries": 77,
+        "denominator": 257,
+        "estimate": 0.4591439688715953,
+        "numerator": 118,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": [
+          0.3346139705882353,
+          0.5870559454832014
+        ],
+        "zero_denominator_repetitions": 0
+      },
+      "S": {
+        "accepted_queries": 258,
+        "denominator": 1453,
+        "estimate": 0.36751548520302824,
+        "numerator": 534,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": [
+          0.31305879763476935,
+          0.42448650476033845
+        ],
+        "zero_denominator_repetitions": 0
+      }
+    },
+    "confusion_true_rows_prediction_columns_ESCI": [
+      [
+        3902,
+        588,
+        0,
+        62
+      ],
+      [
+        568,
+        534,
+        0,
+        73
+      ],
+      [
+        123,
+        45,
+        0,
+        4
+      ],
+      [
+        222,
+        286,
+        0,
+        118
+      ]
+    ],
+    "coverage": 1.0,
+    "limits": [
+      "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+      "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+      "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+      "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+    ],
+    "pairs": 6525,
+    "query_groups": 400,
+    "risks": {
+      "exact_irrelevant_contamination": {
+        "denominator": 4815,
+        "estimate": 0.04610591900311527,
+        "numerator": 222,
+        "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.05138914044899475,
+        "usable_pair_risk_upper": 0.05971362606179358,
+        "whole_query_bootstrap_interval_95": [
+          0.03266297477340659,
+          0.05971362606179358
+        ],
+        "zero_denominator_repetitions": 0
+      },
+      "exact_to_irrelevant": {
+        "denominator": 4552,
+        "estimate": 0.013620386643233744,
+        "numerator": 62,
+        "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.016800494138897313,
+        "usable_pair_risk_upper": 0.022315815112490294,
+        "whole_query_bootstrap_interval_95": [
+          0.006618892581194066,
+          0.022315815112490294
+        ],
+        "zero_denominator_repetitions": 0
+      },
+      "irrelevant_to_exact": {
+        "denominator": 626,
+        "estimate": 0.3546325878594249,
+        "numerator": 222,
+        "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.3873465424092686,
+        "usable_pair_risk_upper": 0.4364601449275362,
+        "whole_query_bootstrap_interval_95": [
+          0.26917028651660746,
+          0.4364601449275362
+        ],
+        "zero_denominator_repetitions": 0
+      }
+    }
+  },
+  "assessment_plan": {
+    "development_reference_sha256": "5ef90fe3400d3a8f56d2cbde0cbd22ef14c6b35d40c7f389d21a61ad65a31e7e",
+    "gate_eligible": false,
+    "kind": "esci-cpu-crossencoder-assessment-plan",
+    "metrics_helper_sha256": "fd52034f0176b686e9cdfaaf5c7177d03d57e2a1bf55607f4902cacaf727de65",
+    "prefix_receipt_sha256": "f0947dccb387faf2e36a0e5ea34bc29c6ec44ca3696528c62e753a28997b03a1",
+    "prefix_sha256": "cbebf1e00dc51437786013c8b9e6880b7400a12789e3480cb368e59592227018",
+    "source_sha256": "cbb01ceeb4f48ae37dd2cf5f7db583210faeb831968091d1f174f29e2223863f",
+    "training_plan_sha256": "6bb1e9128bf1e0239eaeecc92c1ac15b831a60b99395860e034299fcf8713dc4",
+    "training_receipt_sha256": "d31751352bdb5b2b8a115be2db17679ea77be05b510c67ef3d4595b5684349a4"
+  },
+  "gate_eligible": false,
+  "ignored_receipt_hashes": {
+    "frozen-metrics-helper.py": "fd52034f0176b686e9cdfaaf5c7177d03d57e2a1bf55607f4902cacaf727de65",
+    "frozen-scoring-source.py": "cbb01ceeb4f48ae37dd2cf5f7db583210faeb831968091d1f174f29e2223863f",
+    "frozen-training-source.py": "a610590b1e59b0894bed150d2ee58c989b089124226e9046e2f590d3059d8856",
+    "optimiser-index-receipt.json": "119c875d4a147008597f6e6ce4e70f475040136258b96af5ae162c89df513729",
+    "plan.json": "6bb1e9128bf1e0239eaeecc92c1ac15b831a60b99395860e034299fcf8713dc4",
+    "report.json": "0f08f473709da288c3f8299c102dce03760e3d4a8f3f43ac5a933c4a95d97744",
+    "scoring-receipt.json": "785538ba1269ab4e93519359c839e1afd85886fe004f172126145d643bf2a3ae",
+    "source-inventory.json": "eda3ef2f18bd1635f040b21d632aba8c87efc6059f373f6f8094a0f67a47b1dc",
+    "training-receipt.json": "d31751352bdb5b2b8a115be2db17679ea77be05b510c67ef3d4595b5684349a4"
+  },
+  "kind": "esci-cpu-pair-judges-model-evidence",
+  "model": "cross-encoder/ms-marco-MiniLM-L6-v2",
+  "optimizer_index_audit": {
+    "audit_method": "Reconstructed eligible indices from frozen plan and exact archived executed training source; runtime logs record updates and losses, not batch identities.",
+    "calibration_indices_used_for_optimiser": 0,
+    "calibration_outcomes_used_for_early_stopping_or_candidate_choice": false,
+    "calibration_pairs": 5019,
+    "calibration_queries": 300,
+    "calibration_reference_values_loaded_during_training": true,
+    "candidate_count": 1,
+    "completed_updates": 735,
+    "development_labels_loaded_during_training": false,
+    "epochs": 1,
+    "fit_indices_sha256": "5d59f9f7b6331d9ff9479a8ff09fdb08498b0725c8bde1f4a13a5075516c9549",
+    "fit_pairs": 11749,
+    "fit_queries": 700,
+    "gate_eligible": false,
+    "kind": "esci-cpu-crossencoder-optimiser-index-audit",
+    "query_overlap": 0,
+    "training_source_sha256": "a610590b1e59b0894bed150d2ee58c989b089124226e9046e2f590d3059d8856"
+  },
+  "report": {
+    "argmax": {
+      "accepted": 6525,
+      "accepted_query_groups": 400,
+      "accuracy": {
+        "denominator": 6525,
+        "estimate": 0.6979310344827586,
+        "numerator": 4554,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": [
+          0.671416651418141,
+          0.7259717364604489
+        ],
+        "zero_denominator_repetitions": 0
+      },
+      "classes": {
+        "C": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "E": {
+          "accepted_queries": 387,
+          "denominator": 4815,
+          "estimate": 0.8103842159916926,
+          "numerator": 3902,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.7839302270105194,
+            0.8363390353191973
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "I": {
+          "accepted_queries": 77,
+          "denominator": 257,
+          "estimate": 0.4591439688715953,
+          "numerator": 118,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.3346139705882353,
+            0.5870559454832014
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "S": {
+          "accepted_queries": 258,
+          "denominator": 1453,
+          "estimate": 0.36751548520302824,
+          "numerator": 534,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.31305879763476935,
+            0.42448650476033845
+          ],
+          "zero_denominator_repetitions": 0
+        }
+      },
+      "confusion_true_rows_prediction_columns_ESCI": [
+        [
+          3902,
+          588,
+          0,
+          62
+        ],
+        [
+          568,
+          534,
+          0,
+          73
+        ],
+        [
+          123,
+          45,
+          0,
+          4
+        ],
+        [
+          222,
+          286,
+          0,
+          118
+        ]
+      ],
+      "coverage": 1.0,
+      "limits": [
+        "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+        "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+        "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+        "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+      ],
+      "pairs": 6525,
+      "query_groups": 400,
+      "risks": {
+        "exact_irrelevant_contamination": {
+          "denominator": 4815,
+          "estimate": 0.04610591900311527,
+          "numerator": 222,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.05138914044899475,
+          "usable_pair_risk_upper": 0.05971362606179358,
+          "whole_query_bootstrap_interval_95": [
+            0.03266297477340659,
+            0.05971362606179358
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "exact_to_irrelevant": {
+          "denominator": 4552,
+          "estimate": 0.013620386643233744,
+          "numerator": 62,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.016800494138897313,
+          "usable_pair_risk_upper": 0.022315815112490294,
+          "whole_query_bootstrap_interval_95": [
+            0.006618892581194066,
+            0.022315815112490294
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "irrelevant_to_exact": {
+          "denominator": 626,
+          "estimate": 0.3546325878594249,
+          "numerator": 222,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.3873465424092686,
+          "usable_pair_risk_upper": 0.4364601449275362,
+          "whole_query_bootstrap_interval_95": [
+            0.26917028651660746,
+            0.4364601449275362
+          ],
+          "zero_denominator_repetitions": 0
+        }
+      }
+    },
+    "cascade": {
+      "accepted": 1753,
+      "accepted_query_groups": 259,
+      "accuracy": {
+        "denominator": 1753,
+        "estimate": 0.9857387335995437,
+        "numerator": 1728,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": [
+          0.9757312400710214,
+          0.9940032283457918
+        ],
+        "zero_denominator_repetitions": 0
+      },
+      "classes": {
+        "C": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "E": {
+          "accepted_queries": 259,
+          "denominator": 1753,
+          "estimate": 0.9857387335995437,
+          "numerator": 1728,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.9757312400710214,
+            0.9940032283457918
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "I": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "S": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        }
+      },
+      "confusion_true_rows_prediction_columns_ESCI": [
+        [
+          1728,
+          0,
+          0,
+          0
+        ],
+        [
+          22,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          0
+        ]
+      ],
+      "coverage": 0.2686590038314176,
+      "limits": [
+        "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+        "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+        "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+        "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+      ],
+      "pairs": 6525,
+      "query_groups": 400,
+      "risks": {
+        "exact_irrelevant_contamination": {
+          "denominator": 1753,
+          "estimate": 0.0017113519680547634,
+          "numerator": 3,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004417084576379481,
+          "usable_pair_risk_upper": 0.003911488812800546,
+          "whole_query_bootstrap_interval_95": [
+            0.0,
+            0.003911488812800546
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "exact_to_irrelevant": {
+          "denominator": 4552,
+          "estimate": 0.0,
+          "numerator": 0,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.0,
+            0.0
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "irrelevant_to_exact": {
+          "denominator": 626,
+          "estimate": 0.004792332268370607,
+          "numerator": 3,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.012339075360626596,
+          "usable_pair_risk_upper": 0.011235955056179775,
+          "whole_query_bootstrap_interval_95": [
+            0.0,
+            0.011235955056179775
+          ],
+          "zero_denominator_repetitions": 0
+        }
+      }
+    },
+    "elapsed_seconds": 1.7349999999860302,
+    "gate_eligible": false,
+    "incremental": {
+      "accepted": 0,
+      "accepted_query_groups": 0,
+      "accuracy": {
+        "denominator": 0,
+        "estimate": null,
+        "numerator": 0,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": null,
+        "zero_denominator_repetitions": 2000
+      },
+      "classes": {
+        "C": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "E": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "I": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "S": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        }
+      },
+      "confusion_true_rows_prediction_columns_ESCI": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "coverage": 0.0,
+      "limits": [
+        "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+        "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+        "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+        "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+      ],
+      "pairs": 6525,
+      "query_groups": 400,
+      "risks": {
+        "exact_irrelevant_contamination": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "exact_to_irrelevant": {
+          "denominator": 4552,
+          "estimate": 0.0,
+          "numerator": 0,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.0,
+            0.0
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "irrelevant_to_exact": {
+          "denominator": 626,
+          "estimate": 0.0,
+          "numerator": 0,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.0,
+            0.0
+          ],
+          "zero_denominator_repetitions": 0
+        }
+      }
+    },
+    "kind": "esci-cpu-crossencoder-development-screen",
+    "limits": [
+      "Exposed development screen only; no independent confirmation or actual gap qualification.",
+      "Zero-event bootstrap cannot establish harmful-error upper bounds."
+    ],
+    "prediction_files_sha256": {
+      "calibration-probabilities.npy": "5157d8c068ce5e6fb336b6d9eab9434439fd5ef72dda797ac16b11f7d170a864",
+      "development-probabilities.npy": "4ca3fd2e0a4e71f867946c2d250c03bd12c1c4a420e86c206312fcfe3d67fbbb"
+    },
+    "prefix_sha256": "cbebf1e00dc51437786013c8b9e6880b7400a12789e3480cb368e59592227018",
+    "selected": {
+      "accepted": 0,
+      "accepted_query_groups": 0,
+      "accuracy": {
+        "denominator": 0,
+        "estimate": null,
+        "numerator": 0,
+        "usable_pair_risk_upper": null,
+        "whole_query_bootstrap_interval_95": null,
+        "zero_denominator_repetitions": 2000
+      },
+      "classes": {
+        "C": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "E": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "I": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "S": {
+          "accepted_queries": 0,
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        }
+      },
+      "confusion_true_rows_prediction_columns_ESCI": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "coverage": 0.0,
+      "limits": [
+        "Whole-query bootstrap uses frozen query keys and pair-weighted ratios.",
+        "Any bootstrap replicate with zero denominator makes that interval inconclusive.",
+        "Zero-event bootstrap cannot establish a pair-risk upper bound.",
+        "Pair CP bounds assume independent pairs and are descriptive only, never qualification."
+      ],
+      "pairs": 6525,
+      "query_groups": 400,
+      "risks": {
+        "exact_irrelevant_contamination": {
+          "denominator": 0,
+          "estimate": null,
+          "numerator": 0,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": null,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": null,
+          "zero_denominator_repetitions": 2000
+        },
+        "exact_to_irrelevant": {
+          "denominator": 4552,
+          "estimate": 0.0,
+          "numerator": 0,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.0006578969077253309,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.0,
+            0.0
+          ],
+          "zero_denominator_repetitions": 0
+        },
+        "irrelevant_to_exact": {
+          "denominator": 626,
+          "estimate": 0.0,
+          "numerator": 0,
+          "pair_independence_CP_upper_one_sided_95_descriptive_only": 0.004774082481768583,
+          "usable_pair_risk_upper": null,
+          "whole_query_bootstrap_interval_95": [
+            0.0,
+            0.0
+          ],
+          "zero_denominator_repetitions": 0
+        }
+      }
+    },
+    "thresholds": {
+      "C": {
+        "calibration_grid": [
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.7
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.8
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.9
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.95
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.975
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.99
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.995
+          }
+        ],
+        "threshold": null
+      },
+      "E": {
+        "calibration_grid": [
+          {
+            "precision": 0.8423339540657977,
+            "support": 3222,
+            "threshold": 0.7
+          },
+          {
+            "precision": 0.8673647469458988,
+            "support": 2865,
+            "threshold": 0.8
+          },
+          {
+            "precision": 0.9060064190738194,
+            "support": 2181,
+            "threshold": 0.9
+          },
+          {
+            "precision": 0.9389952153110048,
+            "support": 836,
+            "threshold": 0.95
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.975
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.99
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.995
+          }
+        ],
+        "threshold": null
+      },
+      "I": {
+        "calibration_grid": [
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.7
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.8
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.9
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.95
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.975
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.99
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.995
+          }
+        ],
+        "threshold": null
+      },
+      "S": {
+        "calibration_grid": [
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.7
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.8
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.9
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.95
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.975
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.99
+          },
+          {
+            "precision": null,
+            "support": 0,
+            "threshold": 0.995
+          }
+        ],
+        "threshold": null
+      }
+    }
+  },
+  "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+  "schema_version": 1,
+  "scoring": {
+    "assessment_plan_sha256": "e55f75616143cae1ee02650273a1d9453b46dd70bcd1ac31fd5ea1dd93025e3e",
+    "assessment_references_opened": false,
+    "calibration_pairs": 5019,
+    "development_pairs": 6525,
+    "device": "cpu",
+    "elapsed_seconds": 418.56300000002375,
+    "files_sha256": {
+      "calibration-probabilities.npy": "5157d8c068ce5e6fb336b6d9eab9434439fd5ef72dda797ac16b11f7d170a864",
+      "development-probabilities.npy": "4ca3fd2e0a4e71f867946c2d250c03bd12c1c4a420e86c206312fcfe3d67fbbb"
+    },
+    "gate_eligible": false,
+    "kind": "esci-cpu-crossencoder-scoring-receipt"
+  },
+  "source_inventory": {
+    "candidate_count": 1,
+    "device": "cpu",
+    "frozen_training_source_matches_plan": true,
+    "frozen_training_source_sha256": "a610590b1e59b0894bed150d2ee58c989b089124226e9046e2f590d3059d8856",
+    "gate_eligible": false,
+    "kind": "esci-cpu-crossencoder-source-inventory",
+    "snapshot_files_sha256": {
+      "README.md": "7c0ec39941d0d1d766ccde671f592971d82fe45b7eea550a80d1ea864ebc3baa",
+      "config.json": "380e02c93f431831be65d99a4e7e5f67c133985bf2e77d9d4eba46847190bacc",
+      "model.safetensors": "821d1aa69520101d6e0737f78a042ae25b19e5cb9160701909d10434f4aeb0ae",
+      "special_tokens_map.json": "3c3507f36dff57bce437223db3b3081d1e2b52ec3e56ee55438193ecb2c94dd6",
+      "tokenizer.json": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+      "tokenizer_config.json": "a5c2e5a7b1a29a0702cd28c08a399b5ecc110c263009d17f7e3b415f25905fd8",
+      "vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+    },
+    "snapshot_revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a"
+  },
+  "summary": {
+    "always_exact_development_accuracy_descriptive": 0.6976245210727969,
+    "calibration_class_thresholds": {
+      "C": null,
+      "E": null,
+      "I": null,
+      "S": null
+    },
+    "conclusion": "No class meets the predeclared calibration screen. Retain this unsuccessful one-epoch candidate as evidence; do not activate it, claim qualified coverage, or infer actual-gap quality.",
+    "incremental_labels": 0,
+    "limits": [
+      "Calibration values were loaded during training, but only the 700 fitting query groups entered optimiser batches. No calibration-driven candidate change, stopping or checkpoint selection occurred.",
+      "The 400-query development cohort is exposed development, not independent confirmation.",
+      "No actual residuals were labelled. Original/fresh confirmation and reserved research assessment labels were not opened.",
+      "Zero accepted support produces null accepted accuracy and harmful-risk bounds; zero selected errors do not establish a quality guarantee."
+    ],
+    "qualified_or_selected_new_labels": 0,
+    "total_wrong_exact": {
+      "denominator": 4815,
+      "estimate": 0.18961578400830736,
+      "numerator": 913,
+      "whole_query_bootstrap_interval_95": [
+        0.1636609646808027,
+        0.2160697729894806
+      ]
+    }
+  },
+  "training": {
+    "calibration_queries": 300,
+    "device": "cpu",
+    "elapsed_seconds": 1453.829000000027,
+    "fit_pairs": 11749,
+    "fit_queries": 700,
+    "gate_eligible": false,
+    "kind": "esci-cpu-crossencoder-training-receipt",
+    "mean_training_loss": 0.6969603327261348,
+    "plan_sha256": "6bb1e9128bf1e0239eaeecc92c1ac15b831a60b99395860e034299fcf8713dc4",
+    "planned_updates": 735,
+    "status": "completed-one-epoch",
+    "updates": 735,
+    "weights_sha256": "08af54a8d6066c4cced29774715128899c48f6d8621056faa299ddf4f7c19504"
+  },
+  "validation": {
+    "no_gpu_or_activation": true,
+    "ruff_passed": true,
+    "runtime": "Windows CPU, four threads; one epoch completed and all frozen calibration/development pairs scored",
+    "unit_tests_passed": 3
+  }
+}

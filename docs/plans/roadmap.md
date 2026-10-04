@@ -26,9 +26,12 @@ CPU surveys. Qualify the complete cascade before adding its labels to gates;
 control UI improvements and further identity work wait behind this priority.
 The [larger fitting-pool screen](../research/evidence/esci-fitted-specialists.md)
 is complete: six inexpensive classifiers add no useful labels at the required
-precision. The next detailed batch tests
-[CPU pair models and prompt inference](esci-cpu-pair-judges.md). The owner's
-separate fitting pool remains excluded from confirmation. The
+precision. [CPU pair models and prompt inference](esci-cpu-pair-judges.md) are
+also measured: one trained pair model selects no labels, and a 32-pair prompt
+probe is inconclusive. The next detailed batch is
+[category-aware cascade selection](esci-category-cascade-selection.md), beginning
+at the research owner's completed, saved GPU boundary. The owner's separate
+fitting pool remains excluded from confirmation. The
 [confirmation specification](esci-cascade-confirmation.md) keeps independent
 published and blinded gap references separate.
 

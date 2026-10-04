@@ -1,0 +1,75 @@
+{
+  "kind": "esci-cpu-pair-judges-batch-validation",
+  "schema_version": 1,
+  "date_utc": "2026-10-04",
+  "source_parent_commit": "fb03108e66527ad9b903e0f1b24ad0c9f1ea72ac",
+  "source_files_sha256": {
+    "lab/experiments/esci-gap-surveys/cpu_crossencoder_fit.py": "cbb01ceeb4f48ae37dd2cf5f7db583210faeb831968091d1f174f29e2223863f",
+    "lab/experiments/esci-gap-surveys/test_cpu_crossencoder_fit.py": "bb12b137ab3b1c563c662d984492c4df6e950667e4e4289b906ef6a021b8803e",
+    "lab/experiments/esci-llamacpp-survey/llamacpp_survey.py": "1af2ccdd504075d1d99b873f6995cac674732ed2dfaa00aecce08958fc77ebb5",
+    "lab/experiments/esci-llamacpp-survey/package_evidence.py": "cdc8016e8fa0cc97d3f3a71c471a0f66c597102454069a8ff8cffe88431b9442",
+    "lab/experiments/esci-llamacpp-survey/test_llamacpp_survey.py": "60281c7b0de35cb30e92b40c97da49106d624e0f875d199bb00f9b816d9aa0be"
+  },
+  "software": {
+    "pytest_passed": 9,
+    "pytest_failed": 0,
+    "pytest_skipped": 0,
+    "ruff": "passed",
+    "whitespace": "passed",
+    "platform": "Windows",
+    "model_quality_qualified": false
+  },
+  "documentation": {
+    "gitea_markdown_rendered": true,
+    "browser": "Installed Chrome, headless static local previews, 1280x1000",
+    "pages": [
+      {
+        "file": "docs/plans/esci-cpu-pair-judges.md",
+        "source_sha256": "d37b49c4e99ce304dce28b8c6397febbf112ddb2a5d7dc254bcebeffc389fc54",
+        "tables": 1,
+        "horizontal_overflow": false,
+        "visually_inspected": true
+      },
+      {
+        "file": "docs/plans/esci-category-cascade-selection.md",
+        "source_sha256": "2f68ae6baaec3bad1ccd177bbd347d294b0a5f45539c38ceff15ced93bae07e9",
+        "tables": 1,
+        "horizontal_overflow": false,
+        "visually_inspected": true
+      },
+      {
+        "file": "docs/research/evidence/esci-cpu-pair-judges.md",
+        "source_sha256": "90dfe0890e355d137cf884c4c74694bdf88d296e1184dbe08a6b95de54464541",
+        "tables": 2,
+        "horizontal_overflow": false,
+        "visually_inspected": true
+      },
+      {
+        "file": "lab/experiments/esci-gap-surveys/CPU-PAIR-MODEL.md",
+        "source_sha256": "1e38679f225756405739dcb75b85ad5d95b6e6ea26d7cfab31c3aade2a5a06b4",
+        "tables": 1,
+        "horizontal_overflow": false,
+        "visually_inspected": true
+      },
+      {
+        "file": "lab/experiments/esci-llamacpp-survey/README.md",
+        "source_sha256": "740d6ef6bd6304a25ae685414439e0dae03becded4fa6c743ab03ccacd7b91de",
+        "tables": 0,
+        "horizontal_overflow": false,
+        "visually_inspected": true
+      }
+    ],
+    "local_file_links_checked": true,
+    "external_link_destinations_not_checked": true,
+    "limits": [
+      "Static Markdown previews; no authenticated Headlamp or report interaction claimed.",
+      "CLI commands and examples checked against exercised Windows runs, not repeated to manufacture quality evidence."
+    ]
+  },
+  "runtime_effects": {
+    "new_gpu_jobs": 0,
+    "model_activation": false,
+    "labels_imported": 0,
+    "gate_changed": false
+  }
+}

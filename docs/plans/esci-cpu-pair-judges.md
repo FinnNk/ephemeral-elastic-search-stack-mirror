@@ -1,8 +1,8 @@
 # Test CPU pair models and prompt inference
 
-Status: the small pair model is training within a fixed budget. The alternative
-prompt runtime's short probe is complete; analysis and delivery follow next.
-Neither candidate is qualified.
+Status: complete for review. The pair model selects no class at the frozen
+precision screen. The prompt runtime stops after its bounded probe. Neither
+candidate is qualified. See the [measured results](../research/evidence/esci-cpu-pair-judges.md).
 
 ## Intent and constraints
 
@@ -40,6 +40,9 @@ Do not respond to a failed screen by expanding the same search indefinitely.
 Prioritise a promising interaction or category/prompt signal, then freeze one
 complete cascade for [independent confirmation](esci-cascade-confirmation.md).
 That confirmation still needs independently blinded actual-gap references.
+
+The next detailed batch is [category-aware cascade selection](esci-category-cascade-selection.md).
+It prioritises the research-owned matched survey at a safe GPU boundary.
 
 ## Where to find the work
 

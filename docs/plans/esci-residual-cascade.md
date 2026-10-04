@@ -46,7 +46,8 @@ source rows found no additional published matches.
 | Selective recalibration | Whole-query fitting, calibration and checking partitions; incremental labels after Exact ≥0.95 | Simple probability and lexical model adds a useful 910 hypothetical gap labels |
 | Category roles and embeddings | Added labels over the simpler model, precision and cost | Three extra development labels do not justify adopting the added features |
 | Published support retrieval | Predict withheld products from a fixed 30% same-query support set | Title similarity alone is insufficiently precise |
-| Compact NLI and instruction models | Short CPU throughput and matched prompt surveys before larger runs | Complete: NLI decoder lacks a useful signal; instruction-model CPU throughput exceeds the budget |
+| Compact NLI and instruction models | Short CPU throughput and matched prompt surveys before larger runs | Complete: NLI decoder lacks a useful signal; both prompt runtimes exceed their inference budget |
+| CPU pair-model adaptation | Separate published fitting/calibration queries; incremental precision on development | Complete: one epoch selects no class at the required precision and adds zero labels |
 | Granular Decider categories and prompts | Broad category, leaf, hierarchy and role instructions on matched inputs | Await measured inference; prepared contracts are not results |
 
 Freeze each small survey before opening its outcomes. Retain all candidates,
@@ -56,10 +57,12 @@ their intervals do not confirm a winner selected from many alternatives.
 ## Next batch: qualify complementary stages
 
 The [larger fitting-pool screen](esci-fitted-specialists.md) is complete: six
-fixed classifiers add no useful labels at the required precision. Next test
-[CPU pair models and prompt inference](esci-cpu-pair-judges.md) while the research
-owner prepares its matched category survey. The separate 1,000-query training
-pool remains excluded from confirmation.
+fixed classifiers add no useful labels at the required precision.
+[CPU pair models and prompt inference](esci-cpu-pair-judges.md) are also complete:
+neither adds qualified labels. Next prioritise
+[category-aware cascade selection](esci-category-cascade-selection.md) at the
+research owner's saved GPU boundary. The separate 1,000-query training pool
+remains excluded from confirmation.
 
 | Work | Acceptance criterion |
 | --- | --- |
