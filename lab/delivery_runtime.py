@@ -95,7 +95,7 @@ def resolve(run_id, dataset=DEFAULT_RELEASE, recipe_sha=None, merged=True,
     return {'fields': fields, 'fingerprint': fingerprint(fields), 'build_run': run_id}
 
 
-def validate_deployment(deployment):
+def validate_deployment(deployment, *, merged=True):
     fields = deployment['fields']
     if fingerprint(fields) != deployment['fingerprint']:
         raise ValueError('Deployment fingerprint differs.')
@@ -106,10 +106,14 @@ def validate_deployment(deployment):
             raise ValueError('Variant configuration is not canonical or has no default.')
     release, files = load(fields['software_release_id'])
     receipt, built, _ = from_run(deployment['build_run'])
-    if (receipt['event_kind'] != 'push' or receipt['release_id'] != fields['software_release_id'] or
+    if merged and receipt['event_kind'] != 'push':
+        raise ValueError('Promotion requires a successful merged-source push build.')
+    if receipt['event_kind'] not in ('push', 'pull_request'):
+        raise ValueError('Preview requires a successful source push or pull-request build.')
+    if (receipt['release_id'] != fields['software_release_id'] or
             release != built or release['image'] != fields['image'] or
             release['source_sha'] != fields['source_sha'] or release['bundle_sha256'] != fields['bundle_sha256']):
-        raise ValueError('Deployment differs from its merged-source release.')
+        raise ValueError('Deployment differs from its verified source release.')
     recipe = load_recipe(fields['index_recipe_sha256'])
     if recipe['format'] == 2:
         verify_catalogue_manifest(recipe)
@@ -140,8 +144,8 @@ def validate_deployment(deployment):
     return recipe, files
 
 
-def materialise(deployment):
-    recipe, _ = validate_deployment(deployment)
+def materialise(deployment, *, merged=True):
+    recipe, _ = validate_deployment(deployment, merged=merged)
     fields = deployment['fields']
     if recipe['index_kind'] == 'shared':
         return ensure_shared_index(fields['dataset_release'], fields['dataset_sha256'], fields['index_recipe_sha256'])
@@ -154,8 +158,8 @@ def entry(deployment, name):
     return {**deployment['fields'], 'fingerprint': deployment['fingerprint'], 'environment': name}
 
 
-def rendered(deployment, name):
-    _recipe, files = validate_deployment(deployment)
+def rendered(deployment, name, *, merged=True):
+    _recipe, files = validate_deployment(deployment, merged=merged)
     directory = STATE / 'delivery-render' / deployment['fields']['software_release_id']
     for member, content in files.items():
         path = directory / member
@@ -268,13 +272,13 @@ def preview(deployment):
         git(DESIRED, 'switch', '-c', branch)
         folder = LOCAL / 'previews' / name
         folder.mkdir(parents=True, exist_ok=True)
-        (folder / 'search.yaml').write_text(rendered(deployment, name), encoding='utf-8', newline='\n')
+        (folder / 'search.yaml').write_text(rendered(deployment, name, merged=False), encoding='utf-8', newline='\n')
         git(DESIRED, 'add', 'previews/' + name)
         git(DESIRED, 'commit', '-m', 'Create frozen release preview ' + name)
         revision = git(DESIRED, 'rev-parse', 'HEAD')
         git(DESIRED, 'push', 'origin', branch)
         git(DESIRED, 'switch', 'main')
-        materialise(deployment)
+        materialise(deployment, merged=False)
         access(name, deployment)
         application(name, 'previews/' + name, revision,
                     (datetime.now(timezone.utc) + timedelta(days=3)).isoformat())

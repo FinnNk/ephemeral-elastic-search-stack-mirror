@@ -4,10 +4,12 @@ The lab has demonstrated a million-product catalogue, 1,000 queries, frozen API 
 
 The full ESCI catalogue now uses a **temporary, human-authorised demo policy**: published labels plus cached calibrated-model predictions provide 81.22% coverage on the captured recall set. Model accuracy remains unqualified. Strict selection still has 29.71% published coverage. The scoped source policy is accepted and active: a fresh 1,000-query capture passed CI, and the catalogue change is on source main. Later investigation restores qualified-only defaults.
 
-The [developer walkthrough](developer-walkthrough.md) has reached the first
-query rewrite. A copyable function snippet is linked from the contributor guide
-and included in source bootstrap. Next, build and test the contributor change;
-review public-function comments in one pass after the walkthrough.
+The [developer walkthrough](developer-walkthrough.md) has reached source PR #26.
+Its rewrite passes application tests and release CI; relevance CI is waiting for
+the exact-commit report. The [PR preview correction](pr-build-previews.md) has
+deployed that build through the normal CLI and awaits review and control-runtime
+installation. Next, inspect the preview together before evaluation. Collected
+example and public-function comment feedback remains for the walkthrough's end.
 
 The [category survey](../research/evidence/esci-category-survey-results.md) and [saved-score diagnostic](../research/evidence/esci-score-separation.md) did not establish sufficient label quality. The [role-check runtime](../research/evidence/esci-role-runtime-preflight.md) is prepared but execution remains held for human review. The demo decision does not authorise that survey.
 
@@ -31,6 +33,7 @@ The [temporary ESCI demo batch](esci-demo-coverage.md) uses the current calibrat
 
 | Batch | State | Next action |
 | --- | --- | --- |
+| PR build previews | Implemented and checked through the host CLI; review pending | [Preview plan and evidence](pr-build-previews.md); install the reviewed control image, then inspect the contributor's preview together |
 | Temporary demo coverage | Accepted; scoped source policy active and catalogue change on source main | [Completed integration and CI evidence](../research/evidence/esci-demo-source-integration.md); resume the developer walkthrough when requested |
 | Headlamp KServe plugin | Supplied dev.29 installed and accepted; exact HTTPS assets verified | [Installation receipt](headlamp-kserve-plugin.md) |
 | Qualified-only defaults | [Detailed follow-up plan](esci-qualified-defaults.md) | Resume investigation when requested; independent references and serving checks precede activation |

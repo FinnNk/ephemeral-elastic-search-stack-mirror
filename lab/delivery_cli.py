@@ -26,6 +26,9 @@ def parser():
         cmd.add_argument('--recipe', help='Pinned index recipe SHA-256; blank uses the current shared recipe')
         cmd.add_argument('--query-manifest', help='Selected query-suite manifest SHA-256')
         cmd.add_argument('--judgement-manifest', help='Matching judgement-set manifest SHA-256')
+        if name == 'preview':
+            cmd.add_argument('--variant-config', type=Path,
+                             help='JSON file defining the preview\'s named default and variants')
     cmd = commands.add_parser('evaluate')
     cmd.add_argument('--baseline-run', type=int, required=True)
     cmd.add_argument('--candidate-run', type=int, required=True)
@@ -97,7 +100,9 @@ def execute(args):
                                  query_manifest_sha=args.query_manifest,
                                  judgement_manifest_sha=args.judgement_manifest))
     if args.command == 'preview':
+        config = json.loads(args.variant_config.read_text(encoding='utf-8')) if args.variant_config else None
         return preview(resolve(args.run, args.dataset, args.recipe,
+                               merged=False, variant_config=config,
                                query_manifest_sha=args.query_manifest,
                                judgement_manifest_sha=args.judgement_manifest))
     if args.command == 'evaluate':

@@ -37,6 +37,36 @@ Changes confined to the two source README paths have a [recorded relevance exemp
 
 Verification checks bundle paths/checksums and rejects mutable images or incompatible indexers. Credentials, namespace and dataset selection belong to the deployment, not the release bundle.
 
+## Open a source PR preview
+
+An operator can deploy a successful PR build before source merge. Use PowerShell
+from the lab repository root, with `lab-control` installed and the
+[workstation access setup](preview-access.md) complete:
+
+```powershell
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
+$kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
+$previewRun = Read-Host 'Successful Reference release CI run ID from the delivery-source Actions URL'
+$preview = kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py preview --run $previewRun --dataset esci-gb-v1 --variant-config lab/delivery/configurations/ranker-a.json | ConvertFrom-Json
+'https://{0}.preview.relevance.test:34443/' -f $preview.name
+```
+
+Use the numeric ID in `/actions/runs/<id>`, not the displayed run sequence or PR
+number. A successful command returns `state: ready`, the exact source revision
+and a frozen environment fingerprint. Open the printed URL and try the change.
+The preview expires after 72 hours.
+
+The example configuration names `ranker-a` as the default with the API's standard
+field boosts. Supply another JSON file to freeze other named variants. Use
+`lab/delivery/configurations/ranker-baseline.json` for a baseline preview with
+the same boosts. Both previews can reuse a compatible frozen index.
+
+Preview creation verifies the build receipt, image, bundle and frozen inputs.
+It does not publish comparison evidence or pass the relevance gate. If the build
+failed or its index contract is incompatible, fix that before retrying. Follow
+the [evaluation runbook](evaluation-runbook.md) to compare the two APIs.
+Promotion still requires a separate successful build of the merged source.
+
 ## Evaluate and propose deployment
 
 ![Reviewed immutable release deployment across three local targets](diagrams/rendered/release-promotion.png)

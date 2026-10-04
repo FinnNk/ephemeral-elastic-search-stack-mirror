@@ -24,10 +24,26 @@ clean checkout and read `understand()` and `query_body()`. They have created
 The source repository includes a copyable function in
 `examples/trainers_rewrite.py`; the lab seeds the same example and contributor guide.
 
-Next, build and run the application tests together, explain their output, then
-add a focused check for the rewrite before committing the contributor's change.
-Continue one step at a time with feedback. After the walkthrough, make one pass
-over public-function comments, as requested by the contributor.
+The contributor has built the application, passed all 17 tests, committed and
+pushed the change, and opened source PR #26. Its declared intent is
+`ranking-change`. Release CI passed; relevance CI is waiting for a report for
+that exact commit.
+
+The [PR preview correction](pr-build-previews.md) makes the ordinary delivery CLI
+accept verified PR builds while keeping promotion restricted to merged source.
+A preview of the contributor's build is ready; the installed control runtime
+still needs this correction after review.
+
+Next, open the candidate preview together and try `trainers`, then compare it
+with the baseline before running the frozen evaluation. The 1,000-query suite
+contains no exact `trainers` query; explain that limit before interpreting its
+report. Do not describe an unchanged general suite as evidence that this rewrite
+improves relevance.
+
+Continue one step at a time with feedback. At the end, add a copyable test snippet
+and comments on the intended use of both examples, then review public-function
+comments in one pass. Keep this collected feedback together unless a substantial
+issue blocks the walkthrough.
 
 ## References
 
