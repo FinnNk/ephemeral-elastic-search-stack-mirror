@@ -94,4 +94,3 @@ the signed evidence passed protected relevance run 112 on that exact head.
 The earlier capture above is preserved. This follow-up proves the new source
 commit and its evidence pass the installed gate. It does not demonstrate the
 uninstalled remote coordinator or grant a new model-quality exception.
-
