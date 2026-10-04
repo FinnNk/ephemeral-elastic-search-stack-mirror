@@ -1,0 +1,30 @@
+{
+  "version": "0.1.0-dev.29",
+  "verified_at_utc": "2026-10-04T11:14:54Z",
+  "archive_sha256": "0c2d59910e48be35fc3912efe2bcd33ad6dcfc262345c5cc38bbc075d2d46f0d",
+  "headlamp_uid_preserved": true,
+  "pod_spec_and_oidc_preserved": true,
+  "rollout_ready": true,
+  "served_assets": [
+    {
+      "path": "main.js",
+      "sha256": "6cdcb5f1f05ed992b694b21ac0d2171c22f67cee0e7efbe328ebf07dbf61147a",
+      "bytes": 124389
+    },
+    {
+      "path": "package.json",
+      "sha256": "2b9a1f7b0f3490cf577b249798f4935607f19a519afa236eddc0e6a51c154ff8",
+      "bytes": 1331
+    },
+    {
+      "path": "locales/en/translation.json",
+      "sha256": "137a0a5343c47b46438969f8a94ded45aad991a38ea47e442eff689db7769c57",
+      "bytes": 20597
+    }
+  ],
+  "plugin_discovery": true,
+  "https_ca_verified": true,
+  "browser_rendering_checked": false,
+  "permissions": "No RBAC mutation; existing signed-in Kubernetes permissions retained.",
+  "initial_verification": "Asset request timed out after rollout; retry verified discovery and all three exact files."
+}

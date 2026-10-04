@@ -43,4 +43,4 @@ Use published ESCI labels and the current calibrated model to unblock local demo
 - [Model quality requirements](../model-label-quality.md)
 - [Held role check](esci-role-check-execution.md)
 
-The [next batch](esci-qualified-defaults.md) restores qualified-only defaults after independent quality investigation; it does not automatically accept a new model or restart the held survey.
+The [next batch](esci-demo-integration.md) accepts the scoped source policy and refreshes the remaining source PR’s evidence. The [later restore batch](esci-qualified-defaults.md) returns to qualified-only defaults after independent quality investigation; it does not automatically accept a new model or restart the held survey.

@@ -26,7 +26,8 @@ The [temporary ESCI demo batch](esci-demo-coverage.md) uses the current calibrat
 
 | Batch | State | Next action |
 | --- | --- | --- |
-| Temporary demo coverage | Implemented locally; scoped gate and source policy prepared for review | Accept implementation/source PRs, then update trusted target pins |
+| Temporary demo coverage | Implemented locally; scoped gate and source policy prepared for review | [Accept the policy and refresh source PR #19 evidence](esci-demo-integration.md) |
+| Headlamp KServe plugin | Supplied dev.29 installed; exact HTTPS assets verified | [Review the retained package and installation receipt](headlamp-kserve-plugin.md) |
 | Qualified-only defaults | [Detailed follow-up plan](esci-qualified-defaults.md) | Resume investigation when requested; independent references and serving checks precede activation |
 | Decider2B role check | Held for human review | Requires explicit execution approval; no GPU run authorised by the demo decision |
 
@@ -154,8 +155,9 @@ The supplied Headlamp KServe plugin is installed locally and retained by both
 Headlamp and OIDC reconciliation. HTTPS plugin discovery and exact asset checks
 passed; browser rendering remains a manual check. The next identity batch remains
 [Gitea and control UI integration](oidc-application-integration.md).
-The current supplied plugin is `0.1.0-dev.6`; its three served files match the
-pinned archive, and the existing OIDC Pod configuration is preserved.
+The current supplied plugin is `0.1.0-dev.29`; its three served files match the
+pinned archive, and the existing OIDC Pod configuration is preserved. See the
+[dev.29 receipt](../research/evidence/headlamp-kserve-plugin-dev29.json).
 The [KServe 0.21 upgrade](kserve-021.md) is installed locally. Existing model
 and custom loader definitions are preserved; a fresh MLflow model download,
 direct prediction and judgement API checks passed. Stable images are selected
