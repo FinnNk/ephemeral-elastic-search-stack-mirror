@@ -16,9 +16,17 @@ comparisons; the standalone demo is for disconnected development only.
 - They can understand the frozen comparison report, coverage limits and merge gate.
 - Feedback on unclear instructions is addressed in reviewable batches.
 
-Cloning and local image building have already succeeded on the user's Windows
-workstation. Resume with the revised storefront after acceptance; do not repeat
-completed setup or move ahead without the user's feedback.
+## Progress and next step
+
+The contributor has opened the full ESCI storefront, tried a search, updated a
+clean checkout and found `understand()`. Its comment explains that `'none'`
+records an unchanged query; a demo rewrite returns its own decision name.
+The source copy, lab template and supplied rewrite patch are kept in sync.
+
+Next, read `query_body()` together and explain how it builds the Elasticsearch
+request. Then create a contributor branch and make one small query change,
+with feedback between steps. Cloning and local image building have already
+succeeded; continue from this point after the comment batch is accepted.
 
 ## References
 
