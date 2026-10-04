@@ -6,8 +6,10 @@ The [category survey](../research/evidence/esci-category-survey-results.md) is
 complete: finer categories and role instructions supply no useful additional
 precision. Every contract makes the same 14 additional Exact errors, including
 four Irrelevant → Exact errors. The bounded
-[cached-model Exact check](esci-exact-veto-survey.md) now has a CPU-tested runner
-and analysis; its next batch is [separate execution](esci-role-check-execution.md).
+[cached-model Exact check](esci-exact-veto-survey.md) now has a CPU-tested runner,
+analysis and [verified runtime preflight](../research/evidence/esci-role-runtime-preflight.md).
+Its next batch is [separate execution](esci-role-check-execution.md), pending
+new scope approval and explicit old handback.
 Qualified coverage
 remains 2,946/9,915 (29.71%); no model labels or gate exceptions are active.
 The [saved-score diagnostic](../research/evidence/esci-score-separation.md)
@@ -42,9 +44,12 @@ precision. [CPU pair models and prompt inference](esci-cpu-pair-judges.md) are
 also measured: one trained pair model selects no labels, and a 32-pair prompt
 probe is inconclusive. The [role-check preparation](../research/evidence/esci-role-check-preparation.md)
 passes 71 synthetic CPU tests and compiles the fixed 128-pair packet without
-changing its input text. The next detailed batch is
-[worker integration and bounded execution](esci-role-check-execution.md),
-requiring a separate scope approval and valid grant. The unrelated
+changing its input text. The isolated runtime now passes its actual tokenizer
+audit and cleanup rehearsal. Numerical prerequisites, guardian launch and
+startup projection issues are corrected and reviewed; see the
+[preflight evidence](../research/evidence/esci-role-runtime-preflight.md).
+The next detailed batch is [bounded execution and analysis](esci-role-check-execution.md),
+requiring new scope approval, explicit old handback and a valid grant. The unrelated
 research run remains halted; the completed quick-only grant cannot authorise
 new-model inference. [Blinded gap-review preparation](esci-gap-review-packet.md)
 now supplies input-only reviewer packets, with no labels or confirmed cohort.

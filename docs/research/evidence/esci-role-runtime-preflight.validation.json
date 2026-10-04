@@ -1,0 +1,136 @@
+{
+  "actual_cpu_audit": {
+    "cuda_initialised": false,
+    "development_pairs": 128,
+    "gpu_requested": false,
+    "max_tokens": {
+      "context_tokens": 127,
+      "non_exact_prompt_tokens": 230,
+      "role_prompt_tokens": 238
+    },
+    "model_calls": 0,
+    "model_engine_loaded": false,
+    "numerical_pairs": 32,
+    "runtime_audit_sha256": "866aa094f2a919dcac64a877fbe562043077c1aa00c9aba03ac91aa2a3152357",
+    "torch_imported_as_dependency": true,
+    "weights_mounted": false
+  },
+  "broader_research_restarted": false,
+  "cleanup": {
+    "cpu_audit": {
+      "container_absent": true,
+      "guardian_identity_exited": true,
+      "reason": "container_exit"
+    },
+    "cpu_rehearsal": {
+      "container_absent": true,
+      "guardian_identity_exited": true,
+      "reason": "cleanup_cutoff"
+    },
+    "explicit_old_gpu_handback_recorded": false,
+    "previous_12_jobs_verified": true,
+    "previous_owner_exited": true,
+    "receipt_files_sha256": {
+      "audit/cleanup.json": "921c6c33ebb142592cd4551ce8a4bd278935663589a41affaef13a6335205673",
+      "audit/completion.json": "23cb2ab97b9fc5e73e2794c8d1487ca7cf9886175afcf6771758bb73bc3b049a",
+      "audit/guard-ready.json": "9853ac7e473e038c2f4043dd991bc0a4699c87b9a108feb9078da9888c8bc3a6",
+      "audit/guard-result.json": "ae640b93096e29320d2e3c58f4c7d5f0560f1cf3e23891b4813063c096f4353d",
+      "rehearsal/cleanup.json": "2b202dcada00e25179559dec203b94844bfb473d2d8af9d3de9f80be2bc88e4f",
+      "rehearsal/completion.json": "0d1ff04c3ac3f58e682598916940c8cec14770c5f5c8bcbc3a4c5947d7d47480",
+      "rehearsal/guard-ready.json": "4f43544c4bd97b2bae90071e0e2a0105200a279ecd5ad983e39dcd03f47579d7",
+      "rehearsal/guard-result.json": "dd42bc0cc8af78484f6c2a54621827631e433b349de51be2d439cc8ba8bba153"
+    }
+  },
+  "cpu_ready_sha256": "56ed40075b8be3315ab0e765030af1a734d9e60a3f9d252a9bfb2b7c81f30dfb",
+  "date_utc": "2026-10-04",
+  "execution": {
+    "calls_maximum": 384,
+    "cleanup_deadline_minutes": 20,
+    "grant_acquired": false,
+    "prediction_minutes": 15,
+    "questions_per_singleton_call": 1,
+    "scope_approval_verified": false
+  },
+  "gate_changed": false,
+  "gate_eligible": false,
+  "image_id": "sha256:b3ec8a5f79cffce7b6912abda3260f995932a92dd6c4ab6fa2cdaee60d21e197",
+  "independent_checks": {
+    "guardian_launch": {
+      "receipt_sha256": "20e8042193a5ba25dcbd6b19f97fe193361c68d8b5ae60f5df413548846e71a7",
+      "synthetic_tests_passed": 10,
+      "tested_source_files_sha256": {
+        "operations/category_gpu_controller.py": "da781c9c9e5df414066799a59b81f8fbc7b9bcdc8c08336f731b162d75531fd9",
+        "operations/qualification_window.py": "9a46eb917c7bda71089f00ac27a1e0d726826e11affb05363f5bafd68071b66e",
+        "operations/role_gpu_controller.py": "cfe77aec8afc6240496cc5d33302d97df3c04a56c279ef91dc5e78662a5eaf04",
+        "tests/test_role_grant_preparation.py": "b6839a17cc2be521018ad993db6fd1ffca5f087f20ed2077a2512214a9c7a7e9"
+      }
+    },
+    "numerical_fix": {
+      "deselected": 47,
+      "pytest_seconds": 0.61,
+      "receipt_sha256": "fbd4496f1592f5a11580339abd5e77df732c4a61cc559fef86c2ebe22a9a2e3a",
+      "synthetic_tests_passed": 20,
+      "tested_source_files_sha256": {
+        "operations/role_execution.py": "5a17b59822f8ab94a71d6c3c60bd9078ef63e409eb3d19ff644fb73667fd8f58",
+        "tests/test_role_grant_preparation.py": "0507d659a80e0382f6c1d6443afd8407f1e43e32c253da5c4b489c27c9fd0f0b"
+      },
+      "version_scope": "Earlier numerical fix snapshot; final owner suite covers registered source"
+    },
+    "timing_projection": {
+      "deselected": 81,
+      "pytest_seconds": 0.18,
+      "receipt_sha256": "37ac80f3df10c9faae2f8cd917176bffd42c41c8db11fd335d38829f3a1ab623",
+      "synthetic_tests_passed": 7,
+      "tested_source_files_sha256": {
+        "operations/role_execution.py": "73634730e409c444ea70d83938ea4f4d8752a11a5f31755fbac0d8bbe698a8f8",
+        "tests/test_role_grant_preparation.py": "b6839a17cc2be521018ad993db6fd1ffca5f087f20ed2077a2512214a9c7a7e9"
+      }
+    }
+  },
+  "independent_preflight_review_sha256": "95a01c572ebbdc27ea2172c965bf7ea7abc2e54f5e789a71f51e03c60ba72e3e",
+  "independent_review_helper_sha256": "49199509d8f1cdc6f9534095a2e6ec8fbde48b585f3ac22908640b2caf2c0e38",
+  "kind": "role-runtime-cpu-preflight-v1",
+  "lab_core_commit": "22330f4a31a304de5a4bd5a6c1a5b17d970490a0",
+  "lab_manifest_sha256": "feed77ee49176bff909a55831e0b37ffbacece5f39564c788840383a29df1cd6",
+  "limitations": [
+    "CPU preparation is not a GPU execution or numerical/model-quality result.",
+    "Independent numerical fix tests bind an earlier snapshot; final owner suite binds registered sources.",
+    "Timing margins are assumptions; the absolute cutoff is unchanged.",
+    "The 128 pairs are exposed development evidence, not full-pool or independent confirmation.",
+    "Independent actual-gap human references remain absent."
+  ],
+  "model": {
+    "additional_lab_adapter": null,
+    "id": "Mapika/decider-2b",
+    "revision": "533964dae8be954c5b5e19fa4948e48408094c1e",
+    "score_mapping": null
+  },
+  "new_reference_cohort_opened": false,
+  "owner_software_receipts_sha256": {
+    "tests-08.xml": "4fe691b07e88f359be4ed0cbd17fe055b786aee92815442deb2b0a50326656ab"
+  },
+  "owner_software_verification_sha256": "fd61f153c96426e3de2006cf09d535e9a29924e0c7d73adf0a8d222fa6648791",
+  "owner_synthetic_tests_passed": 137,
+  "projection_policy": {
+    "call_cost_multiplier": 1.25,
+    "future_job_startup_floor_seconds": 90,
+    "host_overhead_per_remaining_job_seconds": 30,
+    "kind": "measured-singleton-cost-plus-separate-startups-v1",
+    "limitation": "An early feasibility estimate, not measured runtime qualification or a deadline extension",
+    "startup_measure": "Current worker entry to backend construction; floor 90s per future job"
+  },
+  "proposal_sha256": "9bade8cd69eddcc984cf38138128a5318d47239ffa70b2263e32493c253ff9ed",
+  "qualification": false,
+  "qualified_coverage": {
+    "denominator": 9915,
+    "pairs": 2946,
+    "percent": 29.71
+  },
+  "registration_sha256": "8dd23af0a8356a2ef335bd707e272f0dbe1f6a27ff2ed113e8d6f2da9dcc4c46",
+  "source_base": "1fffcb6929df9e4fb66e6f13b52e1ba6745857d9",
+  "source_files_sha256": {
+    "operations/role_execution.py": "73634730e409c444ea70d83938ea4f4d8752a11a5f31755fbac0d8bbe698a8f8",
+    "operations/role_gpu_controller.py": "cfe77aec8afc6240496cc5d33302d97df3c04a56c279ef91dc5e78662a5eaf04",
+    "tests/test_role_grant_preparation.py": "b6839a17cc2be521018ad993db6fd1ffca5f087f20ed2077a2512214a9c7a7e9"
+  }
+}

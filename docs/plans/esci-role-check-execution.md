@@ -1,8 +1,10 @@
 # Execute the bounded role-check survey
 
-Status: next execution batch. CPU preparation does not authorise inference.
-Run the [fixed 128-pair survey](esci-exact-veto-survey.md) only after its isolated
-runner and analysis are registered against a new exclusive GPU grant.
+Status: runtime preflight verified; new scope approval and GPU grant pending.
+The [preflight evidence](../research/evidence/esci-role-runtime-preflight.md)
+records the actual tokenizer audit, cleanup rehearsal and source reviews.
+Run the [fixed 128-pair survey](esci-exact-veto-survey.md) only after explicit
+old handback and a new approval are bound to its exclusive GPU grant.
 
 The aim is a useful incremental signal: reject harmful Exact decisions or add
 accurate non-Exact labels. Keep the 80% gate and current qualification policy.
@@ -12,6 +14,13 @@ offers no convincing confidence-only protection for the four known I → E
 errors. This different-model role check remains the next experiment.
 
 ## Register before inference
+
+The prepared registration is the owner's ignored
+`directional-execution-05/packet/registration.json`, SHA-256
+`8dd23af0a8356a2ef335bd707e272f0dbe1f6a27ff2ed113e8d6f2da9dcc4c46`.
+Its source-bound CPU preflight passed; it has no execution approval or grant.
+Recheck its [validation commitments](../research/evidence/esci-role-runtime-preflight.validation.json)
+before acquisition. A source change requires a fresh registration and preflight.
 
 The prepared packet is in ignored state at
 `.lab/esci-category-increment/exact-veto-proposal-03/`. It contains 80 A-accepted
@@ -59,15 +68,19 @@ the already-exposed references.
 | Scope approval | Recorded approval for this model and bounded role-check study; the completed A–D quick-only grant is not reused |
 | Exclusive hand-over | Owner's source-bound grant, lease, exact process/container identities and fixed deadlines; broader research remains held |
 | Token audit | Complete state, questions and options fit the registered budgets; no silent truncation or option omission |
-| Timing | At most 384 singleton evaluations; projection after the first eight and each subsequent 32; stop before the prediction cutoff if remaining work will overrun |
+| Timing | At most 384 singleton evaluations; projection after the first eight and each subsequent 32; measured call cost ×1.25, separate future startups at max(observed startup, 90 seconds), and 30 seconds of host overhead per remaining job; stop if the projected finish exceeds the absolute prediction cutoff |
 | Numerical repeat | Two questions × 32 pairs in forward/reverse order; raw probability difference ≤0.00001 and zero decision flips |
 | Prediction | Two separate questions × 128 development pairs; complete raw probabilities and input identities; operational failure remains a failed run |
-| Cleanup | Prediction cutoff acquisition +15 minutes, cleanup deadline +20 minutes, startup included; every owned job/container and guardian stopped, durable receipt retained |
+| Cleanup | Prediction cutoff acquisition +15 minutes, cleanup deadline +20 minutes, startup included; owned containers stopped and removed, guardian identities confirmed exited, durable receipts retained |
 | Analysis | Exact 128 matched residual pairs with 80/48 strata; earlier prefix decisions remain outside this packet; full errors/support and paired whole-query intervals; new coverage kept separate from corrections |
 
 Do not start a second GPU job or watcher. Preserve a failed attempt in a new
 record and stop this window; do not extend the deadline. Restore the optional
 lab GPU worker only after explicit handback and verified whole-window cleanup.
+
+The startup floor and timing margins are assumptions, not measured capacity.
+Elapsed startup is consumed once through the current wall clock. Save every
+projection with the raw call journal and verify its hash alongside predictions.
 
 ## Choose the next batch
 
@@ -95,7 +108,7 @@ detailed plan and separate primary/backup PRs; main merging requires acceptance.
 - [Survey proposal](esci-exact-veto-survey.md)
 - [Completed category evidence](../research/evidence/esci-category-survey-results.md)
 - [Blinded actual-gap review preparation](esci-gap-review-packet.md)
-- Research owner controls:
-  `.lab/esci-model-agent-repo/esci-tfm-experiment/operations/category_gpu_controller.py`
-  and `operations/category_gap_grant.py`. Verify a new source-bound integration;
-  existing A–D execution semantics do not cover the new question contract.
+- Registered owner controls:
+  `.lab/esci-model-agent-repo/esci-tfm-experiment/operations/role_gpu_controller.py`
+  and `operations/role_execution.py`. The validation record binds these sources
+  and their reused preservation controls.
