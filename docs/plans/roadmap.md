@@ -30,9 +30,9 @@ precision. [CPU pair models and prompt inference](esci-cpu-pair-judges.md) are
 also measured: one trained pair model selects no labels, and a 32-pair prompt
 probe is inconclusive. The next detailed batch is
 [category-aware cascade selection](esci-category-cascade-selection.md). The user
-has prioritised gap filling and halted the unrelated research run. Approval of
-its explicit interrupted-run GPU hand-over is pending; category measurements
-have not started. [Blinded gap-review preparation](esci-gap-review-packet.md)
+has prioritised gap filling and halted the unrelated research run. The explicit interrupted-run GPU hand-over
+and quick survey are approved; the revised grant needs implementation and
+verification before category measurements start. [Blinded gap-review preparation](esci-gap-review-packet.md)
 now supplies input-only reviewer packets, with no labels or confirmed cohort.
 The owner's separate
 fitting pool remains excluded from confirmation. The

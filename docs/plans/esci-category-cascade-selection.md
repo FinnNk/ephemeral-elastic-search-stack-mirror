@@ -7,8 +7,9 @@ No candidate from these surveys is active.
 On 4 October the user prioritised gap filling and authorised halting the
 unrelated T1 research assessment. Its unsaved attempt is recorded as interrupted;
 saved results remain preserved. Automatic approval review blocked replacing the
-completed-classifier prerequisite. A concrete interrupted-run hand-over awaits
-explicit human approval before category GPU execution.
+completed-classifier prerequisite. The user subsequently approved the proposed
+interrupted-run grant and quick survey. The revised controller still requires
+implementation, tests and a verified grant before GPU execution.
 
 ## Intent and constraints
 
@@ -22,7 +23,7 @@ authoritative; a later stage sees only gaps left by earlier qualified stages.
 - Protect the research process's unsaved predictions. Start at a completed,
   saved classifier boundary with its owner's exclusive GPU guard, or use an
   explicitly approved interrupted-run hand-over with verified cleanup. The
-  latter approval is pending; the halt does not itself grant GPU execution.
+  interrupted-run proposal is approved; its implementation and verification are pending.
 - Keep the original and fresh confirmation reservations, specialist queries,
   official test and the complete 1,000-query fitting pool out of adaptive work.
 - Freeze input fields, prompts, weights, score mapping and thresholds before
