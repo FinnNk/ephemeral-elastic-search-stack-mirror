@@ -15,7 +15,8 @@ class RelevanceProtectionTests(unittest.TestCase):
         rule = api.call_args.args[2]
         self.assertEqual(rule['required_approvals'], 0)
         self.assertFalse(rule['enable_push'])
-        self.assertEqual(len(rule['status_check_contexts']), 2)
+        self.assertEqual(len(rule['status_check_contexts']), 3)
+        self.assertIn('relevance-lab/merge-gate', rule['status_check_contexts'])
 
     def deployed_file(self, repository, *args):
         if args[0] == 'fetch':
@@ -23,6 +24,8 @@ class RelevanceProtectionTests(unittest.TestCase):
         source_path = args[1].split(':', 1)[1]
         mapping = {'.github/workflows/relevance.yaml': 'lab/delivery/workflows/relevance.yaml',
                    '.github/workflows/release.yaml': 'lab/delivery/workflows/release.yaml',
+                   '.github/workflows/delivery.yaml': 'lab/delivery/workflows/delivery.yaml',
+                   'gate/evaluation.json': 'lab/delivery/bootstrap/gate/evaluation.json',
                    'ci/variant_gate.py': 'lab/variant_gate.py',
                    'gate/policy.json': 'lab/delivery/policies/variant-merge-v1.json'}
         path = mapping.get(source_path, 'lab/delivery/' + source_path)
@@ -44,7 +47,7 @@ class RelevanceProtectionTests(unittest.TestCase):
         self.assertEqual(method, 'PATCH')
         self.assertEqual(rule['required_approvals'], 2)
         self.assertTrue(rule['require_signed_commits'])
-        self.assertEqual(len(rule['status_check_contexts']), 3)
+        self.assertEqual(len(rule['status_check_contexts']), 4)
         self.assertIn('Additional check', rule['status_check_contexts'])
         self.assertTrue(rule['block_admin_merge_override'])
         self.assertFalse(rule['enable_push'])

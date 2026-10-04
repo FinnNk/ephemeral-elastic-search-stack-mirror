@@ -1,8 +1,7 @@
 # Developer workflow improvements
 
 Make the developer walkthrough repeatable without operator commands or manual
-report publication. Leave the running production evaluation on its installed
-revision; publish the changes as separate review batches.
+report publication. Publish the changes as separate review batches.
 
 ## Batches
 
@@ -54,6 +53,19 @@ Next: [additional query sets](walkthrough-query-sets.md). Publish source-templat
 changes with the workflow batch so the source PR can use fresh automatic evidence.
 
 ## References
+
+Batch 3 adds durable remote operations, scoped OIDC, automatic exact-commit
+comparisons and manual workflow submissions. Isolated checks cover the real HTTP
+handler, identity restrictions, retry safety and separate standard/extra scoring.
+77 focused checks passed, and the new modules passed Ruff. Both affected Archify
+views were regenerated and passed automated browser checks; their light previews
+were inspected. Runtime activation follows human acceptance. Next:
+[request pacing](walkthrough-pacing.md).
+
+The existing production loop completed with build 108. Desired-state PR 16 was
+approved, merged and verified; retained verification SHA-256 is
+`d581ada3fff08bfeae966e47efb693ccbd4c96dbec063d49f7e1a8ee89642a44`.
+This confirms the installed delivery path, not the uninstalled feedback changes.
 
 - [Developer walkthrough](developer-walkthrough.md)
 - [Delivery](../delivery.md)

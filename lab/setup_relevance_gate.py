@@ -9,6 +9,9 @@ def install():
     files = {
         '.github/workflows/relevance.yaml': ROOT / 'lab/delivery/workflows/relevance.yaml',
         '.github/workflows/release.yaml': ROOT / 'lab/delivery/workflows/release.yaml',
+        '.github/workflows/delivery.yaml': ROOT / 'lab/delivery/workflows/delivery.yaml',
+        'ci/lab_delivery.py': ROOT / 'lab/delivery/ci/lab_delivery.py',
+        'gate/evaluation.json': ROOT / 'lab/delivery/bootstrap/gate/evaluation.json',
         'ci/relevance_scope.py': ROOT / 'lab/delivery/ci/relevance_scope.py',
         'ci/relevance_gate.py': ROOT / 'lab/delivery/ci/relevance_gate.py',
         'ci/variant_gate_store.py': ROOT / 'lab/delivery/ci/variant_gate_store.py',
@@ -26,7 +29,8 @@ def install():
     current = next((rule for rule in rules if rule.get('rule_name', rule.get('branch_name')) == 'main'), None)
     contexts = list(dict.fromkeys([*(current or {}).get('status_check_contexts', []),
                                   'Reference release CI / release (pull_request)',
-                                  'Offline relevance gate / relevance (pull_request_target)']))
+                                  'Offline relevance gate / relevance (pull_request_target)',
+                                  'relevance-lab/merge-gate']))
     rule = {**(current or {}), 'branch_name': 'main', 'rule_name': 'main',
             'enable_push': False, 'enable_force_push': False,
             'enable_status_check': True, 'status_check_contexts': contexts,

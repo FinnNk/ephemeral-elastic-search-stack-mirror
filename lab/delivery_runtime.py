@@ -271,6 +271,7 @@ def verify(name, deployment, revision=None):
 
 def preview(deployment):
     name = 'lab-delivery-run-' + str(deployment['build_run']) + '-' + deployment['fingerprint'][:8]
+    expiry = (datetime.now(timezone.utc) + timedelta(days=3)).isoformat()
     revision = checkout()
     branch = 'preview/' + name + '-' + uuid.uuid4().hex[:8]
     existing = k('get', 'application/' + name, '-n', 'argocd', '-o', 'json', check=False)
@@ -287,14 +288,15 @@ def preview(deployment):
         materialise(deployment, merged=False)
         access(name, deployment)
         application(name, 'previews/' + name, revision,
-                    (datetime.now(timezone.utc) + timedelta(days=3)).isoformat())
+                    expiry)
     else:
         revision = json.loads(existing.stdout)['spec']['source']['targetRevision']
         k('annotate', 'application/' + name, '-n', 'argocd',
-          'lab/preview-expires-at=' + (datetime.now(timezone.utc) + timedelta(days=3)).isoformat(), '--overwrite')
+          'lab/preview-expires-at=' + expiry, '--overwrite')
     verify(name, deployment, revision)
     return {'name': name, 'id': name, 'state': 'ready', 'source_sha': deployment['fields']['source_sha'],
-            'release_id': deployment['fields']['dataset_release'], 'fingerprint': deployment['fingerprint']}
+            'release_id': deployment['fields']['dataset_release'], 'fingerprint': deployment['fingerprint'],
+            'expires_at': expiry}
 
 
 def remove_preview(name):

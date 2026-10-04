@@ -19,8 +19,8 @@
   ],
   "nodes": [
     {"id": "selection", "lane": "source", "col": 0, "type": "frontend", "label": "Selected variants", "sublabel": "PR source SHA + intent", "width": 145},
-    {"id": "build", "lane": "source", "col": 1, "type": "backend", "label": "Build source", "sublabel": "Commit + image receipt", "width": 138},
-    {"id": "capture", "lane": "evaluate", "col": 2, "type": "backend", "label": "Capture variants", "sublabel": "Same query suite", "width": 146},
+    {"id": "build", "lane": "source", "col": 1, "type": "backend", "label": "Build then queue", "sublabel": "Exact commit receipt", "width": 138},
+    {"id": "capture", "lane": "evaluate", "col": 2, "type": "backend", "label": "Fresh API captures", "sublabel": "Standard + extra suites", "width": 146},
     {"id": "report", "lane": "evaluate", "col": 3, "type": "database", "label": "Signed report", "sublabel": "Image + metric pins", "width": 138},
     {"id": "approval", "lane": "review", "col": 3, "type": "frontend", "label": "Human exception", "sublabel": "Reason + reviewer", "width": 145},
     {"id": "gate", "lane": "review", "col": 4, "type": "security", "label": "Variant gate", "sublabel": "Policy + image receipt", "width": 142},
@@ -45,6 +45,10 @@
     {"dot": "emerald", "title": "Decision retains the evidence", "items": [
       "80% coverage; source and model policy checked",
       "Demo verdict records human quality authorisation"
+    ]},
+    {"dot": "cyan", "title": "Read each suite", "items": [
+      "Standard required; extra suites explicitly required",
+      "Combined scores and RBO describe change risk"
     ]}
   ]
 }

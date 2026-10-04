@@ -13,11 +13,11 @@ The allowlist names two exact paths. It does not exempt whole directories or inf
 
 ## Where the decision runs
 
-The relevance workflow uses `pull_request_target`, supported by Gitea and GitHub Actions. The workflow and classifier come from the target commit. The job fetches the candidate commit to inspect its diff and selected-variant JSON; it never checks out or runs candidate code. The trusted files and candidate inputs are mounted read-only for the gate process.
+The relevance workflow uses `pull_request_target`, supported by Gitea and GitHub Actions. It runs the protected target's delivery client and queues an exact-commit comparison. It never checks out or runs candidate code. The coordinator reads the complete Git diff, classifies the change and waits for successful build receipts before capturing results.
 
-The target's `ci/relevance_scope.py` owns the allowlist. A candidate editing that classifier or the workflow cannot grant itself an exemption: the target version still runs, and those edits require evaluation. Behaviour changes use the existing signed report, build receipt, policy and exception checks. Removing `gate/selection.json` cannot bypass evaluation.
+The coordinator's `relevance_scope.py` owns the allowlist. Editing the source copy or workflow cannot grant an exemption: those paths require evaluation. Behaviour changes use signed reports, build receipts, policy and exception checks. Removing `gate/selection.json` cannot bypass evaluation.
 
-The ordinary `pull_request` workflow still runs the candidate's tests and image build on the trusted-contributor lab runner. The relevance workflow holds the evaluation signing keys separately. Neither an exemption nor a passing evaluation approves a deployment.
+The ordinary `pull_request` workflow still runs the candidate's tests and image build on the trusted-contributor lab runner. Signing keys stay in the coordinator. The workflow's OIDC credential can submit delivery requests but cannot administer other lab resources. Neither an exemption nor a passing evaluation approves deployment.
 
 ## Temporary ESCI demo policy
 
@@ -25,11 +25,15 @@ The lab retains the **80% coverage requirement** and its relevance/result-preser
 
 Demo verdicts include the recorded authorisation and unqualified label count. A passing demo gate demonstrates the delivery workflow; it does not qualify the model’s accuracy. [Judgement resolution](judgement-resolution.md#temporary-esci-demo-labels) explains the thresholds and strict-mode restoration.
 
-The source gate and policy must first be merged to its trusted target. Then update the protected `LAB_VARIANT_GATE_CODE_SHA256` and `LAB_VARIANT_POLICY_SHA256` variables and publish fresh evidence for each exact source commit. Changing candidate code or the lab runtime cannot bypass this installation step.
+The source workflows and policy must first be accepted on main. Install the
+matching reviewed coordinator and run its setup commands to verify the source
+templates, pin `LAB_DELIVERY_CLIENT_SHA256` and require the coordinator status.
+Candidate policy edits cannot replace the installed policy. Policy updates need
+their own reviewed coordinator installation and fresh exact-commit evidence.
 
 ## Check the installed gate
 
-On a source PR, confirm **Reference release CI** and **Offline relevance gate** both report on the current head. A README-only change should record `evaluation_not_required` with its changed paths. Any other change needs the signed evidence described in the [operator runbook](evaluation-runbook.md).
+On a source PR, confirm **Reference release CI**, **Offline relevance gate** and `relevance-lab/merge-gate` all pass on the current head. The workflow reports submission; the coordinator status reports the result. A README-only change records its changed paths and reason. Other changes receive fresh signed evidence automatically. Follow the PR comment's [comparison links](remote-delivery.md).
 
 If a check is missing, inspect the Actions run and branch protection before merging. Do not treat a successful build as a relevance result.
 

@@ -33,10 +33,12 @@ class OIDCIdentity:
         if not isinstance(groups, list) or not all(isinstance(group, str) for group in groups):
             raise ValueError('Invalid OIDC group claim.')
         admin = 'lab-admins' in groups
-        if not admin and 'lab-readers' not in groups:
+        delivery = 'lab-delivery-actions' in groups and claims.get('azp') == 'lab-delivery-actions'
+        if not admin and not delivery and 'lab-readers' not in groups:
             raise ValueError('A lab group is required.')
         username = claims.get('preferred_username')
         if not isinstance(username, str) or not username or not isinstance(claims['sub'], str) or not claims['sub']:
             raise ValueError('OIDC identity is incomplete.')
-        return {'username': username, 'is_admin': admin, 'is_reader': not admin,
+        return {'username': username, 'is_admin': admin, 'is_reader': not admin and not delivery,
+                'is_delivery_service': delivery,
                 'issuer': self.issuer, 'subject': claims['sub'], 'audience': self.audience}

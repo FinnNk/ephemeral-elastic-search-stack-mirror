@@ -36,7 +36,6 @@ def configure_ci():
             if record is None:
                 vault_request(base, remote, 'PUT', secrets.token_urlsafe(48))
                 record = vault_request(base, remote)
-            api(endpoint(SOURCE, '/actions/secrets/' + name), 'PUT', {'data': record['value']})
     token = api(endpoint(SOURCE, '/actions/runners/registration-token'), 'POST')['token']
     apply({'apiVersion': 'v1', 'kind': 'Secret',
            'metadata': {'name': 'delivery-registration', 'namespace': 'platform'},
@@ -69,14 +68,17 @@ def seed_source(path):
     shutil.copyfile(ROOT / 'lab/variant_gate.py', path / 'ci/variant_gate.py')
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/chart', path / 'chart', dirs_exist_ok=True)
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/evaluation', path / 'evaluation', dirs_exist_ok=True)
+    shutil.copytree(ROOT / 'lab/delivery/bootstrap/configurations', path / 'configurations', dirs_exist_ok=True)
     chart = path / 'chart/templates/environment.yaml'
     chart.write_text(chart.read_text().replace('name: registry-read', 'name: nexus-read'),
                      encoding='utf-8', newline='\n')
     (path / '.github/workflows').mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/workflows/release.yaml', path / '.github/workflows/release.yaml')
     shutil.copyfile(ROOT / 'lab/delivery/workflows/relevance.yaml', path / '.github/workflows/relevance.yaml')
+    shutil.copyfile(ROOT / 'lab/delivery/workflows/delivery.yaml', path / '.github/workflows/delivery.yaml')
     (path / 'contracts').mkdir(exist_ok=True)
     (path / 'gate').mkdir(exist_ok=True)
+    shutil.copyfile(ROOT / 'lab/delivery/bootstrap/gate/evaluation.json', path / 'gate/evaluation.json')
     shutil.copyfile(ROOT / 'lab/delivery/policies/variant-merge-v1.json',
                     path / 'gate/policy.json')
     worker = (ROOT / 'lab/index_job.py').read_text(encoding='utf-8').encode()

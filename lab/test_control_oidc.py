@@ -40,6 +40,17 @@ class SignedIdentityTests(unittest.TestCase):
         with self.assertRaises(jwt.InvalidSignatureError):
             self.verify(key=rsa.generate_private_key(public_exponent=65537, key_size=2048))
 
+    def test_actions_group_requires_the_scoped_client(self):
+        self.claims['groups'] = ['lab-delivery-actions']
+        self.claims['azp'] = 'lab-delivery-actions'
+        identity = self.verify()
+        self.assertTrue(identity['is_delivery_service'])
+        self.assertFalse(identity['is_admin'])
+        self.assertFalse(identity['is_reader'])
+        self.claims['azp'] = 'another-client'
+        with self.assertRaises(ValueError):
+            self.verify()
+
     def test_http_issuer_rejected(self):
         with self.assertRaises(ValueError):
             OIDCIdentity('http://identity.example/realm', 'lab-control')

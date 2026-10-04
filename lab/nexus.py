@@ -37,6 +37,9 @@ def api(path, method='GET', body=None, identity='agent'):
 
 def publish(path, content, identity='publisher'):
     """Retry an identical upload; never replace different bytes at an existing path."""
+    if identity == 'publisher' and os.environ.get('LAB_NEXUS_PUBLISH_USER'):
+        identity = {'username': os.environ['LAB_NEXUS_PUBLISH_USER'],
+                    'password': os.environ['LAB_NEXUS_PUBLISH_PASSWORD']}
     if not path or any(part in ('', '.', '..') for part in path.split('/')):
         raise ValueError('Artifact path must be a relative path without traversal.')
     url = '/repository/lab-releases/' + path

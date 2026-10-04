@@ -6,9 +6,9 @@
   "status": "pass",
   "visualReview": "pending",
   "artifact": {
-    "path": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\interactive\\release-promotion.html",
-    "sha256": "79c238040f16a15bf8acdef10fd49a1873226a859e24d9379fb88245e5601680",
-    "bytes": 816204
+    "path": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\release-promotion.html",
+    "sha256": "319745b60e7381c4e321f7ad01be9ba1bbd241e838ccc85fa01bafea0f288a7c",
+    "bytes": 816212
   },
   "state": {
     "detail": "read",

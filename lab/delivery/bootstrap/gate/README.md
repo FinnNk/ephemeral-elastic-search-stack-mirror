@@ -26,10 +26,14 @@ Application tests and builds run separately. If a PR changes only `README.md`, `
    }
    ```
 
-2. **Push the branch and open a PR.** In Gitea's **Actions** tab, wait for **Reference release CI** to build that exact commit. An initial relevance-check failure is expected until its report is available.
-3. **Evaluate the built image in the lab.** Use frozen inputs: saved versions of the products, queries and labels that stay unchanged during the comparison. Review relevance scores, label coverage and changed results.
-4. **Publish the evidence.** Give the frozen report and build receipt to the lab operator. The operator signs and publishes them to Nexus, the artefact repository. The signed record binds the report to the exact source commit and evaluated image.
-5. **Rerun Offline relevance gate on the same commit.** If you change the source commit, obtain evidence for the new commit. A passing build alone does not satisfy this check.
+2. **Push the branch and open a PR.** CI builds the exact commit; the coordinator waits for its successful receipt before comparing it with the baseline.
+3. **Open the PR's comparison links.** The comment lists both storefronts, their expiry and the report. Review relevance, label coverage, changed results and RBO/Jaccard overlap.
+4. **Wait for `relevance-lab/merge-gate`.** It stays pending while fresh searches run and the coordinator signs the report. The submission workflow completing is insufficient to merge.
+5. **Review the outcome.** Every new commit gets a new comparison. A passing build alone cannot satisfy the gate. A recorded exception preserves the measurements and reason.
+
+`gate/evaluation.json` names the default and baseline. Files in `configurations/`
+define their ranking settings. The coordinator reads baseline settings from its
+revision and candidate settings from the PR head. Both use the same frozen inputs.
 
 ## Add a query set
 

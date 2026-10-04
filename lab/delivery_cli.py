@@ -169,12 +169,16 @@ def main():
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as singleton:
             singleton.bind(('127.0.0.1', 18087))
             singleton.listen(1)
+            with writer():
+                from delivery_operations import Operations
+                Operations().recover()
             while True:
                 if (STATE / 'control-drain').exists():
                     return
                 try:
                     with writer(timeout=0):
-                        result = execute(args)
+                        from delivery_operations import execute_next
+                        result = execute_next() or execute(args)
                     if result:
                         print(json.dumps(result), flush=True)
                 except Exception as error:

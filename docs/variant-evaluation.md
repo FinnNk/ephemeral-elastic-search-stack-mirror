@@ -62,7 +62,7 @@ For complete operator commands, use the [evaluation runbook](evaluation-runbook.
 
 Reports identify judgement selection and count each source. **Demo** means that model accuracy is unqualified, even when the gate passes. Read coverage beside the scores. Synthetic fixtures demonstrate the process, not real search quality. [Result-preservation comparisons](prototype-design.md#result-regression-preserve-ranking-and-membership) also provide RBO and Jaccard diagnostics.
 
-The lab operator runs capture, judgement resolution and scoring. The expected output is one frozen report containing every variant, its baseline deltas and the exact inputs used. If capture fails, correct the missing API response or deployment mismatch before scoring. If labels are missing, inspect coverage before treating scores as evidence.
+The coordinator captures and scores source PRs automatically using pinned inputs. Each report contains every variant, baseline deltas and exact inputs. Follow its PR links or use [remote comparison commands](remote-delivery.md). If capture fails, correct the API response or deployment mismatch before scoring. If labels are missing, inspect coverage before treating scores as evidence. The operator runbook also supports explicitly prepared judgement-resolution studies.
 
 ## Supply merge evidence
 
@@ -106,9 +106,9 @@ does not apply to extra suites.
 | Build the exact PR commit | Release CI publishes the image and immutable Nexus build receipt |
 | Evaluate that image | Retain the frozen report, then issue its signed attestation |
 | Publish evidence | `variant-gates/<source SHA>/report.json`, `attestation.json` and `approvals.json` in Nexus |
-| Rerun the relevance job | Trusted target code checks signatures, policy, selection, source SHA and the attested image |
+| Read the coordinator status | `relevance-lab/merge-gate` checks signatures, policy, selection, source SHA and the attested image after fresh capture |
 
-The captured image must match the attested build receipt, even if a later CI attempt builds another image. Missing or mismatched evidence fails. Protected Actions variables pin the policy and verifier.
+The captured image must match the attested build receipt, even if a later CI attempt builds another image. Missing or mismatched evidence fails. The reviewed coordinator pins the policy and verifier; Actions pins its protected submission client.
 
 Behavioural changes require evidence. The [README exemption](relevance-gate.md) skips evaluation only; tests and builds still run.
 

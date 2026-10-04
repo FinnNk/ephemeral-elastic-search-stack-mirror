@@ -22,8 +22,8 @@ Operator setup is `python lab/setup_nexus.py`, then `python lab/setup_delivery.p
 1. Open a branch and PR in `delivery-source`.
 2. Commit `gate/selection.json` naming release candidates and `preserve-results` or `ranking-change` intent. Choose one default; the metric baseline may differ.
 3. Wait for **Reference release CI** to test and build the exact head. It publishes multi-platform images, the deterministic bundle, release descriptor and build receipt, in that order. A failed build does not publish a successful receipt.
-4. Ask the operator to follow [capture and evidence publication](evaluation-runbook.md) for that exact image/commit. Inspect [scores, coverage and gate outcomes](variant-evaluation.md).
-5. Rerun **Offline relevance gate** on the same commit. Missing, stale, blocked or mismatched evidence fails. A recorded bounded exception preserves the score and reason; it does not alter the result.
+4. Follow the automatic comparison's PR comment for both storefronts and its report. The coordinator captures fresh results and signs the exact build receipt. Inspect [scores, coverage and gate outcomes](variant-evaluation.md).
+5. Wait for `relevance-lab/merge-gate`. It stays pending during the comparison; missing, stale, blocked or mismatched evidence fails. A recorded bounded exception preserves the score and reason; it does not alter the result.
 6. Review and merge when the required checks pass. CI builds that merged SHA separately; promotion uses this new release and matching evidence.
 
 Changes confined to the two source README paths have a [recorded relevance exemption](relevance-gate.md); application checks still run. Source gate approval does not deploy anything.
@@ -38,6 +38,9 @@ Changes confined to the two source README paths have a [recorded relevance exemp
 Verification checks bundle paths/checksums and rejects mutable images or incompatible indexers. Credentials, namespace and dataset selection belong to the deployment, not the release bundle.
 
 ## Open a source PR preview
+
+For ordinary developer operations, use [remote commands or the manual Actions
+workflow](remote-delivery.md). The commands below remain operator tools.
 
 An operator can deploy a successful PR build before source merge. Use PowerShell
 from the lab repository root, with `lab-control` installed and the

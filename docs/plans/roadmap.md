@@ -2,13 +2,15 @@
 
 The [walkthrough feedback plan](walkthrough-feedback.md) adds copyable examples,
 similarity summaries, additional query sets, remote Actions workflows and
-adaptive request pacing in four review batches. The running production load
-evaluation retains its installed revision throughout this work.
+adaptive request pacing in four review batches. Build 108 completed the existing
+production-load gate and was approved, deployed and verified through PR 16.
 
 The guidance batch is in PR #105. The query-set batch freezes extra source
 files and separates suite metrics from the combined view. Its next batch is
 [remote developer operations](walkthrough-actions.md), including automatic PR
-comparisons and public report links.
+comparisons and public report links. Remote operations and automatic capture are
+implemented on the review branch; runtime activation remains after acceptance.
+The next detailed batch is [adaptive request pacing](walkthrough-pacing.md).
 
 The lab has demonstrated a million-product catalogue, 1,000 queries, frozen API comparisons, Gatling load profiles, index recovery, a 40-API fleet and a three-target release path. These are local measurements, not evidence that the same capacity or latency will hold on Apple silicon or Azure. The [design targets](../prototype-design.md#provisional-quantitative-targets) remain provisional.
 

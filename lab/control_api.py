@@ -119,6 +119,25 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(401, {'error': 'Sign in to the lab.'})
         if parts == ['api', 'me']:
             return self.send_json(200, {key: value for key, value in identity.items() if key != 'expires_at'})
+        if parts[:3] == ['api', 'delivery', 'operations'] and len(parts) in (4, 5):
+            from delivery_operations import Operations
+            row = Operations().get(parts[3])
+            if row is None:
+                return self.send_json(404, {'error': 'Delivery operation not found.'})
+            if not self.visible(row, identity):
+                return self.send_json(403, {'error': 'Delivery operation belongs to another owner.'})
+            if len(parts) == 4:
+                return self.send_json(200, row)
+            if parts[4] == 'report' and (row.get('result') or {}).get('report'):
+                reference = row['result']['report']
+                container, name = reference['blob'].split('/', 1)
+                payload = service().get_blob_client(container, name).download_blob().readall()
+                if hashlib.sha256(payload).hexdigest() != reference['sha256']:
+                    return self.send_json(502, {'error': 'Frozen delivery report hash differs.'})
+                return self.send_bytes(200, payload, 'application/json; charset=utf-8')
+            return self.send_json(409, {'error': 'Delivery report is not available.'})
+        if identity.get('is_delivery_service'):
+            return self.send_json(403, {'error': 'Actions identity is restricted to delivery operations.'})
         if parts == ['api', 'datasets']:
             releases = []
             for release_id in RELEASES:
@@ -249,6 +268,20 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, {'signed_out': True}, {'Set-Cookie': expired_cookie()})
             if identity.get('is_reader', False):
                 return self.send_json(403, {'error': 'Reader accounts cannot change lab resources.'})
+            if parts == ['api', 'delivery', 'operations']:
+                if not identity['is_admin'] and not identity.get('is_delivery_service'):
+                    return self.send_json(403, {'error': 'Delivery operations require a lab administrator.'})
+                from delivery_operations import Operations
+                store = Operations()
+                row = store.submit(payload, identity, self.headers.get('Idempotency-Key'))
+                if payload.get('pr') and row['state'] == 'accepted':
+                    from delivery_source_comparison import status
+                    status(payload['source_sha'], 'pending', row['progress'], row['id'])
+                    store.update(row['id'], state='queued', progress=row['progress'])
+                    row = store.get(row['id'])
+                return self.send_json(202, row)
+            if identity.get('is_delivery_service'):
+                return self.send_json(403, {'error': 'Actions identity is restricted to delivery operations.'})
             if parts == ['api', 'environments', 'batch']:
                 rows = self.controller.create_many(payload['names'], payload['build_run'],
                     owner=identity['username'], release_id=payload.get('release_id', DATASET))
@@ -303,6 +336,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(401, {'error': 'Sign in to the lab.'})
             if identity.get('is_reader', False):
                 return self.send_json(403, {'error': 'Reader accounts cannot change lab resources.'})
+            if identity.get('is_delivery_service'):
+                return self.send_json(403, {'error': 'Actions identity cannot delete resources.'})
             if parts == ['api', 'environments', 'batch']:
                 instance_ids = payload['ids']
                 if not isinstance(instance_ids, list) or any(

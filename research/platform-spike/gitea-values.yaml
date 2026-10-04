@@ -39,7 +39,7 @@ gitea:
       PROVIDER: memory
     queue:
       TYPE: level
-    webhook:
+    security:
       ALLOWED_HOST_LIST: webhook.platform.svc.cluster.local
 resources:
   requests:

@@ -1,0 +1,81 @@
+name: Lab delivery
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Operation
+        required: true
+        type: choice
+        options: [preview, compare, propose-promotion]
+      run:
+        description: Successful candidate build run
+        required: true
+        type: string
+      baseline_run:
+        description: Successful baseline run (compare only)
+        type: string
+      target:
+        description: Promotion target
+        type: choice
+        options: [integration, staging, production]
+      intent:
+        description: Promotion intent
+        type: choice
+        options: [preserve-results, ranking-change]
+      dataset:
+        description: Frozen catalogue release
+        default: esci-gb-v1
+        type: string
+permissions:
+  contents: read
+jobs:
+  delivery:
+    if: github.ref == 'refs/heads/main'
+    runs-on: lab-delivery
+    timeout-minutes: 15
+    steps:
+      - name: Read the protected delivery client
+        env:
+          SOURCE_URL: ${{ vars.SOURCE_BASE_URL || github.server_url }}/${{ github.repository }}.git
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_USER: ${{ secrets.SOURCE_USER }}
+          SOURCE_TOKEN: ${{ secrets.SOURCE_TOKEN }}
+        run: |
+          set -eu
+          export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader
+          export GIT_CONFIG_VALUE_0="Authorization: Basic $(printf '%s:%s' "$SOURCE_USER" "$SOURCE_TOKEN" | base64 | tr -d '\n')"
+          git init source
+          cd source
+          git remote add origin "$SOURCE_URL"
+          git fetch --no-tags origin "$SOURCE_SHA"
+          git checkout --detach "$SOURCE_SHA"
+      - name: Run the selected operation
+        env:
+          OPERATION: ${{ inputs.operation }}
+          BUILD_RUN: ${{ inputs.run }}
+          BASELINE_RUN: ${{ inputs.baseline_run }}
+          TARGET: ${{ inputs.target }}
+          INTENT: ${{ inputs.intent }}
+          DATASET: ${{ inputs.dataset }}
+          SUBMISSION_KEY: manual-${{ github.run_id }}
+          LAB_DELIVERY_URL: ${{ vars.LAB_DELIVERY_URL }}
+          LAB_OIDC_ISSUER: ${{ vars.LAB_OIDC_ISSUER }}
+          LAB_OIDC_EDGE_IP: ${{ vars.LAB_OIDC_EDGE_IP }}
+          LAB_DELIVERY_CLIENT_SECRET: ${{ secrets.LAB_DELIVERY_CLIENT_SECRET }}
+          LAB_DELIVERY_CLIENT_SHA256: ${{ vars.LAB_DELIVERY_CLIENT_SHA256 }}
+        run: |
+          set -eu
+          test "$(sha256sum source/ci/lab_delivery.py | cut -d ' ' -f 1)" = "$LAB_DELIVERY_CLIENT_SHA256"
+          PYTHON_IMAGE='python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844'
+          docker run --rm -v "$PWD/source:/trusted:ro" -v /etc/lab-ca:/etc/lab-ca:ro \
+            --add-host "control.localhost:$LAB_OIDC_EDGE_IP" --add-host "identity.localhost:$LAB_OIDC_EDGE_IP" \
+            -e OPERATION -e BUILD_RUN -e BASELINE_RUN -e TARGET -e INTENT -e DATASET -e SUBMISSION_KEY \
+            -e LAB_DELIVERY_URL -e LAB_OIDC_ISSUER -e LAB_DELIVERY_CLIENT_SECRET -e LAB_CA_BUNDLE=/etc/lab-ca/root.pem \
+            "$PYTHON_IMAGE" sh -ec '
+              case "$OPERATION" in
+                preview) set -- preview --run "$BUILD_RUN" ;;
+                compare) set -- compare --baseline-run "$BASELINE_RUN" --candidate-run "$BUILD_RUN" ;;
+                propose-promotion) set -- propose-promotion --target "$TARGET" --run "$BUILD_RUN" --intent "$INTENT" ;;
+                *) echo "Unknown operation" >&2; exit 1 ;;
+              esac
+              python /trusted/ci/lab_delivery.py "$@" --dataset "$DATASET" --key "$SUBMISSION_KEY" --no-wait'

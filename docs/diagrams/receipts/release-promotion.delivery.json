@@ -3,15 +3,15 @@
   "ok": true,
   "command": "deliver",
   "type": "workflow",
-  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\archify\\release-promotion.json",
-  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\reference-clarity\\docs\\diagrams\\interactive\\release-promotion.html",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\archify\\release-promotion.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\release-promotion.html",
   "specification": {
-    "sha256": "6d2af8bf50fd2820e57fcf5ceebfc3e6de5316cab087b0ceaaea67f6dec694be",
-    "bytes": 5399
+    "sha256": "ef2176c5f457b37ca68e888235769aae9b532cfdb5a1b9099f252e9272a24448",
+    "bytes": 5401
   },
   "artifact": {
-    "sha256": "79c238040f16a15bf8acdef10fd49a1873226a859e24d9379fb88245e5601680",
-    "bytes": 816204
+    "sha256": "319745b60e7381c4e321f7ad01be9ba1bbd241e838ccc85fa01bafea0f288a7c",
+    "bytes": 816212
   },
   "validation": {
     "checksPassed": 9,

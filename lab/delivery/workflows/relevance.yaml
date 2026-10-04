@@ -33,27 +33,26 @@ jobs:
           if git cat-file -e "$SOURCE_SHA:gate/selection.json"; then
             git show "$SOURCE_SHA:gate/selection.json" > ../gate-input/selection.json
           fi
-      - name: Check relevance or record documentation exemption
+      - name: Queue the exact commit comparison
         env:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          SOURCE_REPOSITORY: ${{ github.repository }}
-          ARTIFACT_URL: ${{ vars.RELEASE_ARTIFACT_URL }}
-          NEXUS_USER: ${{ secrets.NEXUS_USER }}
-          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-          LAB_VARIANT_EVIDENCE_KEY: ${{ secrets.LAB_VARIANT_EVIDENCE_KEY }}
-          LAB_VARIANT_APPROVAL_KEY: ${{ secrets.LAB_VARIANT_APPROVAL_KEY }}
-          LAB_VARIANT_POLICY_SHA256: ${{ vars.LAB_VARIANT_POLICY_SHA256 }}
-          LAB_VARIANT_GATE_CODE_SHA256: ${{ vars.LAB_VARIANT_GATE_CODE_SHA256 }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          LAB_DELIVERY_URL: ${{ vars.LAB_DELIVERY_URL }}
+          LAB_OIDC_ISSUER: ${{ vars.LAB_OIDC_ISSUER }}
+          LAB_OIDC_EDGE_IP: ${{ vars.LAB_OIDC_EDGE_IP }}
+          LAB_DELIVERY_CLIENT_SECRET: ${{ secrets.LAB_DELIVERY_CLIENT_SECRET }}
+          LAB_DELIVERY_CLIENT_SHA256: ${{ vars.LAB_DELIVERY_CLIENT_SHA256 }}
         run: |
           set -eu
-          test "$(sha256sum source/ci/variant_gate.py | cut -d ' ' -f 1)" = "$LAB_VARIANT_GATE_CODE_SHA256"
+          test "$(sha256sum source/ci/lab_delivery.py | cut -d ' ' -f 1)" = "$LAB_DELIVERY_CLIENT_SHA256"
           PYTHON_IMAGE='python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844'
-          docker run --rm -v "$PWD/source:/trusted:ro" -v "$PWD/gate-input:/input:ro" \
-            -e SOURCE_SHA -e BASE_SHA -e SOURCE_REPOSITORY -e ARTIFACT_URL -e NEXUS_USER -e NEXUS_PASSWORD \
-            -e LAB_VARIANT_EVIDENCE_KEY -e LAB_VARIANT_APPROVAL_KEY -e LAB_VARIANT_POLICY_SHA256 \
+          docker run --rm -v "$PWD/source:/trusted:ro" -v /etc/lab-ca:/etc/lab-ca:ro \
+            --add-host "control.localhost:$LAB_OIDC_EDGE_IP" --add-host "identity.localhost:$LAB_OIDC_EDGE_IP" \
+            -e SOURCE_SHA -e BASE_SHA -e PR_NUMBER -e LAB_DELIVERY_URL -e LAB_OIDC_ISSUER \
+            -e LAB_DELIVERY_CLIENT_SECRET -e LAB_CA_BUNDLE=/etc/lab-ca/root.pem \
             "$PYTHON_IMAGE" sh -ec '
-              python /trusted/ci/relevance_gate.py --changes /input/changes.bin \
-                --base-sha "$BASE_SHA" --source-sha "$SOURCE_SHA" \
-                --source-repository "$SOURCE_REPOSITORY" --selection /input/selection.json \
-                --policy /trusted/gate/policy.json'
+              python /trusted/ci/lab_delivery.py source-compare --pr "$PR_NUMBER" \
+                --source-sha "$SOURCE_SHA" --baseline-sha "$BASE_SHA" \
+                --key "pr-$PR_NUMBER-$SOURCE_SHA-$BASE_SHA" --no-wait'
+          echo 'Comparison queued. The required relevance-lab/merge-gate status follows the results.'
