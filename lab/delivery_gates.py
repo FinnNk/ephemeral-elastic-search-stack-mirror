@@ -11,6 +11,7 @@ from delivery.ci.release import canonical, digest
 from delivery_runtime import preview
 from promotion_policy import validate as validate_offline_policy
 from input_selection import DEFAULTS
+from delivery_load_policy import validate as validate_production_load
 
 
 def deployment_inputs(deployment):
@@ -86,7 +87,7 @@ def check_report(report, mode, baseline, candidate, intent):
             raise ValueError('Frozen relevance evidence is missing.')
 
 
-def validate_evidence(reference, baseline, candidate, intent, expected_inputs=None):
+def validate_evidence(reference, baseline, candidate, intent, expected_inputs=None, *, target=None):
     if intent not in ('preserve-results', 'ranking-change'):
         raise ValueError('Choose an explicit result-preserving or intentional ranking change.')
     evidence = read(reference)
@@ -107,6 +108,8 @@ def validate_evidence(reference, baseline, candidate, intent, expected_inputs=No
     for mode, report in evidence['reports'].items():
         value = read(report)
         check_report(value, mode, baseline, candidate, intent)
+        if target == 'production' and mode == 'performance':
+            validate_production_load(value)
         if selected and mode != 'performance':
             if (value.get('query_manifest_sha256') != selected['query_manifest_sha256'] or
                     (mode == 'relevance' and value.get('judgement_manifest_sha256') !=

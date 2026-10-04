@@ -101,7 +101,30 @@ $evidence = Read-Host 'reference_file printed by evaluate-target (path inside th
 kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/delivery_cli.py promote integration --run $candidateRun --dataset $dataset --recipe $recipe --evidence $evidence --intent $intent
 ```
 
-Evaluation captures the current target as baseline and the proposed release as candidate. It uses the same selected frozen query/label set and a sequential paired Gatling workload. Failed evaluations retain evidence but cannot pass validation. The default `probe` checks wiring; use `--profile smoke` for the five-minute load check.
+Evaluation captures the current target as baseline and the proposed release as candidate. It uses the same selected frozen query/label set and a sequential paired Gatling workload. Failed evaluations retain evidence but cannot pass validation.
+
+| Target | Default performance profile | Requirement |
+| --- | --- | --- |
+| Integration / staging | `probe` | Short wiring check; `smoke` provides five minutes of measured normal load |
+| Simulated production | `production-load` | One minute of warmup, five minutes at 10 requests/second, then fifteen minutes at 20 requests/second, for each release |
+
+For production, pass `--profile production-load` to `evaluate-target`; omitting it
+selects the same profile. `probe` and `smoke` cannot satisfy its promotion gate.
+The paired runs take at least 42 minutes plus setup and report collection. They
+run against temporary release previews, not the deployed production service.
+
+Both runs must complete every scheduled arrival, satisfy arrival validity and
+use the pinned [production workload](../lab/traffic/production-load-v1.json).
+Normal-load budgets are p95 ≤250 ms and p99 ≤500 ms; peak budgets are p95 ≤400 ms
+and p99 ≤800 ms. Both phases require fewer than 1% failed requests. These are
+local lab targets, not a claim of production capacity. Stress tests remain
+separate from promotion.
+
+Production proposal validation checks this policy again before merge. If an
+earlier report used `probe` or a different recipe, run a fresh production
+evaluation and create a proposal with its new `reference_file`. Production
+rollback proposals also require the full profile in the current → previous
+direction.
 
 For another published suite, pass the same `--query-manifest` and `--judgement-manifest` hashes to evaluation and proposal. Blank values select pinned defaults. Reports must match both deployment fingerprints, inputs and intent and be at most three days old. Re-evaluate if any of those change.
 
@@ -125,7 +148,11 @@ kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c a
 
 A moved desired-state main invalidates the proposal; recreate it. Failed verification is not success merely because merge completed. Inspect coordinator/Argo errors and retry verification after fixing the deployment.
 
-Once integration verifies, repeat target evaluation/proposal for `staging`, then `production`, using the **same** release, dataset and recipe. Reuse evidence only when that target's baseline matches and evidence remains fresh. Promotion performs no image rebuild.
+Once integration verifies, repeat target evaluation/proposal for `staging`, then
+`production`, using the **same** release, dataset and recipe. Use the required
+`production-load` profile for production. Reuse evidence only when that target's
+baseline matches, its profile satisfies the target policy and evidence remains
+fresh. Promotion performs no image rebuild.
 
 ## Roll back a target
 

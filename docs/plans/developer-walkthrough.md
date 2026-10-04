@@ -24,21 +24,18 @@ clean checkout and read `understand()` and `query_body()`. They have created
 The source repository includes a copyable function in
 `examples/trainers_rewrite.py`; the lab seeds the same example and contributor guide.
 
-The contributor has built the application, passed all 17 tests, committed and
-pushed the change, and opened source PR #26. Its declared intent is
-`ranking-change`. Release CI passed; relevance CI is waiting for a report for
-that exact commit.
+The contributor has built the application, passed all 17 tests, inspected the
+baseline and candidate previews, reviewed the frozen report and merged source
+PR #26 after both CI checks passed. Its intent is `ranking-change`. The merged
+release is verified in integration and staging; browser checks confirmed the
+rewrite in both. The delivery fixtures now use the same ESCI catalogue.
 
-The [PR preview correction](pr-build-previews.md) makes the ordinary delivery CLI
-accept verified PR builds while keeping promotion restricted to merged source.
-A preview of the contributor's build is ready; the installed control runtime
-still needs this correction after review.
+The 1,000-query suite contains no exact `trainers` query. An unchanged general
+suite does not establish that this rewrite improves relevance.
 
-Next, open the candidate preview together and try `trainers`, then compare it
-with the baseline before running the frozen evaluation. The 1,000-query suite
-contains no exact `trainers` query; explain that limit before interpreting its
-report. Do not describe an unchanged general suite as evidence that this rewrite
-improves relevance.
+Next, accept and [activate the production load gate](production-load-activation.md),
+then resume the production evaluation, proposal, approval and deployment steps.
+The earlier production probe does not satisfy the full-load requirement.
 
 Continue one step at a time with feedback. At the end, add a copyable test snippet
 and comments on the intended use of both examples, then review public-function

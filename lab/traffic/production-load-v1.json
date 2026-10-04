@@ -1,0 +1,10 @@
+{
+  "schema_version": 2,
+  "profiles": {
+    "production-load": [
+      {"name": "warmup", "seconds": 60, "source_start": 0, "rate": 10},
+      {"name": "normal", "seconds": 300, "source_start": 60, "rate": 10},
+      {"name": "peak", "seconds": 900, "source_start": 660, "rate": 20}
+    ]
+  }
+}

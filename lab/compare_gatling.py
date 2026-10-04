@@ -21,7 +21,7 @@ def measure_phase(metrics, budget):
 
 
 def compare(first, second):
-    same_workload = first.get('release_id') == second.get('release_id') and \
+    same_workload = first['profile'] == second['profile'] and first.get('release_id') == second.get('release_id') and \
         first['workload_sha256'] == second['workload_sha256'] and \
         first['source_sha256'] == second['source_sha256'] and first['recipe_sha256'] == second['recipe_sha256'] and \
         first.get('workload_archive_sha256') == second.get('workload_archive_sha256')

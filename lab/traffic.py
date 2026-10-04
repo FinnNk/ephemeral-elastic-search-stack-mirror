@@ -185,7 +185,7 @@ def compile_profile(profile, release_id=DEFAULT_RELEASE):
     if release_id not in RELEASES:
         raise ValueError('Unsupported frozen traffic release.')
     trace_path,source_manifest,query_path = generate_catalogue_trace(release_id)
-    recipe_path = MILLION_RECIPES_EXT
+    recipe_path = ROOT / 'production-load-v1.json' if profile == 'production-load' else MILLION_RECIPES_EXT
     recipe_bytes = recipe_path.read_bytes()
     recipes = json.loads(recipe_bytes)
     if profile not in recipes['profiles']:

@@ -29,6 +29,12 @@ The [reference-clarity audit](reference-clarity.md) tracks historical-schema and
 
 ## Next batches
 
+The [production promotion load gate](production-load-gate.md) requires pinned
+normal and sustained-peak Gatling evidence for production proposals and checks
+it again before merge. Integration and staging retain probes. After acceptance,
+install the control image and resume the developer walkthrough with a fresh full
+production evaluation; the earlier probe does not satisfy this gate.
+
 The [temporary ESCI demo batch](esci-demo-coverage.md) uses the current calibrated model with reduced acceptance thresholds. The full English catalogue contains 1,215,854 products. Captured recall has **81.22% demo coverage**, including 5,107 unqualified model predictions; strict published-label coverage remains **29.71%**. The 80% coverage requirement is unchanged. See [measured evidence](../research/evidence/esci-demo-coverage.md).
 
 | Batch | State | Next action |

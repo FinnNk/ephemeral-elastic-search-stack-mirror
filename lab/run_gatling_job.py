@@ -1,6 +1,7 @@
 """Run a finite Gatling Job in the lab cluster with no Kubernetes API credential."""
 from catalogue import DEFAULT_RELEASE, RELEASES
 import hashlib
+import base64
 import json
 import os
 from pathlib import Path
@@ -20,6 +21,24 @@ NAMESPACE = 'lab-evaluation'
 OWNED_LABEL = {'app.kubernetes.io/managed-by': 'lab-control-gatling'}
 DELIVERY_LABEL = {'app.kubernetes.io/managed-by': 'lab-delivery-gatling'}
 TARGETS = {'baseline': 'retail-baseline', 'candidate': 'retail-candidate'}
+
+
+def workload_parts(files, prefix):
+    """Transport large CSVs in bounded ConfigMaps and reconstruct their exact bytes."""
+    configs, commands = [], []
+    for filename, payload in sorted(files.items()):
+        if not filename.endswith('.csv') or not all(c.isalnum() or c in '-.' for c in filename):
+            raise ValueError('Unsafe workload filename.')
+        keys = []
+        for offset in range(0, len(payload), 512 * 1024):
+            key = 'part-' + str(len(configs)).zfill(5)
+            keys.append('/workload-parts/' + key)
+            configs.append({'name': prefix + '-' + str(len(configs)),
+                            'binaryData': {key: base64.b64encode(payload[offset:offset + 512 * 1024]).decode()}})
+        if not keys:
+            raise ValueError('Empty workload file.')
+        commands.append('cat ' + ' '.join(keys) + ' > /workload/' + filename)
+    return configs, ' && '.join(commands)
 
 
 def local_copy_target(path, root=ROOT, in_cluster=IN_CLUSTER):
@@ -66,16 +85,19 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
     source_name, workload_name = name + '-source', name + '-workload'
     claim = name + '-results'
     source = STATE / 'workloads' / workload['workload_sha256']
-    workload_files = {path.name: path.read_text(encoding='utf-8') for path in source.glob('*.csv')}
+    workload_files = {path.name: path.read_bytes() for path in source.glob('*.csv')}
+    parts, restore = workload_parts(workload_files, workload_name)
     job = {'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': name, 'namespace': NAMESPACE,
         'labels': {**owned_label, 'lab': 'gatling', 'profile': profile, 'target': target}},
         'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': workload['duration_seconds'] + 480,
             'template': {'metadata': {'labels': {'lab': 'gatling'}},
                 'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never',
                 'initContainers': [{'name': 'prepare', 'image': IMAGE,
-                    'command': ['sh', '-c', 'mkdir -p /workspace/src/test/java/lab/relevance && cp /source/pom.xml /workspace/pom.xml && cp /source/Simulation.java /workspace/src/test/java/lab/relevance/SyntheticSearchSimulation.java'],
+                    'command': ['sh', '-ec', 'mkdir -p /workspace/src/test/java/lab/relevance && cp /source/pom.xml /workspace/pom.xml && cp /source/Simulation.java /workspace/src/test/java/lab/relevance/SyntheticSearchSimulation.java && ' + restore],
                     'volumeMounts': [{'name': 'project', 'mountPath': '/workspace'},
-                                     {'name': 'source', 'mountPath': '/source'}]}],
+                                     {'name': 'source', 'mountPath': '/source'},
+                                     {'name': 'workload-parts', 'mountPath': '/workload-parts'},
+                                     {'name': 'workload', 'mountPath': '/workload'}]}],
                 'containers': [{'name': 'gatling', 'image': IMAGE, 'workingDir': '/workspace',
                     'command': ['sh', '/source/run-job.sh'],
                     'env': [{'name': 'LAB_BASE_URL',
@@ -90,7 +112,9 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
                 'volumes': [{'name': 'project', 'emptyDir': {}},
                             {'name': 'results', 'persistentVolumeClaim': {'claimName': claim}},
                             {'name': 'source', 'configMap': {'name': source_name}},
-                            {'name': 'workload', 'configMap': {'name': workload_name}}]}}}}
+                            {'name': 'workload', 'emptyDir': {}},
+                            {'name': 'workload-parts', 'projected': {'sources': [
+                                {'configMap': {'name': part['name']}} for part in parts]}}]}}}}
     started = time.monotonic()
     try:
         apply({'apiVersion': 'v1', 'kind': 'PersistentVolumeClaim',
@@ -99,11 +123,10 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
         k('create', '-f', '-', body={'apiVersion': 'v1', 'kind': 'ConfigMap',
             'metadata': {'name': source_name, 'namespace': NAMESPACE,
                          'labels': owned_label}, 'data': data})
-        # Client-side apply duplicates the CSV in last-applied-configuration and
-        # exceeds Kubernetes' 256 KiB annotation limit for the peak workload.
-        k('create', '-f', '-', body={'apiVersion': 'v1', 'kind': 'ConfigMap',
-            'metadata': {'name': workload_name, 'namespace': NAMESPACE,
-                         'labels': owned_label}, 'data': workload_files})
+        for part in parts:
+            k('create', '-f', '-', body={'apiVersion': 'v1', 'kind': 'ConfigMap',
+                'metadata': {'name': part['name'], 'namespace': NAMESPACE,
+                             'labels': owned_label}, 'binaryData': part['binaryData']})
         apply(job)
         k('wait', '--for=condition=complete', 'job/' + name, '-n', NAMESPACE,
           '--timeout=' + str(workload['duration_seconds'] + 480) + 's')
@@ -173,7 +196,7 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
     finally:
         k('delete', 'pod/' + name + '-reader', '-n', NAMESPACE, '--ignore-not-found', '--wait=true', check=False)
         k('delete', 'job/' + name, '-n', NAMESPACE, '--ignore-not-found', '--wait=true', check=False)
-        for config in (source_name, workload_name):
+        for config in [source_name, *(part['name'] for part in parts)]:
             k('delete', 'configmap/' + config, '-n', NAMESPACE, '--ignore-not-found', check=False)
         k('delete', 'pvc/' + claim, '-n', NAMESPACE, '--ignore-not-found', '--wait=true', check=False)
 
@@ -182,7 +205,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('profile', choices=('probe', 'smoke', 'normal', 'peak', 'stress',
-                                            'normal-full', 'sustained-peak', 'stress-full'))
+                                            'normal-full', 'sustained-peak', 'stress-full', 'production-load'))
     parser.add_argument('target', choices=TARGETS)
     parser.add_argument('--release', choices=RELEASES, default=DEFAULT_RELEASE)
     parser.add_argument('--environment', help='Ready namespace to test; baseline/candidate identifies the report side')

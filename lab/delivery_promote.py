@@ -105,7 +105,7 @@ def propose(target, deployment, evidence, intent='preserve-results', rollback=Fa
         raise ValueError('Target already declares this deployment.')
     validate_deployment(deployment)
     validate_evidence(evidence, current['fingerprint'], deployment['fingerprint'], intent,
-                      deployment_inputs(deployment))
+                      deployment_inputs(deployment), target=target)
     source = None if target == 'integration' or rollback else TARGETS[TARGETS.index(target) - 1]
     if source:
         upstream = read_target(source)
@@ -184,7 +184,7 @@ def inspect_pr(number):
     if git(DESIRED, 'show', head + ':targets/' + target + '/rendered/search.yaml') != rendered(deployment, 'lab-delivery-' + target).strip():
         raise ValueError('Rendered workloads differ from the pinned release and deployment.')
     validate_evidence(proposal['evidence'], current['fingerprint'], deployment['fingerprint'],
-                      proposal['intent'], deployment_inputs(deployment))
+                      proposal['intent'], deployment_inputs(deployment), target=target)
     if proposal['kind'] == 'rollback':
         record = RECORDS / 'verified' / target / (deployment['fingerprint'] + '.json')
         if not record.exists() or json.loads(record.read_text())['deployment'] != deployment:

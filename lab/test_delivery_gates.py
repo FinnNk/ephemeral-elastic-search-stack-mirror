@@ -35,7 +35,7 @@ class PromotionGateTests(unittest.TestCase):
              patch('delivery_cli.recorded_evaluation', return_value={'ok': True}) as record:
             self.assertEqual(execute(args), {'ok': True})
         history.assert_called_once_with('production', 'a' * 64)
-        record.assert_called_once_with(current, old, 'ranking-change', 'probe')
+        record.assert_called_once_with(current, old, 'ranking-change', 'production-load')
 
     def test_target_evaluation_resolves_new_candidate_against_current_target(self):
         args = parser().parse_args(['evaluate-target', 'integration', '--run', '21',

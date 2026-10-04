@@ -38,7 +38,7 @@ def parser():
     cmd.add_argument('--query-manifest', help='Query-suite manifest for both public API checks')
     cmd.add_argument('--judgement-manifest', help='Matching judgement-set manifest')
     cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
-    cmd.add_argument('--profile', choices=('probe', 'smoke'), default='probe')
+    cmd.add_argument('--profile', choices=('probe', 'smoke', 'production-load'), default='probe')
     cmd = commands.add_parser('evaluate-target', help='Compare a target with a new release or a retained deployment')
     cmd.add_argument('target', choices=TARGETS)
     candidate = cmd.add_mutually_exclusive_group(required=True)
@@ -49,7 +49,8 @@ def parser():
     cmd.add_argument('--query-manifest')
     cmd.add_argument('--judgement-manifest')
     cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
-    cmd.add_argument('--profile', choices=('probe', 'smoke'), default='probe')
+    cmd.add_argument('--profile', choices=('probe', 'smoke', 'production-load'),
+                     help='Default: production-load for production; probe for other targets')
     cmd = commands.add_parser('promote')
     cmd.add_argument('target', choices=TARGETS)
     cmd.add_argument('--run', type=int, required=True)
@@ -112,6 +113,9 @@ def execute(args):
                             judgement_manifest_sha=args.judgement_manifest)
         return recorded_evaluation(baseline, candidate, args.intent, args.profile)
     if args.command == 'evaluate-target':
+        profile = args.profile or ('production-load' if args.target == 'production' else 'probe')
+        if args.target == 'production' and profile != 'production-load':
+            raise ValueError('Production requires --profile production-load; probes and smoke are insufficient.')
         checkout()
         baseline = read_target(args.target)
         if args.fingerprint:
@@ -122,7 +126,7 @@ def execute(args):
             candidate = resolve(args.run, args.dataset or DEFAULT_RELEASE, args.recipe,
                                 query_manifest_sha=args.query_manifest,
                                 judgement_manifest_sha=args.judgement_manifest)
-        return recorded_evaluation(baseline, candidate, args.intent, args.profile)
+        return recorded_evaluation(baseline, candidate, args.intent, profile)
     if args.command == 'promote':
         return propose(args.target, resolve(args.run, args.dataset, args.recipe,
                                             query_manifest_sha=args.query_manifest,
