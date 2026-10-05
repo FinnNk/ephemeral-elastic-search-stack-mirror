@@ -78,7 +78,7 @@ a different head. See [verification](../research/evidence/walkthrough-feedback-v
 | Judgements | Published labels plus cached model-4 predictions under the temporary authorised demo policy; live fallback abstains |
 | Coverage | Saved recall has 81.22% demo coverage and 29.71% published-only coverage; new recall can change it |
 | Identity | Keycloak sign-in for Headlamp, Argo CD, linked Gitea accounts and the control UI; the reviewed decision flow uses human OIDC requests and exact Gitea PR approvals |
-| Serving | KServe 0.21 and supplied Headlamp KServe plugin dev.29; exact local asset/serving checks retained |
+| Serving | KServe 0.21 and supplied Headlamp KServe plugin dev.54; exact local asset/serving checks retained |
 | Secrets and access | ESO reads Azure Key Vault through the local emulator; wildcard preview DNS and CA-verified browser HTTPS |
 | Delivery | Gitea Actions, Nexus releases, reviewed desired state, Argo CD and three local namespaces |
 
@@ -154,3 +154,11 @@ readiness, single-plugin discovery and all 21 served assets passed verification.
 OIDC and existing Pod configuration were preserved. Next: review this batch and
 test browser charts with the next supplied KServe plugin. See the
 [installation and next-step plan](headlamp-prometheus-plugin.md).
+
+## Headlamp KServe dev.54
+
+The supplied dev.54 release is installed and retained with earlier local releases.
+Headlamp readiness, exact KServe assets, unchanged Prometheus assets and repeated
+server-side application passed verification. OIDC and other Pod settings were
+preserved. Next: review the setup batch and test dev.54 in the browser. See the
+[installation and next-step plan](headlamp-kserve-dev54.md).

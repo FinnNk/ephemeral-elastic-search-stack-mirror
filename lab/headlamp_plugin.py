@@ -4,10 +4,10 @@ import json
 import tarfile
 from pathlib import PurePosixPath
 
-from common import ROOT, apply
+from common import ROOT, apply, k
 
-ARCHIVE = ROOT / 'lab/headlamp-plugins/headlamp-k8s-kserve-0.1.0-dev.29.tar.gz'
-SHA256 = '0c2d59910e48be35fc3912efe2bcd33ad6dcfc262345c5cc38bbc075d2d46f0d'
+ARCHIVE = ROOT / 'lab/headlamp-plugins/headlamp-k8s-kserve-0.1.0-dev.54.tar.gz'
+SHA256 = '3a5adaaaec7ebda09791cf9b6f839dd5ba99ac724f6c780258245aae043be78e'
 CONFIGMAP = 'headlamp-kserve-plugin'
 PROMETHEUS_ARCHIVE = ROOT / 'lab/headlamp-plugins/prometheus-0.9.1-kserve.1.tar.gz'
 PROMETHEUS_SHA256 = '1d1c88351bcd959888c1f6a87c0571f0a01f0757eb45e762bec68ab2d7f65648'
@@ -47,7 +47,7 @@ def _manifest(archive_path, checksum, directory, name, version, configmap):
 
 def manifest():
     return _manifest(ARCHIVE, SHA256, 'headlamp-kserve', '@headlamp-k8s/kserve',
-                     '0.1.0-dev.29', CONFIGMAP)
+                     '0.1.0-dev.54', CONFIGMAP)
 
 
 def prometheus_manifest():
@@ -55,11 +55,20 @@ def prometheus_manifest():
                      '0.9.1-kserve.1', PROMETHEUS_CONFIGMAP)
 
 
+def apply_plugin(obj):
+    """Apply generated assets without duplicating large JavaScript in annotations."""
+    k('apply', '--server-side', '--field-manager=headlamp-plugins', '--force-conflicts',
+      '-f', '-', body=obj)
+    k('patch', 'configmap/' + obj['metadata']['name'], '-n', 'lab-headlamp',
+      '--type=merge', '-p', json.dumps({'metadata': {'annotations': {
+          'kubectl.kubernetes.io/last-applied-configuration': None}}}))
+
+
 def install_plugin():
     manifests = [manifest(), prometheus_manifest()]
     apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': 'lab-headlamp'}})
     for obj, _ in manifests:
-        apply(obj)
+        apply_plugin(obj)
 
 
 def plugin_values(values):

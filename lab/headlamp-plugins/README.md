@@ -3,12 +3,13 @@
 ## KServe plugin
 
 The supplied archive contains the built `@headlamp-k8s/kserve` plugin,
-version `0.1.0-dev.29`. Its package metadata declares Apache-2.0 licensing.
+version `0.1.0-dev.54`. Its package metadata declares Apache-2.0 licensing.
 The archive is retained unchanged; source code and a separate licence file
 were not included in the supplied package.
 
 `lab/headlamp_plugin.py` checks the archive checksum and mounts its JavaScript,
-metadata and translations through a Kubernetes ConfigMap. Headlamp loads them
+metadata and translations through a Kubernetes ConfigMap. Server-side apply
+avoids duplicating large bundles in Kubernetes annotations. Headlamp loads them
 from `/headlamp/plugins/headlamp-kserve`. No build tools or additional service
 account permissions are needed in the running Pod.
 
