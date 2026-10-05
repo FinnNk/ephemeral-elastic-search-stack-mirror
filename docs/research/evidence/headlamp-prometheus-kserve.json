@@ -1,0 +1,134 @@
+{
+  "version": "0.9.1-kserve.1",
+  "verified_at": "2026-10-05T23:34:53.475234+00:00",
+  "archive_sha256": "1d1c88351bcd959888c1f6a87c0571f0a01f0757eb45e762bec68ab2d7f65648",
+  "plugin_discovery": [
+    {
+      "path": "static-plugins/prometheus",
+      "type": "shipped",
+      "name": "prometheus"
+    },
+    {
+      "path": "plugins/headlamp-kserve",
+      "type": "development",
+      "name": "headlamp-kserve"
+    }
+  ],
+  "verified_assets": [
+    {
+      "path": "main.js",
+      "sha256": "a2eaa752a9e44ed65f3a15e9cb437d68be3bd42226f9e30ff23c2c5dcf3454b2",
+      "bytes": 140945
+    },
+    {
+      "path": "package.json",
+      "sha256": "83f8ab82ca6d291f199bdc082cc7b4b001d978329a788fc664ba9bb55ba41ee9",
+      "bytes": 1376
+    },
+    {
+      "path": "locales/zh-Hant/translation.json",
+      "sha256": "a459ec8bf9753192419642086b91bcf27ba9876134127e2bc7588b2c81e8ef15",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/zh-Hans/translation.json",
+      "sha256": "a459ec8bf9753192419642086b91bcf27ba9876134127e2bc7588b2c81e8ef15",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/tr/translation.json",
+      "sha256": "705144bf5bb579bd00399483d9f31e135966fe976f951a45bdedfb2959054282",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/sv/translation.json",
+      "sha256": "705144bf5bb579bd00399483d9f31e135966fe976f951a45bdedfb2959054282",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/ru/translation.json",
+      "sha256": "f32d162e18628e7ec88ef4900f400f2237298bc9cc6c6ea8f7b043edbe8666f3",
+      "bytes": 4034
+    },
+    {
+      "path": "locales/pt-PT/translation.json",
+      "sha256": "f8f4ab8729212ac611f53586fc8e53ea4c97c55c374ec4421be44a15bf5000c2",
+      "bytes": 4003
+    },
+    {
+      "path": "locales/pt-BR/translation.json",
+      "sha256": "f8f4ab8729212ac611f53586fc8e53ea4c97c55c374ec4421be44a15bf5000c2",
+      "bytes": 4003
+    },
+    {
+      "path": "locales/pl/translation.json",
+      "sha256": "f32d162e18628e7ec88ef4900f400f2237298bc9cc6c6ea8f7b043edbe8666f3",
+      "bytes": 4034
+    },
+    {
+      "path": "locales/nl/translation.json",
+      "sha256": "705144bf5bb579bd00399483d9f31e135966fe976f951a45bdedfb2959054282",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/ko/translation.json",
+      "sha256": "a459ec8bf9753192419642086b91bcf27ba9876134127e2bc7588b2c81e8ef15",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/ja/translation.json",
+      "sha256": "a459ec8bf9753192419642086b91bcf27ba9876134127e2bc7588b2c81e8ef15",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/it/translation.json",
+      "sha256": "f8f4ab8729212ac611f53586fc8e53ea4c97c55c374ec4421be44a15bf5000c2",
+      "bytes": 4003
+    },
+    {
+      "path": "locales/id/translation.json",
+      "sha256": "a459ec8bf9753192419642086b91bcf27ba9876134127e2bc7588b2c81e8ef15",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/hu/translation.json",
+      "sha256": "705144bf5bb579bd00399483d9f31e135966fe976f951a45bdedfb2959054282",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/fr/translation.json",
+      "sha256": "f8f4ab8729212ac611f53586fc8e53ea4c97c55c374ec4421be44a15bf5000c2",
+      "bytes": 4003
+    },
+    {
+      "path": "locales/es/translation.json",
+      "sha256": "f8f4ab8729212ac611f53586fc8e53ea4c97c55c374ec4421be44a15bf5000c2",
+      "bytes": 4003
+    },
+    {
+      "path": "locales/en/translation.json",
+      "sha256": "d3e15a3cfe5c41ef561d8e229f88e9a61266886915cadf583aeabe809803e182",
+      "bytes": 6398
+    },
+    {
+      "path": "locales/de/translation.json",
+      "sha256": "705144bf5bb579bd00399483d9f31e135966fe976f951a45bdedfb2959054282",
+      "bytes": 3971
+    },
+    {
+      "path": "locales/cs/translation.json",
+      "sha256": "f32d162e18628e7ec88ef4900f400f2237298bc9cc6c6ea8f7b043edbe8666f3",
+      "bytes": 4034
+    }
+  ],
+  "tls_verified": true,
+  "ready": true,
+  "oidc_and_existing_pod_configuration_preserved": true,
+  "rbac_changes": false,
+  "browser_chart_rendering_verified": false,
+  "metric_checks": {
+    "kserve_test_request_metric_series": 2,
+    "container_memory_metric_series": 379,
+    "container_cpu_metric_series": 379
+  }
+}

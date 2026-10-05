@@ -146,3 +146,11 @@ Prepared for review: paired nDCG tests, 95% intervals, request grouping and Holm
 adjustment in source, combined and promotion relevance reports. Gate policies
 remain unchanged. Next: accept the batch and inspect a fresh comparison in the
 walkthrough. See the [batch and next-step plan](ndcg-significance.md).
+
+## Headlamp custom Prometheus plugin
+
+Prometheus `0.9.1-kserve.1` is installed, replacing the bundled plugin. Headlamp
+readiness, single-plugin discovery and all 21 served assets passed verification.
+OIDC and existing Pod configuration were preserved. Next: review this batch and
+test browser charts with the next supplied KServe plugin. See the
+[installation and next-step plan](headlamp-prometheus-plugin.md).
