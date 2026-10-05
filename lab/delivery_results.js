@@ -14,13 +14,18 @@ function link(id,value){const n=$(id);n.hidden=true;if(!value)return;const u=new
 function section(title,description){const s=node('section',null,$('content'));node('h2',title,s);if(description)node('p',description,s);return s}
 function table(parent,headers,rows){const wrap=node('div',null,parent);wrap.className='table-wrap';const t=node('table',null,wrap),head=node('tr',null,node('thead',null,t));for(const text of headers)node('th',text,head).scope='col';const body=node('tbody',null,t);for(const cells of rows){const row=node('tr',null,body);for(const value of cells)node('td',value,row)}}
 function identity(values){$('identity').replaceChildren();for(const [key,value] of Object.entries(values)){if(value==null||typeof value==='object')continue;node('dt',label(key),$('identity'));node('dd',String(value),$('identity'))}}
-function summary(report,title,required){
+function summary(report,title,required,baseline=report.baseline_variant){
  const s=section(title,(report.query_count==null?'':fmt(report.query_count)+' queries. ')+(required==null?'':required?'Required by the gate.':'Report only.'));
  if(report.relevance_query_count!=null)node('p','Relevance scores cover '+fmt(report.relevance_query_count)+' queries; '+fmt(report.unlabelled_query_count)+' queries have no reference scores.',s);
  const metrics=report.metrics||{}, keys=[...new Set(Object.values(metrics).flatMap(m=>Object.keys(m||{}).filter(k=>typeof m[k]==='number'&&k!=='Judged@10')))];
  const variants=Object.keys(report.variants||metrics||{}), similarity=report.result_similarity||{};
- if(keys.length)table(s,['Variant',...keys.map(label),'Changed queries','RBO@10','Jaccard@10'],variants.map(v=>[v,...keys.map(k=>fmt(metrics[v]?.[k])),fmt(report.result_changes?.[v]?.changed_queries),fmt(similarity[v]?.rbo_at_10_p_0_9),fmt(similarity[v]?.jaccard_at_10)]));
- else if(variants.length)table(s,['Variant','Changed queries','RBO@10','Jaccard@10'],variants.map(v=>[v,fmt(report.result_changes?.[v]?.changed_queries),fmt(similarity[v]?.rbo_at_10_p_0_9),fmt(similarity[v]?.jaccard_at_10)]));
+ if(keys.length)table(s,['Variant',...keys.map(label)],variants.map(v=>[v,...keys.map(k=>fmt(metrics[v]?.[k]))]));
+ const candidates=Object.keys(similarity).filter(v=>v!==baseline);
+ if(candidates.length){
+  node('h3','Results compared with '+baseline,s);
+  const changes=report.result_changes!=null;
+  table(s,['Comparison',...(changes?['Changed queries']:[]),'RBO@10 (p = 0.9)','Jaccard@10'],candidates.map(v=>[v+' vs '+baseline,...(changes?[fmt(report.result_changes[v]?.changed_queries)]:[]),fmt(similarity[v]?.rbo_at_10_p_0_9),fmt(similarity[v]?.jaccard_at_10)]));
+ }
  if(!keys.length)node('p','Relevance scores are unavailable for this set. Result overlap can still show whether the searches changed.',s);
 
  const coverage=report.coverage||report.judgement_coverage;
@@ -47,9 +52,9 @@ function report(value){
  $('explanation').textContent='All variants in a relevance comparison use the same frozen judgement set. The report records measurements; the operation page records the gate or deployment decision.';
  if(value.kind==='variant-evaluation-report'||value.kind==='controlled-api-comparison')section('Read the results','RBO describes order similarity; Jaccard describes product-set overlap. A value of 1 means identical at the captured depth. Coverage shows how many results have relevance labels; added labels do not establish better search.');
  if(value.judgement_selection==='demo')node('p','Lab demo: this report includes authorised model labels whose accuracy remains unqualified.',section('Label policy'));
- if(value.query_sets){for(const [name,suite] of Object.entries(value.query_sets))summary(suite,name==='standard'?'Standard suite':name,value.query_set_metadata?.[name]?.required);if(value.combined)summary(value.combined,'Combined view',false);}
+ if(value.query_sets){for(const [name,suite] of Object.entries(value.query_sets))summary(suite,name==='standard'?'Standard suite':name,value.query_set_metadata?.[name]?.required);if(value.combined)summary(value.combined,'Combined view',false,value.baseline_variant);}
  else if(value.kind==='variant-evaluation-report')summary(value,'Search results',null);
- else if(value.kind==='controlled-api-comparison'){summary({...value,variants:{baseline:{},candidate:{}},result_changes:{candidate:{changed_queries:value.changed_query_ids?.length}},result_similarity:{candidate:value.result_similarity||{}}},'Search results',null);}
+ else if(value.kind==='controlled-api-comparison'){summary({...value,baseline_variant:'baseline',variants:{baseline:{},candidate:{}},result_changes:{candidate:{changed_queries:value.changed_query_ids?.length}},result_similarity:{candidate:value.result_similarity||{}}},'Search results',null);}
  else if(value.kind==='paired-api-performance'){
  $('stage').textContent='Gatling performance comparison';$('explanation').textContent='Profile: '+value.profile+'. Outcome: '+label(value.verdict)+'. Review workload validity and each measured phase.';
  for(const [phase,measured] of Object.entries(value.measured_phases||{})){

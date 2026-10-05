@@ -8,7 +8,8 @@ step” is not an instruction to repeat completed work.
 
 [Readable delivery results](readable-delivery-results.md) are prepared for
 review: progress, source/control reports and promotion check reports keep
-their existing URLs and JSON API. Next,
+their existing URLs and JSON API. Result overlap compares each variant with
+the baseline, separately from relevance scores. Next,
 [activate and check the browser links](readable-delivery-results-activation.md).
 
 Registry setup now discovers Docker-backed cluster workers instead of naming

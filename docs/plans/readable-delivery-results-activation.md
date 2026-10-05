@@ -15,7 +15,7 @@ the sneakers walkthrough using the links already attached to its PR.
 ## Acceptance criteria
 
 1. An existing PR check opens readable operation progress at its original URL.
-2. Its report displays standard, sneakers and combined sections with coverage separate.
+2. Its report displays standard, sneakers and combined sections with coverage separate and each variant compared with the baseline.
 3. Actions operation links and retained promotion check links open readable views.
 4. JSON requests and **View JSON data** return the original evidence bytes.
 5. Readers cannot access another owner's operation unless their existing role permits it.

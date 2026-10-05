@@ -20,6 +20,7 @@ Show current progress and retained results without requiring a JSON reader.
 | --- | --- |
 | Operation links | Refresh current stage; distinguish completion, failure and the gate/deployment outcome |
 | Source reports | Show standard, extra and combined results, coverage and demo label qualification |
+| Result overlap | Show each variant against the baseline; keep RBO and Jaccard separate from per-variant relevance scores |
 | Control reports | Open readable summaries; explicit JSON downloads still return JSON |
 | Promotion evidence | Link each frozen result-regression, relevance and performance check |
 | Gatling reports | Show each measured phase, latency, failures and recorded budgets |
