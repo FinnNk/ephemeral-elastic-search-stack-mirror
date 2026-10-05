@@ -58,7 +58,7 @@ The [evaluation runbook](evaluation-runbook.md) covers separate operator studies
 
 Capture uses eight workers and adapts request spacing separately for each API
 when transient failures occur. Retries are bounded and incomplete responses
-remain errors. Reports retain pacing diagnostics; load tests continue to use
+remain errors. Reports show attempts, successful requests, retries, failures and pacing waits; load tests continue to use
 Gatling's declared arrival rates. See [capture execution](evaluation-runbook.md#capture-and-score).
 
 ## Read the report

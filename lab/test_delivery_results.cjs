@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
  page.on('pageerror',e=>errors.push(e.message));
  const id='a'.repeat(32),url='http://control.test/api/delivery/operations/'+id;
  let denied=false,operation={id,state:'running',progress:'Capturing fresh results: standard',created_at:'2026-10-05T19:59:00Z',updated_at:'2026-10-05T20:00:00Z',request:{kind:'compare',pr:31,source_sha:'b'.repeat(40)},result:null};
- const standard={kind:'variant-evaluation-report',complete:true,baseline_variant:'baseline',query_count:1000,execution:{seconds:12.5,worker_count:8,pacing:{'lab-baseline':{attempts:1000,retries:0,transient_failures:0,terminal_failures:0,wait_seconds:0}}},variants:{baseline:{},'ranker-a':{}},metrics:{baseline:{'nDCG@10':.7,'Judged@10':.81},'ranker-a':{'nDCG@10':.71,'Judged@10':.82}},result_changes:{'ranker-a':{changed_queries:2}},result_similarity:{baseline:{rbo_at_10_p_0_9:1,jaccard_at_10:1},'ranker-a':{rbo_at_10_p_0_9:.98,jaccard_at_10:.99}},coverage:{baseline:{fraction:.81,judged:8100,returned:10000},'ranker-a':{fraction:.82,judged:8200,returned:10000}}};
+ const standard={kind:'variant-evaluation-report',complete:true,baseline_variant:'baseline',query_count:1000,execution:{seconds:12.5,worker_count:8,pacing:{'lab-baseline':{attempts:1001,successes:1000,retries:1,transient_failures:0,terminal_failures:0,wait_seconds:0}}},variants:{baseline:{},'ranker-a':{}},metrics:{baseline:{'nDCG@10':.7,'Judged@10':.81},'ranker-a':{'nDCG@10':.71,'Judged@10':.82}},result_changes:{'ranker-a':{changed_queries:2}},result_similarity:{baseline:{rbo_at_10_p_0_9:1,jaccard_at_10:1},'ranker-a':{rbo_at_10_p_0_9:.98,jaccard_at_10:.99}},coverage:{baseline:{fraction:.81,judged:8100,returned:10000},'ranker-a':{fraction:.82,judged:8200,returned:10000}}};
  const extra={...standard,execution:{seconds:2,worker_count:8},query_count:4,metrics:null,relevance_available:false,coverage:{baseline:{fraction:0,judged:0,returned:40},'ranker-a':{fraction:0,judged:0,returned:40}}};
  let report={...standard,judgement_selection:'demo',query_sets:{standard,sneakers:extra},query_set_metadata:{standard:{required:true},sneakers:{required:false}},combined:{metrics:standard.metrics,result_similarity:standard.result_similarity,query_count:1004,relevance_query_count:1000,unlabelled_query_count:4}};
  await page.route('http://control.test/**',async route=>{
@@ -25,6 +25,9 @@ const {chromium}=require('playwright');
  assert.ok((await page.locator('#content').innerText()).includes('60 s'));
  assert.ok((await page.locator('#content').innerText()).includes('12.5 s'));
  assert.ok((await page.locator('#content').innerText()).includes('not a load test'));
+ const captureTable=page.getByRole('heading',{name:'Search capture requests',exact:true}).locator('..').locator('table');
+ assert.deepEqual(await captureTable.locator('thead th').allTextContents(),['Query set','API environment','Attempts','Successes','Retries','Transient failures','Terminal failures','Pacing wait (s)']);
+ assert.deepEqual((await captureTable.locator('tbody tr').first().locator('td').allTextContents()).slice(2,5),['1,001','1,000','1']);
  assert.equal(await page.locator('#decision').isVisible(),false);
  assert.equal(await page.locator('#content section h2').first().innerText(),'Merge gate');
  assert.ok((await page.locator('#content').innerText()).includes('Relevance scores are unavailable'));

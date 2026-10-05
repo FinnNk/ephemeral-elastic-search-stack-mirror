@@ -26,6 +26,7 @@ class PacingTests(unittest.TestCase):
                 pacer.fetch('http://test', {})
         self.assertEqual(call.call_count, 1)
         self.assertEqual(pacer.summary()['terminal_failures'], 1)
+        self.assertEqual(pacer.summary()['successes'], 0)
 
     def test_persistent_overload_is_finite_and_visible(self):
         pacer = Pacer()
@@ -72,6 +73,17 @@ class PacingTests(unittest.TestCase):
             for _ in range(2):
                 self.assertEqual(pacer.fetch('http://test', {}), {'ids': []})
         self.assertEqual(call.call_count, 2)
+        self.assertEqual(pacer.summary()['successes'], 2)
+
+    def test_retry_recovery_counts_one_success(self):
+        pacer = Pacer()
+        with patch('adaptive_pacing.request.urlopen', side_effect=[
+                HTTPError('http://test', 503, 'busy', {'Retry-After': '0'}, None),
+                io.BytesIO(b'{"ids": []}')]):
+            self.assertEqual(pacer.fetch('http://test', {}), {'ids': []})
+        stats = pacer.summary()
+        self.assertEqual((stats['attempts'], stats['successes'], stats['retries']), (2, 1, 1))
+        self.assertEqual((stats['transient_failures'], stats['terminal_failures']), (1, 0))
 
     def test_capture_has_eight_workers_and_independent_endpoint_records(self):
         lock = threading.Lock()

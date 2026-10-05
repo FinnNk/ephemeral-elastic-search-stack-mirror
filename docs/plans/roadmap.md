@@ -133,3 +133,9 @@ KServe predictor. Real inference and repeat reuse passed; accuracy remains
 unqualified. The activation helper preserves caches and prevents bootstrap from
 resetting the API model pin. See the [activation plan](calibrated-judge-activation.md).
 Next: generate the fresh sneakers comparison and continue the developer walkthrough.
+
+## Search capture success counts
+
+Friendly reports include successful requests alongside attempts, retries and failures.
+A recovered request counts once as a success. Next: review this batch, then resume
+the sneakers walkthrough using the [report review plan](report-request-successes.md).

@@ -35,7 +35,7 @@ class Pacer:
         self.interval = self.next_at = self.pause_until = 0
         self.adjust_after = 0
         self.healthy = 0
-        self.stats = {'attempts': 0, 'retries': 0, 'transient_failures': 0,
+        self.stats = {'attempts': 0, 'successes': 0, 'retries': 0, 'transient_failures': 0,
                       'terminal_failures': 0, 'wait_seconds': 0, 'peak_interval_seconds': 0}
 
     def before(self, deadline):
@@ -56,6 +56,7 @@ class Pacer:
 
     def success(self):
         with self.changed:
+            self.stats['successes'] += 1
             self.healthy += 1
             if self.healthy >= 8:
                 self.interval = self.interval / 2 if self.interval > .01 else 0

@@ -69,8 +69,8 @@ function timings(value,record){
  }
  if(rows.length){const s=section('Timings');table(s,['Activity','Duration','Scope'],rows);}
  const executions=Object.entries(suites).filter(([,suite])=>suite.execution?.pacing);
- if(executions.length){const s=section('Search capture requests','These are functional evaluation requests, not a load test. Pacing wait is summed across workers and can exceed elapsed time.');
- table(s,['Query set','API environment','Attempts','Retries','Transient failures','Terminal failures','Pacing wait (s)'],executions.flatMap(([name,suite])=>Object.entries(suite.execution.pacing).map(([environment,p])=>[name,environment,fmt(p.attempts),fmt(p.retries),fmt(p.transient_failures),fmt(p.terminal_failures),fmt(p.wait_seconds)])));
+ if(executions.length){const s=section('Search capture requests','These are functional evaluation requests, not a load test. Successes count requests that returned valid JSON, including those recovered by retrying. Pacing wait is summed across workers and can exceed elapsed time.');
+ table(s,['Query set','API environment','Attempts','Successes','Retries','Transient failures','Terminal failures','Pacing wait (s)'],executions.flatMap(([name,suite])=>Object.entries(suite.execution.pacing).map(([environment,p])=>[name,environment,fmt(p.attempts),fmt(p.successes),fmt(p.retries),fmt(p.transient_failures),fmt(p.terminal_failures),fmt(p.wait_seconds)])));
  }
 }
 function report(value,operationRecord){
