@@ -190,7 +190,7 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
     observation_blob = immutable_blob('runs',
         'observation-set/' + observation_sha + '/observations.json', observation_payload)
     report = {'kind': 'controlled-api-comparison', 'mode': mode, 'scope': scope,
-              'complete': complete, 'verdict': verdict, 'execution': stable_execution,
+              'complete': complete, 'verdict': verdict, 'execution': execution,
               'baseline': {'runtime_id': baseline['id'], 'source_sha': baseline['source_sha'], **first},
               'candidate': {'runtime_id': candidate['id'], 'source_sha': candidate['source_sha'], **second},
               'suite_sha256': suite_sha, 'suite_blob': suite_blob,

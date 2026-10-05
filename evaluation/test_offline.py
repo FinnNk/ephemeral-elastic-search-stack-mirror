@@ -63,6 +63,16 @@ class OfflineContractTests(unittest.TestCase):
         self.assertEqual(report['baseline_variant'], 'ranker-b')
         self.assertEqual(report['delta_from_baseline']['ranker-a']['nDCG@10'], 0)
 
+    def test_capture_timing_is_retained_without_changing_scores(self):
+        before = self.evaluate()
+        value = json.loads((self.root / 'observations.json').read_bytes())
+        value['execution'] = {'seconds': 12.5, 'worker_count': 8}
+        self.write('observations.json', value)
+        after = self.evaluate()
+        self.assertEqual(after['execution'], value['execution'])
+        self.assertEqual(after['metrics'], before['metrics'])
+        self.assertEqual(after['result_similarity'], before['result_similarity'])
+
     def test_missing_or_wrong_variant_echo_is_invalid(self):
         value = json.loads((self.root / 'observations.json').read_bytes())
         value['observations'][0]['results']['ranker-a']['variant_id'] = 'ranker-b'

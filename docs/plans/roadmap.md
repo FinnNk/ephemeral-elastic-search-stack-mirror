@@ -10,10 +10,13 @@ Readable delivery results are deployed from accepted commit `d589859`.
 Existing progress and report URLs serve the browser views; JSON remains available.
 Runtime readiness and smoke checks passed.
 
-[Prominent comparison gate status](prominent-comparison-gate.md) is prepared for
-review. It makes the merge outcome the first report status and limits decision
-links to comparisons requiring a bounded decision. Next,
-[activate and verify the gate display](prominent-comparison-gate-activation.md).
+Prominent merge-gate status and conditional decision links are deployed from
+accepted commit `4115f78`; readiness and smoke checks passed.
+
+[Report timings](report-timings.md) are prepared for review. Friendly reports
+show operation duration, retained capture timing and request health; Gatling
+views include workload duration with their existing latency and failure results.
+Next, [activate and check timings](report-timings-activation.md).
 
 Registry setup now discovers Docker-backed cluster workers instead of naming
 three fixed nodes. The testbed installer applies it after adding its worker.

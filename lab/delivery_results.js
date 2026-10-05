@@ -47,6 +47,24 @@ function operation(row){
  identity({operation:row.id,source_commit:request.source_sha||result.source_sha,baseline_commit:request.baseline_sha||result.baseline_source_sha,build_run:request.run,target:request.target,report_sha256:result.report?.sha256,updated_at:row.updated_at});
  return ['accepted','queued','running'].includes(row.state);
 }
+function timings(value,record){
+ const rows=[];
+ if(record){
+  const end=['accepted','queued','running'].includes(record.state)?Date.now():Date.parse(record.updated_at);
+  const seconds=(end-Date.parse(record.created_at))/1000;
+  if(Number.isFinite(seconds)&&seconds>=0)rows.push(['Operation elapsed time',fmt(seconds)+' s','Includes waiting, preparation and all checks']);
+ }
+ const suites=value.query_sets||{'Search capture':value};
+ for(const [name,suite] of Object.entries(suites)){
+  const execution=suite.execution;
+  if(typeof execution?.seconds==='number')rows.push([name==='standard'?'Standard suite capture':name,fmt(execution.seconds)+' s','Capture Job, including scheduling and completion checks; '+fmt(execution.worker_count)+' workers']);
+ }
+ if(rows.length){const s=section('Timings');table(s,['Activity','Duration','Scope'],rows);}
+ const executions=Object.entries(suites).filter(([,suite])=>suite.execution?.pacing);
+ if(executions.length){const s=section('Search capture requests','These are functional evaluation requests, not a load test. Pacing wait is summed across workers and can exceed elapsed time.');
+ table(s,['Query set','API environment','Attempts','Retries','Transient failures','Terminal failures','Pacing wait (s)'],executions.flatMap(([name,suite])=>Object.entries(suite.execution.pacing).map(([environment,p])=>[name,environment,fmt(p.attempts),fmt(p.retries),fmt(p.transient_failures),fmt(p.terminal_failures),fmt(p.wait_seconds)])));
+ }
+}
 function report(value,operationRecord){
  $('title').textContent=value.kind==='paired-api-performance'?'Performance comparison':value.reports?'Delivery checks':'Search comparison report';$('state').textContent=value.valid===false?'Invalid evidence':value.complete===false?'Incomplete evidence':'Report ready';$('stage').textContent='Review search quality, result changes and label coverage separately.';
  $('explanation').textContent='All variants in a relevance comparison use the same frozen judgement set. The report records measurements; the operation page records the gate or deployment decision.';
@@ -57,6 +75,7 @@ function report(value,operationRecord){
   gate(decision);link('decision',operationRecord.decision_url);
  }else if(operationRecord?.request?.pr){$('state').textContent='Merge gate: not available';$('stage').textContent='No merge decision is recorded for this operation.';}
  else if(value.verdict){$('state').textContent='Check outcome: '+label(value.verdict);}
+ timings(value,operationRecord);
  if(value.kind==='variant-evaluation-report'||value.kind==='controlled-api-comparison')section('Read the results','RBO describes order similarity; Jaccard describes product-set overlap. A value of 1 means identical at the captured depth. Coverage shows how many results have relevance labels; added labels do not establish better search.');
  if(value.judgement_selection==='demo')node('p','Lab demo: this report includes authorised model labels whose accuracy remains unqualified.',section('Label policy'));
  if(value.query_sets){for(const [name,suite] of Object.entries(value.query_sets))summary(suite,name==='standard'?'Standard suite':name,value.query_set_metadata?.[name]?.required);if(value.combined)summary(value.combined,'Combined view',false,value.baseline_variant);}
@@ -64,6 +83,8 @@ function report(value,operationRecord){
  else if(value.kind==='controlled-api-comparison'){summary({...value,baseline_variant:'baseline',variants:{baseline:{},candidate:{}},result_changes:{candidate:{changed_queries:value.changed_query_ids?.length}},result_similarity:{candidate:value.result_similarity||{}}},'Search results',null);}
  else if(value.kind==='paired-api-performance'){
  $('stage').textContent='Gatling performance comparison';$('explanation').textContent='Profile: '+value.profile+'. Outcome: '+label(value.verdict)+'. Review workload validity and each measured phase.';
+ const durations=['baseline','candidate'].filter(side=>typeof value[side]?.duration_seconds==='number');
+ if(durations.length)table(section('Gatling workload duration','Baseline and candidate run sequentially. These durations include warm-up; measured phase results follow.'),['Release','Workload duration (s)'],durations.map(side=>[side,fmt(value[side].duration_seconds)]));
  for(const [phase,measured] of Object.entries(value.measured_phases||{})){
  const b=measured.budget||{},s=section(label(phase),'Budgets: p95 ≤'+fmt(b.p95_ms)+' ms; p99 ≤'+fmt(b.p99_ms)+' ms; failed requests <'+fmt(b.failed_percent)+'%.');
  table(s,['Release','Requests','Offered requests/s','p95 (ms)','p99 (ms)','Failed requests','Budget'],['baseline','candidate'].map(side=>{const m=measured[side]||{};return[side,fmt(m.request_count),fmt(m.offered_rps),fmt(m.p95_ms),fmt(m.p99_ms),typeof m.failed_percent==='number'?fmt(m.failed_percent)+'%':'Not available',m.within_budget===true?'Met':m.within_budget===false?'Missed':'Not available']}));

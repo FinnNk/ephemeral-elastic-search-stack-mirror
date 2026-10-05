@@ -165,6 +165,7 @@ def score_extra(item, observations, specification_bytes, catalogue_manifest_byte
                 'catalogue_sha256': observations['catalogue_sha256'],
                 'query_suite_sha256': item['query_sha256'], 'observation_sha256': sha(canonical(observations)),
                 'relevance_available': False, 'metrics': None,
+                'execution': observations.get('execution'),
                 'coverage': {name: {'judged': 0, 'returned': sum(len(row['results'][name]['ids'])
                                                             for row in observations['observations']),
                                     'fraction': 0.0} for name in variants},

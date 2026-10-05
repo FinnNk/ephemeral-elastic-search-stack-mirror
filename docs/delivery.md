@@ -49,7 +49,10 @@ show a readable progress page with the current stage and outcome. Report pages s
 result overlap and judgement coverage. The recorded merge gate appears at the
 top; a passed gate needs no relevance decision. The PR offers a decision link only
 when a bounded decision is required. An old decision link for a passed gate
-also shows that no decision is needed. RBO and Jaccard compare each variant with
+also shows that no decision is needed. Timings distinguish elapsed time since
+submission (including waiting) from each search capture Job. Capture requests
+are functional checks; their retry counts do not constitute a load test. Gatling
+reports show workload duration, latency, failed requests and phase budgets. RBO and Jaccard compare each variant with
 the baseline; relevance scores are shown per variant. Delivery evidence links to each
 retained check. Use **View JSON data** for the underlying record. **Submitted**
 does not mean evaluated or deployed. Both comparison revisions must contain the

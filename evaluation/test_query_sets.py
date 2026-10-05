@@ -13,9 +13,11 @@ class QuerySetTests(unittest.TestCase):
             item = freeze(self.selection(), lambda path: self.payload())[0]
             observations = json.loads((fixture.root / 'observations.json').read_bytes())
             observations['query_suite_sha256'] = item['query_sha256']
+            observations['execution'] = {'seconds': 2.5, 'worker_count': 8}
             result = score_extra(item, observations,
                 (fixture.root / 'specification.json').read_bytes(),
                 (fixture.root / 'catalogue.json').read_bytes())
+            self.assertEqual(result['execution'], observations['execution'])
             self.assertFalse(result['relevance_available'])
             self.assertIsNone(result['metrics'])
             self.assertEqual(result['result_similarity']['ranker-a']['rbo_at_10_p_0_9'], 1)
@@ -25,6 +27,7 @@ class QuerySetTests(unittest.TestCase):
             result = score_extra(item, observations,
                 (fixture.root / 'specification.json').read_bytes(),
                 (fixture.root / 'catalogue.json').read_bytes())
+            self.assertEqual(result['execution'], observations['execution'])
             self.assertTrue(result['relevance_available'])
             self.assertEqual(result['metrics']['ranker-a']['nDCG@10'], 1)
         finally:
