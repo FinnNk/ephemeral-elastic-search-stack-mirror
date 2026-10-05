@@ -1,0 +1,78 @@
+{
+  "gateway": {
+    "url": "https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/standard-install.yaml",
+    "sha256": "751002b3b91a87f7ae3bd2517c79a47a8d7ed6702901808a1cf9bd97d284f9b8"
+  },
+  "gie": {
+    "url": "https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.5.0/manifests.yaml",
+    "sha256": "48e72a66bcc59f62d83dcd5faaa59a35763a5f7d7ad60071cfa924e41ea41247"
+  },
+  "lws": {
+    "url": "https://github.com/kubernetes-sigs/lws/releases/download/v0.8.0/manifests.yaml",
+    "sha256": "66416a375610ce31be69818f7ca02ed89887ce76e1034ad23addbc39e9c6854a"
+  },
+  "knative-crds": {
+    "url": "https://github.com/knative/serving/releases/download/knative-v1.21.1/serving-crds.yaml",
+    "sha256": "bb6d837db047aef64dfb437f66365f95aa55b32db3f8e74343e59dc1f7e9ce8e"
+  },
+  "knative-core": {
+    "url": "https://github.com/knative/serving/releases/download/knative-v1.21.1/serving-core.yaml",
+    "sha256": "636e36155fecb51a60bf869c0d8fa3ef6c2966b1fa9ded8464a48e8a5a880669"
+  },
+  "kourier": {
+    "url": "https://github.com/knative/net-kourier/releases/download/knative-v1.21.0/kourier.yaml",
+    "sha256": "2d6893e449e54f2dea4a9faaa75bf881ba91162d3f23651ab41b2db81f6d8a40"
+  },
+  "preset-config-llm-decode-template.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-decode-template.yaml",
+    "sha256": "d609d91aa3e24f047ed9265ebc7866a5cd39d71a93a77865f3c71a165c192578"
+  },
+  "preset-config-llm-decode-worker-data-parallel.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-decode-worker-data-parallel.yaml",
+    "sha256": "10d0ad71b32bcddbbab4d162c6bd13439d9b3bea7db52227449a3a4dfddfdf3a"
+  },
+  "preset-config-llm-prefill-template.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-prefill-template.yaml",
+    "sha256": "74c39d79a460c20123f3fa3140c476645a251f46c3a1455002621111a865bb03"
+  },
+  "preset-config-llm-prefill-worker-data-parallel.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-prefill-worker-data-parallel.yaml",
+    "sha256": "5b60ecb143c905135d684ebb094f75731066f5321b85cfcd13f1807866b79a04"
+  },
+  "preset-config-llm-router-route.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-router-route.yaml",
+    "sha256": "ab946e175f46a2e7a57f3a949b3d376284ec650efffb1f3d3f85df848394df19"
+  },
+  "preset-config-llm-scheduler-eppconfig-default-pd.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-scheduler-eppconfig-default-pd.yaml",
+    "sha256": "94a4ec6ffb24d87a43566f40d7d35e8cd0595bb9c5620c4098ab63275443bca5"
+  },
+  "preset-config-llm-scheduler-eppconfig-default.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-scheduler-eppconfig-default.yaml",
+    "sha256": "c04ee3eb6e1b8f965ce5b27610e54f52c198d5a105d8ae21d7f2947a2effff3d"
+  },
+  "preset-config-llm-scheduler-latency-predictor.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-scheduler-latency-predictor.yaml",
+    "sha256": "9cc3402807770166d75c66b5be7b59feb8543546528753318068f4a866ae787a"
+  },
+  "preset-config-llm-scheduler.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-scheduler.yaml",
+    "sha256": "65e37e104b58c2b29e19e18ed4a36e4e40ef758691c457f6422e8d64cf7dc971"
+  },
+  "preset-config-llm-template.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-template.yaml",
+    "sha256": "398b56dac5a5879cb1646ed5dda3d8e24e04fe0b288240b95e31cb1a2c665db9"
+  },
+  "preset-config-llm-tokenizer.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-tokenizer.yaml",
+    "sha256": "049ae5d249b438e40184d34d57d3aad78c697b51739984793d6a7c64ac47c8d8"
+  },
+  "preset-config-llm-tracing.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-tracing.yaml",
+    "sha256": "20163e3fc4ecc22617b49e9dc77156d3dbc42ad62d38284fbc789e35f2e6f538"
+  },
+  "preset-config-llm-worker-data-parallel.yaml": {
+    "url": "https://raw.githubusercontent.com/kserve/kserve/v0.21.0/config/llmisvcconfig/config-llm-worker-data-parallel.yaml",
+    "sha256": "ae1c94df94e90621ffaaa68ab15f2e71616d4b8c06b2132935e745f4911af8c6"
+  }
+}

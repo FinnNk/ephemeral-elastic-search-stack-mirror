@@ -6,6 +6,14 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The optional [Headlamp plugin testbed](../headlamp-testbed.md) is installed on
+an additional 8 GiB CPU worker: KServe LLM APIs/controller and presets, Knative
+with internal Kourier, KEDA and bounded Prometheus. Both lab judgement models
+remain Ready. Headlamp already runs the latest checked release, 0.45.0.
+Next, [verify plugin workflows](headlamp-testbed-validation.md) against these APIs.
+Judgement inference reuse and the separation of coverage from relevance metrics
+remain active work in their separate batch.
+
 The developer walkthrough completed build 108 through integration, staging and
 simulated production. The owner confirmed the rewrite in all three storefronts.
 Production used the full Gatling gate; desired-state PR 16 was approved, merged

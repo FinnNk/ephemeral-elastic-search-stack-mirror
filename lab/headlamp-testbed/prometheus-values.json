@@ -1,0 +1,68 @@
+{
+  "grafana": {
+    "enabled": false
+  },
+  "alertmanager": {
+    "enabled": false
+  },
+  "nodeExporter": {
+    "enabled": false
+  },
+  "kube-state-metrics": {
+    "nodeSelector": {
+      "lab.relevance/testbed": "true"
+    },
+    "resources": {
+      "requests": {
+        "cpu": "50m",
+        "memory": "64Mi"
+      },
+      "limits": {
+        "cpu": "1",
+        "memory": "256Mi"
+      }
+    }
+  },
+  "prometheusOperator": {
+    "nodeSelector": {
+      "lab.relevance/testbed": "true"
+    },
+    "resources": {
+      "requests": {
+        "cpu": "100m",
+        "memory": "128Mi"
+      },
+      "limits": {
+        "cpu": "1",
+        "memory": "512Mi"
+      }
+    }
+  },
+  "prometheus": {
+    "prometheusSpec": {
+      "nodeSelector": {
+        "lab.relevance/testbed": "true"
+      },
+      "retention": "24h",
+      "retentionSize": "1GB",
+      "resources": {
+        "requests": {
+          "cpu": "200m",
+          "memory": "512Mi"
+        },
+        "limits": {
+          "cpu": "2",
+          "memory": "2Gi"
+        }
+      },
+      "storageSpec": {
+        "emptyDir": {
+          "sizeLimit": "2Gi"
+        }
+      },
+      "podMonitorSelectorNilUsesHelmValues": false,
+      "serviceMonitorSelectorNilUsesHelmValues": false,
+      "scrapeInterval": "30s"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "kserve": {
+    "version": "v0.21.0",
+    "createSharedResources": false,
+    "llmisvc": {
+      "createGIECRDs": false,
+      "controller": {
+        "nodeSelector": {
+          "lab.relevance/testbed": "true"
+        },
+        "tag": "v0.21.0"
+      }
+    }
+  }
+}

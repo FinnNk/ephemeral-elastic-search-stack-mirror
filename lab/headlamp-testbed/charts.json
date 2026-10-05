@@ -1,0 +1,10 @@
+{
+  "crd": {
+    "file": "kserve-llmisvc-crd-v0.21.0-rc1.tgz",
+    "sha256": "c0e9d99415c436566497abd270769f81730dbb71d1844bfaef5eeb2ea362e513"
+  },
+  "resources": {
+    "file": "kserve-llmisvc-resources-v0.21.0-rc1.tgz",
+    "sha256": "bef9fd5fdb86ca59337b4a57f22edc27c0b64922b02a7b459a5aef3ec79bbb54"
+  }
+}

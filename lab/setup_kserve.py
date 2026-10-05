@@ -48,6 +48,9 @@ def install():
                               tag=pins['controller'].split(':', 1)[1])
             gateway = controller.setdefault('gateway', {})
             gateway['disableIstioVirtualHost'] = True
+            if k('get', 'service/kourier-internal', '-n', 'kourier-system', check=False).returncode == 0:
+                gateway.setdefault('localGateway', {})['knativeGatewayService'] = \
+                    'kourier-internal.kourier-system.svc.cluster.local'
             gateway.setdefault('ingressGateway', {})['className'] = 'traefik'
         path = snapshot / (component + '-values.json')
         path.write_text(json.dumps(values), encoding='utf-8')
