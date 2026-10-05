@@ -28,14 +28,15 @@ GitHub repository until automatic backup has been verified.
 
 ## Current status and next batch
 
-The helper is built and installed. Private GitHub authentication, four setup
-safety tests and Ruff passed. The disposable local-network mirror test was
-rejected by Gitea's destination policy; no project mirror is enabled.
+The helper is installed and the three private mirrors are enabled. Initial
+branch/tag hashes matched, and ordinary temporary-branch pushes appeared on
+GitHub automatically. Full syncs removed the deleted branches; deletion alone
+did not trigger immediate sync. Four setup safety tests and Ruff passed.
 
-The human needs to create the selected empty private repositories and grant
-the App access. Then enable each mirror, compare refs and perform an automatic
-push check. Retain the old backups until that check passes. Update the
-[roadmap](roadmap.md) and [verification record](../research/evidence/github-push-mirror-preflight.md).
+The old backup remains untouched. Its removal is an owner action, not part of
+mirror activation. The next batch is the [developer workstation walkthrough](remote-delivery-user-check.md).
+The [verification record](../research/evidence/github-push-mirror-preflight.md)
+retains revisions and the distinction between automatic and explicit syncs.
 
 ## References
 

@@ -92,7 +92,8 @@ operator [evaluation runbook](evaluation-runbook.md) covers standalone studies. 
 source check does not itself approve a deployment. The three targets share one
 local cluster; they are not separate failure domains.
 
-Gitea is the primary remote; GitHub is an offsite backup. Dataset bytes belong in
+Gitea is the primary remote; [native push mirrors](github-mirror.md) back up the
+lab, search source and deployment-state Git history to GitHub. Dataset bytes belong in
 object storage, not Git. The original `search-spike` path uses retained Gitea
 registry builds; new reference delivery uses Nexus. Images and input artefacts
 must survive runtime deletion for recreation to work.

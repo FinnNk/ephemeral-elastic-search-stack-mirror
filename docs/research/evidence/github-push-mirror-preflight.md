@@ -2,7 +2,7 @@
 
 Checked on 5 October 2026 with Gitea 1.27.0 and chart 12.7.0.
 
-## Repository state
+## Before activation
 
 GitHub main was `5e902b87eb62f6e467f934601a3dbd87c30ad0b6`; Gitea main
 was `750335ecaafebdc7bf69a5faacb5ff504d33b407`. They have different histories.
@@ -35,3 +35,35 @@ unavailable, so empty destination creation remains a human setup step.
 An actual GitHub mirror push and automatic event-driven update remain unchecked
 until an empty destination is available. Image manifests do not establish native
 Apple silicon installation or disaster recovery.
+
+## Activation results
+
+The owner created three empty repositories, granted the App access and changed
+their visibility to private. Native mirrors were enabled on 5 October 2026.
+
+| Gitea source | GitHub destination | Initial branch/tag refs | Main commit |
+| --- | --- | --- | --- |
+| `ephemeral-elastic-search-stack` | `FinnNk/ephemeral-elastic-search-stack-mirror` | 4 | `750335ecaafebdc7bf69a5faacb5ff504d33b407` |
+| `delivery-source` | `FinnNk/delivery-source-mirror` | 11 | `715a2a3ed6df60d8acaf85cb7a767413c97dc6a4` |
+| `delivery-state` | `FinnNk/delivery-state-mirror` | 52 | `c44b026c407b0bf91912aa55ff8e0f30700215ec` |
+
+All initial branch and tag hashes matched.
+All mirrors reported no error, with sync on commit enabled and a one-hour
+interval. The GitHub App key is supplied through ESO; mirror URLs contain no
+credentials.
+
+An ordinary Git push created a temporary branch in each Gitea repository.
+Without an explicit mirror sync, the same ref appeared on GitHub. The polling
+checks returned after 7.875, 5.500 and 4.218 seconds respectively. These are
+individual check timings after the push command returned, not latency targets.
+
+Deleting those branches did not trigger an immediate mirror update. The first
+lab check waited 90 seconds; the subsequent checks waited at least 15 seconds.
+Explicit full syncs then removed them and left no mirror error. The configured
+hourly full sync provides the periodic path; waiting for its timer was not part
+of this check. No temporary branch remains in either remote.
+
+The existing GitHub backup and its PRs were not changed. Gitea PRs 114 and 115
+were still open during activation; mirrors back up review branches too, without
+merging them into main. GitHub PR or review replication, native Apple silicon
+installation and recovery from a lost host remain outside these checks.

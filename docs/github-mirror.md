@@ -4,25 +4,28 @@ Gitea owns branches, reviews and merges. Its native push mirrors copy Git histor
 to private GitHub repositories after a push, with an hourly retry as a fallback.
 Developers work in Gitea; they do not create a second backup PR.
 
-**Setup status:** the App helper is installed and private GitHub authentication
-has been checked. Project mirrors are not enabled yet. Empty destination
-repositories and App access are needed before the first sync.
+All three mirrors are enabled. Initial branch and tag hashes match Gitea, and
+ordinary Git pushes reach GitHub automatically.
 
 ## What is backed up
 
-| Repository | Contents |
-| --- | --- |
-| `ephemeral-elastic-search-stack` | Lab code, configuration and documentation |
-| `delivery-source` | Search API code and CI workflows |
-| `delivery-state` | Reviewed deployments and recorded relevance decisions |
+| Gitea repository | GitHub mirror | Contents |
+| --- | --- | --- |
+| `ephemeral-elastic-search-stack` | [Lab mirror](https://github.com/FinnNk/ephemeral-elastic-search-stack-mirror) | Lab code, configuration and documentation |
+| `delivery-source` | [Source mirror](https://github.com/FinnNk/delivery-source-mirror) | Search API code and CI workflows |
+| `delivery-state` | [State mirror](https://github.com/FinnNk/delivery-state-mirror) | Reviewed deployments and recorded relevance decisions |
 
 Mirrors copy branches, tags and commits. They do not copy Gitea PR discussions,
 reviews, accounts, Actions logs, Blob data, Nexus artefacts or the control volume.
 Those need separate backups.
 
-Use new, empty private GitHub repositories. Keep the existing backup repository
-until the new mirrors have been verified. Gitea force-pushes mirror refs; do not
-develop or merge changes in a destination repository.
+The mirrors are private to preserve the lab's existing visibility. Public
+mirrors also work, but expose every mirrored branch, tag and commit. Choose
+public visibility only when that publication is intended.
+
+Use empty destinations when setting up another mirror. Gitea force-pushes mirror
+refs; do not develop or merge changes in a destination repository. The old backup
+repository remains retained until its owner removes it.
 
 ## Configure a mirror
 
@@ -75,6 +78,10 @@ If a sync fails, check App installation access, permissions and destination
 branch rules first. After correcting them, select **Synchronise Now** in the
 repository's mirror settings. Removing the push mirror stops automatic backup;
 it does not delete either repository.
+
+Branch deletion alone did not trigger an immediate sync in the local check.
+The next full sync removes deleted refs. Use **Synchronise Now** when immediate
+cleanup is needed; the configured hourly schedule provides periodic full syncs.
 
 See the [setup plan](plans/github-push-mirrors.md),
 [verification record](research/evidence/github-push-mirror-preflight.md) and
