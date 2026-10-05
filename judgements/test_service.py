@@ -6,6 +6,8 @@ import unittest
 from unittest.mock import patch, MagicMock
 import json
 
+INFERENCE = {'runtime_image': 'example.test/judge@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'protocol_sha256': 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'input_contract': 'judgement-pair-v1'}
+
 from service import JudgementService, kserve_predict
 
 
@@ -39,7 +41,7 @@ class ServiceTests(unittest.TestCase):
                             'country': 'GB', 'currency': 'GBP'}]
         self.product_rows = [pair['product'] for pair in self.pairs]
 
-    def test_stored_label_wins_and_abstention_is_not_persisted(self):
+    def test_stored_label_wins_and_abstention_is_cached(self):
         calls = []
 
         def infer(pairs):
@@ -49,11 +51,11 @@ class ServiceTests(unittest.TestCase):
         service = JudgementService(self.database,
             [{'query_id': 'q1', 'product_id': 'p1', 'grade': 3}],
             self.query_rows, self.product_rows,
-            self.context, self.model, infer)
+            self.context, self.model, infer, inference_identity=INFERENCE)
         self.addCleanup(service.database.close)
         first = service.resolve(self.context, self.pairs)['results']
         second = service.resolve(self.context, self.pairs)['results']
-        self.assertEqual(calls, [1, 1])
+        self.assertEqual(calls, [1])
         self.assertEqual(first[0]['label'], 'E')
         self.assertEqual(first[1]['outcome'], 'unjudged')
         self.assertEqual(second[1]['outcome'], 'unjudged')
@@ -66,7 +68,7 @@ class ServiceTests(unittest.TestCase):
             return [{'outcome': 'labelled', 'label': 'C'} for _ in pairs]
 
         service = JudgementService(self.database, [], self.query_rows,
-                                   self.product_rows, self.context, self.model, infer)
+                                   self.product_rows, self.context, self.model, infer, inference_identity=INFERENCE)
         self.addCleanup(service.database.close)
         self.assertEqual(service.resolve(self.context, self.pairs, 'exploratory')['results'][0]['grade'], 1)
         service.resolve(self.context, self.pairs, 'exploratory')
@@ -77,7 +79,7 @@ class ServiceTests(unittest.TestCase):
         service = JudgementService(self.database,
             [{'query_id': 'q1', 'product_id': 'p1', 'grade': 3}],
             self.query_rows, self.product_rows, self.context, self.model,
-            lambda pairs: [{'outcome': 'abstain'} for _ in pairs])
+            lambda pairs: [{'outcome': 'abstain'} for _ in pairs], inference_identity=INFERENCE)
         provenance = {'kind': 'model', 'source_id': 'first-model', 'model': self.model,
                       'pass_id': 'pass-one', 'policy_sha256': 'd' * 64,
                       'release_sha256': 'e' * 64}
@@ -95,7 +97,7 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(service.lookup('q1', 'p1')['source'], 'published')
         service.database.close()
         second = JudgementService(self.database, [], [], [], self.context, self.model,
-                                  lambda _: [])
+                                  lambda _: [], inference_identity=INFERENCE)
         self.addCleanup(second.database.close)
         records = second.records(self.context, [{'query_id': 'q1', 'product_id': 'p2'}])
         self.assertEqual(len(records['results'][0]['evidence']), 2)
@@ -110,7 +112,7 @@ class ServiceTests(unittest.TestCase):
                      'source_id': 'candidate', 'model': self.model, 'pass_id': 'first',
                      'policy_sha256': 'd' * 64}}
         service = JudgementService(self.database, [candidate], self.query_rows,
-            self.product_rows, self.context, self.model, lambda _: [])
+            self.product_rows, self.context, self.model, lambda _: [], inference_identity=INFERENCE)
         self.addCleanup(service.database.close)
         self.assertIsNone(service.lookup('q1', 'p2', 'gate'))
         self.assertFalse(service.lookup('q1', 'p2', 'exploratory')['gate_eligible'])
@@ -118,7 +120,7 @@ class ServiceTests(unittest.TestCase):
     def test_other_context_is_rejected(self):
         service = JudgementService(self.database, [], self.query_rows,
                                    self.product_rows, self.context, self.model,
-                                   lambda _: [])
+                                   lambda _: [], inference_identity=INFERENCE)
         self.addCleanup(service.database.close)
         with self.assertRaisesRegex(ValueError, 'differs'):
             service.resolve({**self.context, 'rubric': 'other'}, self.pairs)
@@ -127,7 +129,7 @@ class ServiceTests(unittest.TestCase):
         calls = []
         service = JudgementService(self.database, [], self.query_rows,
                                    self.product_rows, self.context, self.model,
-                                   lambda pairs: calls.extend(pairs) or [])
+                                   lambda pairs: calls.extend(pairs) or [], inference_identity=INFERENCE)
         self.addCleanup(service.database.close)
         for changed in (
                 {**self.pairs[0], 'request': {**self.pairs[0]['request'], 'query': 'desk'}},
@@ -140,10 +142,10 @@ class ServiceTests(unittest.TestCase):
         first = JudgementService(self.database,
             [{'query_id': 'q1', 'product_id': 'p1', 'grade': 3}],
             self.query_rows, self.product_rows, self.context, self.model,
-            lambda _: [])
+            lambda _: [], inference_identity=INFERENCE)
         first.database.close()
         second = JudgementService(self.database, iter(()), iter(()), iter(()),
-                                  self.context, self.model, lambda _: [])
+                                  self.context, self.model, lambda _: [], inference_identity=INFERENCE)
         self.addCleanup(second.database.close)
         self.assertEqual(second.resolve(self.context, [self.pairs[0]])['results'][0]['label'], 'E')
 

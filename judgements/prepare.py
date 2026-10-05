@@ -54,14 +54,15 @@ def require_content(path, manifest, kind):
         raise ValueError('Selected ' + kind + ' bytes differ from the manifest.')
 
 
-def service_client(url, context, model_identity, timeout=10, selection='gate'):
+def service_client(url, context, model_identity, timeout=10, selection='gate', fresh_inference=False):
     if not math.isfinite(timeout) or not 0 < timeout <= 900:
         raise ValueError('Resolution timeout must be between zero and 900 seconds.')
     if not url.startswith(('http://', 'https://')):
         raise ValueError('KServe URL needs an HTTP(S) scheme.')
 
     def predict(items):
-        body = canonical({'context': context, 'pairs': items, 'selection': selection})
+        body = canonical({'context': context, 'pairs': items, 'selection': selection,
+                          'fresh_inference': fresh_inference})
         with telemetry.span('judgement.resolve', kind='client'):
             headers = {'Content-Type': 'application/json'}
             telemetry.inject(headers)

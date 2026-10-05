@@ -49,7 +49,7 @@ def freeze(observations_path, specification_path, catalogue, catalogue_manifest,
             'inputs_sha256': digest(canonical(frozen))}
 
 
-def run(inputs, exclusions, url, model, output, timeout=130):
+def run(inputs, exclusions, url, model, output, timeout=130, fresh_inference=False):
     frozen = read_json(inputs)
     excluded = read_json(exclusions)
     if excluded['inputs_sha256'] != digest(Path(inputs).read_bytes()):
@@ -68,7 +68,7 @@ def run(inputs, exclusions, url, model, output, timeout=130):
         for offset in range(0, len(pairs), 64):
             batch = pairs[offset:offset + 64]
             body = canonical({'context': frozen['context'], 'pairs': batch,
-                              'selection': 'exploratory'})
+                              'selection': 'exploratory', 'fresh_inference': fresh_inference})
             with telemetry.span('judgement.pass.batch', kind='client'):
                 headers = {'Content-Type': 'application/json'}
                 telemetry.inject(headers)
@@ -138,6 +138,7 @@ def main():
     for name in ('inputs', 'exclusions', 'model', 'output'):
         execute.add_argument('--' + name, type=Path, required=True)
     execute.add_argument('--resolve-url', required=True)
+    execute.add_argument('--fresh-inference', action='store_true')
     upload = sub.add_parser('import')
     upload.add_argument('--pass-file', type=Path, required=True)
     upload.add_argument('--import-url', required=True)
@@ -149,7 +150,7 @@ def main():
                         args.source_manifest, args.previous_pass, args.output)
     elif args.command == 'run':
         result = run(args.inputs, args.exclusions, args.resolve_url,
-                     read_json(args.model), args.output)
+                     read_json(args.model), args.output, fresh_inference=args.fresh_inference)
     else:
         result = import_pass(args.pass_file, args.import_url)
     print(json.dumps(result, sort_keys=True))

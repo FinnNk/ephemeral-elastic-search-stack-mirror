@@ -11,8 +11,11 @@ an additional 8 GiB CPU worker: KServe LLM APIs/controller and presets, Knative
 with internal Kourier, KEDA and bounded Prometheus. Both lab judgement models
 remain Ready. Headlamp already runs the latest checked release, 0.45.0.
 Next, [verify plugin workflows](headlamp-testbed-validation.md) against these APIs.
-Judgement inference reuse and the separation of coverage from relevance metrics
-remain active work in their separate batch.
+[Judgement inference reuse](judgement-inference-reuse.md) is implemented for
+review. A 6,920-pair replay reused every prediction and abstention after restart
+and threshold changes, with zero new score-provider calls. Coverage now has its
+own report section; variants still share one frozen judgement set.
+Next: [activate and rehearse the merged API](judgement-inference-activation.md).
 
 The developer walkthrough completed build 108 through integration, staging and
 simulated production. The owner confirmed the rewrite in all three storefronts.

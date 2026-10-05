@@ -66,8 +66,8 @@
       "lane": "resolve",
       "col": 3,
       "type": "backend",
-      "label": "Run model pass",
-      "sublabel": "Pinned KServe model",
+      "label": "Reuse or infer",
+      "sublabel": "Pinned model and input",
       "width": 130
     },
     {
@@ -76,7 +76,7 @@
       "col": 4,
       "type": "database",
       "label": "Select and freeze",
-      "sublabel": "Strict, demo or explore",
+      "sublabel": "One shared label policy",
       "width": 130
     },
     {
@@ -85,7 +85,7 @@
       "col": 5,
       "type": "backend",
       "label": "Score and retain",
-      "sublabel": "Coverage by source",
+      "sublabel": "Coverage separately",
       "width": 130
     }
   ],
@@ -111,7 +111,7 @@
     {
       "from": "model",
       "to": "snapshot",
-      "label": "Labels or abstain",
+      "label": "Retained outcomes",
       "role": "main"
     },
     {

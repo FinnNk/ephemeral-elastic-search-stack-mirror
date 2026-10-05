@@ -35,9 +35,63 @@ These services are shared in `lab-models`, outside search experiment namespaces.
 | `exploratory` | Also accepts unqualified candidate predictions |
 | `demo` | Adds only model predictions authorised by the configured lab demo policy; they remain unqualified |
 
-Published labels win, followed by human labels, then the earliest accepted model
-pass allowed by the selection. Model versions do not overwrite each other.
-A new pass targets unresolved pairs; abstentions remain eligible for later passes.
+Published labels win, followed by human labels. Stored evidence lookup selects
+the earliest accepted model pass allowed by the selection. Resolution uses the
+active pinned model and policy for remaining pairs, reusing its saved inference
+outcomes. Authorised imported demo labels remain available under their scoped
+policy. Model versions do not overwrite each other.
+A new pass targets unresolved pairs. Another model can judge a pair where an
+earlier model abstained; an unchanged model reuses its saved abstention.
+
+## Iterate on a search change
+
+Each comparison searches all variants again, pools their returned pairs and
+freezes one shared judgement set before scoring. Search results are never
+reused by the inference cache.
+
+| Change | Resolution behaviour |
+| --- | --- |
+| Same pair, model, runtime and protocol | Reuse saved probabilities or abstention |
+| New recall pair or changed query/product input | Perform inference |
+| Changed model artefact, runtime image, protocol or rubric | Perform inference under a new cache identity |
+| Changed acceptance thresholds | Apply the pinned policy to saved probabilities; retain a separate decision |
+| Earlier transient failure | Retry inference; failures are not cached as successful outcomes |
+| Explicit fresh inference | Retain another attempt; ordinary resolution still uses the first successful outcome |
+
+The identity covers the complete request, including filters, the product
+document, model version and artefact, runtime image digest, protocol digest,
+input contract and rubric. An unchanged input can be reused across dataset
+releases after the service verifies it against the selected frozen sources.
+Published and human labels take precedence, including during a fresh attempt.
+
+The API requires a pinned `inference.json` beside `model.json`. Bootstrap
+manifests supply it; the ESCI deployment renderer supplies it with live model
+pins. Update these pins whenever the serving runtime or protocol changes.
+An optional model policy `acceptance` holds the `esci-abstention-v1` thresholds;
+its `policy_sha256` must match their canonical digest. Changing thresholds never
+qualifies a model automatically. Demo decisions still require the scoped human
+authorisation in the configured demo policy.
+
+`POST /v1/judgements:resolve` accepts `fresh_inference: true` for a deliberate
+new attempt. The evaluator and gap-pass runner expose `--fresh-inference`.
+Use a new output directory for each evaluation: frozen artefacts cannot be
+overwritten. API responses report `cache_hits`, `inferred_pairs` and whether
+fresh inference was requested under `execution`.
+
+## Read the search comparison
+
+- **Search quality:** compare NDCG and other relevance scores within the report.
+  All variants use the same frozen judgements.
+- **Judgement coverage:** inspect published/model counts, abstentions and
+  remaining gaps separately. Added labels are not evidence of better search.
+- **Result changes:** use RBO and Jaccard to inspect changes independently of
+  label availability.
+
+When labels change, score both baseline and candidate against the new shared
+set. Do not compare a new candidate score with a baseline scored against an
+older judgement set. Frozen rescoring remains unchanged and performs no
+inference. The [cache replay evidence](research/evidence/inference-reuse/README.md)
+records the distinction between inference reuse and model-quality claims.
 
 The API retains source identity, complete model identity, release and policy
 hashes, pass identity, confidence, scores and inference time when supplied.

@@ -1,6 +1,7 @@
 """Render a candidate GPU service and guarded live model pins."""
 
 from .release import content_digest
+from .runtime import INFERENCE_PROTOCOL
 
 NAMESPACE = "lab-models"
 
@@ -116,7 +117,10 @@ def render(receipt: dict, image: str, qualification: dict | None = None) -> dict
                     "apiVersion": "v1",
                     "kind": "ConfigMap",
                     "metadata": {"name": name, "namespace": NAMESPACE},
-                    "data": {"model.json": json.dumps(identity, sort_keys=True)},
+                    "data": {"model.json": json.dumps(identity, sort_keys=True),
+                             "inference.json": json.dumps({"runtime_image": image,
+                                 "protocol_sha256": content_digest(INFERENCE_PROTOCOL),
+                                 "input_contract": "judgement-pair-v1"}, sort_keys=True)},
                 }
             )
     return {"apiVersion": "v1", "kind": "List", "items": items}

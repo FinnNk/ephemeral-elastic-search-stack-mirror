@@ -8,6 +8,8 @@ import unittest
 
 from core import selected
 from demo import replay, validate_record
+INFERENCE = {'runtime_image': 'example.test/judge@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'protocol_sha256': 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'input_contract': 'judgement-pair-v1'}
+
 from service import JudgementService
 
 
@@ -60,7 +62,7 @@ class DemoTests(unittest.TestCase):
             def create(source):
                 return JudgementService(path, source, [query], [product], self.policy['context'],
                     self.policy['model'], lambda pairs: [{'outcome': 'abstain'} for _ in pairs],
-                    demo_policy=self.policy)
+                    demo_policy=self.policy, inference_identity=INFERENCE)
             api = create([])
             payload = {'kind': 'judgement-pass', 'context': self.policy['context'], 'records': [demo]}
             api.import_pass(payload)

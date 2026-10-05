@@ -1,0 +1,62 @@
+{
+  "frozen_reports_unchanged": {
+    "resolved-demo/evaluation.json": "c1a75fb22da1ad7d7e12706e98affb3ef28c7a38b3b2932516bf413a62ead743",
+    "resolved/evaluation.json": "37618c8db350175c5b20d4b0ed10f1b80e6f73913bd09efdcbfd86351df04a1a"
+  },
+  "gpu_calls": 0,
+  "inference_identity": {
+    "input_contract": "judgement-pair-v1",
+    "protocol_sha256": "433ca1f76a8087f19a1acff7db2c127aafc8efdcdfad22b696346fef16739ecb",
+    "runtime_image": "nexus.localhost:18185/esci-judge@sha256:272d8bb0e77a9684b5a24dc795eadcdff1c7506ee6418289f4d8634b46d65c28"
+  },
+  "kind": "inference-reuse-replay",
+  "model": {
+    "artifact_sha256": "6a4d9dc3ff4edb2ea9c3f071fc64973724b9a90f6db8f71d5aa85102e9e6dc2f",
+    "name": "synthetic-esci-judge",
+    "version": "4"
+  },
+  "pairs": 6920,
+  "saved_pass_sha256": "ccd262e2e31880cfa10ccf718caa096a53566bff45550a3e34da6350359068c5",
+  "stages": {
+    "changed_thresholds_exploratory": {
+      "cache_hits": 6920,
+      "inferred_pairs": 0,
+      "outcomes": {
+        "labelled": 5107,
+        "unjudged": 1813
+      },
+      "score_provider_pairs": 0,
+      "seconds": 10.687
+    },
+    "populate_from_saved_predictions": {
+      "cache_hits": 0,
+      "inferred_pairs": 6920,
+      "outcomes": {
+        "labelled": 2099,
+        "unjudged": 4821
+      },
+      "score_provider_pairs": 6920,
+      "seconds": 9.781
+    },
+    "repeat": {
+      "cache_hits": 6920,
+      "inferred_pairs": 0,
+      "outcomes": {
+        "labelled": 2099,
+        "unjudged": 4821
+      },
+      "score_provider_pairs": 0,
+      "seconds": 5.469
+    },
+    "restart": {
+      "cache_hits": 6920,
+      "inferred_pairs": 0,
+      "outcomes": {
+        "labelled": 2099,
+        "unjudged": 4821
+      },
+      "score_provider_pairs": 0,
+      "seconds": 5.875
+    }
+  }
+}

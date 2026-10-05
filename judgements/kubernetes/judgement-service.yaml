@@ -4,6 +4,8 @@ metadata:
   name: judgement-model-pin
   namespace: lab-models
 data:
+  inference.json: |
+    {"runtime_image":"nexus.localhost:18185/relevance-judge:j1-982814890629c11f@sha256:ba1ae60c4795b187f18f29a8bd3eab725670c884637b7c366107776bd93e1955","protocol_sha256":"9b069381526d214bf8679a31d5c4b1043be1a2474dc79f91a0c783014a982006","input_contract":"judgement-pair-v1"}
   model.json: |
     {"name":"synthetic-esci-judge","version":"1","artifact_sha256":"364d0b0961e682ba1440ff570a6288631486c1362e2b68f328aafcf270e5d894"}
 ---
@@ -62,7 +64,7 @@ spec:
         kubernetes.io/hostname: k3d-observability-0
       initContainers:
         - name: fetch-source
-          image: nexus.localhost:18185/relevance-judge:j1-189d1321a6521877-amd64@sha256:a0cf1792b3d255167bc60fec994dcc3f8423ebc4850719eb9a68ebf3894e7a6b
+          image: nexus.localhost:18185/relevance-judge:j1-982814890629c11f@sha256:ba1ae60c4795b187f18f29a8bd3eab725670c884637b7c366107776bd93e1955
           command: [python, /app/fetch_source.py]
           args:
             - --judgement-manifest-sha256
@@ -91,7 +93,7 @@ spec:
               mountPath: /inputs
       containers:
         - name: judgement-service
-          image: nexus.localhost:18185/relevance-judge:j1-189d1321a6521877-amd64@sha256:a0cf1792b3d255167bc60fec994dcc3f8423ebc4850719eb9a68ebf3894e7a6b
+          image: nexus.localhost:18185/relevance-judge:j1-982814890629c11f@sha256:ba1ae60c4795b187f18f29a8bd3eab725670c884637b7c366107776bd93e1955
           command: [python, /app/service.py]
           args:
             - --database
@@ -106,6 +108,8 @@ spec:
             - /inputs/context.json
             - --model
             - /config/model.json
+            - --inference-identity
+            - /config/inference.json
             - --predict-url
             - http://synthetic-esci-judge-predictor.lab-models.svc/v1/models/judgement-model:predict
           env:

@@ -54,6 +54,8 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--resolve-url', required=True)
     parser.add_argument('--selection', choices=('gate', 'exploratory', 'demo'), default='gate')
+    parser.add_argument('--fresh-inference', action='store_true',
+                        help='Retain another inference attempt without replacing reusable outcomes')
     parser.add_argument('--resolve-timeout', type=float, default=10,
                         help='Seconds per resolution batch; use 130 for the v3 candidate')
     parser.add_argument('--model-name', required=True)
@@ -71,7 +73,8 @@ def main():
         result = run(args.observations, args.specification, args.catalogue,
                      args.catalogue_manifest, args.query_manifest, args.source_judgements,
                      args.source_manifest, args.output,
-                     service_client(args.resolve_url, context, model, timeout=args.resolve_timeout, selection=args.selection),
+                     service_client(args.resolve_url, context, model, timeout=args.resolve_timeout, selection=args.selection,
+                                    fresh_inference=args.fresh_inference),
                      model, selection=args.selection)
     print(json.dumps(result, sort_keys=True))
 

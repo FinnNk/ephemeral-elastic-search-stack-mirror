@@ -15,6 +15,7 @@ const comparisons=Array.from({length:100},(_,i)=>({id:'comparison-'+i,baseline_i
   mode:i%3?'relevance':'performance',state:'complete',verdict:'unchanged',report_blob:'report.json',
   created_at:new Date(Date.UTC(2026,0,2,0,i)).toISOString(),summary:{completed_query_count:1000,query_count:1000}}));
 const report={mode:'relevance',verdict:'unchanged',completed_query_count:1000,query_count:1000,
+ judgement_coverage:{baseline:{fraction:.8122},candidate:{fraction:.8122}},judgement_selection:'demo',judgement_sha256:'a'.repeat(64),
  queries:Array.from({length:1000},(_,i)=>({query_id:'q-'+String(i).padStart(4,'0'),query:i===15?'café chair':'query '+i,
  equal_top_10:i%2===0,rbo_at_10_p_0_9:.9,ndcg_delta_at_10:0,baseline:{ids:[],unjudged_top_10_ids:[]},candidate:{ids:[],unjudged_top_10_ids:[]}}))};
 await page.route('http://control.test/**',route=>{
@@ -36,6 +37,9 @@ assert.equal(await page.locator('#baseline option').count(),44);
 assert.equal(await page.locator('#environments').getByRole('button',{name:'Delete',exact:true}).count(),0);
 await page.locator('#comparison-mode').selectOption('performance');await page.locator('#comparison-paging').getByText('1–12 of 34',{exact:true}).waitFor();
 await page.locator('#comparisons').getByRole('button',{name:'Open report',exact:true}).first().click();
+await page.locator('#report-coverage-summary').getByText('Judged results: baseline 81.2%',{exact:false}).waitFor();
+assert.ok(!(await page.locator('#report-summary').innerText()).includes('judged'));
+assert.ok(await page.locator('#report-quality-note').isVisible());
 // Use a relevance report fixture independently of the selected comparison filter.
 await page.locator('#query-paging').getByText('1–25 of 500',{exact:true}).waitFor();
 await page.locator('#query-paging').getByRole('button',{name:'Next',exact:true}).click();await page.locator('#query-paging').getByText('26–50 of 500',{exact:true}).waitFor();

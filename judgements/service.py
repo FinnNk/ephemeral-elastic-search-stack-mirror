@@ -15,13 +15,15 @@ from urllib import request
 from core import GRADE_TO_LABEL, LABEL_TO_GRADE, canonical, digest
 from telemetry import telemetry
 from evidence import EvidenceStore, validate
+from inference_cache import InferenceCache
 
 
 class JudgementService:
     def __init__(self, database, source_rows, query_rows, product_rows,
-                 context, model, predict, source_identity=None, model_policy=None, demo_policy=None):
-        self.database = sqlite3.connect(database, check_same_thread=False)
+                 context, model, predict, source_identity=None, model_policy=None, demo_policy=None,
+                 *, inference_identity):
         self.lock = threading.RLock()
+        self.inference_lock = threading.Lock()
         self.context = context
         self.model = model
         self.demo_policy = demo_policy
@@ -39,17 +41,25 @@ class JudgementService:
         self.model_policy = model_policy or {'pass_id': digest(canonical(model)),
             'policy_sha256': digest(canonical({'qualification': 'pending'})),
             'gate_eligible': False}
+        self.acceptance = self.model_policy.get('acceptance')
+        if self.acceptance is not None:
+            from esci.contract import validate_policy
+            validate_policy(self.acceptance)
+            if self.model_policy.get('policy_sha256') != digest(canonical(self.acceptance)):
+                raise ValueError('Acceptance policy digest does not match its thresholds.')
         if type(self.model_policy.get('gate_eligible')) is not bool:
             raise ValueError('Model policy eligibility must be explicit.')
         self.model_provenance = {'kind': 'model', 'source_id': digest(canonical(
             {'model': model, 'policy': self.model_policy})), 'model': model,
             **{k: v for k, v in self.model_policy.items() if k != 'gate_eligible'}}
+        self.database = sqlite3.connect(database, check_same_thread=False)
         existing = self.database.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
         version = self.database.execute('PRAGMA user_version').fetchone()[0]
         if existing and version != 2:
             raise ValueError('Recreate the disposable judgement database for the current schema.')
         self.database.execute('PRAGMA user_version=2')
         self.evidence = EvidenceStore(self.database, self.scope)
+        self.inference = InferenceCache(self.database, model, inference_identity, context['rubric'])
         self.database.executescript('''
             CREATE TABLE IF NOT EXISTS queries (
                 scope TEXT NOT NULL, query_id TEXT NOT NULL, request_sha256 TEXT NOT NULL,
@@ -136,7 +146,16 @@ class JudgementService:
                 identities.append(self.evidence.append(row['query_id'], row['product_id'], record))
         return {'evidence_sha256': identities}
 
-    def resolve(self, context, pairs, selection='gate'):
+    def resolve(self, context, pairs, selection='gate', fresh_inference=False):
+        """Resolve a new recall pool; reuse outcomes unless a fresh attempt is requested."""
+        if type(fresh_inference) is not bool:
+            raise ValueError('fresh_inference must be a boolean.')
+        # One shared GPU predictor: prevent concurrent requests from inferring the
+        # same missing key before either has committed its reusable outcome.
+        with self.inference_lock:
+            return self._resolve(context, pairs, selection, fresh_inference)
+
+    def _resolve(self, context, pairs, selection, fresh_inference):
         if selection not in ('gate', 'exploratory', 'demo'):
             raise ValueError('Judgement selection must be gate, exploratory or demo.')
         if selection == 'demo' and self.demo_policy is None:
@@ -149,6 +168,8 @@ class JudgementService:
         results = [None] * len(pairs)
         pending = []
         positions = []
+        cached = []
+        cache_hits = 0
         for index, pair in enumerate(pairs):
             key = (pair.get('query_id'), pair.get('product_id'))
             if not all(isinstance(value, str) and value for value in key) or key in seen:
@@ -171,43 +192,90 @@ class JudgementService:
                     document[0] != digest(canonical(product)):
                 raise ValueError('Pair differs from the frozen query or catalogue.')
             known = self.lookup(*key, selection)
-            if known:
+            if known and (known['provenance']['kind'] in ('published', 'human') or
+                          (selection == 'demo' and not fresh_inference and
+                           known['provenance'].get('qualification') == 'lab-demo-authorised')):
                 results[index] = known
             else:
                 pending.append(pair)
                 positions.append(index)
+                with self.lock:
+                    previous = None if fresh_inference else self.inference.get(pair)
+                cached.append(previous)
+                cache_hits += previous is not None
         if pending:
+            uncached = [(i, pair) for i, pair in enumerate(pending) if cached[i] is None]
+            predicted = [item['prediction'] if item else None for item in cached]
             try:
-                predicted = self.predict(pending)
-                if not isinstance(predicted, list) or len(predicted) != len(pending):
+                fresh = self.predict([pair for _, pair in uncached]) if uncached else []
+                if not isinstance(fresh, list) or len(fresh) != len(uncached):
                     raise ValueError('Inference count differs from request count.')
             except Exception as error:
-                predicted = [{'outcome': 'error', 'detail': type(error).__name__}
-                             for _ in pending]
+                fresh = [{'outcome': 'error', 'detail': type(error).__name__} for _ in uncached]
+            for (index, _), outcome in zip(uncached, fresh):
+                predicted[index] = outcome
             with self.lock, self.database:
-                for position, pair, outcome in zip(positions, pending, predicted):
+                for index, (position, pair, prediction) in enumerate(zip(positions, pending, predicted)):
+                    outcome = prediction
+                    if self.acceptance is not None and prediction.get('outcome') != 'error':
+                        from esci.contract import outcome as accept
+                        outcome = {**prediction, **accept(prediction['probabilities'], self.acceptance)}
+                    provenance = self.model_provenance
+                    gate_eligible = self.model_policy['gate_eligible']
+                    if selection == 'demo' and prediction.get('outcome') != 'error' and self.model == self.demo_policy['model']:
+                        from esci.contract import outcome as accept
+                        from demo import policy_sha
+                        identity = policy_sha(self.demo_policy)
+                        outcome = {**prediction, **accept(prediction['probabilities'], self.demo_policy['acceptance'])}
+                        provenance = {**self.model_provenance, 'qualification': 'lab-demo-authorised',
+                            'policy_sha256': identity, 'pass_id': 'lab-demo-' + identity[:16],
+                            'authorisation': self.demo_policy['authorisation']}
+                        provenance['source_id'] = digest(canonical(provenance))
+                        gate_eligible = False
                     state = outcome.get('outcome')
                     label = outcome.get('label')
                     if state == 'labelled' and label not in LABEL_TO_GRADE:
                         raise ValueError('Model returned an invalid ESCI label.')
                     if state not in ('labelled', 'abstain', 'error'):
                         raise ValueError('Model returned an invalid outcome.')
+                    attempt = cached[index]
+                    if attempt is None and state != 'error':
+                        attempt = self.inference.append(pair, prediction)
                     key = (pair['query_id'], pair['product_id'])
                     record = {**outcome, 'recorded_at': datetime.now(timezone.utc).isoformat(),
                         'input_sha256': digest(canonical(pair)),
-                        'gate_eligible': self.model_policy['gate_eligible'],
-                        'provenance': self.model_provenance}
+                        'gate_eligible': gate_eligible, 'provenance': provenance}
+                    if attempt:
+                        record['inference'] = {k: attempt[k] for k in
+                            ('cache_key', 'input_sha256', 'model', 'inference', 'recorded_at')}
+                        record['inference']['attempt_sha256'] = attempt['attempt_sha256']
+                        # Reuse the original decision record for this exact attempt
+                        # and policy; ordinary repeats do not grow the evidence log.
+                        previous = next((r for r in self.evidence.records(*key)
+                            if r.get('inference', {}).get('attempt_sha256') == attempt['attempt_sha256']
+                            and r['provenance'] == provenance), None)
+                        if previous:
+                            record = {k: v for k, v in previous.items() if k not in
+                                      ('query_id', 'product_id', 'scope', 'evidence_sha256')}
                     record.pop('detail', None)
                     if state == 'error':
                         record['detail'] = str(outcome.get('detail', 'inference_error'))[:120]
                     self.evidence.append(*key, record)
-                    selected = self.lookup(*key, selection)
-                    results[position] = selected or {**record,
+                    from core import selected as eligible
+                    accepted = state == 'labelled' and eligible(record, selection)
+                    if selection == 'demo':
+                        accepted = state == 'labelled' and provenance.get('qualification') == 'lab-demo-authorised'
+                        if accepted:
+                            from demo import validate_record
+                            validate_record(record, self.demo_policy)
+                    results[position] = {**record, 'grade': LABEL_TO_GRADE[label], 'source': 'model'} if accepted else {**record,
                         'outcome': 'inference_error' if state == 'error' else 'unjudged',
                         'reason': 'model_failed' if state == 'error' else
                                   'unqualified_prediction' if state == 'labelled' else 'model_abstained',
-                        'provenance': self.model_provenance, 'gate_eligible': False}
-        return {'results': results, 'model': self.model, 'selection': selection}
+                        'provenance': provenance, 'gate_eligible': False}
+        return {'results': results, 'model': self.model, 'selection': selection,
+                'execution': {'cache_hits': cache_hits, 'inferred_pairs': len(pending)-cache_hits,
+                              'fresh_inference': fresh_inference}}
 
 
 def kserve_predict(url, pairs, model, timeout=8):
@@ -231,7 +299,8 @@ def serve(service, host='0.0.0.0', port=18086):
             if self.path != '/health':
                 self.send_error(404)
                 return
-            self.reply(200, {'ready': True, 'model': service.model})
+            self.reply(200, {'ready': True, 'model': service.model,
+                            'inference': service.inference.identity})
 
         def do_POST(self):
             if self.path not in ('/v1/judgements:resolve', '/v1/judgements:records',
@@ -251,7 +320,8 @@ def serve(service, host='0.0.0.0', port=18086):
                             value = service.records(body['context'], body['pairs'])
                         else:
                             value = service.resolve(body['context'], body['pairs'],
-                                                    body.get('selection', 'gate'))
+                                                    body.get('selection', 'gate'),
+                                                    body.get('fresh_inference', False))
                     if self.path.endswith(':resolve'):
                         telemetry.count_results(service.model['version'], value['results'])
                     telemetry.attributes(http_response_status_code=200,
@@ -295,6 +365,7 @@ if __name__ == '__main__':
     parser.add_argument('--predict-url', required=True)
     parser.add_argument('--model-policy', type=Path)
     parser.add_argument('--demo-policy', type=Path)
+    parser.add_argument('--inference-identity', type=Path, required=True)
     parser.add_argument('--port', type=int, default=18086)
     parser.add_argument('--host', default='0.0.0.0')
     args = parser.parse_args()
@@ -310,5 +381,6 @@ if __name__ == '__main__':
                                     json.loads(args.model.read_bytes()), timeout=model_timeout),
         source_identity={'kind': 'published', 'source_id': digest(args.source_judgements.read_bytes())},
         model_policy=json.loads(args.model_policy.read_bytes()) if args.model_policy else None,
-        demo_policy=json.loads(args.demo_policy.read_bytes()) if args.demo_policy else None)
+        demo_policy=json.loads(args.demo_policy.read_bytes()) if args.demo_policy else None,
+        inference_identity=json.loads(args.inference_identity.read_bytes()))
     serve(instance, host=args.host, port=args.port)

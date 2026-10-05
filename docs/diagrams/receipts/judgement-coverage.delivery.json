@@ -6,12 +6,12 @@
   "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\archify\\judgement-coverage.json",
   "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\judgement-coverage.html",
   "specification": {
-    "sha256": "1c6bed4b51567e1501a866f7f771e581e91a59054651d652c838c8c6b09f96ae",
-    "bytes": 3175
+    "sha256": "3349f120c3c15d5f89194267e67a11bf84e854771942dc86b946d468a2fefff3",
+    "bytes": 3179
   },
   "artifact": {
-    "sha256": "65d65edca2f4ea35a4b8f30d42160b7147cdb2903b2b38471d7081a583d962e2",
-    "bytes": 803040
+    "sha256": "fc8e64db3acc277013784544ac9f0da5c52eabfe18ff25707bb8eb163329d34b",
+    "bytes": 803056
   },
   "validation": {
     "checksPassed": 9,

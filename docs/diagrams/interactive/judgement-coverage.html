@@ -5173,7 +5173,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
         <!-- Edge paths -->
         <path data-edge-from="judgements" data-edge-to="model" data-edge-label="Gaps only" data-edge-key="0" data-composition-points="498.8,243;560,243" d="M 498.8 243 L 560 243" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="model" data-edge-to="snapshot" data-edge-label="Labels or abstain" data-edge-key="1" data-composition-points="625,269;625,290;745,290;745,341" d="M 625 269 L 625 290 L 745 290 L 745 341" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="model" data-edge-to="snapshot" data-edge-label="Retained outcomes" data-edge-key="1" data-composition-points="625,269;625,290;745,290;745,341" d="M 625 269 L 625 290 L 745 290 L 745 341" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="pool" data-edge-to="judgements" data-edge-label="Distinct pairs" data-edge-key="2" data-composition-points="313.8,145;313.8,166;433.8,166;433.8,217" d="M 313.8 145 L 313.8 166 L 433.8 166 L 433.8 217" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="results" data-edge-to="pool" data-edge-label="Ordered IDs" data-edge-key="3" data-composition-points="178,119;248.8,119" d="M 178 119 L 248.8 119" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="snapshot" data-edge-to="evaluate" data-edge-label="One frozen set" data-edge-key="4" data-composition-points="810,367;895.2,367" d="M 810 367 L 895.2 367" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
@@ -5212,19 +5212,19 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text data-detail="context" x="433.8" y="255" class="t-muted" font-size="8" text-anchor="middle">Published labels first</text>
         </g>
 
-        <g id="node-model" data-node-id="model" data-node-label="Run model pass" tabindex="0" role="button" aria-label="Focus Run model pass, Pinned KServe model, Resolve gaps" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Pinned KServe model" data-node-context="Resolve gaps">
-          <title>Run model pass · Pinned KServe model · Resolve gaps</title>
+        <g id="node-model" data-node-id="model" data-node-label="Reuse or infer" tabindex="0" role="button" aria-label="Focus Reuse or infer, Pinned model and input, Resolve gaps" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Pinned model and input" data-node-context="Resolve gaps">
+          <title>Reuse or infer · Pinned model and input · Resolve gaps</title>
           <rect x="560" y="217" width="130" height="52" rx="6" class="c-mask"/>
           <rect x="560" y="217" width="130" height="52" rx="6" class="c-backend" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(566 223) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="625" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Run model pass</text>
-          <text data-detail="context" x="625" y="255" class="t-muted" font-size="8" text-anchor="middle">Pinned KServe model</text>
+          <text data-node-label="" data-detail-anchor="" x="625" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Reuse or infer</text>
+          <text data-detail="context" x="625" y="255" class="t-muted" font-size="8" text-anchor="middle">Pinned model and input</text>
         </g>
 
-        <g id="node-snapshot" data-node-id="snapshot" data-node-label="Select and freeze" tabindex="0" role="button" aria-label="Focus Select and freeze, Strict, demo or explore, Freeze and score" aria-pressed="false" data-node-kind="database" data-node-sublabel="Strict, demo or explore" data-node-context="Freeze and score">
-          <title>Select and freeze · Strict, demo or explore · Freeze and score</title>
+        <g id="node-snapshot" data-node-id="snapshot" data-node-label="Select and freeze" tabindex="0" role="button" aria-label="Focus Select and freeze, One shared label policy, Freeze and score" aria-pressed="false" data-node-kind="database" data-node-sublabel="One shared label policy" data-node-context="Freeze and score">
+          <title>Select and freeze · One shared label policy · Freeze and score</title>
           <rect x="680" y="341" width="130" height="52" rx="6" class="c-mask"/>
           <rect x="680" y="341" width="130" height="52" rx="6" class="c-database" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(686 347) scale(0.6875)">
@@ -5232,18 +5232,18 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="745" y="362" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Select and freeze</text>
-          <text data-detail="context" x="745" y="379" class="t-muted" font-size="8" text-anchor="middle">Strict, demo or explore</text>
+          <text data-detail="context" x="745" y="379" class="t-muted" font-size="8" text-anchor="middle">One shared label policy</text>
         </g>
 
-        <g id="node-evaluate" data-node-id="evaluate" data-node-label="Score and retain" tabindex="0" role="button" aria-label="Focus Score and retain, Coverage by source, Freeze and score" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Coverage by source" data-node-context="Freeze and score">
-          <title>Score and retain · Coverage by source · Freeze and score</title>
+        <g id="node-evaluate" data-node-id="evaluate" data-node-label="Score and retain" tabindex="0" role="button" aria-label="Focus Score and retain, Coverage separately, Freeze and score" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Coverage separately" data-node-context="Freeze and score">
+          <title>Score and retain · Coverage separately · Freeze and score</title>
           <rect x="895.2" y="341" width="130" height="52" rx="6" class="c-mask"/>
           <rect x="895.2" y="341" width="130" height="52" rx="6" class="c-backend" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(901.2 347) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="960.2" y="362" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Score and retain</text>
-          <text data-detail="context" x="960.2" y="379" class="t-muted" font-size="8" text-anchor="middle">Coverage by source</text>
+          <text data-detail="context" x="960.2" y="379" class="t-muted" font-size="8" text-anchor="middle">Coverage separately</text>
         </g>
 
         <!-- Edge labels -->
@@ -5251,9 +5251,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="502.79999999999995" y="223" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
           <text x="529.4" y="233" class="t-muted" font-size="8" text-anchor="middle">Gaps only</text>
         </g>
-        <g data-detail="context" data-edge-from="model" data-edge-to="snapshot" data-edge-label="Labels or abstain" data-edge-key="1">
+        <g data-detail="context" data-edge-from="model" data-edge-to="snapshot" data-edge-label="Retained outcomes" data-edge-key="1">
           <rect x="639.2" y="270" width="91.6" height="14" rx="3" class="c-mask"/>
-          <text x="685" y="280" class="t-muted" font-size="8" text-anchor="middle">Labels or abstain</text>
+          <text x="685" y="280" class="t-muted" font-size="8" text-anchor="middle">Retained outcomes</text>
         </g>
         <g data-detail="context" data-edge-from="pool" data-edge-to="judgements" data-edge-label="Distinct pairs" data-edge-key="2">
           <rect x="335.2" y="146" width="77.2" height="14" rx="3" class="c-mask"/>
