@@ -23,6 +23,8 @@ measurements without opening JSON.
 | New standard and extra suites | Capture Job duration, worker count and recorded request/retry counts |
 | New controlled comparison | Retained capture execution timing |
 | Gatling comparison | Baseline/candidate workload duration, p95/p99, failures, offered rate and budgets |
+| Promotion and rollback | Readable evidence report linking result preservation, relevance and Gatling |
+| Deployment verification | Release identity, index, checked product count and verification/merge duration |
 | Existing frozen reports | Display available measurements without inventing absent capture timing |
 
 See [delivery](../delivery.md), `lab/delivery_results.js`, `evaluation/offline.py`,

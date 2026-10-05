@@ -195,6 +195,7 @@ def execute_next():
                 '--fingerprint', request['fingerprint'], '--intent', request['intent'],
                 '--evidence', evidence['reference_file']]))
             result['url'] = 'https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/' + str(result['pr'])
+            result['report'] = {key: evidence[key] for key in ('sha256', 'blob')}
         else:
             target = request['target']
             progress('Evaluating the candidate against ' + target)
@@ -205,6 +206,7 @@ def execute_next():
             result = execute(parser().parse_args(['promote', target, '--run', str(request['run']),
                 '--intent', request['intent'], '--evidence', evidence['reference_file'], *options]))
             result['url'] = 'https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/' + str(result['pr'])
+            result['report'] = {key: evidence[key] for key in ('sha256', 'blob')}
         store.update(identifier, state='complete', progress='Complete', result=result)
     except Exception as error:
         from delivery_source_comparison import BuildPending

@@ -41,9 +41,10 @@ function operation(row){
  $('explanation').textContent=row.state==='complete'?'The operation finished. Review its outcome and evidence below.':['failed','interrupted'].includes(row.state)?'The operation did not finish successfully. Review the error before starting another operation.':'This page refreshes every five seconds. You can leave it and return using the same link.';
  if(row.error)node('p','Error: '+row.error,section('What happened'));
  gate(result.gate);
+ if(row.state==='complete'&&['promotion','rollback'].includes(request.kind)&&result.validation){$('state').textContent=result.validation.passed?'Ready for review':'Proposal validation failed';}
  if(result.state)node('p',stateNames[result.state]||label(result.state),section('Deployment outcome'));
  if(result.validation)node('p',result.validation.detail||'Review the recorded validation result.',section('Proposal validation'));
- link('report',row.report_url);link('baseline',result.baseline_url);link('candidate',result.candidate_url);link('preview',result.browser_url);link('proposal',result.url);link('decision',row.decision_url);
+ link('report',row.report_url);$('report').textContent=['promotion','rollback'].includes(request.kind)?'Review promotion checks':['verify','merge-reviewed'].includes(request.kind)?'Open deployment verification':'Open comparison report';link('baseline',result.baseline_url);link('candidate',result.candidate_url);link('preview',result.browser_url);link('proposal',result.url);link('decision',row.decision_url);
  identity({operation:row.id,source_commit:request.source_sha||result.source_sha,baseline_commit:request.baseline_sha||result.baseline_source_sha,build_run:request.run,target:request.target,report_sha256:result.report?.sha256,updated_at:row.updated_at});
  return ['accepted','queued','running'].includes(row.state);
 }
@@ -66,7 +67,7 @@ function timings(value,record){
  }
 }
 function report(value,operationRecord){
- $('title').textContent=value.kind==='paired-api-performance'?'Performance comparison':value.reports?'Delivery checks':'Search comparison report';$('state').textContent=value.valid===false?'Invalid evidence':value.complete===false?'Incomplete evidence':'Report ready';$('stage').textContent='Review search quality, result changes and label coverage separately.';
+ $('title').textContent=value.state==='verified'?'Deployment verification':value.kind==='paired-api-performance'?'Performance comparison':value.reports?'Delivery checks':'Search comparison report';$('state').textContent=value.valid===false?'Invalid evidence':value.complete===false?'Incomplete evidence':'Report ready';$('stage').textContent='Review search quality, result changes and label coverage separately.';
  $('explanation').textContent='All variants in a relevance comparison use the same frozen judgement set. The report records measurements; the operation page records the gate or deployment decision.';
  const decision=operationRecord?.result?.gate;
  if(decision){
@@ -75,6 +76,7 @@ function report(value,operationRecord){
   gate(decision);link('decision',operationRecord.decision_url);
  }else if(operationRecord?.request?.pr){$('state').textContent='Merge gate: not available';$('stage').textContent='No merge decision is recorded for this operation.';}
  else if(value.verdict){$('state').textContent='Check outcome: '+label(value.verdict);}
+ else if(value.state==='verified'){$('state').textContent='Deployment verified';$('stage').textContent='Argo CD and the public API verified the declared release.';}
  timings(value,operationRecord);
  if(value.kind==='variant-evaluation-report'||value.kind==='controlled-api-comparison')section('Read the results','RBO describes order similarity; Jaccard describes product-set overlap. A value of 1 means identical at the captured depth. Coverage shows how many results have relevance labels; added labels do not establish better search.');
  if(value.judgement_selection==='demo')node('p','Lab demo: this report includes authorised model labels whose accuracy remains unqualified.',section('Label policy'));
@@ -89,6 +91,11 @@ function report(value,operationRecord){
  const b=measured.budget||{},s=section(label(phase),'Budgets: p95 ≤'+fmt(b.p95_ms)+' ms; p99 ≤'+fmt(b.p99_ms)+' ms; failed requests <'+fmt(b.failed_percent)+'%.');
  table(s,['Release','Requests','Offered requests/s','p95 (ms)','p99 (ms)','Failed requests','Budget'],['baseline','candidate'].map(side=>{const m=measured[side]||{};return[side,fmt(m.request_count),fmt(m.offered_rps),fmt(m.p95_ms),fmt(m.p99_ms),typeof m.failed_percent==='number'?fmt(m.failed_percent)+'%':'Not available',m.within_budget===true?'Met':m.within_budget===false?'Missed':'Not available']}));
  }
+ }
+ else if(value.state==='verified'){
+  const s=section('Verified release'),deployment=value.deployment||{},fields=deployment.fields||{};
+  table(s,['Field','Value'],[['Environment',fmt(value.environment)],['Build run',fmt(deployment.build_run)],['Image',fmt(fields.image)],['Index',fmt(fields.index)],['Source commit',fmt(fields.source_sha)],['Verified at',fmt(value.verified_at)],['Verification duration',fmt(value.seconds)+' s'],...(value.merge_to_verified_seconds==null?[]:[['Merge to verified',fmt(value.merge_to_verified_seconds)+' s']]),['Products checked',fmt(value.sample_ids?.length)]]);
+  $('explanation').textContent='This records deployment verification, not a new relevance or load test.';
  }
  else if(value.reports){const s=section('Delivery checks','Open each retained check. The operation records the promotion decision.');for(const name of ['result-regression','relevance','performance'])if(value.reports[name]){const p=node('p',null,s),a=node('a','Open '+label(name)+' report',p);a.href=path+'/'+name;}}
  else{const s=section('Delivery evidence','This record combines the retained checks for a delivery operation. Open its operation page to review the decision, or view JSON for the complete evidence.');const values=Object.entries(value).filter(([k,v])=>v!=null&&typeof v!=='object');if(values.length)table(s,['Field','Value'],values.map(([k,v])=>[label(k),fmt(v)]));}

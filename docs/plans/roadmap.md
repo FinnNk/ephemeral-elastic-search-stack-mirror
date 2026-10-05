@@ -16,6 +16,8 @@ accepted commit `4115f78`; readiness and smoke checks passed.
 [Report timings](report-timings.md) are prepared for review. Friendly reports
 show operation duration, retained capture timing and request health; Gatling
 views include workload duration with their existing latency and failure results.
+Promotion and rollback operations expose retained check reports; deployment
+verification has a release summary.
 Next, [activate and check timings](report-timings-activation.md).
 
 Registry setup now discovers Docker-backed cluster workers instead of naming

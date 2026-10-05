@@ -52,7 +52,10 @@ when a bounded decision is required. An old decision link for a passed gate
 also shows that no decision is needed. Timings distinguish elapsed time since
 submission (including waiting) from each search capture Job. Capture requests
 are functional checks; their retry counts do not constitute a load test. Gatling
-reports show workload duration, latency, failed requests and phase budgets. RBO and Jaccard compare each variant with
+reports show workload duration, latency, failed requests and phase budgets.
+Promotion and rollback progress pages link to all three retained checks. After
+deployment, the verification report shows the release, index, products checked
+and verification duration. RBO and Jaccard compare each variant with
 the baseline; relevance scores are shown per variant. Delivery evidence links to each
 retained check. Use **View JSON data** for the underlying record. **Submitted**
 does not mean evaluated or deployed. Both comparison revisions must contain the

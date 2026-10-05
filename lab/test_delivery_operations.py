@@ -121,15 +121,30 @@ class DeliveryOperationTests(unittest.TestCase):
                    'intent': 'ranking-change'}
         self.store.submit(payload, self.identity, 'rollback')
         with patch('delivery_operations.Operations', return_value=self.store), \
-                patch('delivery_cli.execute', side_effect=[{'reference_file': '/state/evidence.json'},
+                patch('delivery_cli.execute', side_effect=[{'reference_file': '/state/evidence.json', 'sha256': 'b'*64, 'blob': 'runs/evidence.json'},
                                                           {'pr': 16}]) as execute:
-            self.assertEqual(execute_next()['state'], 'complete')
+            result = execute_next()
+            self.assertEqual(result['state'], 'complete')
+            self.assertEqual(result['result']['report'], {'sha256': 'b'*64, 'blob': 'runs/evidence.json'})
+            self.assertTrue(result['report_url'].endswith('/report'))
         commands = [call.args[0] for call in execute.call_args_list]
         self.assertEqual([value.command for value in commands], ['evaluate-target', 'rollback'])
         self.assertEqual(commands[0].fingerprint, 'a'*64)
         self.assertEqual(commands[1].evidence.as_posix(), '/state/evidence.json')
         with self.assertRaises(ValueError):
             validate({**payload, 'evidence': '/arbitrary/file'})
+
+    def test_promotion_exposes_retained_checks_as_a_report(self):
+        self.store.submit({'kind': 'promotion', 'target': 'integration', 'run': 108,
+                           'intent': 'ranking-change'}, self.identity, 'promotion')
+        reference = {'sha256': 'b'*64, 'blob': 'runs/evidence.json',
+                     'reference_file': '/state/evidence.json'}
+        with patch('delivery_operations.Operations', return_value=self.store), \
+                patch('delivery_cli.execute', side_effect=[reference, {'pr': 17}]):
+            result = execute_next()
+        self.assertEqual(result['state'], 'complete')
+        self.assertEqual(result['result']['report'], {k: reference[k] for k in ('sha256', 'blob')})
+        self.assertTrue(result['report_url'].endswith('/report'))
 
     def test_waiting_build_releases_queue_and_terminal_failure_is_recorded(self):
         payload = {'kind': 'compare', 'pr': 1, 'source_sha': 'a'*40, 'baseline_sha': 'b'*40}

@@ -270,6 +270,7 @@ def merge_reviewed(number, approval_kind='separate reviewer'):
     result['pr'] = number
     result['approval_kind'] = approval_kind
     reference = retain(result, 'promotion-completion.json')
+    result['report'] = reference
     api(endpoint(DESIRED, '/issues/' + str(number) + '/comments'), 'POST', {'body':
         'Argo CD and the public API verified the declared deployment in ' + str(result['merge_to_verified_seconds']) +
         ' s after merge. Verification SHA-256 `' + reference['sha256'] + '`. Artifact digests were reused without rebuilding.'})
