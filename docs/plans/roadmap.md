@@ -22,7 +22,7 @@ See the [activation evidence](../research/evidence/walkthrough-activation.md).
 | Provider selection and byte pins | Checked against Gitea receipts and fresh Windows checkout bytes | Retain exact source/client/policy pins during activation |
 | Actions delivery and documentation | Installed; preview, verification, promotion/rollback proposals and signed gate rechecks exercised | Review the bootstrap corrections found during activation |
 | Durable relevance decisions | Accepted and installed; runtime files and protected pins verified | Rehearse a fresh human-reviewed decision using the [activation plan](relevance-decision-activation.md) |
-| GitHub backup | Native push-mirror setup in progress | Preserve existing GitHub history and resolve protection before the first mirror push |
+| GitHub backup | App helper installed; private authentication checked | Create empty destinations, then complete the [native mirror checks](github-push-mirrors.md) |
 | Developer workstation rehearsal | [Next detailed plan](remote-delivery-user-check.md) | Complete device sign-in and a fresh human-approved deployment through Actions |
 
 Source PR 27 passed release CI and the installed relevance gate after a fresh

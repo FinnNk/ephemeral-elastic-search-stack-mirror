@@ -44,7 +44,7 @@ Gitea is the primary remote. GitHub holds an offsite copy of Git history.
 | Remote | Use |
 | --- | --- |
 | `origin` | Day-to-day branches and PRs in [local Gitea](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack) |
-| `github` | Explicit backup pushes to [GitHub](https://github.com/FinnNk/ephemeral-elastic-search-stack) using the configured GitHub App |
+| GitHub | Offsite Git copy; [native mirroring setup](docs/github-mirror.md) is in progress. The existing backup is retained until the new mirrors are verified |
 
 Work in batches on branches, commit each batch and obtain acceptance before merging to `main`. See [contribution and documentation review requirements](CONTRIBUTING.md).
 
