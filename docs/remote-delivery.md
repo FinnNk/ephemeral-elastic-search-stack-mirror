@@ -5,8 +5,8 @@ or the **Lab delivery** Actions workflow. The coordinator keeps the operation
 running if you close your terminal. A promotion still needs a reviewed
 `delivery-state` PR before Argo CD deploys it.
 
-This guide describes the implementation awaiting activation. An existing lab needs its
-matching coordinator and source workflow installed; check [current status](plans/roadmap.md).
+The lab's coordinator and source workflows are installed. Administrators handle
+their setup; check [current status](plans/roadmap.md) for remaining validation.
 Routine developer operations need no kubeconfig or cluster access.
 
 ## Sign in from a workstation
@@ -50,6 +50,9 @@ Commands print a progress URL, then follow the operation for up to an hour.
 to obtain its existing operation; changing its inputs requires a new key.
 A restarted coordinator marks an active operation as interrupted. Inspect its
 record and the desired-state PR before resubmitting a possible promotion.
+For a failed comparison, inspect the error and restore the unavailable service
+before submitting a new comparison with a new key. Reusing the old key returns
+the recorded failure; it does not restart the operation.
 
 ## Run from Actions
 

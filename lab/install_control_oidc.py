@@ -92,10 +92,13 @@ def install(image):
     try:
         config = json.loads(k('get', 'configmap/lab-control-config', '-n', NAMESPACE, '-o', 'json').stdout)
         config['data'].update({'LAB_OIDC_ISSUER': ISSUER, 'LAB_OIDC_AUDIENCE': CLIENT,
-            'LAB_OIDC_CA_FILE': '/etc/lab-ca/root.pem', 'LAB_CONTROL_PUBLIC_URL': URL})
+            'LAB_OIDC_CA_FILE': '/etc/lab-ca/root.pem', 'LAB_CONTROL_PUBLIC_URL': URL,
+            'LAB_RELEASE_SHA': image.split('@sha256:', 1)[1]})
         apply(config)
         patch = {'spec': {'template': {'spec': {'hostAliases': aliases,
-            'containers': [{'name': c['name'], 'image': image} for c in before['spec']['template']['spec']['containers']]}}}}
+            'containers': [{'name': c['name'], 'image': image,
+                            'env': [{'name': 'LAB_RELEASE_SHA', 'value': image.split('@sha256:', 1)[1]}]}
+                           for c in before['spec']['template']['spec']['containers']]}}}}
         # Remove the drain before the Recreate rollout releases the old Pod.
         k('exec', 'deployment/lab-control', '-n', NAMESPACE, '-c', 'api', '--', 'rm', '-f', '/state/control-drain')
         k('patch', 'deployment/lab-control', '-n', NAMESPACE, '--type=strategic', '-p', json.dumps(patch))

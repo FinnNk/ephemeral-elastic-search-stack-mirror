@@ -40,6 +40,16 @@ def install():
             api('/admin/realms/relevance-lab/clients/' + found[0]['id'], 'PUT', {**found[0], **definition}, token)
         else:
             api('/admin/realms/relevance-lab/clients', 'POST', definition, token)
+        if definition['clientId'] == 'lab-delivery-actions':
+            client = api('/admin/realms/relevance-lab/clients?' + urlencode(
+                {'clientId': definition['clientId']}), token=token)[0]
+            account = api('/admin/realms/relevance-lab/clients/' + client['id'] +
+                          '/service-account-user', token=token)
+            # The ingress proxy requires a verified email claim for bearer
+            # sessions too. This reserved address identifies a managed machine
+            # account; it is not a mailbox or a human sign-in identity.
+            api('/admin/realms/relevance-lab/users/' + account['id'], 'PUT',
+                {**account, 'email': 'delivery-actions@relevance.invalid', 'emailVerified': True}, token)
     publisher = credentials()['publisher']
     values = {'LAB_NEXUS_PUBLISH_USER': publisher['username'], 'LAB_NEXUS_PUBLISH_PASSWORD': publisher['password']}
     with floci_forward() as base:

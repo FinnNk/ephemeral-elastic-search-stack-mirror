@@ -5,9 +5,8 @@ compares its results with the baseline. After source merge, promote the new buil
 through integration, staging and simulated production. Argo CD deploys reviewed
 state; the coordinator checks the image, index and public API.
 
-The remote workflow needs the accepted source templates and matching control
-installation. See [activation status](plans/roadmap.md) before using it on an
-existing lab. Developers do not need a kubeconfig. Operators install and repair
+The lab's remote workflow is installed; see [current status](plans/roadmap.md)
+for remaining validation. Developers do not need a kubeconfig. Operators install and repair
 the lab using [control runtime](control-runtime.md).
 
 ![Source build, frozen comparison and merge decision](diagrams/rendered/variant-merge-gate.png)

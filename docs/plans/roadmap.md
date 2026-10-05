@@ -9,16 +9,19 @@ step” is not an instruction to repeat completed work.
 The developer walkthrough completed build 108 through integration, staging and
 simulated production. The owner confirmed the rewrite in all three storefronts.
 Production used the full Gatling gate; desired-state PR 16 was approved, merged
-and verified. This proves the installed CLI path, not the pending Actions path.
+and verified. The accepted remote workflow is now installed. A disposable
+source PR and Actions rehearsals verified fresh comparisons, independent extra
+query gates, preview creation, deployment proposals and approval enforcement.
+See the [activation evidence](../research/evidence/walkthrough-activation.md).
 
 | Batch | State | Next action |
 | --- | --- | --- |
-| Examples, similarity summaries and additional query sets | Implemented in the lab review stack | Review and accept; standard and explicitly required extra suites remain independent |
-| Remote Actions and fresh source comparisons | Implemented, not installed | Merge accepted source templates and install the matching coordinator |
-| Adaptive pacing | Eight workers; isolated overload trials and a fresh 1,000-query Job checked | Activate with the accepted control image; Gatling unchanged |
+| Examples, similarity summaries and additional query sets | Installed; report-only and required-set live checks completed | Use separate and combined reports; required suites remain independent |
+| Remote Actions and fresh source comparisons | Installed; exact-commit comparison and scoped submissions checked | Rehearse the user's next change through reviewed deployments |
+| Adaptive pacing | Eight workers; fresh 1,000-query captures and bounded transient recovery checked | Retain fresh requests and diagnostics; Gatling unchanged |
 | Provider selection and byte pins | Checked against Gitea receipts and fresh Windows checkout bytes | Retain exact source/client/policy pins during activation |
-| Complete Actions delivery and documentation reconciliation | [Current review batch](developer-delivery-docs.md) | Review approved merge, verification, rollback and gate-check submissions in updated source PR 27 |
-| Activation rehearsal | [Next detailed plan](walkthrough-activation.md) | Rehearse a fresh PR and the complete developer path without kubectl after acceptance |
+| Actions delivery and documentation | Installed; preview, verification, promotion/rollback proposals and signed gate rechecks exercised | Review the bootstrap corrections found during activation |
+| Developer workstation rehearsal | [Next detailed plan](remote-delivery-user-check.md) | Complete device sign-in and a fresh human-approved deployment through Actions |
 
 Source PR 27 passed release CI and the installed relevance gate after a fresh
 1,000-query exact-image capture. Its base predates the new source contract, so
@@ -48,7 +51,7 @@ survey or threshold change is authorised by the developer workflow work.
 | Area | Evidence available | Remaining work |
 | --- | --- | --- |
 | Search and scale | Million-product synthetic scale trials, full ESCI captures and a 40-API isolation trial | Repeat timings where percentile claims need support; native and cloud capacity |
-| Lifecycle and recovery | Durable leases, deletion, interrupted-operation handling and index reuse/clone/snapshot/rebuild | Disposable clean-cluster recovery and complete activation rehearsal |
+| Lifecycle and recovery | Durable leases, deletion, interrupted-operation handling and index reuse/clone/snapshot/rebuild; remote activation checked | Disposable clean-cluster recovery and workstation sign-in rehearsal |
 | Input contracts | Independent manifests, retained observations and finite producer/evaluator Jobs | External producer/evaluator boundaries on Azure and addendum-backed promotion |
 | Judgement quality | Frozen numerical parity checks and category/CPU surveys | Independent actual-gap quality evidence, harmful-error support and qualified-only defaults before model qualification claims |
 | Observability | SigNoz search/model dashboards, trace/log correlation, SLO arithmetic and finite arrival ledger | Continuous seven-day verified coverage, bounded counter alignment, instrumented three-target/browser rehearsal and valid overhead measurement |
@@ -61,7 +64,7 @@ model accuracy or a percentile target.
 
 ## Follow-up plans
 
-- [Activation and developer rehearsal](walkthrough-activation.md)
+- [Developer workstation and Actions rehearsal](remote-delivery-user-check.md)
 - [Qualified-only labels](esci-qualified-defaults.md)
 - [Instrumented delivery and overhead](signoz-merged-release-rehearsal.md)
 - [Native/cloud validation](native-cloud-validation.md)
