@@ -14,7 +14,7 @@
 <script>
 const operation=new URLSearchParams(location.search).get('operation'), message=document.querySelector('#message');
 let original,key=crypto.randomUUID(),submitted=null;
-async function request(path,body){const response=await fetch(path,{method:body?'POST':'GET',headers:{'X-Lab-Intent':'1',...(body?{'Content-Type':'application/json','Idempotency-Key':key}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok)throw new Error(value.error||'Request failed');return value}
+async function request(path,body){const response=await fetch(path,{method:body?'POST':'GET',headers:{'Accept':'application/json','X-Lab-Intent':'1',...(body?{'Content-Type':'application/json','Idempotency-Key':key}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok){const error=new Error(value.error||'Request failed');error.status=response.status;throw error;}return value}
 function link(id,url){const node=document.querySelector('#'+id);node.href=url;node.hidden=false}
 async function load(){if(!/^[0-9a-f]{32}$/.test(operation||''))throw new Error('Open this page from a completed comparison.');
 const me=await request('/api/me');original=await request('/api/delivery/operations/'+operation);
@@ -22,8 +22,11 @@ if(original.report_url)link('report',original.report_url);
 const result=original.result||{},gate=result.gate;
 if(!gate)throw new Error('This comparison has no gate result.');
 document.querySelector('#context').textContent='Source commit: '+gate.source_sha+'\nReport: '+gate.report_sha256+'\nPolicy: '+gate.policy_sha256;
-const body=document.querySelector('tbody');for(const variant of gate.variants){const row=document.createElement('tr');for(const value of [variant.variant,variant.delta,variant.judged_fraction,variant.state]){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}body.append(row);if(variant.state==='decision_required'){const option=document.createElement('option');option.value=variant.variant;option.textContent=variant.variant;document.querySelector('#variant').append(option)}}
+const body=document.querySelector('tbody');for(const variant of gate.variants||[]){const row=document.createElement('tr');for(const value of [variant.variant,variant.delta,variant.judged_fraction,variant.state]){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}body.append(row);if(variant.state==='decision_required'){const option=document.createElement('option');option.value=variant.variant;option.textContent=variant.variant;document.querySelector('#variant').append(option)}}
 document.querySelector('#scores').hidden=false;
+if(gate.state==='pass'){message.textContent='Merge gate passed. No relevance decision is needed.';return;}
+if(gate.state==='approved_exception'){message.textContent='A bounded regression has already been accepted and recorded. No further decision is needed.';return;}
+if(gate.state!=='decision_required'){message.textContent='The merge gate is blocked. This evidence cannot be accepted through a bounded relevance decision.';return;}
 if(!me.is_admin||me.is_delivery_service)throw new Error('A human lab administrator must request this decision.');
 if(!document.querySelector('#variant').options.length)throw new Error('No variant has a bounded exception to accept.');
 document.querySelector('#decision').hidden=false;message.textContent='Signed in as '+me.username+'. Review the full report, including required query sets.';}
@@ -34,5 +37,5 @@ if(submitted&&JSON.stringify(payload)!==submitted)throw new Error('This submissi
 let row=await request('/api/delivery/operations',payload);link('progress',row.url);while(['queued','accepted','running'].includes(row.state)){message.textContent=row.progress;await new Promise(resolve=>setTimeout(resolve,2000));row=await request('/api/delivery/operations/'+row.id)}
 if(row.state!=='complete')throw new Error(row.error||'Decision operation '+row.state);link('pr',row.result.url);message.textContent='Decision PR created. Review and approve it in Gitea.';document.querySelector('form').hidden=true;
 }catch(error){message.textContent=error.message;button.disabled=false}});
-load().catch(error=>{message.textContent=error.message;link('signin','/oauth2/start?rd='+encodeURIComponent(location.pathname+location.search))});
+load().catch(error=>{message.textContent=error.message;if(error.status===401)link('signin','/oauth2/start?rd='+encodeURIComponent(location.pathname+location.search))});
 </script></body></html>

@@ -18,14 +18,17 @@ not invite the developer to accept a regression.
 | --- | --- |
 | PR comment | Names the recorded gate state; offers a decision link only for `decision_required` |
 | Comparison report | Shows the gate outcome at the top, before scores and coverage |
-| Passed gate | Says no relevance decision is needed |
+| Passed gate | Says no relevance decision is needed, including when an old decision link is opened |
+| Sign-in link | Appears only for an unauthenticated API response; permission and gate states have their own messages |
 | Other outcomes | Distinguishes required decision, blocked evidence and a recorded exception |
 | Evidence | Fetches the existing operation separately; leaves frozen JSON unchanged |
 
 ## Verification
 
 18 server tests and seven subtests passed; browser checks cover the four gate
-states, baseline comparisons and mobile layout. These verify presentation, not
+states, baseline comparisons and mobile layout. Decision-page browser checks
+cover pass, accepted exception, block, required decision, non-admin access,
+HTTP 403 and HTTP 401. These verify presentation, not
 search quality. The existing passed comparison comment on source PR 31 was
 corrected without changing its evidence.
 
