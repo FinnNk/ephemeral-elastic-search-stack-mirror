@@ -9,6 +9,7 @@ Standard deployment mode.
 | Headlamp | 0.45.0 | Existing cluster UI; latest release checked on 5 October 2026 |
 | KServe LLM controller | 0.21.0 | LLM service and configuration resources; 13 upstream presets |
 | Gateway API / Inference Extension | 1.5.1 / 1.5.0 | Routing contracts for LLM services |
+| Envoy Gateway / AI Gateway | 1.8.1 / 1.1.0 | Internal Gateway and InferencePool routing integration |
 | LeaderWorkerSet | 0.8.0 | LLM worker groups |
 | Knative Serving / Kourier | 1.21.1 / 1.21.0 | Revisions, traffic controls and scale to zero |
 | KEDA | 2.20.2 | Event-driven autoscaling resources |
@@ -60,10 +61,48 @@ and chart-managed Inference Extension CRDs. LLM presets come from KServe's
 - **Scraping:** add a PodMonitor or ServiceMonitor for the test predictor's
   metrics endpoint. Prometheus discovers monitors across namespaces. Installing
   Prometheus alone does not make an uninstrumented predictor expose metrics.
-- **LLM routing:** the routing APIs and controller are installed. A functioning
-  LLM routing example also needs a compatible Gateway implementation and a
-  configured Gateway. This batch does not install an LLM model or gateway data
-  plane. Traefik continues serving the existing lab endpoints.
+- **LLM routing:** Envoy serves Gateway `kserve/kserve-ingress-gateway`, class
+  `envoy`. Its proxy uses ClusterIP and runs on the testbed CPU worker. KServe's
+  LLM controller can attach routes to this Gateway. A routed simulator fixture
+  still needs its HTTPRoute, InferencePool and scheduler; gateway readiness does
+  not prove inference through that chain. Traefik serves the existing lab URLs.
+
+## Check or reinstall the LLM gateway
+
+Run from the stack checkout with `LAB_STATE_DIR` set as above:
+
+```powershell
+python lab/install_headlamp_gateway.py --verify-only
+```
+
+Omit `--verify-only` to install. The separate installer requires the testbed
+worker, checks chart and upstream values checksums, and applies only Envoy's own
+CRDs from its chart. The existing Gateway API and Inference Extension schemas
+are preserved. It checks the gateway class, proxy readiness and ClusterIP
+service. It also verifies that the existing KServe definitions, ingress
+configuration and Traefik deployment remain unchanged.
+
+Envoy needs a read-only ClusterRole for InferencePools: the chart's addon values
+enable watching that resource but do not grant access. The maintained RBAC
+manifest grants only `get`, `list` and `watch` for those pools.
+
+Configuration is in `lab/headlamp-gateway/`; installation receipts and the
+pre-install snapshot are in `$LAB_STATE_DIR/headlamp-gateway`.
+
+To remove the gateway, remove any test routes using it first. With Helm and
+kubectl on your PATH, run:
+
+```powershell
+kubectl --kubeconfig "$env:LAB_STATE_DIR/kubeconfig.yaml" delete -f lab/headlamp-gateway/gateway.yaml
+kubectl --kubeconfig "$env:LAB_STATE_DIR/kubeconfig.yaml" delete -f lab/headlamp-gateway/inferencepool-rbac.yaml
+helm --kubeconfig "$env:LAB_STATE_DIR/kubeconfig.yaml" uninstall aieg aieg-crd -n envoy-ai-gateway-system
+helm --kubeconfig "$env:LAB_STATE_DIR/kubeconfig.yaml" uninstall eg -n envoy-gateway-system
+```
+
+These commands leave Envoy's CRDs and namespaces in place. Do not remove shared
+Gateway API or inference schemas. On Linux/macOS use `$LAB_STATE_DIR` in place of
+`$env:LAB_STATE_DIR`; those platforms have not been rehearsed.
+
 
 Prometheus retains 24 hours of data, limits its TSDB to 1 GB and uses disposable
 storage capped at 2 GiB. Its memory limit is 2 GiB. Grafana, Alertmanager and
@@ -82,3 +121,8 @@ No LLM inference or new model-quality claim was tested.
 
 Local manifests, settings, pre-install snapshots and smoke results are retained
 in `$LAB_STATE_DIR/headlamp-testbed`.
+
+The gateway installation on 5 October 2026 passed controller/proxy readiness,
+GatewayClass acceptance and Gateway programming checks. An internal HTTP probe
+received the expected 404 before any matching route was installed. The probe was
+removed; routed LLM inference remains a separate plugin-test step.

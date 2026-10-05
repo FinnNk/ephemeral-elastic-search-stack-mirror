@@ -10,8 +10,9 @@ in [Headlamp plugin testbed](../headlamp-testbed.md).
 
 - Keep the lab's Standard deployment default and existing search/model pins.
 - Use the testbed CPU worker and explicit workload resource limits.
-- Obtain separate authorisation before loading a GPU model or adding an LLM
-  gateway data plane. LLM APIs alone do not provide a working inference route.
+- Obtain separate authorisation before loading a GPU model. The authorised
+  internal Envoy gateway is installed separately; its readiness alone does not
+  establish inference through a route, pool and scheduler.
 - Keep deliberately failing fixtures distinguishable from installation failures.
 - Prometheus supports plugin metrics; SigNoz remains the lab dashboard.
 
@@ -20,6 +21,7 @@ in [Headlamp plugin testbed](../headlamp-testbed.md).
 | Workflow | Evidence required |
 | --- | --- |
 | LLM configuration | Plugin displays the 13 presets and distinguishes inherited from service-owned configuration |
+| LLM routing | A CPU simulator route reaches its InferencePool through the internal Gateway and scheduler; the plugin shows those resources |
 | Knative lifecycle | A CPU fixture shows readiness, revisions and traffic allocation correctly |
 | KEDA scaling | Plugin reads and edits the ScaledObject bounds rather than an unrelated HPA |
 | Metrics | Headlamp's Prometheus plugin discovers the monitoring service; a fixture exposes a scraped metric |

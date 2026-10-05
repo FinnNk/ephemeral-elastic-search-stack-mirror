@@ -1,0 +1,8 @@
+deployment:
+  pod:
+    nodeSelector:
+      lab.relevance/testbed: 'true'
+certgen:
+  job:
+    nodeSelector:
+      lab.relevance/testbed: 'true'
