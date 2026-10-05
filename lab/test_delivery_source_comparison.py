@@ -34,6 +34,17 @@ class SourceComparisonTests(unittest.TestCase):
             with self.assertRaises(comparison.BuildPending):
                 comparison.build_for('a'*40, 'push')
 
+    def test_comment_offers_decision_only_when_required(self):
+        preview = {'name': 'lab-example', 'expires_at': '2026-10-08'}
+        for state in ('pass', 'approved_exception', 'blocked', 'decision_required'):
+            with self.subTest(state=state), patch.object(comparison, 'api') as api:
+                api.return_value = []
+                comparison.comment(31, 'a'*40, 'b'*32, preview, preview,
+                                   {'sha256': 'c'*64}, {'state': state})
+                body = api.call_args.args[2]['body']
+                self.assertIn('**Merge gate: ' + state.replace('_', ' ') + '.**', body)
+                self.assertEqual('relevance-decision?operation=' in body, state == 'decision_required')
+
     def test_moved_baseline_rejected(self):
         pr = {'state': 'open', 'head': {'sha': 'a'*40, 'repo': {'full_name': 'elastic-agent/delivery-source'}},
               'base': {'sha': 'b'*40, 'ref': 'main'}}

@@ -47,9 +47,16 @@ function operation(row){
  identity({operation:row.id,source_commit:request.source_sha||result.source_sha,baseline_commit:request.baseline_sha||result.baseline_source_sha,build_run:request.run,target:request.target,report_sha256:result.report?.sha256,updated_at:row.updated_at});
  return ['accepted','queued','running'].includes(row.state);
 }
-function report(value){
+function report(value,operationRecord){
  $('title').textContent=value.kind==='paired-api-performance'?'Performance comparison':value.reports?'Delivery checks':'Search comparison report';$('state').textContent=value.valid===false?'Invalid evidence':value.complete===false?'Incomplete evidence':'Report ready';$('stage').textContent='Review search quality, result changes and label coverage separately.';
  $('explanation').textContent='All variants in a relevance comparison use the same frozen judgement set. The report records measurements; the operation page records the gate or deployment decision.';
+ const decision=operationRecord?.result?.gate;
+ if(decision){
+  $('state').textContent='Merge gate: '+(stateNames[decision.state]||label(decision.state));
+  $('stage').textContent=decision.state==='pass'?'All selected variants passed. No relevance decision is needed.':decision.state==='approved_exception'?'A bounded regression was accepted and recorded.':decision.state==='decision_required'?'Review the required relevance decision before merging.':'The change cannot merge with this evidence.';
+  gate(decision);link('decision',operationRecord.decision_url);
+ }else if(operationRecord?.request?.pr){$('state').textContent='Merge gate: not available';$('stage').textContent='No merge decision is recorded for this operation.';}
+ else if(value.verdict){$('state').textContent='Check outcome: '+label(value.verdict);}
  if(value.kind==='variant-evaluation-report'||value.kind==='controlled-api-comparison')section('Read the results','RBO describes order similarity; Jaccard describes product-set overlap. A value of 1 means identical at the captured depth. Coverage shows how many results have relevance labels; added labels do not establish better search.');
  if(value.judgement_selection==='demo')node('p','Lab demo: this report includes authorised model labels whose accuracy remains unqualified.',section('Label policy'));
  if(value.query_sets){for(const [name,suite] of Object.entries(value.query_sets))summary(suite,name==='standard'?'Standard suite':name,value.query_set_metadata?.[name]?.required);if(value.combined)summary(value.combined,'Combined view',false,value.baseline_variant);}
@@ -71,6 +78,12 @@ async function load(){if(loading)return;loading=true;clearTimeout(timer);try{
  const response=await fetch(path,{headers:{Accept:'application/json'}}),value=await response.json();
  if(!response.ok){const error=new Error(value.error||'Unable to load this record.');error.status=response.status;throw error}
  $('content').replaceChildren();$('signin').hidden=true;for(const id of ['report','baseline','candidate','preview','proposal','decision'])$(id).hidden=true;
- const active=operationPage?operation(value):(report(value),false);if(active)timer=setTimeout(load,5000);
+ let record=null;
+ if(!operationPage&&path.startsWith('/api/delivery/operations/')){
+  const r=await fetch(path.split('/report')[0],{headers:{Accept:'application/json'}});
+  if(!r.ok)throw new Error('Unable to load the recorded gate outcome.');
+  record=await r.json();
+ }
+ const active=operationPage?operation(value):(report(value,record),false);if(active)timer=setTimeout(load,5000);
  }catch(error){$('state').textContent='Unable to load';$('stage').textContent=error.message;$('explanation').textContent='Refresh to try again. This does not restart the operation.';if(error.status===401)link('signin','/oauth2/start?rd='+encodeURIComponent(location.pathname+location.search));}finally{loading=false}}
 $('json').href=path+'?format=json';$('refresh').addEventListener('click',load);load();

@@ -21,6 +21,9 @@ const {chromium}=require('playwright');
  await page.clock.fastForward(5000);await page.getByRole('heading',{name:'Merge gate',exact:true}).waitFor();
  assert.equal(await page.locator('#report').getAttribute('href'),url+'/report');assert.ok((await page.locator('#content').innerText()).includes('A passing gate does not deploy'));
  await page.goto(url+'/report');await page.getByRole('heading',{name:'sneakers',exact:true}).waitFor();
+ assert.equal(await page.locator('#state').innerText(),'Merge gate: Passed');
+ assert.equal(await page.locator('#decision').isVisible(),false);
+ assert.equal(await page.locator('#content section h2').first().innerText(),'Merge gate');
  assert.ok((await page.locator('#content').innerText()).includes('Relevance scores are unavailable'));
  assert.ok((await page.locator('#content').innerText()).includes('accuracy remains unqualified'));
  assert.equal(await page.getByRole('heading',{name:'Combined view',exact:true}).count(),1);
@@ -38,6 +41,13 @@ const {chromium}=require('playwright');
  assert.equal(await page.locator('#json').getAttribute('href'),'/api/delivery/operations/'+id+'/report?format=json');
  const out=path.join(process.env.LAB_STATE_DIR||'.lab','ui-qa');fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,'readable-report-fixture.png'),fullPage:true});
  await page.setViewportSize({width:390,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:path.join(out,'readable-report-mobile-fixture.png'),fullPage:true});
+ for(const state of ['decision_required','blocked','approved_exception']){
+  operation={...operation,decision_url:state==='decision_required'?'/relevance-decision?operation='+id:null,result:{...operation.result,gate:{state}}};
+  await page.goto(url+'/report');await page.waitForFunction(()=>document.getElementById('state').textContent.startsWith('Merge gate:'));
+  assert.equal(await page.locator('#decision').isVisible(),state==='decision_required');
+  assert.ok(!(await page.locator('#stage').innerText()).includes('No relevance decision is needed'));
+ }
+ operation={...operation,request:{kind:'promotion'},result:null,decision_url:null};
  report={kind:'controlled-api-comparison',query_count:4,metrics:{baseline:{ndcg_at_10:.7},candidate:{ndcg_at_10:.71}},changed_query_ids:['q1'],result_similarity:{rbo_at_10_p_0_9:.8,jaccard_at_10:.9}};await page.goto(url+'/report');await page.getByRole('cell',{name:'candidate vs baseline',exact:true}).waitFor();
  report={reports:{relevance:{sha256:'b'.repeat(64)},performance:{sha256:'c'.repeat(64)}}};await page.goto(url+'/report');await page.getByRole('link',{name:'Open relevance report'}).waitFor();assert.equal(await page.getByRole('link',{name:'Open relevance report'}).getAttribute('href'),'/api/delivery/operations/'+id+'/report/relevance');
  report={kind:'paired-api-performance',valid:true,profile:'production-load',verdict:'within-budget',measured_phases:{normal:{budget:{p95_ms:250,p99_ms:500,failed_percent:1},baseline:{p95_ms:20,p99_ms:40,failed_percent:0,within_budget:true},candidate:{p95_ms:25,p99_ms:45,failed_percent:0,within_budget:true}}}};await page.goto(url+'/report/performance');await page.getByRole('heading',{name:'normal',exact:true}).waitFor();assert.ok((await page.locator('#content').innerText()).includes('p95 ≤250 ms'));

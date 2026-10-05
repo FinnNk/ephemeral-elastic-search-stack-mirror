@@ -46,7 +46,9 @@ from its `/actions/runs/<id>` URL; compare also needs a baseline run.
 The workflow prints a durable progress URL and releases the runner. Follow that
 record to completion and open the returned storefront or report. Browser links
 show a readable progress page with the current stage and outcome. Report pages separate relevance,
-result overlap and judgement coverage. RBO and Jaccard compare each variant with
+result overlap and judgement coverage. The recorded merge gate appears at the
+top; a passed gate needs no relevance decision. The PR offers a decision link only
+when a bounded decision is required. RBO and Jaccard compare each variant with
 the baseline; relevance scores are shown per variant. Delivery evidence links to each
 retained check. Use **View JSON data** for the underlying record. **Submitted**
 does not mean evaluated or deployed. Both comparison revisions must contain the

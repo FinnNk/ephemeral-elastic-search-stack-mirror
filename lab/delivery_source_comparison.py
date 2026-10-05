@@ -81,7 +81,7 @@ def status(source_sha, state, detail, operation_id):
         'target_url': 'https://control.localhost:34443/api/delivery/operations/' + operation_id})
 
 
-def comment(number, source_sha, operation_id, first, second, report=None):
+def comment(number, source_sha, operation_id, first, second, report=None, gate=None):
     marker = '<!-- delivery-comparison:' + source_sha + ' -->'
     body = (marker + '\n### Search comparison\n\nSource `' + source_sha + '`.\n\n'
             '- [Baseline storefront](' + url(first['name']) + ')\n'
@@ -91,7 +91,10 @@ def comment(number, source_sha, operation_id, first, second, report=None):
     if report:
         body += '\n[Evaluation report](https://control.localhost:34443/api/delivery/operations/' + operation_id + '/report). '
         body += 'Report SHA-256 `' + report['sha256'] + '`. Review label coverage beside the scores.\n'
-        body += '\n[Accept relevance regression](https://control.localhost:34443/relevance-decision?operation=' + operation_id + '). Only variants requiring a bounded decision can be accepted.\n'
+        if gate:
+            body += '\n**Merge gate: ' + gate['state'].replace('_', ' ') + '.**\n'
+        if gate and gate['state'] == 'decision_required':
+            body += '\n[Review required relevance decision](https://control.localhost:34443/relevance-decision?operation=' + operation_id + '). Only variants requiring a bounded decision can be accepted.\n'
     comments = api(endpoint(SOURCE, '/issues/' + str(number) + '/comments?limit=100'))
     old = next((row for row in comments if marker in row['body'] and
                 row.get('user', {}).get('login') == 'elastic-agent'), None)
@@ -251,7 +254,7 @@ def compare(request, progress, operation_id):
         current_pr(number, revision, request['baseline_sha'])
         status(revision, 'success' if verdict['state'] in ('pass', 'approved_exception') else 'failure',
                'Comparison complete: ' + verdict['state'], operation_id)
-        comment(number, revision, operation_id, first, second, reference)
+        comment(number, revision, operation_id, first, second, reference, verdict)
     return {'report': reference, 'source_pr': number, 'source_sha': revision, 'baseline_source_sha': baseline_receipt['source_sha'],
             'baseline_url': url(first['name']), 'candidate_url': url(second['name']),
             'gate': verdict, 'summary': {'metrics': report['metrics'], 'coverage': report['coverage'],
