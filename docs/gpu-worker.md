@@ -1,8 +1,9 @@
 # Optional NVIDIA worker
 
 Add one GPU worker to the existing local Kubernetes cluster for model serving.
-The normal lab nodes remain CPU-only. Omit this worker on Apple silicon; the
-bootstrap judge still runs without a GPU and returns abstentions for missing labels.
+The normal lab nodes remain CPU-only. The calibrated judgement model uses this
+worker. On Apple silicon, omit the worker and select the CPU bootstrap judge;
+it returns abstentions for missing labels.
 
 The worker requires an x86 Linux Docker engine with NVIDIA GPU passthrough.
 The Windows lab uses Docker Desktop with WSL2. This is a separate Docker-managed

@@ -125,3 +125,11 @@ and model thresholds are unchanged.
 
 Next: accept and deploy the batch, then trigger a new source commit and inspect
 the sneakers comparison. See the [batch plan](additional-query-judgements.md).
+
+## Calibrated judgement API activation
+
+Model version 4 is active through both judgement APIs using the already loaded
+KServe predictor. Real inference and repeat reuse passed; accuracy remains
+unqualified. The activation helper preserves caches and prevents bootstrap from
+resetting the API model pin. See the [activation plan](calibrated-judge-activation.md).
+Next: generate the fresh sneakers comparison and continue the developer walkthrough.

@@ -1,19 +1,21 @@
-# Install the calibrated ESCI candidate through MLflow
+# Install the calibrated ESCI model through MLflow
 
 Register and deploy the calibrated ESCI judgement model through MLflow and
 KServe. MLflow assigns its own numbered version to the package. It contains the Decider 4B base, the unmerged 8,192-row v3 LoRA adapter,
 the learned four-score mapping, the exact question and a versioned abstention
 policy. The CUDA serving image is separate from the weights.
 
-Registration is possible on a CPU machine. Activation requires a GPU and passing
-serving and quality checks. The lab still uses the abstaining bootstrap model;
-the frozen-kernel candidate passed numerical qualification, but its predictions
-are not independently quality-qualified. The full catalogue uses cached model-4
-predictions under the temporary [demo policy](judgement-resolution.md#temporary-esci-demo-labels);
-live fallback inference still abstains. See the
+Registration is possible on a CPU machine. Serving requires a GPU and matching
+numerical checks. The lab judgement APIs use the calibrated MLflow **version 4**
+through the loaded KServe predictor. It can return labels or abstain according
+to its acceptance policy. Model-label accuracy remains independently unqualified.
+
+The full catalogue's frozen gate snapshot uses published labels plus model-4
+predictions under the temporary [demo policy](judgement-resolution.md#temporary-esci-demo-labels).
+Changing the active serving model does not change that snapshot. See the
 [serving evidence](research/evidence/esci-frozen-kernels.md) and
-[label-quality plan](plans/esci-label-quality.md). Coordinate competing GPU work before
-qualification; registration alone does not activate the candidate.
+[label-quality plan](plans/esci-label-quality.md). Coordinate competing GPU work
+before qualification; registration alone does not activate the model.
 
 ## Candidate behaviour and evidence
 
@@ -166,8 +168,9 @@ Publish the updated CPU API image too; it adds a configurable model-call timeout
 while preserving the default for the all-abstaining model:
 
 ```powershell
-& $py lab/publish_judgement_image.py --platforms amd64
-$apiImage = (Get-Content "$env:LAB_STATE_DIR/judgement-image.json" -Raw | ConvertFrom-Json).image
+& $py lab/publish_judgement_image.py
+$apiPublished = Get-Content "$env:LAB_STATE_DIR/judgement-image.json" -Raw | ConvertFrom-Json
+$apiImage = $apiPublished.image + '@' + $apiPublished.manifest_sha256
 ```
 
 ## 4. Register in the lab's MLflow
@@ -310,9 +313,35 @@ hashes, both Pod identities and the canary records. A new hardware profile or
 runtime needs its own qualification.
 
 Numerical agreement is separate from label quality. Complete the
-[independent quality assessment](plans/esci-label-quality.md) before activation.
+[independent quality assessment](plans/esci-label-quality.md) before treating model
+labels as qualified gate evidence. For the lab, an explicitly authorised model may
+serve exploratory judgements after numerical checks; its accuracy remains unqualified.
 The generated manifest validates supplied canary evidence; the operator must
 also review the full report and quality evidence before applying live pins.
+
+## Use an already loaded model for lab judgements
+
+An installed predictor can become the judgement APIs' default without loading a
+second copy on the GPU. This changes the API model pin and predictor URL; it does
+not create another InferenceService. The existing resource name may still include
+`candidate`, but both APIs use that model for new gaps.
+
+Use this only after reviewing numerical evidence and authorising exploratory lab
+use. Model labels remain unqualified for accuracy. The frozen search gate suite
+and its judgement snapshot do not change when the serving model changes.
+
+From the lab repository in PowerShell, use the registration receipt, matching
+numerical qualification and digest-pinned images from the installation above:
+
+```powershell
+python lab/activate_judgement_model.py --receipt "$pack/registration.json" --qualification "$pack/qualification.json" --runtime-image $image --api-image $apiImage --predictor esci-v3-candidate --output "$pack/activation"
+```
+
+Use a fresh output directory. The helper verifies the ready predictor and runtime,
+saves the previous configuration, switches installed judgement APIs and verifies
+their model and inference identities. Existing labels and inference caches remain
+on their PVCs; the cache distinguishes model versions. Bootstrap setup refuses to
+replace an active model with the original placeholder.
 
 ## 6. Promote and retain rollback
 

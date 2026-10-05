@@ -17,11 +17,17 @@ class BootstrapModelGuardTests(unittest.TestCase):
         service = {'spec': {'predictor': {'model': {
             'storageUri': 'mlflow-registry://synthetic-esci-judge/2?sha256=' + 'a' * 64,
             'runtime': 'esci-v3-abcd'}}}}
-        with patch.object(stack, 'guard'), patch.object(stack, 'k', return_value=SimpleNamespace(
-            returncode=0, stdout=json.dumps(service))), patch.object(stack, 'configure_network') as network:
+        with patch.object(stack, 'guard'), patch.object(stack, 'k', side_effect=[SimpleNamespace(returncode=1), SimpleNamespace(
+            returncode=0, stdout=json.dumps(service))]), patch.object(stack, 'configure_network') as network:
             with self.assertRaisesRegex(ValueError, 'replacement judgement model'):
                 stack.install()
             network.assert_not_called()
+
+    def test_active_api_model_is_protected_even_with_placeholder_inferenceservice(self):
+        pin = {'data': {'model.json': json.dumps({'name': 'judge', 'version': '4'})}}
+        with patch.object(stack, 'k', return_value=SimpleNamespace(returncode=0, stdout=json.dumps(pin))):
+            with self.assertRaisesRegex(ValueError, 'active through the API'):
+                stack.guard_bootstrap_model()
 
 
 if __name__ == '__main__':

@@ -28,6 +28,12 @@ def manifest(name):
 
 def guard_bootstrap_model():
     """The bootstrap includes a v1-only smoke test and must not reset a later model."""
+    pin = k('get', 'configmap/judgement-model-pin', '-n', 'lab-models', '-o', 'json', check=False)
+    if pin.returncode == 0:
+        identity = json.loads(json.loads(pin.stdout)['data']['model.json'])
+        if identity.get('version') != '1':
+            raise ValueError('A replacement judgement model is active through the API. '
+                             'Bootstrap would reset its model pin to v1.')
     existing = k('get', 'inferenceservice/synthetic-esci-judge', '-n', 'lab-models',
                  '-o', 'json', check=False)
     if existing.returncode:

@@ -2,7 +2,7 @@
 
 A ranking change may retrieve products outside the existing label pool. This workflow collects missing query/product pairs from **all** variants, asks a separate judgement service for labels and freezes one set before scoring. Published source labels take precedence. Each model pass retains its own predictions, abstentions and provenance behind the API.
 
-The live inference fallback abstains. The full ESCI lab catalogue currently uses published labels plus cached model-4 predictions under a **temporary demo policy**. Strict gate selection excludes those predictions; demo reports disclose their unqualified accuracy.
+The judgement APIs use the calibrated MLflow model version 4 served by KServe. It returns a label when its confidence meets the selected policy, otherwise it abstains. The full ESCI lab catalogue currently uses published labels plus cached model-4 predictions under a **temporary demo policy**. Strict gate selection excludes those predictions; demo reports disclose their unqualified accuracy.
 
 ## Services and outcomes
 

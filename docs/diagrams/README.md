@@ -109,7 +109,7 @@ generators reserve separate resources; the local host still shares resources.
   All selected recall sets can be pooled for missing judgements. Published labels
   take precedence. Model passes retain distinct provenance; exploratory selection
   may include unqualified predictions, while gate selection excludes them. The
-  default model abstains. Freeze one selection before scoring every variant.
+  calibrated model labels or abstains. Freeze one selection before scoring every variant.
 - **Diagnosis:** Grey-box records explain implemented pipeline stages; absent
   stages are unavailable. `_rank_eval`, profile, explain and analyser checks are
   component diagnostics. Collect costly replays separately from latency runs.

@@ -39,7 +39,7 @@ The [investigation diagram](diagrams/interactive/observability-investigation.htm
 | View | Useful for | Limits and next action |
 | --- | --- | --- |
 | Search SLO | Normal-cohort eligible/good counts, percentages, allowance and burn; lifecycle success/deadline trends | Plots are interval increases selected by the time picker. Use the companion below for a coverage-verified seven-day verdict. |
-| Model health | Inference errors, outcomes, batch latency, labelled coverage and label mix | The default model abstains on every gap. No model-label mix or accuracy result exists; inspect source/model counts in the frozen report. |
+| Model health | Inference errors, outcomes, batch latency, labelled coverage and label mix | The calibrated model returns labels or abstains. Label mix and coverage describe its activity; they do not establish accuracy. Inspect source/model counts in the frozen report. |
 | Query-length input shift | Changes in which query-product pairs reach inference | Measures selection into inference, not drift against training data. Inspect recall and existing-label coverage before attributing a change to the model. |
 
 Input shift is Jensen–Shannon divergence, bounded 0–1. The reference has one occurrence of each frozen query; the observed side is the query-length mix of inferred pairs. No inference attempts means no divergence value. The metric dimensions are the numbered model version and fixed feature name; detailed counts remain in frozen artefacts.
