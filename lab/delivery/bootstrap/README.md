@@ -83,6 +83,11 @@ placement and what it checks. Keep the examples separate from the application.
 
 The lab also supports named ranking variants: alternative settings evaluated against the same inputs. One variant is always the default for requests without a selector. The evaluation chooses its baseline separately. See the [offline gate guide](gate/README.md) for the checks that can be required before a pull request is merged.
 
+For the next query-understanding demo, use the
+[copyable sneakers snippets](examples/sneakers/README.md): the replacement
+function, test method, additional queries and gate selection. They preserve the
+existing trainers rewrite.
+
 ## Preview and promote from Actions
 
 Open **Actions** → **Lab delivery** → **Run workflow** on **main**. Choose a
