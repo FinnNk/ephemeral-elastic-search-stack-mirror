@@ -122,7 +122,7 @@ def parser():
     commands = root.add_subparsers(dest='command', required=True)
     commands.add_parser('login')
     for name in ('preview', 'compare', 'propose-promotion', 'source-compare', 'gate-check',
-                 'merge-reviewed', 'verify', 'propose-rollback'):
+                 'merge-reviewed', 'verify', 'propose-rollback', 'request-exception', 'merge-exception'):
         cmd = commands.add_parser(name)
         cmd.add_argument('--key', help='Stable submission key for retrying this operation')
         cmd.add_argument('--no-wait', action='store_true')
@@ -141,8 +141,12 @@ def parser():
         if name == 'propose-rollback':
             cmd.add_argument('--fingerprint', required=True)
             cmd.add_argument('--intent', choices=('ranking-change', 'preserve-results'), required=True)
-        if name == 'merge-reviewed':
+        if name in ('merge-reviewed', 'merge-exception', 'request-exception'):
             cmd.add_argument('--pr', type=int, required=True)
+        if name == 'request-exception':
+            cmd.add_argument('--source-sha', required=True)
+            cmd.add_argument('--variant', required=True)
+            cmd.add_argument('--reason', required=True)
         if name in ('source-compare', 'gate-check'):
             cmd.add_argument('--pr', type=int, required=True)
             cmd.add_argument('--source-sha', required=True)
@@ -161,7 +165,7 @@ def main():
                if key not in ('command', 'server', 'issuer', 'ca', 'key', 'no_wait') and value is not None}
     payload['kind'] = {'propose-promotion': 'promotion', 'source-compare': 'compare',
                        'propose-rollback': 'rollback'}.get(args.command, args.command)
-    if args.command in ('gate-check', 'merge-reviewed', 'verify', 'propose-rollback'):
+    if args.command in ('gate-check', 'merge-reviewed', 'verify', 'propose-rollback', 'request-exception', 'merge-exception'):
         payload.pop('dataset', None)
         payload.pop('recipe', None)
     print(json.dumps(client.submit(payload, args.key, not args.no_wait), indent=2))

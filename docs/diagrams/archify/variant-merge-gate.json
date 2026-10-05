@@ -22,7 +22,7 @@
     {"id": "build", "lane": "source", "col": 1, "type": "backend", "label": "Build then queue", "sublabel": "Exact commit receipt", "width": 138},
     {"id": "capture", "lane": "evaluate", "col": 2, "type": "backend", "label": "Fresh API captures", "sublabel": "Standard + extra suites", "width": 146},
     {"id": "report", "lane": "evaluate", "col": 3, "type": "database", "label": "Signed report", "sublabel": "Image + metric pins", "width": 138},
-    {"id": "approval", "lane": "review", "col": 3, "type": "frontend", "label": "Human exception", "sublabel": "Reason + reviewer", "width": 145},
+    {"id": "approval", "lane": "review", "col": 3, "type": "frontend", "label": "Git decision PR", "sublabel": "Reason + approval", "width": 145},
     {"id": "gate", "lane": "review", "col": 4, "type": "security", "label": "Variant gate", "sublabel": "Policy + image receipt", "width": 142},
     {"id": "verdict", "lane": "review", "col": 5, "type": "database", "label": "PR verdict", "sublabel": "Measurements retained", "width": 132}
   ],
@@ -33,7 +33,7 @@
     {"from": "report", "to": "gate", "label": "Attested report", "role": "main"},
     {"from": "build", "to": "gate", "label": "Build receipt", "role": "branch"},
     {"from": "selection", "to": "gate", "label": "Named choice", "role": "branch"},
-    {"from": "approval", "to": "gate", "label": "Bounded exception", "role": "branch"},
+    {"from": "approval", "to": "gate", "label": "Merged receipt", "role": "branch"},
     {"from": "gate", "to": "verdict", "label": "Decision", "role": "main"}
   ],
   "mainPath": ["selection", "build", "capture", "report", "gate", "verdict"],
@@ -43,8 +43,8 @@
       "The evaluation baseline may be another variant"
     ]},
     {"dot": "emerald", "title": "Decision retains the evidence", "items": [
-      "80% coverage; source and model policy checked",
-      "Demo verdict records human quality authorisation"
+      "Decision + human approval retained in Git",
+      "Receipt binds source, report and merge SHA"
     ]},
     {"dot": "cyan", "title": "Read each suite", "items": [
       "Standard required; extras report only by default",

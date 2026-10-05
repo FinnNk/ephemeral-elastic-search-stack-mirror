@@ -5,11 +5,9 @@ from pathlib import Path
 import json
 import sys
 import unittest
-from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from variant_gate import approve, attest, canonical, check, require_gate_judgements, sha, sign
-from variant_gate_issue import issue_approval
 
 
 NOW = datetime(2026, 10, 4, 12, tzinfo=timezone.utc)
@@ -17,6 +15,9 @@ STAMP = NOW.isoformat()
 SOURCE = 'a' * 40
 EVIDENCE_KEY = b'synthetic-evaluator-key'
 APPROVAL_KEY = b'synthetic-reviewer-key'
+DECISION = {'repository': 'elastic-agent/delivery-state', 'pr': 1,
+    'path': 'decisions/relevance/' + 'f' * 64 + '.json', 'file_sha256': 'f' * 64,
+    'head_sha': 'b' * 40, 'merge_sha': 'c' * 40, 'review_id': 2}
 POLICY = Path(__file__).resolve().parent / 'delivery/policies/variant-merge-v1.json'
 
 
@@ -98,14 +99,8 @@ class VariantGateTests(unittest.TestCase):
 
     def test_authenticated_exception_retains_measured_loss(self):
         report, selection = canonical(self.report), canonical(self.selection)
-        evidence = attest(report, SOURCE, self.build, EVIDENCE_KEY, STAMP)
-        with patch('variant_gate_issue.GiteaIdentity') as identity:
-            identity.return_value.verify.return_value = {'username': 'finn', 'is_admin': True}
-            approval = issue_approval(report, self.policy, selection, evidence,
-                self.build, 'elastic-agent/delivery-source',
-                'ranker-a', 'Security fix accepted with bounded relevance loss.',
-                SOURCE, 'finn', 'test-password', EVIDENCE_KEY, APPROVAL_KEY,
-                sha(self.policy), STAMP)
+        approval = approve(report, self.policy, selection, SOURCE, 'ranker-a',
+            'finn', 'Security fix accepted with bounded relevance loss.', APPROVAL_KEY, STAMP, DECISION)
         verdict = self.check([approval])
         self.assertEqual(verdict['state'], 'approved_exception')
         self.assertEqual(verdict['variants'][0]['delta'], -0.02)
@@ -114,7 +109,7 @@ class VariantGateTests(unittest.TestCase):
     def test_forged_or_retargeted_approval_is_invalid(self):
         report, selection = canonical(self.report), canonical(self.selection)
         approval = approve(report, self.policy, selection, SOURCE, 'ranker-a',
-            'finn', 'A sufficiently detailed reason for review.', APPROVAL_KEY, STAMP)
+            'finn', 'A sufficiently detailed reason for review.', APPROVAL_KEY, STAMP, DECISION)
         approval['reason'] = 'Forged reason after approval.'
         with self.assertRaisesRegex(ValueError, 'signature differs'):
             self.check([approval])
@@ -180,7 +175,7 @@ class VariantGateTests(unittest.TestCase):
         return approve(canonical(self.report), self.policy, canonical(self.selection),
                        SOURCE, 'ranker-a', 'finn',
                        'Accept this unchanged-result fixture with disclosed judgement gaps.',
-                       APPROVAL_KEY, STAMP)
+                       APPROVAL_KEY, STAMP, DECISION)
 
     def test_low_coverage_unchanged_results_requires_authenticated_decision(self):
         self.unchanged_low_coverage()
@@ -193,14 +188,8 @@ class VariantGateTests(unittest.TestCase):
         self.assertEqual(item['required_judged_fraction'], 0.8)
         self.assertIsNone(item['approval_sha256'])
         report, selection = canonical(self.report), canonical(self.selection)
-        evidence = attest(report, SOURCE, self.build, EVIDENCE_KEY, STAMP)
-        with patch('variant_gate_issue.GiteaIdentity') as identity:
-            identity.return_value.verify.return_value = {'username': 'finn', 'is_admin': True}
-            approval = issue_approval(report, self.policy, selection, evidence,
-                self.build, 'elastic-agent/delivery-source', 'ranker-a',
-                'Accept the unchanged fixture with coverage explicitly below 80 percent.',
-                SOURCE, 'finn', 'test-password', EVIDENCE_KEY, APPROVAL_KEY,
-                sha(self.policy), STAMP)
+        approval = approve(report, self.policy, selection, SOURCE, 'ranker-a',
+            'finn', 'Accept unchanged fixture with disclosed coverage gaps.', APPROVAL_KEY, STAMP, DECISION)
         verdict = self.check([approval])
         self.assertEqual(verdict['state'], 'approved_exception')
         self.assertEqual(verdict['variants'][0]['judged_fraction'], 0.297)
@@ -281,18 +270,12 @@ class VariantGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'signature differs'):
             self.check([forged])
 
-    def test_low_coverage_exception_rejects_non_admin_approval(self):
-        self.unchanged_low_coverage()
-        report, selection = canonical(self.report), canonical(self.selection)
-        evidence = attest(report, SOURCE, self.build, EVIDENCE_KEY, STAMP)
-        with patch('variant_gate_issue.GiteaIdentity') as identity:
-            identity.return_value.verify.return_value = {'username': 'engineer', 'is_admin': False}
-            with self.assertRaisesRegex(ValueError, 'administrator'):
-                issue_approval(report, self.policy, selection, evidence, self.build,
-                    'elastic-agent/delivery-source', 'ranker-a',
-                    'Accept this unchanged fixture with disclosed judgement gaps.',
-                    SOURCE, 'engineer', 'test-password', EVIDENCE_KEY, APPROVAL_KEY,
-                    sha(self.policy), STAMP)
+    def test_receipt_without_git_decision_is_rejected(self):
+        approval = self.fixture_approval()
+        del approval['decision']
+        approval = sign({key: value for key, value in approval.items() if key != 'signature'}, APPROVAL_KEY)
+        with self.assertRaisesRegex(ValueError, 'Git decision'):
+            self.check([approval])
 
     def test_normal_coverage_is_not_marked_as_coverage_exception(self):
         verdict = self.check()

@@ -110,6 +110,9 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['control_lists.js']:
             return self.send_bytes(200, UI.with_name('control_lists.js').read_bytes(),
                                    'text/javascript; charset=utf-8')
+        if parts == ['relevance-decision']:
+            return self.send_bytes(200, UI.with_name('relevance-decision.html').read_bytes(),
+                                   'text/html; charset=utf-8')
         if parts == ['api', 'health']:
             return self.send_json(503 if DRAIN.exists() else 200, {'ready': not DRAIN.exists()})
         if parts == ['api', 'auth']:
@@ -271,6 +274,9 @@ class Handler(BaseHTTPRequestHandler):
             if parts == ['api', 'delivery', 'operations']:
                 if not identity['is_admin'] and not identity.get('is_delivery_service'):
                     return self.send_json(403, {'error': 'Delivery operations require a lab administrator.'})
+                if payload.get('kind') == 'request-exception' and (
+                        identity.get('is_delivery_service') or not identity['is_admin']):
+                    return self.send_json(403, {'error': 'A human administrator must request a relevance decision.'})
                 from delivery_operations import Operations
                 store = Operations()
                 row = store.submit(payload, identity, self.headers.get('Idempotency-Key'))

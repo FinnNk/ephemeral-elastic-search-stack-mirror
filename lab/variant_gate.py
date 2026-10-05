@@ -141,15 +141,28 @@ def attest(report_bytes, source_sha, build_receipt_bytes, key, issued_at, policy
 
 
 def approve(report_bytes, policy_bytes, selection_bytes, source_sha, variant,
-            reviewer, reason, key, decided_at):
+            reviewer, reason, key, decided_at, decision):
     if not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', variant) or \
             not reviewer or len(reason.strip()) < 20:
         raise ValueError('Approval needs a variant, reviewer and substantive reason.')
+    validate_decision_reference(decision)
     return sign({'kind': 'variant-exception-approval', 'schema_version': 1,
                  'report_sha256': sha(report_bytes), 'policy_sha256': sha(policy_bytes),
                  'selection_sha256': sha(selection_bytes), 'source_sha': source_sha,
                  'variant': variant, 'reviewer': reviewer,
-                 'reason': reason.strip(), 'decided_at': decided_at}, key)
+                 'reason': reason.strip(), 'decided_at': decided_at, 'decision': decision}, key)
+
+
+def validate_decision_reference(value):
+    """Require the signed receipt to identify a merged, reviewed Git record."""
+    if not isinstance(value, dict) or set(value) != {
+            'repository', 'pr', 'path', 'file_sha256', 'head_sha', 'merge_sha', 'review_id'} or \
+            value['repository'] != 'elastic-agent/delivery-state' or \
+            any(type(value[key]) is not int or value[key] < 1 for key in ('pr', 'review_id')) or \
+            not re.fullmatch('[0-9a-f]{64}', str(value['file_sha256'])) or \
+            value['path'] != 'decisions/relevance/' + value['file_sha256'] + '.json' or \
+            any(not re.fullmatch('[0-9a-f]{40}', str(value[key])) for key in ('head_sha', 'merge_sha')):
+        raise ValueError('Approval needs a merged Git decision reference.')
 
 
 def number(value, name, low=0, high=1):
@@ -369,6 +382,7 @@ def check(report_bytes, policy_bytes, selection_bytes, attestation, approvals,
         approval = matching_approvals[0] if matching_approvals else None
         if approval is not None:
             verify(approval, approval_key, 'variant-exception-approval')
+            validate_decision_reference(approval.get('decision'))
             if any(approval.get(key) != expected for key, expected in {
                     'report_sha256': sha(report_bytes), 'policy_sha256': sha(policy_bytes),
                     'selection_sha256': sha(selection_bytes), 'source_sha': source_sha,

@@ -27,7 +27,7 @@ the lab using [control runtime](control-runtime.md).
    coverage and changed results using the [variant guide](variant-evaluation.md).
    Add report-only queries for your change, or explicitly require a labelled set.
 5. Wait for `relevance-lab/merge-gate` on the current head. Every new commit needs
-   fresh evidence. A bounded exception records a human decision without changing
+   fresh evidence. A bounded exception uses the [Git decision procedure](variant-evaluation.md#accept-a-bounded-regression) without changing
    scores; invalid evidence and hard blocks cannot be approved away.
 6. Merge when the required checks pass. CI builds the merged commit separately.
    Use that successful run for deployment, rather than the PR-head build.
@@ -107,7 +107,7 @@ replace this gate. Validation checks the load evidence again before merge.
 | Repository or store | Contents |
 | --- | --- |
 | `delivery-source` | API/UI, tests, ranking settings, index contract and Actions workflows |
-| `delivery-state` | Reviewed target definitions, proposals and deployment history |
+| `delivery-state` | Reviewed target definitions, relevance decisions, proposals and deployment history |
 | Nexus | Digest-pinned images, deterministic bundles, build receipts and signed merge evidence |
 | `search-spike` / `environment-state` | Separate leased experiment workflow in the control UI |
 

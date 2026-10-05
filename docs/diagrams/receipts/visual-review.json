@@ -216,8 +216,8 @@
     {
       "diagram_type": "workflow",
       "output": "interactive/variant-merge-gate.html",
-      "specification_sha256": "3838934cd2e509529a0eec0bfbd66e328514c11ea11d01e0e6d1472e92ab09b2",
-      "artifact_sha256": "3772ba4abbe3abe596720d58f40dd8af9b6806afb672ac90ff218383d365f76a",
+      "specification_sha256": "686745a38e82ad60f0874201baac16edd9b7fc1cc9cfa1dc2646b4795b1beafd",
+      "artifact_sha256": "95495fa74a2b17733f36799b5d37e6eb3d7158937f86b06a906cc6f50fec2cd8",
       "validation": "Showcase checks passed",
       "browser_evidence": "passed",
       "visual_review": "passed",
@@ -225,8 +225,8 @@
       "review_scope": [
         "1440x900 light screenshot"
       ],
-      "observations": "Reviewed extra-suite default and adaptive capture labels. The regenerated light view is legible; other viewports were checked automatically, not manually.",
-      "reviewed_on": "2026-10-04"
+      "observations": "Inspected the Git decision PR and merged-receipt path at 1440×900. Labels are legible. The four size/theme checks passed automatically; viewer controls were not manually exercised.",
+      "reviewed_on": "2026-10-05"
     }
   ],
   "c4": {

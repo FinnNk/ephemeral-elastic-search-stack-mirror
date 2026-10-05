@@ -37,6 +37,7 @@ The commands below work in PowerShell, Bash and Zsh.
 | Compare | `python ci/lab_delivery.py compare --baseline-run BASELINE_RUN --candidate-run BUILD_RUN` |
 | Propose staging | `python ci/lab_delivery.py propose-promotion --target staging --run BUILD_RUN --intent ranking-change` |
 | Merge an approved deployment | `python ci/lab_delivery.py merge-reviewed --pr PR_NUMBER` |
+| Complete a reviewed relevance decision | `python ci/lab_delivery.py merge-exception --pr DECISION_PR_NUMBER` |
 | Recheck staging | `python ci/lab_delivery.py verify --target staging` |
 | Propose rollback | `python ci/lab_delivery.py propose-rollback --target staging --fingerprint PREVIOUS_FINGERPRINT --intent ranking-change` |
 
@@ -63,7 +64,7 @@ Its success means **submitted**, not evaluated or deployed. Follow the operation
 to its report or promotion PR. Submission releases the lab's single runner so
 other builds can proceed during a long evaluation.
 
-The workflow also offers `merge-reviewed`, `verify`, `propose-rollback` and
+The workflow also offers `merge-reviewed`, `merge-exception`, `verify`, `propose-rollback` and
 `gate-check`. Supply the relevant PR, target, source commit or previous fingerprint;
 unused build fields can stay blank. Production proposals and rollbacks run the
 full Gatling profile. `merge-reviewed` requires an existing, exact-head approval
@@ -86,11 +87,23 @@ A report retains the original build receipt, selection, extra query/label bytes,
 specification and observations by hash. Standard and required extra suites pass
 independently. Report-only sets and combined scores cannot satisfy a failing gate.
 
-An administrator can issue a signed bounded exception using the
-[decision procedure](variant-evaluation.md). After publishing that decision,
-run `python ci/lab_delivery.py gate-check --pr <number> --source-sha <40-character-SHA>`.
-This checks the existing signed evidence and decision; it does not claim a new
-evaluation or repeat the searches.
+A human administrator can request a bounded exception using **Accept relevance
+regression** beside the source PR report. Follow the [Git decision procedure](variant-evaluation.md#accept-a-bounded-regression).
+The `merge-exception` operation checks the exact human approval, merges the
+decision PR, publishes its receipt and rechecks the frozen evidence. It does
+not repeat the searches or approve deployment.
+
+For a workstation alternative, sign in with `python ci/lab_delivery.py login`,
+then run:
+
+```sh
+python ci/lab_delivery.py request-exception --pr SOURCE_PR_NUMBER --source-sha SOURCE_SHA --variant VARIANT --reason "Explain the measured loss and why it is acceptable."
+```
+
+Replace the source PR number, 40-character commit and variant with those shown
+in the report. The printed result links to the decision PR. Actions cannot
+request a human exception; it can complete a decision already approved by its
+named human reviewer. `gate-check` remains available to recheck signed evidence.
 
 ## Operator setup
 

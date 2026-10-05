@@ -14,6 +14,8 @@ FIELDS = {
     'compare': {'baseline_run', 'candidate_run', 'dataset', 'recipe', 'pr', 'source_sha', 'baseline_sha'},
     'promotion': {'target', 'run', 'dataset', 'recipe', 'intent'},
     'gate-check': {'pr', 'source_sha'},
+    'request-exception': {'pr', 'source_sha', 'variant', 'reason'},
+    'merge-exception': {'pr'},
     'merge-reviewed': {'pr'},
     'verify': {'target'},
     'rollback': {'target', 'fingerprint', 'intent'},
@@ -35,6 +37,8 @@ def validate(payload):
     required = {'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
                 else {'baseline_run', 'candidate_run'},
                 'promotion': {'target', 'run', 'intent'}, 'gate-check': {'pr', 'source_sha'},
+                'request-exception': {'pr', 'source_sha', 'variant', 'reason'},
+                'merge-exception': {'pr'},
                 'merge-reviewed': {'pr'}, 'verify': {'target'},
                 'rollback': {'target', 'fingerprint', 'intent'}}[kind]
     if not required <= set(payload):
@@ -53,6 +57,10 @@ def validate(payload):
             raise ValueError('Frozen source or recipe identity is invalid.')
     if kind == 'compare' and 'pr' in payload and not {'source_sha', 'baseline_sha'} <= set(payload):
         raise ValueError('A source PR comparison needs exact head and baseline commits.')
+    if kind == 'request-exception' and (
+            not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', str(payload['variant'])) or
+            not isinstance(payload['reason'], str) or not 20 <= len(payload['reason'].strip()) <= 4000):
+        raise ValueError('Choose a variant and explain the decision in 20–4,000 characters.')
     return payload
 
 
@@ -84,11 +92,16 @@ class Operations:
             result[key] = json.loads(result[key]) if result[key] else None
         result['url'] = PUBLIC + '/api/delivery/operations/' + result['id']
         result['report_url'] = result['url'] + '/report' if (result.get('result') or {}).get('report') else None
+        result['decision_url'] = PUBLIC + '/relevance-decision?operation=' + result['id'] if \
+            (result.get('result') or {}).get('gate', {}).get('state') == 'decision_required' else None
         return result
 
     def submit(self, payload, identity, key):
         """Retry the same submission key safely; changed payloads require a new key."""
         validate(payload)
+        if payload['kind'] == 'request-exception' and (
+                not identity.get('is_admin') or identity.get('is_delivery_service')):
+            raise ValueError('A human lab administrator must request an exception.')
         if not re.fullmatch(r'[A-Za-z0-9._-]{1,128}', key or ''):
             raise ValueError('Supply a stable Idempotency-Key of 1–128 characters.')
         owner = identity.get('issuer', '') + ':' + identity.get('subject', identity['username'])
@@ -103,7 +116,7 @@ class Operations:
             else:
                 db.execute('INSERT INTO operations VALUES (?,?,?,?,?,?,?,?,?,?)',
                            (identifier, identity['username'], json.dumps(identity), encoded,
-                            'accepted' if payload.get('source_sha') else 'queued',
+                            'accepted' if payload['kind'] in ('compare', 'gate-check') and payload.get('source_sha') else 'queued',
                             'Waiting for the delivery coordinator', None, None, stamp(), stamp()))
         return self.get(identifier)
 
@@ -160,6 +173,13 @@ def execute_next():
         elif kind == 'compare':
             from delivery_source_comparison import compare
             result = compare(request, progress, identifier)
+        elif kind == 'request-exception':
+            from relevance_decisions import request_decision
+            progress('Checking frozen evidence and creating the decision PR')
+            result = request_decision(request, row['identity'])
+        elif kind == 'merge-exception':
+            from relevance_decisions import complete
+            result = complete(request['pr'], progress, identifier)
         elif kind == 'merge-reviewed':
             progress('Checking the exact approval, merging and verifying deployment')
             result = execute(parser().parse_args(['merge-reviewed', str(request['pr'])]))
@@ -196,8 +216,13 @@ def execute_next():
         # credentials are copied into the public operation record.
         import traceback
         traceback.print_exc()
-        store.update(identifier, state='failed', progress='Operation failed', error=type(error).__name__)
-        if request.get('source_sha'):
+        detail = type(error).__name__
+        if request['kind'] in ('request-exception', 'merge-exception') and isinstance(error, ValueError):
+            # Decision validation errors contain public evidence/review facts,
+            # never credentials or provider response bodies.
+            detail += ': ' + str(error)[:240]
+        store.update(identifier, state='failed', progress='Operation failed', error=detail)
+        if request.get('source_sha') and request['kind'] in ('compare', 'gate-check'):
             from delivery_source_comparison import status
             status(request['source_sha'], 'failure', 'Comparison failed: ' + type(error).__name__, identifier)
     return store.get(identifier)

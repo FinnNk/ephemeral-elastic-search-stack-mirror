@@ -74,6 +74,15 @@ approve it. Low-coverage ranking changes remain blocked. Unqualified labels outs
 
 A gate update requires review and protected policy/code pin updates after merging to its trusted target. Existing PRs also need fresh evidence for their exact commits.
 
-An exception preserves the scores and binds the decision to the report, source commit, policy and selected variant. It does not approve deployment. Source merge requires passing checks; the lab allows authors to merge their own demonstration changes. Deployment requires a separate approving reviewer.
+For a `decision_required` result, open **Accept relevance regression** beside
+the source PR report. A human lab administrator chooses the variant and records
+the reason. Review and approve the resulting `delivery-state` decision PR as
+its named reviewer, then run **Actions → Lab delivery → merge-exception** with
+that PR number. The coordinator merges the reviewed decision and rechecks the
+source gate. A direct human merge is also processed. No `kubectl` command is needed.
+
+The decision file and PR approval remain in Git. Its signed receipt names the
+report, source commit, policy, selection, variant, reviewer and decision merge
+commit. An exception preserves the scores. It does not approve deployment. Source merge requires passing checks; the lab allows authors to merge their own demonstration changes. Deployment requires a separate approving reviewer.
 
 The [variant evaluation guide](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/variant-evaluation.md) explains report fields and evidence publication. Synthetic fixture scores demonstrate the workflow, not real search quality.

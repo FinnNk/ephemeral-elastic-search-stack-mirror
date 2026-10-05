@@ -21,6 +21,7 @@ See the [activation evidence](../research/evidence/walkthrough-activation.md).
 | Adaptive pacing | Eight workers; fresh 1,000-query captures and bounded transient recovery checked | Retain fresh requests and diagnostics; Gatling unchanged |
 | Provider selection and byte pins | Checked against Gitea receipts and fresh Windows checkout bytes | Retain exact source/client/policy pins during activation |
 | Actions delivery and documentation | Installed; preview, verification, promotion/rollback proposals and signed gate rechecks exercised | Review the bootstrap corrections found during activation |
+| Durable relevance decisions | Implemented in review branch; activation follows acceptance | Review the [decision batch](relevance-decision-records.md), then install the accepted control/source revisions |
 | Developer workstation rehearsal | [Next detailed plan](remote-delivery-user-check.md) | Complete device sign-in and a fresh human-approved deployment through Actions |
 
 Source PR 27 passed release CI and the installed relevance gate after a fresh
@@ -36,7 +37,7 @@ a different head. See [verification](../research/evidence/walkthrough-feedback-v
 | Catalogue | Full English ESCI: 1,215,854 products and 1,000 queries; configurable 10,000-product/50-query demo subset |
 | Judgements | Published labels plus cached model-4 predictions under the temporary authorised demo policy; live fallback abstains |
 | Coverage | Saved recall has 81.22% demo coverage and 29.71% published-only coverage; new recall can change it |
-| Identity | Keycloak sign-in for Headlamp, Argo CD, linked Gitea accounts and the control UI; recorded exceptions still use verified Gitea identity |
+| Identity | Keycloak sign-in for Headlamp, Argo CD, linked Gitea accounts and the control UI; the reviewed decision flow uses human OIDC requests and exact Gitea PR approvals |
 | Serving | KServe 0.21 and supplied Headlamp KServe plugin dev.29; exact local asset/serving checks retained |
 | Secrets and access | ESO reads Azure Key Vault through the local emulator; wildcard preview DNS and CA-verified browser HTTPS |
 | Delivery | Gitea Actions, Nexus releases, reviewed desired state, Argo CD and three local namespaces |

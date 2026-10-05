@@ -118,24 +118,12 @@ A human administrator must approve the disclosed coverage gap. Low-coverage
 The protected coordinator must use the accepted policy and code pins. Declaring
 `preserve-results` does not approve the disclosed coverage gap.
 
-Obtain the exact PR's `gate/selection.json` from its source revision and save it
-locally. Use the trusted policy matching the protected gate pin. The human
-administrator supplies the following values themselves:
-
-```powershell
-$selection = Read-Host 'Absolute path to the exact PR selection.json'
-$variant = Read-Host 'Selected variant requiring a decision'
-$reason = Read-Host 'Reason for accepting the measured regression or disclosed coverage gap'
-$reviewer = Read-Host 'Your Gitea administrator login'
-python lab/variant_gate_issue.py approve --report "$runDir/evaluation.json" --policy lab/delivery/policies/variant-merge-v1.json --selection $selection --attestation "$runDir/attestation.json" --build-receipt "$runDir/build-receipt.json" --output "$runDir/approval.json" --source-sha $sourceSha --source-repository elastic-agent/delivery-source --variant $variant --reason $reason --username $reviewer
-$env:NEXUS_PASSWORD = $nexus.publisher.password
-python lab/delivery/ci/variant_gate_store.py publish-approval --source-sha $sourceSha --approval "$runDir/approval.json"
-Remove-Item Env:NEXUS_PASSWORD
-```
-
-The approval tool prompts for the password, verifies administrator status and
-refuses other result states. The receipt binds report, policy, selection, commit,
-variant, reason and reviewer. Submit `gate-check` after publication.
+Use the [Git decision procedure](variant-evaluation.md#accept-a-bounded-regression)
+from the source comparison. The human administrator reviews the disclosed loss
+or permitted coverage gap in a `delivery-state` decision PR. After its exact
+head is approved and merged, the coordinator publishes the signed receipt and
+rechecks the frozen evidence. No signing key or Nexus credential is needed on
+the developer's workstation.
 
 The verdict retains actual baseline/candidate coverage and required coverage,
 with `coverage_exception: true` for the narrow case above. Hard blocks and

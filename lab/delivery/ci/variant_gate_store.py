@@ -13,7 +13,8 @@ import urllib.request
 def artifact(base, source_sha, name, username, password, content=None):
     build_path = re.fullmatch(r'builds/[0-9a-f]{40}/[1-9][0-9]*-[1-9][0-9]*\.json', name)
     if not re.fullmatch(r'[0-9a-f]{40}', source_sha) or not (
-            name in {'report.json', 'attestation.json', 'approvals.json'} or
+            name in {'report.json', 'attestation.json'} or
+            re.fullmatch(r'approvals/[a-z][a-z0-9-]{0,31}\.json', name) or
             build_path and name.split('/')[1] == source_sha):
         raise ValueError('Invalid gate artifact identity.')
     url = base.rstrip('/') + ('/' + name if build_path else
@@ -83,16 +84,18 @@ def main():
         if approval.get('source_sha') != args.source_sha or \
                 approval.get('kind') != 'variant-exception-approval':
             raise ValueError('Approval belongs to another source or contract.')
-        existing = request('approvals.json')
-        approvals = json.loads(existing) if existing is not None else []
-        if not isinstance(approvals, list):
-            raise ValueError('Approval index is malformed.')
-        if approval not in approvals:
-            approvals.append(approval)
-            payload = (json.dumps(approvals, sort_keys=True, separators=(',', ':')) + '\n').encode()
-            request('approvals.json', payload)
-            if request('approvals.json') != payload:
-                raise ValueError('Approval read-back differs.')
+        variant = approval.get('variant', '')
+        if not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', variant) or not approval.get('decision'):
+            raise ValueError('Approval needs a variant and merged Git decision.')
+        name = 'approvals/' + variant + '.json'
+        payload = (json.dumps(approval, sort_keys=True, separators=(',', ':')) + '\n').encode()
+        existing = request(name)
+        if existing is not None and existing != payload:
+            raise ValueError('Refusing to replace an approved variant decision.')
+        if existing is None:
+            request(name, payload)
+        if request(name) != payload:
+            raise ValueError('Approval read-back differs.')
     else:
         if not args.directory:
             parser.error('Fetch needs an output directory.')
@@ -104,7 +107,15 @@ def main():
             (args.directory / name).write_bytes(payload)
         (args.directory / 'build-receipt.json').write_bytes(build_receipt(
             json.loads((args.directory / 'attestation.json').read_bytes())))
-        (args.directory / 'approvals.json').write_bytes(request('approvals.json') or b'[]')
+        approvals = []
+        report = json.loads((args.directory / 'report.json').read_bytes())
+        for variant in report['variants']:
+            if not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', variant):
+                raise ValueError('Report variant identity is invalid.')
+            payload = request('approvals/' + variant + '.json')
+            if payload is not None:
+                approvals.append(json.loads(payload))
+        (args.directory / 'approvals.json').write_text(json.dumps(approvals), encoding='utf-8')
 
 
 if __name__ == '__main__':

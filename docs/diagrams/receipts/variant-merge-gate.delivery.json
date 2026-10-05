@@ -6,12 +6,12 @@
   "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\archify\\variant-merge-gate.json",
   "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\variant-merge-gate.html",
   "specification": {
-    "sha256": "3838934cd2e509529a0eec0bfbd66e328514c11ea11d01e0e6d1472e92ab09b2",
-    "bytes": 2993
+    "sha256": "686745a38e82ad60f0874201baac16edd9b7fc1cc9cfa1dc2646b4795b1beafd",
+    "bytes": 2980
   },
   "artifact": {
-    "sha256": "3772ba4abbe3abe596720d58f40dd8af9b6806afb672ac90ff218383d365f76a",
-    "bytes": 807726
+    "sha256": "95495fa74a2b17733f36799b5d37e6eb3d7158937f86b06a906cc6f50fec2cd8",
+    "bytes": 807835
   },
   "validation": {
     "checksPassed": 9,

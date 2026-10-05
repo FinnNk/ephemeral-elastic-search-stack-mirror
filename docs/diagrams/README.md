@@ -140,7 +140,7 @@ generators reserve separate resources; the local host still shares resources.
   verifies the API. The three local targets share a cluster; a short Gatling
   delivery probe is not capacity evidence.
 - **Human decisions:** Selected-variant evidence is bound to its source build.
-  A bounded exception retains reason and identity without changing scores.
+  A bounded exception retains the reason and exact-head human approval in a Git decision PR. The coordinator signs its merged record without changing scores.
   Hard blocks remain blocked; source acceptance does not authorise deployment.
 
 The [design](../prototype-design.md) owns requirements and targets. The

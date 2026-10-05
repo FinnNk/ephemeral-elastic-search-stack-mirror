@@ -6,12 +6,12 @@ on:
         description: Operation
         required: true
         type: choice
-        options: [preview, compare, propose-promotion, merge-reviewed, verify, propose-rollback, gate-check]
+        options: [preview, compare, propose-promotion, merge-reviewed, verify, propose-rollback, gate-check, merge-exception]
       run:
         description: Successful candidate build run
         type: string
       pr:
-        description: Desired-state PR (merge-reviewed) or source PR (gate-check)
+        description: Desired-state PR (merge-reviewed or merge-exception) or source PR (gate-check)
         type: string
       source_sha:
         description: Exact source commit (gate-check only)
@@ -89,6 +89,7 @@ jobs:
                 compare) set -- compare --baseline-run "$BASELINE_RUN" --candidate-run "$BUILD_RUN" ;;
                 propose-promotion) set -- propose-promotion --target "$TARGET" --run "$BUILD_RUN" --intent "$INTENT" ;;
                 merge-reviewed) set -- merge-reviewed --pr "$DELIVERY_PR" ;;
+                merge-exception) set -- merge-exception --pr "$DELIVERY_PR" ;;
                 verify) set -- verify --target "$TARGET" ;;
                 propose-rollback) set -- propose-rollback --target "$TARGET" --fingerprint "$FINGERPRINT" --intent "$INTENT" ;;
                 gate-check) set -- gate-check --pr "$DELIVERY_PR" --source-sha "$SOURCE_COMMIT" ;;

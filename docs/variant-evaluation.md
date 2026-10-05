@@ -111,7 +111,7 @@ does not apply to extra suites.
 | Declare intent in the source PR | `gate/selection.json`: one or more variant names, each with `ranking-change` or `preserve-results`; no source SHA |
 | Build the exact PR commit | Release CI publishes the image and immutable Nexus build receipt |
 | Evaluate that image | Retain the frozen report, then issue its signed attestation |
-| Publish evidence | `variant-gates/<source SHA>/report.json`, `attestation.json` and `approvals.json` in Nexus |
+| Publish evidence | `variant-gates/<source SHA>/report.json`, `attestation.json` and immutable `approvals/<variant>.json` receipts in Nexus |
 | Read the coordinator status | `relevance-lab/merge-gate` checks signatures, policy, selection, source SHA and the attested image after fresh capture |
 
 The captured image must match the attested build receipt, even if a later CI attempt builds another image. Missing or mismatched evidence fails. The reviewed coordinator pins the policy and verifier; Actions pins its protected submission client.
@@ -130,7 +130,19 @@ The current policy checks nDCG@10, at least **80% judged coverage for both basel
 | `blocked` | Fix the regression or improve coverage; an exception cannot bypass this result |
 | `invalid` | Correct incomplete, stale or mismatched evidence and rerun the check |
 
-Exceptions bind the report, policy, commit and selected variant without altering scores. A replacement becomes the default on promotion. Deployment still requires approval.
+### Accept a bounded regression
+
+1. Open **Accept relevance regression** beside the report in your source PR. Sign in with your human lab administrator account.
+2. Read the report and required query-set results. Choose a `decision_required` variant and explain the benefit and measured loss you accept.
+3. Select **Create decision PR**. Open its `delivery-state` PR and review the decision file. It records the source commit, baseline, variant, measured result, evidence hashes, reason and named reviewer.
+4. As the named reviewer, approve the exact decision PR head in Gitea.
+5. In `delivery-source` **Actions → Lab delivery**, choose **main**, `merge-exception`, and the decision PR number. Follow the operation URL. The coordinator merges the reviewed decision, signs its Git-bound receipt and rechecks the source gate. A direct human merge is also picked up by the coordinator.
+
+The source commit stays unchanged. New source or baseline commits, changed policy or different reports require a new decision. An approval cannot turn a `blocked` variant into a pass. The narrow unchanged-results coverage exception described in the [evaluation runbook](evaluation-runbook.md#human-exceptions) uses the same review flow.
+
+The merged file under `delivery-state/decisions/relevance/` and its PR review preserve the decision in Git. Nexus retains a signed receipt with the file hash, PR head, merge commit and review ID. Scores remain unchanged; `approved_exception` records acceptance of the measured result.
+
+Source merge and deployment remain separate. A replacement becomes the default on promotion; deployment still needs its own review and applicable Gatling checks.
 
 Named configurations live in `SEARCH_VARIANTS_JSON`. Requests use `X-Lab-Variant` to select one, or omit it for the default. Capture checks the echoed variant ID and configuration digest.
 

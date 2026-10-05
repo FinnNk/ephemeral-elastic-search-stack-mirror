@@ -34,6 +34,22 @@ class BuildPending(RuntimeError):
     """A source build is still queued or running; release the coordinator slot."""
 
 
+def approvals_for(revision, selection_bytes):
+    """Read immutable receipts for the exact selected variants; no mutable index."""
+    approvals = []
+    for item in json.loads(selection_bytes)['selected']:
+        variant = item['variant']
+        if not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', variant):
+            raise ValueError('Selected approval variant is invalid.')
+        try:
+            approvals.append(json.loads(nexus_request('/repository/lab-releases/variant-gates/' +
+                revision + '/approvals/' + variant + '.json', identity='reader')))
+        except urllib.error.HTTPError as error:
+            if error.code != 404:
+                raise
+    return approvals
+
+
 def source_bytes(path, revision):
     """Read exact repository bytes, preserving their original encoding and newlines."""
     value = api(endpoint(SOURCE, '/contents/' + quote(path, safe='/') + '?ref=' + revision))
@@ -75,6 +91,7 @@ def comment(number, source_sha, operation_id, first, second, report=None):
     if report:
         body += '\n[Evaluation report](https://control.localhost:34443/api/delivery/operations/' + operation_id + '/report). '
         body += 'Report SHA-256 `' + report['sha256'] + '`. Review label coverage beside the scores.\n'
+        body += '\n[Accept relevance regression](https://control.localhost:34443/relevance-decision?operation=' + operation_id + '). Only variants requiring a bounded decision can be accepted.\n'
     comments = api(endpoint(SOURCE, '/issues/' + str(number) + '/comments?limit=100'))
     old = next((row for row in comments if marker in row['body'] and
                 row.get('user', {}).get('login') == 'elastic-agent'), None)
@@ -225,13 +242,7 @@ def compare(request, progress, operation_id):
         approval_key = operator_key('LAB_VARIANT_APPROVAL_KEY')
         signed = attest(report_bytes, revision, receipt_bytes, evidence_key,
                         datetime.now(timezone.utc).isoformat(), json.loads(policy_bytes))
-        approvals_path = '/repository/lab-releases/variant-gates/' + revision + '/approvals.json'
-        try:
-            approvals = json.loads(nexus_request(approvals_path, identity='reader'))
-        except urllib.error.HTTPError as error:
-            if error.code != 404:
-                raise
-            approvals = []
+        approvals = approvals_for(revision, selection_bytes)
         verdict = check(report_bytes, policy_bytes, selection_bytes, signed, approvals,
                         evidence_key, approval_key, sha(policy_bytes), revision, receipt_bytes,
                         'elastic-agent/delivery-source')
@@ -241,7 +252,7 @@ def compare(request, progress, operation_id):
         status(revision, 'success' if verdict['state'] in ('pass', 'approved_exception') else 'failure',
                'Comparison complete: ' + verdict['state'], operation_id)
         comment(number, revision, operation_id, first, second, reference)
-    return {'report': reference, 'source_sha': revision, 'baseline_source_sha': baseline_receipt['source_sha'],
+    return {'report': reference, 'source_pr': number, 'source_sha': revision, 'baseline_source_sha': baseline_receipt['source_sha'],
             'baseline_url': url(first['name']), 'candidate_url': url(second['name']),
             'gate': verdict, 'summary': {'metrics': report['metrics'], 'coverage': report['coverage'],
                 'result_changes': report['result_changes'], 'combined': report['combined'],
@@ -267,18 +278,14 @@ def recheck(request, progress, operation_id):
         raise ValueError('Frozen build receipt differs.')
     policy = (ROOT / 'lab/delivery/policies/variant-merge-v1.json').read_bytes()
     attestation = json.loads(nexus_request(base + 'attestation.json', identity='reader'))
-    try:
-        approvals = json.loads(nexus_request(base + 'approvals.json', identity='reader'))
-    except urllib.error.HTTPError as error:
-        if error.code != 404:
-            raise
-        approvals = []
-    verdict = check(report_bytes, policy, source_bytes('gate/selection.json', revision),
+    selection_bytes = source_bytes('gate/selection.json', revision)
+    approvals = approvals_for(revision, selection_bytes)
+    verdict = check(report_bytes, policy, selection_bytes,
                     attestation, approvals, operator_key('LAB_VARIANT_EVIDENCE_KEY'),
                     operator_key('LAB_VARIANT_APPROVAL_KEY'), sha(policy), revision, receipt,
                     'elastic-agent/delivery-source')
     current_pr(request['pr'], revision, context['baseline_sha'])
     status(revision, 'success' if verdict['state'] in ('pass', 'approved_exception') else 'failure',
            'Frozen evidence checked: ' + verdict['state'], operation_id)
-    return {'gate': verdict, 'report': {'sha256': sha(report_bytes),
+    return {'gate': verdict, 'source_pr': request['pr'], 'source_sha': revision, 'report': {'sha256': sha(report_bytes),
         'blob': 'runs/' + sha(report_bytes) + '/variant-evaluation-report.json'}}

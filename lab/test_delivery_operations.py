@@ -69,6 +69,11 @@ class DeliveryOperationTests(unittest.TestCase):
                     with self.assertRaises(error.HTTPError) as failure:
                         client.call('/api/environments')
                     self.assertEqual(failure.exception.code, 403)
+                    with self.assertRaises(error.HTTPError) as failure:
+                        client.submit({'kind': 'request-exception', 'pr': 1, 'source_sha': 'a'*40,
+                            'variant': 'ranker-a', 'reason': 'Accept the measured security-fix regression.'},
+                            key='machine-decision', wait=False)
+                    self.assertEqual(failure.exception.code, 403)
                     provider.verify.return_value = {'username': 'reader', 'is_admin': False, 'is_reader': True}
                     with self.assertRaises(error.HTTPError) as failure:
                         client.submit(self.payload, key='reader', wait=False)

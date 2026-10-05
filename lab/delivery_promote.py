@@ -4,10 +4,10 @@ import json
 import time
 import uuid
 
-from common import STATE, apply, k
+from common import STATE, apply
 from gitea import api
 from delivery_provider import DESIRED, endpoint, git, pull_request, merge_demo
-from delivery_runtime import (LOCAL, TARGETS, REPO_URL, access, application, checkout, entry,
+from delivery_runtime import (LOCAL, TARGETS, REPO_URL, access, application, checkout,
                               materialise, read_target, rendered, validate_deployment, verify, write_target)
 from delivery_gates import deployment_inputs, retain, validate_evidence
 from delivery.ci.release import canonical
@@ -292,6 +292,8 @@ def demonstrate_merge(number):
 def watch_once():
     checkout()
     results = []
+    from relevance_decisions import watch_decisions
+    results.extend(watch_decisions())
     for pr in api(endpoint(DESIRED, '/pulls?state=open&limit=100')):
         if pr['head']['ref'].startswith('promote/'):
             results.append(validate_pr(pr['number']))
