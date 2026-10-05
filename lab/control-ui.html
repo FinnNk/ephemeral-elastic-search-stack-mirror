@@ -93,7 +93,7 @@
       coverageText+=' Published '+(counts.baseline.published||0)+'/'+(counts.candidate.published||0)+'; model '+(counts.baseline.model||0)+'/'+(counts.candidate.model||0)+'.';}
     if(openReport.judgement_sha256)coverageText+=' Shared judgement set '+openReport.judgement_sha256.slice(0,12)+'.';
     document.querySelector('#report-coverage-summary').textContent=coverageText;
-    document.querySelector('#report-download').href='/api/comparisons/'+id+'/report';
+    document.querySelector('#report-download').href='/api/comparisons/'+id+'/report?format=json';
     document.querySelector('#query-filter').value='changed';listQueries();panel.scrollIntoView({behavior:'smooth'});
   }
   for(const id of ['query-filter','query-order','query-search'])document.querySelector('#'+id).addEventListener(id==='query-search'?'input':'change',()=>{pages.query=1;listQueries()});

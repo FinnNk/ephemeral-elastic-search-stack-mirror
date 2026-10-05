@@ -44,7 +44,10 @@ In `delivery-source` → **Actions** → **Lab delivery** → **Run workflow**, 
 from its `/actions/runs/<id>` URL; compare also needs a baseline run.
 
 The workflow prints a durable progress URL and releases the runner. Follow that
-record to completion and open the returned storefront or report. **Submitted**
+record to completion and open the returned storefront or report. Browser links
+show a readable progress page with the current stage and outcome. Report pages separate relevance,
+result overlap and judgement coverage; delivery evidence links to each
+retained check. Use **View JSON data** for the underlying record. **Submitted**
 does not mean evaluated or deployed. Both comparison revisions must contain the
 current evaluation/configuration contract.
 

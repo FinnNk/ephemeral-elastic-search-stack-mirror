@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+[Readable delivery results](readable-delivery-results.md) are prepared for
+review: progress, source/control reports and promotion check reports keep
+their existing URLs and JSON API. Next,
+[activate and check the browser links](readable-delivery-results-activation.md).
+
 Registry setup now discovers Docker-backed cluster workers instead of naming
 three fixed nodes. The testbed installer applies it after adding its worker.
 The affected preview recovered; the source comparison resumed fresh capture.

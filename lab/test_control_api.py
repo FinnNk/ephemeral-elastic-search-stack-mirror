@@ -256,6 +256,54 @@ class LocalControlApi(unittest.TestCase):
             urllib.request.urlopen(delete)
         self.assertEqual(error.exception.code, 403)
 
+    def test_browser_progress_and_reports_keep_json_access_control(self):
+        paths = ('/api/delivery/operations/' + 'a'*32,
+                 '/api/delivery/operations/' + 'a'*32 + '/report',
+                 '/api/comparisons/known/report')
+        for path in paths:
+            with self.subTest(path=path):
+                browser = urllib.request.Request(self.base + path, headers={'Accept': 'text/html'})
+                with urllib.request.urlopen(browser) as response:
+                    self.assertEqual(response.headers['Content-Type'], 'text/html; charset=utf-8')
+                    self.assertEqual(response.headers['Vary'], 'Accept')
+                    self.assertIn(b'delivery_results.js', response.read())
+                for suffix, accept in (('', 'application/json'), ('?format=json', 'text/html')):
+                    api_request = urllib.request.Request(self.base + path + suffix, headers={'Accept': accept})
+                    with self.assertRaises(urllib.error.HTTPError) as failure:
+                        urllib.request.urlopen(api_request)
+                    self.assertEqual(failure.exception.code, 401)
+        row = {'id': 'a'*32, 'owner': 'bob', 'state': 'running'}
+        cookie = self.login('alice')
+        with patch('delivery_operations.Operations') as operations:
+            operations.return_value.get.return_value = row
+            api_request = urllib.request.Request(self.base + paths[0],
+                headers={'Accept': 'application/json', 'Cookie': cookie})
+            with self.assertRaises(urllib.error.HTTPError) as failure:
+                urllib.request.urlopen(api_request)
+            self.assertEqual(failure.exception.code, 403)
+
+    def test_delivery_check_report_verifies_both_retained_hashes(self):
+        payload = b'{"kind":"controlled-api-comparison","complete":true}'
+        reference = {'blob': 'runs/check/result.json', 'sha256': hashlib.sha256(payload).hexdigest()}
+        root = json.dumps({'reports': {'relevance': reference}}).encode()
+        row = {'id': 'a'*32, 'owner': 'alice', 'result': {'report': {
+            'blob': 'runs/root/evidence.json', 'sha256': hashlib.sha256(root).hexdigest()}}}
+        blobs = Mock()
+        blobs.get_blob_client.side_effect = lambda container, name: Mock(
+            download_blob=lambda: Mock(readall=lambda: root if name=='root/evidence.json' else payload))
+        headers = {'Cookie': self.login('alice'), 'Accept': 'application/json'}
+        url = self.base + '/api/delivery/operations/' + 'a'*32 + '/report/relevance'
+        with patch('delivery_operations.Operations') as operations, patch('control_api.service', return_value=blobs):
+            operations.return_value.get.return_value = row
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers)) as response:
+                self.assertEqual(response.read(), payload)
+            reference['sha256'] = '0'*64
+            root = json.dumps({'reports': {'relevance': reference}}).encode()
+            row['result']['report']['sha256'] = hashlib.sha256(root).hexdigest()
+            with self.assertRaises(urllib.error.HTTPError) as failure:
+                urllib.request.urlopen(urllib.request.Request(url, headers=headers))
+            self.assertEqual(failure.exception.code, 502)
+
     def login(self, username='alice'):
         request = urllib.request.Request(self.base + '/api/login', method='POST',
             data=json.dumps({'username': username, 'password': 'test-password'}).encode(),

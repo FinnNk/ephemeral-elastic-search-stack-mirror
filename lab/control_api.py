@@ -113,6 +113,20 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['relevance-decision']:
             return self.send_bytes(200, UI.with_name('relevance-decision.html').read_bytes(),
                                    'text/html; charset=utf-8')
+        if parts == ['delivery_results.js']:
+            return self.send_bytes(200, UI.with_name('delivery_results.js').read_bytes(),
+                                   'text/javascript; charset=utf-8')
+        delivery_view = (parts[:3] == ['api', 'delivery', 'operations'] and
+                         (len(parts) == 4 or len(parts) in (5, 6) and parts[4] == 'report'))
+        comparison_view = (parts[:2] == ['api', 'comparisons'] and
+                           len(parts) == 4 and parts[3] == 'report')
+        query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+        if (delivery_view or comparison_view) and 'text/html' in self.headers.get('Accept', '') and \
+                query.get('format') != ['json']:
+            # The public shell contains no operation data. Its JSON fetch retains
+            # authentication, owner checks and frozen-report hash verification.
+            return self.send_bytes(200, UI.with_name('delivery-results.html').read_bytes(),
+                                   'text/html; charset=utf-8', {'Vary': 'Accept'})
         if parts == ['api', 'health']:
             return self.send_json(503 if DRAIN.exists() else 200, {'ready': not DRAIN.exists()})
         if parts == ['api', 'auth']:
@@ -122,7 +136,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(401, {'error': 'Sign in to the lab.'})
         if parts == ['api', 'me']:
             return self.send_json(200, {key: value for key, value in identity.items() if key != 'expires_at'})
-        if parts[:3] == ['api', 'delivery', 'operations'] and len(parts) in (4, 5):
+        if parts[:3] == ['api', 'delivery', 'operations'] and len(parts) in (4, 5, 6):
             from delivery_operations import Operations
             row = Operations().get(parts[3])
             if row is None:
@@ -137,6 +151,15 @@ class Handler(BaseHTTPRequestHandler):
                 payload = service().get_blob_client(container, name).download_blob().readall()
                 if hashlib.sha256(payload).hexdigest() != reference['sha256']:
                     return self.send_json(502, {'error': 'Frozen delivery report hash differs.'})
+                if len(parts) == 6:
+                    reports = json.loads(payload).get('reports', {})
+                    if parts[5] not in ('result-regression', 'relevance', 'performance') or parts[5] not in reports:
+                        return self.send_json(404, {'error': 'Delivery check report not found.'})
+                    reference = reports[parts[5]]
+                    container, name = reference['blob'].split('/', 1)
+                    payload = service().get_blob_client(container, name).download_blob().readall()
+                    if hashlib.sha256(payload).hexdigest() != reference['sha256']:
+                        return self.send_json(502, {'error': 'Frozen check report hash differs.'})
                 return self.send_bytes(200, payload, 'application/json; charset=utf-8')
             return self.send_json(409, {'error': 'Delivery report is not available.'})
         if identity.get('is_delivery_service'):

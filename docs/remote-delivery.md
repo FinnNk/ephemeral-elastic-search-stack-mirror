@@ -9,6 +9,11 @@ The lab's coordinator and source workflows are installed. Administrators handle
 their setup; check [current status](plans/roadmap.md) for remaining validation.
 Routine developer operations need no kubeconfig or cluster access.
 
+Open the printed progress URL in a browser to see its current stage, outcome
+and result links. It refreshes automatically while work is active. Report
+links show tables and separate judgement coverage. **View JSON data** retains
+the original machine-readable record; scripts still receive JSON by default.
+
 ## Sign in from a workstation
 
 Use Python 3.13 from your `delivery-source` checkout. Complete the
