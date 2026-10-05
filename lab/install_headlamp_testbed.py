@@ -76,6 +76,8 @@ def install():
         executable = STATE / 'tools' / ('k3d.exe' if os.name == 'nt' else 'k3d')
         run([str(executable), 'node', 'create', 'headlamp-testbed', '-c', 'relevance-lab',
              '--role', 'agent', '--memory', '8g', '--k3s-node-label', 'lab.relevance/testbed=true'])
+    from setup_nexus import configure_node_registries
+    configure_node_registries()
     sources = json.loads((CONFIG / 'sources.json').read_bytes())
     presets = []
     for name, source in sources.items():

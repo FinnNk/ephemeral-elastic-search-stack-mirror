@@ -146,11 +146,19 @@ def configure_network():
            'endpoints': [{'addresses': [ip], 'conditions': {'ready': True}}]})
     k('patch', 'configmap/coredns-custom', '-n', 'kube-system', '--type=merge', '-p',
       json.dumps({'data': {'nexus.override': 'rewrite name exact nexus.localhost nexus.platform.svc.cluster.local\n'}}))
-    # containerd reads this per-registry file when resolving a new image, without a node restart.
+    configure_node_registries()
+
+
+def configure_node_registries():
+    """Give every Docker-backed cluster node the lab registry endpoint."""
+    # containerd reads this file on the next pull, without a node restart.
     host_config = 'server = "http://relevance-nexus:5000"\n[host."http://relevance-nexus:5000"]\n  capabilities = ["pull", "resolve"]\n'
     path = '/var/lib/rancher/k3s/agent/etc/containerd/certs.d/' + REGISTRY
-    for node in ('k3d-relevance-lab-server-0', 'k3d-relevance-lab-agent-0',
-                 'k3d-observability-0'):
+    nodes = json.loads(k('get', 'nodes', '-o', 'json').stdout)['items']
+    for entry in nodes:
+        node = entry['metadata']['name']
+        if not node.startswith('k3d-'):
+            continue  # The separate native GPU worker configures its own runtime.
         docker('exec', node, 'mkdir', '-p', path)
         docker('exec', '-i', node, 'sh', '-c', 'cat > ' + path + '/hosts.toml', body=host_config)
 

@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+Registry setup now discovers Docker-backed cluster workers instead of naming
+three fixed nodes. The testbed installer applies it after adding its worker.
+The affected preview recovered; the source comparison resumed fresh capture.
+This repair is prepared for review. Next, continue the
+[sneakers walkthrough](sneakers-demo-walkthrough.md).
+
 Copyable [sneakers demo snippets](../../lab/delivery/bootstrap/examples/sneakers/README.md)
 are published in the lab bootstrap template and await source-repository review.
 The gate guide now explains per-variant intent and the requirement for every

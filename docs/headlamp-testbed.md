@@ -35,8 +35,9 @@ python lab/install_headlamp_testbed.py --verify-only
 The command checks controller rollouts, the 13 LLM presets, internal Kourier
 access and the Standard default. To install on an existing lab, omit
 `--verify-only`. The installer adds the worker when absent and records the
-existing model definitions before installation. It fails if those definitions
-change. Installation restarts the KServe controller; existing predictor pods
+existing model definitions before installation. It also configures Nexus image
+pulls on every Docker-backed cluster node, including the new worker. It fails
+if the model definitions change. Installation restarts the KServe controller; existing predictor pods
 keep serving.
 
 Linux and macOS use `export LAB_STATE_DIR=/absolute/path/to/lab-state` instead
