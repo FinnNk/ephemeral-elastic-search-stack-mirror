@@ -35,6 +35,34 @@ Application tests and builds run separately. If a PR changes only `README.md`, `
 define their ranking settings. The coordinator reads baseline settings from its
 revision and candidate settings from the PR head. Both use the same frozen inputs.
 
+## Select one or more variants
+
+Intent belongs to each selected variant because one release can contain both
+an unchanged default and a new ranker. It describes the expected search-result
+behaviour, rather than the business reason for the PR. A gate-level intent
+would require every selected variant to have the same expectation.
+
+| Release | Selected variants and intent |
+| --- | --- |
+| One query rewrite | One candidate with `ranking-change` |
+| Dependency update across several rankers | Each candidate with `preserve-results` |
+| Retain the default and introduce a new ranker | Retained default with `preserve-results`; new ranker with `ranking-change` |
+| Release several ranking configurations | Each intended candidate with `ranking-change` |
+
+Every selected variant is checked against the configured baseline. All must
+pass or have an allowed, recorded exception; selecting several does not mean
+that whichever passes is chosen. Variants can appear in the report without
+being selected as merge requirements. Shared API changes may affect several
+variants, so checking the retained default can catch an unintended change.
+
+The default, baseline and selected candidates are separate choices. The default
+can be selected, but the comparison baseline cannot. Configure their names in
+`gate/evaluation.json` and `configurations/`; selection does not choose the
+default or allocate online traffic.
+
+Keeping intent explicit per variant supports mixed expectations without a
+second rule for gate-level defaults and overrides.
+
 ## Add a query set
 
 Add `additional_query_sets` to `selection.json` for queries specific to your

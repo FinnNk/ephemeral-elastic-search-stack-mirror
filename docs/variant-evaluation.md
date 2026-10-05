@@ -37,6 +37,13 @@ Declare the source settings below; the coordinator selects compatible retained i
 
 The default and baseline are independent choices. The baseline supplies the comparison; it cannot also be a selected candidate in that gate decision.
 
+Intent is declared for each selected variant: a retained default can require
+`preserve-results` while a new ranker uses `ranking-change`. Every selected
+variant must pass or receive an allowed, recorded exception. Reported variants
+need not all be merge requirements. See the
+[selection guide](../lab/delivery/bootstrap/gate/README.md#select-one-or-more-variants)
+for the rationale and common examples.
+
 Use [Actions or remote commands](remote-delivery.md) for developer operations.
 The [evaluation runbook](evaluation-runbook.md) covers separate operator studies.
 

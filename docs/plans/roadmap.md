@@ -7,7 +7,9 @@ step” is not an instruction to repeat completed work.
 ## Current work
 
 Copyable [sneakers demo snippets](../../lab/delivery/bootstrap/examples/sneakers/README.md)
-are prepared for review in the source repository and its bootstrap template.
+are published in the lab bootstrap template and await source-repository review.
+The gate guide now explains per-variant intent and the requirement for every
+selected variant to pass or receive an allowed exception.
 Next, resume the step-by-step developer walkthrough and review its comparison.
 
 
