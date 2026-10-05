@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 from compare_search import definition, immutable_blob, jaccard, rbo, response
 from blob_config import settings
-from evaluate_relevance import query_ndcg, score
+from evaluate_relevance import query_ndcg, score, ndcg_statistics
 from search_probe import search
 from input_selection import select
 
@@ -115,6 +115,7 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
     else:
         verdict = 'measured'
     metrics = None
+    significance = None
     if mode == 'relevance' and complete:
         metrics = {side: score(judgements, {row['query_id']: row[side]['ids'] for row in results})
                    for side in ('baseline', 'candidate')}
@@ -123,6 +124,9 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
             graded.setdefault(judgement['query_id'], set()).add(judgement['product_id'])
         per_query = {side: query_ndcg(judgements, {row['query_id']: row[side]['ids'] for row in results})
                      for side in ('baseline', 'candidate')}
+        significance = ndcg_statistics(judgements,
+            {side: {row['query_id']: row[side]['ids'] for row in results} for side in per_query},
+            request_by_id, 'baseline', per_query)
         for row in results:
             qid = row['query_id']
             for side in ('baseline', 'candidate'):
@@ -212,6 +216,7 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
                                   if mode == 'relevance' else 'Not used for result preservation.'),
               'query_count': len(suite), 'completed_query_count': len(results), 'zero_result_counts': zero_counts,
               'changed_query_ids': changed, 'metrics': metrics, 'result_similarity': similarity,
+              'ndcg_significance': significance,
               'errors': errors, 'queries': results}
     payload = (json.dumps(report, sort_keys=True, indent=2) + '\n').encode()
     digest = hashlib.sha256(payload).hexdigest()
@@ -223,6 +228,6 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
             'changed_query_ids': changed, 'zero_result_counts': zero_counts,
             'query_manifest_sha256': selected['query_manifest_sha256'],
             'judgement_manifest_sha256': selected.get('judgement_manifest_sha256'),
-            'metrics': metrics, 'result_similarity': similarity,
+            'metrics': metrics, 'result_similarity': similarity, 'ndcg_significance': significance,
             'judgement_coverage': coverage, 'judgement_source_counts': source_coverage,
             'judgement_coverage_status': coverage_status, 'errors': errors}

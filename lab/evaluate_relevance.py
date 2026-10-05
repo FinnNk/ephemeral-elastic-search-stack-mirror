@@ -3,6 +3,7 @@ import hashlib
 import json
 from collections import defaultdict
 import ir_measures
+from evaluation.ndcg_significance import analyse
 
 from common import guard, record
 from catalogue import DEFAULT_RELEASE
@@ -27,8 +28,21 @@ def query_ndcg(judgements, results):
     qrels = [ir_measures.Qrel(row['query_id'], row['product_id'], row['grade']) for row in judgements]
     run = [ir_measures.ScoredDoc(qid, product_id, 10 - rank)
            for qid, ids in results.items() for rank, product_id in enumerate(ids[:10])]
-    return {item.query_id: round(item.value, 6)
+    return {item.query_id: float(item.value)
             for item in ir_measures.iter_calc([metric], qrels, run)}
+
+
+def ndcg_statistics(judgements, results, requests, baseline, per_query=None):
+    """Pair nDCG scores on positive-gain queries; significance never changes gates."""
+    per_query = per_query if per_query is not None else {
+        side: query_ndcg(judgements, rows) for side, rows in results.items()}
+    eligible = {row['query_id'] for row in judgements if row['grade'] > 0}
+    values = {}
+    for side, rows in results.items():
+        scores = dict(per_query[side])
+        scores.update({qid: 0.0 for qid, ids in rows.items() if not ids and qid in eligible})
+        values[side] = {'nDCG@10': scores}
+    return analyse(values, requests, baseline, results, eligible)
 
 
 def evaluate():
@@ -72,7 +86,9 @@ def evaluate():
         'interpretation': 'Published judgements cover only a subset of possible results. Unjudged results are unknown, '
                           'although nDCG treats them as zero. Report Judged@10 alongside nDCG; scores are a '
                           'repeatable proxy for this judgement pool, not production relevance.',
-        'aggregate': aggregate, 'changed_query_ids': changed_query_ids, 'queries': query_rows}
+        'aggregate': aggregate, 'changed_query_ids': changed_query_ids, 'queries': query_rows,
+        'ndcg_significance': ndcg_statistics(judgements, results,
+            {row['query_id']: row for row in queries}, BASELINE)}
     payload = (json.dumps(report, indent=2, sort_keys=True) + '\n').encode()
     digest = hashlib.sha256(payload).hexdigest()
     location = immutable_blob('runs', digest + '/retail-relevance-evaluation.json', payload)

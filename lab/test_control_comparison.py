@@ -67,6 +67,10 @@ class ControlledComparisonPreflight(unittest.TestCase):
         self.assertEqual(report['judgement_provenance']['name'], 'synthetic-assessor')
         self.assertEqual(report['query_manifest_sha256'], 'a' * 64)
         self.assertEqual(report['queries'][0]['ndcg_delta_at_10'], -1.0)
+        result = report['ndcg_significance']['comparisons']['candidate']['nDCG@10']
+        self.assertEqual(result['mean_difference'], -1.0)
+        self.assertIsNone(result['significant'])
+        self.assertEqual(summary['ndcg_significance'], report['ndcg_significance'])
 
 
 if __name__ == '__main__':

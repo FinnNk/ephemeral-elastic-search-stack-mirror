@@ -265,6 +265,7 @@ def compare(request, progress, operation_id):
     return {'report': reference, 'source_pr': number, 'source_sha': revision, 'baseline_source_sha': baseline_receipt['source_sha'],
             'baseline_url': url(first['name']), 'candidate_url': url(second['name']),
             'gate': verdict, 'summary': {'metrics': report['metrics'], 'coverage': report['coverage'],
+                'ndcg_significance': report['ndcg_significance'],
                 'result_changes': report['result_changes'], 'combined': report['combined'],
                 'result_similarity': {name: {key: value for key, value in scores.items() if key != 'per_query'}
                     for name, scores in report['result_similarity'].items()}}}

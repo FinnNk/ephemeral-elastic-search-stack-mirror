@@ -2,7 +2,7 @@ FROM python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af
 
 RUN apk add --no-cache libstdc++ && \
     apk add --no-cache --virtual .build-deps build-base && \
-    pip install --no-cache-dir ir_measures==0.4.3 pytrec_eval-terrier==0.5.10 azure-storage-blob==12.27.0 azure-identity==1.25.3 && \
+    pip install --no-cache-dir numpy==2.5.3 scipy==1.18.1 ir_measures==0.4.3 pytrec_eval-terrier==0.5.10 azure-storage-blob==12.27.0 azure-identity==1.25.3 && \
     apk del .build-deps
 
 WORKDIR /app

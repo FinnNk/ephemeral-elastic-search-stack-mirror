@@ -62,6 +62,9 @@ class OfflineContractTests(unittest.TestCase):
         self.assertEqual(report['default_variant'], 'ranker-a')
         self.assertEqual(report['baseline_variant'], 'ranker-b')
         self.assertEqual(report['delta_from_baseline']['ranker-a']['nDCG@10'], 0)
+        stats = report['ndcg_significance']['comparisons']['ranker-a']['nDCG@10']
+        self.assertEqual(stats['paired_queries'], 1)
+        self.assertIsNone(stats['p_value'])
 
     def test_capture_timing_is_retained_without_changing_scores(self):
         before = self.evaluate()

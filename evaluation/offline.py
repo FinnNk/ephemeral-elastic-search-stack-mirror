@@ -13,6 +13,7 @@ from search_filters import validate_filters
 
 import ir_measures
 from result_similarity import summarise
+from ndcg_significance import analyse
 
 SCHEMA = 1
 METRICS = {'nDCG@5': ir_measures.nDCG @ 5,
@@ -170,9 +171,18 @@ def evaluate(observation_path, judgement_path, specification_path,
         values = {name: {} for name in names}
         for item in ir_measures.iter_calc(selected, qrels, run):
             name = next(name for name in names if METRICS[name] == item.measure)
-            values[name][item.query_id] = round(item.value, 6)
+            values[name][item.query_id] = float(item.value)
         per_case[variant] = values
     baseline = observations['baseline_variant']
+    eligible_ids = {qid for (qid, _), grade in judgements.items() if grade > 0}
+    for variant, values in per_case.items():
+        for row in observations['observations']:
+            if row['query_id'] in eligible_ids and not row['results'][variant]['ids']:
+                for metric in values:
+                    if metric.startswith('nDCG@'):
+                        values[metric][row['query_id']] = 0.0
+    significance = analyse(per_case, {r['query_id']: r['request'] for r in observations['observations']},
+                           baseline, observations['variants'], eligible_ids)
     deltas = {variant: {name: round(score - results[baseline][name], 6)
                         for name, score in scores.items()}
               for variant, scores in results.items() if variant != baseline}
@@ -207,6 +217,7 @@ def evaluate(observation_path, judgement_path, specification_path,
             'result_changes': result_changes,
             'result_similarity': summarise(observations, baseline),
             'coverage': coverage, 'per_case': per_case,
+            'ndcg_significance': significance, 'ndcg_eligible_query_ids': sorted(eligible_ids),
             'unjudged_policy': specification['unjudged_policy']}
 
 

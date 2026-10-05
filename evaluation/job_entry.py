@@ -45,6 +45,7 @@ def run(inputs, client, workdir, evaluated_at=None):
     return {'report': reference, 'complete': result['complete'],
             'query_count': result['query_count'],
             'metrics': result['metrics'], 'delta_from_baseline': result['delta_from_baseline'],
+            'ndcg_significance': result['ndcg_significance'],
             'result_changes': result['result_changes'],
             'result_similarity': {name: {key: value for key, value in scores.items()
                                         if key != 'per_query'}

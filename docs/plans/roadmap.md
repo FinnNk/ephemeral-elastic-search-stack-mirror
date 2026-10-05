@@ -139,3 +139,10 @@ Next: generate the fresh sneakers comparison and continue the developer walkthro
 Friendly reports include successful requests alongside attempts, retries and failures.
 A recovered request counts once as a success. Next: review this batch, then resume
 the sneakers walkthrough using the [report review plan](report-request-successes.md).
+
+## Informational nDCG significance
+
+Prepared for review: paired nDCG tests, 95% intervals, request grouping and Holm
+adjustment in source, combined and promotion relevance reports. Gate policies
+remain unchanged. Next: accept the batch and inspect a fresh comparison in the
+walkthrough. See the [batch and next-step plan](ndcg-significance.md).

@@ -8,6 +8,7 @@ const operationTitles={preview:'Prepare a preview',compare:'Search comparison',p
 const names={ndcg_at_10:'nDCG@10',ndcg_at_20:'nDCG@20',precision_at_10:'Precision@10',recall_at_10:'Recall@10',rbo_at_10_p_0_9:'RBO@10',jaccard_at_10:'Jaccard@10'};
 const label=value=>names[value]||String(value).replaceAll('_',' ');
 const fmt=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:4}):value==null?'Not available':String(value);
+const probability=value=>typeof value==='number'&&value>0&&value<.0001?'<0.0001':fmt(value);
 const pct=value=>typeof value==='number'?(100*value).toFixed(1)+'%':'Not available';
 function node(tag,text,parent){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(parent)parent.append(n);return n}
 function link(id,value){const n=$(id);n.hidden=true;if(!value)return;const u=new URL(value,location.origin);if(!['http:','https:'].includes(u.protocol))return;if(u.hostname==='gitea-internal.lab-ingress.svc.cluster.local'){u.hostname='gitea.localhost';u.port='34443';u.protocol='https:'}n.href=u.href;n.hidden=false}
@@ -24,6 +25,13 @@ function summary(report,title,required,baseline=report.baseline_variant){
  table(s,['Variant',...keys.map(label)],variants.map(v=>[v,...keys.map(k=>metrics[v]?.[k]==null?'Not calculable':fmt(metrics[v][k]))]));
  const deltas=report.delta_from_baseline||{};
  if(Object.keys(deltas).length)table(s,['Variant vs baseline','nDCG@5 change','nDCG@10 change'],Object.entries(deltas).map(([v,m])=>[v+' vs '+baseline,m['nDCG@5']==null?'Not calculable':fmt(m['nDCG@5']),m['nDCG@10']==null?'Not calculable':fmt(m['nDCG@10'])]));
+ if(report.ndcg_significance){const stats=report.ndcg_significance;const t=section(title+' — nDCG significance','Informational only; gates are unchanged. Tests use paired queries with positive reference gain. Repeated and case-varied requests are grouped together.');
+ const tests=Object.entries(stats.comparisons).flatMap(([variant,metrics])=>Object.entries(metrics).map(([metric,x])=>({comparison:variant+' vs '+baseline,metric,...x})));
+ table(t,['Comparison','Metric','Mean change','95% interval','Raw p','Adjusted p','Significant at 5%?'],tests.map(x=>[x.comparison,x.metric,fmt(x.mean_difference),x.confidence_interval_95?x.confidence_interval_95.map(fmt).join(' to '):'Not available',probability(x.p_value),probability(x.adjusted_p_value),x.significant==null?'Insufficient data':x.significant?'Yes':'No']));
+ table(t,['Comparison','Metric','Queries scored','Request groups','Excluded queries'],tests.map(x=>[x.comparison,x.metric,fmt(x.paired_queries),fmt(x.request_groups),fmt(x.excluded_queries)]));
+ node('p','Two-sided paired permutation test; 95% request-group bootstrap interval. P-values use Holm adjustment across variants and nDCG cut-offs within this view. The interval is not adjusted for multiple comparisons. A non-significant result does not establish equivalence. Tested means can differ from quality averages when queries are excluded. Inference is conditional on the frozen labels and does not qualify model label accuracy.',t);
+ for(const [variant,metrics] of Object.entries(stats.comparisons))for(const [metric,x] of Object.entries(metrics))if(x.unavailable_reason)node('p',variant+' — '+metric+': '+x.unavailable_reason,t);
+ }
  if(report.relevance_unavailable_reason)node('p','Not calculable: '+report.relevance_unavailable_reason,s);
  if(report.judgement_resolution){const r=report.judgement_resolution,e=r.execution||{},c=r.counts.pool;const j=section(title+' — judgement resolution');table(j,['Measure','Count'],[['Pairs in the result union',fmt(c.required)],['Supplied labels reused',fmt(c.stored)],['Stored API labels reused',fmt(e.stored_pairs)],['Cached outcomes reused',fmt(e.cache_hits)],['Pairs sent to the model',fmt(e.inferred_pairs)],['Resolved labels',fmt(c.newly_labelled)],['Abstentions or ineligible predictions',fmt(c.abstained)],['Errors',fmt(c.failed)],['API requests without a response',fmt(e.response_errors||0)]]);node('p','One frozen judgement snapshot scores every variant. Model labels remain distinct from reference labels.',j);}
  const candidates=Object.keys(similarity).filter(v=>v!==baseline);

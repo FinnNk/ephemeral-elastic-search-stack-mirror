@@ -68,6 +68,7 @@ Gatling's declared arrival rates. See [capture execution](evaluation-runbook.md#
 | nDCG@10 | How well the first ten results rank labelled relevant products |
 | Judged coverage | Share of captured query/product results with labels; low coverage weakens the evidence |
 | Delta from baseline | Whether a variant's measured relevance improved or declined |
+| nDCG significance | Paired mean difference, 95% interval and p-values; informational only |
 | Changed-result fraction | How many queries changed returned IDs or total match count |
 | RBO@10, persistence 0.9 | Result-order similarity, weighted towards the highest ranks; 1 means identical |
 | Jaccard@10 | Product-set overlap, ignoring order; 1 means the same products |
@@ -76,6 +77,40 @@ Gatling's declared arrival rates. See [capture execution](evaluation-runbook.md#
 Reports identify judgement selection and count each source. **Demo** means that model accuracy is unqualified, even when the gate passes. Read coverage beside the scores. Synthetic fixtures demonstrate the process, not real search quality. [Result-preservation comparisons](prototype-design.md#result-regression-preserve-ranking-and-membership) also provide RBO and Jaccard diagnostics.
 
 The coordinator captures and scores source PRs automatically using pinned inputs. Each report contains every variant, baseline deltas and exact inputs. Follow its PR links or use [remote comparison commands](remote-delivery.md). If capture fails, correct the API response or deployment mismatch before scoring. If labels are missing, inspect coverage before treating scores as evidence. The operator runbook also supports explicitly prepared judgement-resolution studies.
+
+## Interpret nDCG significance
+
+Read the **nDCG significance** table beside the score changes. It reports:
+
+- The tested mean change, paired query count, request groups and excluded queries.
+- A 95% bootstrap confidence interval and raw and Holm-adjusted p-values.
+- **Yes** when the adjusted p-value is below 0.05; **No** otherwise.
+- **Insufficient data** when fewer than two request groups can be tested.
+
+These results do not affect gates. A non-significant difference does not establish
+that the variants are equivalent; a significant difference may still be too small
+to matter. A four-query demonstration provides little statistical evidence.
+
+Only queries with positive reference gain and finite scores for both variants
+enter the test. An empty result list scores zero when positive references exist.
+The tested mean can therefore differ from the existing quality-average delta.
+Unknown labels retain the evaluator's existing scoring policy; the test does not
+establish model label accuracy or compensate for incomplete judgements.
+
+Repeated requests and case variations with the same country, currency and filters
+are resampled together. Each eligible query case retains equal weight. Tests assume
+these request groups are independent and representative of the query population
+of interest; they describe query variability, not variation between repeated runs.
+
+The implementation uses SciPy's [paired permutation test](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.permutation_test.html)
+and [bootstrap](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html).
+It uses exact sign permutations for small samples, otherwise 9,999 seeded
+permutations, and 9,999 seeded request-group bootstrap samples with a percentile
+interval. The interval is approximate, especially for small samples. Holm adjustment
+covers all tested variants and nDCG cut-offs within each suite or combined view;
+intervals are not adjusted. It does not control repeated testing across commits
+or selection of favourable query sets. Combined views group repeats across suites.
+Method settings, library versions and the implementation hash are retained in JSON.
 
 ## Supply merge evidence
 

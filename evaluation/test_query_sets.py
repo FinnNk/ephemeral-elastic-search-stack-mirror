@@ -20,6 +20,9 @@ class QuerySetTests(unittest.TestCase):
             self.assertEqual(result['execution'], observations['execution'])
             self.assertFalse(result['relevance_available'])
             self.assertIsNone(result['metrics'])
+            stats = result['ndcg_significance']['comparisons']['ranker-a']['nDCG@10']
+            self.assertEqual(stats['excluded_queries'], 1)
+            self.assertIsNone(stats['significant'])
             self.assertEqual(result['result_similarity']['ranker-a']['rbo_at_10_p_0_9'], 1)
             labels = (fixture.root / 'judgements.jsonl').read_bytes()
             item.update(judgement_bytes=labels, judgement_sha256=test_offline.sha(labels),
@@ -63,6 +66,27 @@ class QuerySetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'judgement file'):
             freeze(self.selection(True), lambda path: self.payload())
 
+    def test_combined_significance_groups_repeated_requests_across_suites(self):
+        from query_sets import combine
+        def report(qid):
+            return {'query_count': 1, 'variants': {'baseline': {}, 'candidate': {}},
+                    'baseline_variant': 'baseline',
+                    'metrics': {'baseline': {'nDCG@10': .5}, 'candidate': {'nDCG@10': .7}},
+                    'per_case': {'baseline': {'nDCG@10': {qid: .5}},
+                                 'candidate': {'nDCG@10': {qid: .7}}},
+                    'ndcg_eligible_query_ids': [qid],
+                    'result_similarity': {v: {'rbo_at_10_p_0_9': 1, 'jaccard_at_10': 1}
+                                          for v in ('baseline', 'candidate')}}
+        requests = {suite: [{'query_id': qid, 'query': query, 'country': 'GB',
+                              'currency': 'GBP', 'filters': {}}]
+                    for suite, qid, query in [('standard', 'q1', 'Shoes'), ('extra', 'q1', 'shoes')]}
+        result = combine({'standard': report('q1'), 'extra': report('q1')}, requests)
+        stats = result['ndcg_significance']['comparisons']['candidate']['nDCG@10']
+        self.assertEqual(stats['paired_queries'], 2)
+        self.assertEqual(stats['request_groups'], 1)
+        self.assertIsNone(stats['p_value'])
+        self.assertAlmostEqual(stats['mean_difference'], .2)
+
     def test_paths_and_duplicate_ids_are_rejected(self):
         selection = self.selection()
         selection['additional_query_sets'][0]['path'] = 'evaluation/../secret.jsonl'
@@ -83,7 +107,7 @@ class QuerySetTests(unittest.TestCase):
         frozen = freeze(selection, lambda path: self.payload())
         metrics = {'a': {'nDCG@10': 0.8}, 'b': {'nDCG@10': 0.7}}
         similarity = {v: {'rbo_at_10_p_0_9': 1, 'jaccard_at_10': 1} for v in metrics}
-        standard = {'query_count': 1, 'variants': {'a': {}, 'b': {}},
+        standard = {'query_count': 1, 'baseline_variant': 'a', 'variants': {'a': {}, 'b': {}},
                     'complete': True, 'metrics': metrics, 'result_similarity': similarity,
                     'query_suite_sha256': 'a' * 64}
         extra = {**standard, 'relevance_available': False, 'metrics': None,

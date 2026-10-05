@@ -9,6 +9,7 @@ import tempfile
 
 from search_filters import validate_filters
 from result_similarity import summarise
+from ndcg_significance import analyse
 
 
 def canonical(value):
@@ -117,7 +118,18 @@ def combine(reports, requests_by_suite):
             seen.add(identity)
     if any(not math.isfinite(v) for scores in similarities.values() for v in scores.values()):
         raise ValueError('Combined similarity is not finite.')
-    return {'weighting': 'equal weight per query case; repeated requests counted in each suite',
+    per_case = {v: {} for v in variants}
+    requests, eligible = {}, set()
+    for suite, report in reports.items():
+        for row in requests_by_suite[suite]:
+            requests[suite + ':' + row['query_id']] = row
+        eligible.update(suite + ':' + qid for qid in report.get('ndcg_eligible_query_ids', []))
+        for variant, scores in report.get('per_case', {}).items():
+            for metric, cases in scores.items():
+                per_case[variant].setdefault(metric, {}).update(
+                    {suite + ':' + qid: score for qid, score in cases.items()})
+    significance = analyse(per_case, requests, reports['standard']['baseline_variant'], variants, eligible)
+    return {'ndcg_significance': significance, 'weighting': 'equal weight per query case; repeated requests counted in each suite',
             'query_count': total, 'relevance_query_count': labelled_cases,
             'unlabelled_query_count': total - labelled_cases,
             'repeated_request_count': repeats, 'metrics': metrics,
@@ -177,12 +189,15 @@ def score_extra(item, observations, specification_bytes, catalogue_manifest_byte
     elif not positive_queries:
         reason = 'No positive relevance labels: nDCG has no non-zero ideal gain.'
     if reason:
+        metric_names = [name for name in json.loads(specification_bytes)['metrics'] if name.startswith('nDCG@')]
+        significance = analyse({v: {name: {} for name in metric_names} for v in variants},
+            {r['query_id']: r for r in item['queries']}, baseline, variants, set())
         return {'kind': 'variant-evaluation-report', 'schema_version': 1, 'complete': True,
                 'variants': variants, 'default_variant': observations['default_variant'],
                 'baseline_variant': baseline, 'query_count': len(item['queries']),
                 'catalogue_sha256': observations['catalogue_sha256'],
                 'query_suite_sha256': item['query_sha256'], 'observation_sha256': sha(canonical(observations)),
-                'relevance_available': False, 'metrics': None,
+                'relevance_available': False, 'metrics': None, 'ndcg_significance': significance,
                 'delta_from_baseline': {v: {'nDCG@5': None, 'nDCG@10': None} for v in variants if v != baseline},
                 'relevance_unavailable_reason': reason, 'relevance_query_count': 0,
                 'unlabelled_query_count': len(item['queries']),
@@ -210,6 +225,8 @@ def score_extra(item, observations, specification_bytes, catalogue_manifest_byte
         result = evaluate(*(folder / name for name in (
             'observations', 'judgements', 'specification', 'catalogue', 'queries', 'manifest')))
     result['coverage'] = coverage
+    result['ndcg_significance'] = analyse(result['per_case'],
+        {r['query_id']: r for r in item['queries']}, baseline, variants, positive_queries)
     return {**result, 'query_count': len(item['queries']), 'relevance_query_count': len(positive_queries),
             'unlabelled_query_count': len(item['queries']) - len(positive_queries),
             'observation_sha256': sha(canonical(observations)), 'result_changes': changes,
