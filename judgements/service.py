@@ -1,6 +1,7 @@
 """Judgement API: stored labels first, bounded KServe inference on gaps."""
 
 import argparse
+import base64
 from datetime import datetime, timezone
 import gzip
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -103,6 +104,38 @@ class JudgementService:
                     self.evidence.append(row['query_id'], row['product_id'], record)
                 self.database.execute('INSERT INTO imports VALUES (?,?,1)',
                     (self.scope, self.source_identity['source_id']))
+
+    def register_queries(self, context, query_bytes, query_sha256):
+        """Bind extra query IDs to exact requests; reuse published IDs for exact matches."""
+        if context != self.context or len(query_bytes) > 700_000 or digest(query_bytes) != query_sha256:
+            raise ValueError('Additional query bytes or source context differ.')
+        rows = [json.loads(line) for line in query_bytes.splitlines()]
+        if not rows or len(rows) > 2000:
+            raise ValueError('Register 1 to 2000 additional queries.')
+        identities, seen = {}, set()
+        with self.lock, self.database:
+            for row in rows:
+                if not isinstance(row, dict):
+                    raise ValueError('Additional query rows must be objects.')
+                qid = row.get('query_id')
+                if (not isinstance(qid, str) or not qid or qid in seen or
+                        not all(isinstance(row.get(k), str) and row[k] for k in ('query', 'country', 'currency')) or
+                        len(row['query']) > 150 or (row['country'], row['currency']) != ('GB', 'GBP') or
+                        not isinstance(row.get('filters', {}), dict)):
+                    raise ValueError('Additional queries need distinct IDs and valid GB/GBP requests.')
+                seen.add(qid)
+                original = {k: row[k] for k in ('query', 'country', 'currency')}
+                original['filters'] = row.get('filters', {})
+                request_sha = digest(canonical(original))
+                existing = self.database.execute(
+                    "SELECT query_id FROM queries WHERE scope=? AND request_sha256=? ORDER BY query_id LIKE 'extra-%',query_id LIMIT 1",
+                    (self.scope, request_sha)).fetchone()
+                internal = existing[0] if existing else 'extra-' + digest(canonical(
+                    {'query_suite_sha256': query_sha256, 'query_id': qid}))
+                self.database.execute('INSERT OR IGNORE INTO queries VALUES (?,?,?)',
+                                      (self.scope, internal, request_sha))
+                identities[qid] = internal
+        return {'query_suite_sha256': query_sha256, 'query_ids': identities}
 
     def lookup(self, query_id, product_id, selection='gate'):
         with self.lock:
@@ -300,11 +333,11 @@ def serve(service, host='0.0.0.0', port=18086):
                 self.send_error(404)
                 return
             self.reply(200, {'ready': True, 'model': service.model,
-                            'inference': service.inference.identity})
+                            'inference': service.inference.identity, 'context': service.context})
 
         def do_POST(self):
             if self.path not in ('/v1/judgements:resolve', '/v1/judgements:records',
-                                 '/v1/judgements:import'):
+                                 '/v1/judgements:import', '/v1/queries:register'):
                 self.send_error(404)
                 return
             with telemetry.span('judgement.http', self.headers, kind='server'):
@@ -314,7 +347,10 @@ def serve(service, host='0.0.0.0', port=18086):
                         raise ValueError('Resolution request is too large.')
                     body = json.loads(self.rfile.read(length))
                     with telemetry.span('judgement.lookup'):
-                        if self.path.endswith(':import'):
+                        if self.path.endswith(':register'):
+                            value = service.register_queries(body['context'],
+                                base64.b64decode(body['query_bytes'], validate=True), body['query_suite_sha256'])
+                        elif self.path.endswith(':import'):
                             value = service.import_pass(body)
                         elif self.path.endswith(':records'):
                             value = service.records(body['context'], body['pairs'])

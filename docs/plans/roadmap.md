@@ -115,3 +115,13 @@ model accuracy or a percentile target.
 Work on a branch, commit the batch and open a PR. Update this roadmap and the
 next detailed plan before review. Merge only after human acceptance. Gitea owns
 review and acceptance. Native GitHub mirroring replaces separate backup PRs.
+
+## Additional query judgement resolution
+
+Implemented for review: exact-byte query registration, pooled gap resolution and
+frozen labels for source PR additional suites. Friendly reports show inference
+reuse, abstentions, errors and explicit nDCG availability. Standard gate inputs
+and model thresholds are unchanged.
+
+Next: accept and deploy the batch, then trigger a new source commit and inspect
+the sneakers comparison. See the [batch plan](additional-query-judgements.md).

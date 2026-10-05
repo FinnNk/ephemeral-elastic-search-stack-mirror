@@ -77,7 +77,12 @@ change. For example:
 The supplied file contains the rewrite, its case variant and two controls.
 Extra sets report only by default. Their separate metrics and the combined view
 are retained in the report; the standard frozen suite remains required.
-An unlabelled set reports overlap and ordering, with relevance shown as unavailable.
+The lab resolves missing labels from the baseline and candidates' returned
+products. It reuses reference labels and cached inference before calling the model,
+then freezes one judgement snapshot for every variant. The report shows nDCG and
+baseline deltas, label coverage, inference reuse, abstentions and errors. If nDCG
+cannot be calculated, it explains why. Unqualified model labels are marked as
+exploratory evidence.
 To require an extra set, set `required` to `true` and supply a `judgements` path
 to reviewed reference labels. Each required set passes independently. See the
 [query-set contract](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/variant-evaluation.md#add-queries-for-your-change).

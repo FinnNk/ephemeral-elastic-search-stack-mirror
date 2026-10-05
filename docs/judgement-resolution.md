@@ -246,3 +246,19 @@ cache only after confirming it contains no unique evidence you need to retain.
 
 For controller installation or upgrades that preserve the selected model, see
 [KServe installation](kserve-installation.md).
+
+## Additional source queries
+
+Source PR comparisons resolve the returned pairs for each additional query set
+automatically. Exact query bytes are registered with the judgement service;
+matching published requests reuse their reference labels. Other queries receive
+stable identities tied to the frozen file. Products come from the pinned catalogue.
+
+The coordinator freezes the resolution receipt and labels before scoring all
+variants. Report-only suites may contain unqualified model labels, clearly marked
+with their provenance. Required suites use qualified selection and still need
+an authored reference-label file. The standard frozen gate suite is unchanged.
+
+A report with no usable labels shows why nDCG cannot be calculated. A fully labelled
+set containing only Irrelevant labels also cannot establish a positive ideal gain;
+its coverage remains visible. Inference errors remain distinct from abstentions.

@@ -32,6 +32,26 @@ class QuerySetTests(unittest.TestCase):
             self.assertEqual(result['metrics']['ranker-a']['nDCG@10'], 1)
         finally:
             fixture.doCleanups()
+    def test_all_irrelevant_labels_have_coverage_but_no_ndcg(self):
+        fixture = test_offline.OfflineContractTests()
+        fixture.setUp()
+        try:
+            item = freeze(self.selection(), lambda path: self.payload())[0]
+            observations = json.loads((fixture.root / 'observations.json').read_bytes())
+            observations['query_suite_sha256'] = item['query_sha256']
+            labels = canonical({'query_id': 'q1', 'product_id': 'p1', 'grade': 0})
+            item.update(judgement_bytes=labels, judgement_sha256=test_offline.sha(labels),
+                        judgements_rows=[json.loads(labels)])
+            result = score_extra(item, observations,
+                (fixture.root / 'specification.json').read_bytes(),
+                (fixture.root / 'catalogue.json').read_bytes())
+            self.assertIsNone(result['metrics'])
+            self.assertIn('ideal gain', result['relevance_unavailable_reason'])
+            self.assertEqual(result['coverage']['ranker-a']['fraction'], 1)
+            self.assertIsNone(result['delta_from_baseline']['ranker-a']['nDCG@10'])
+        finally:
+            fixture.doCleanups()
+
     def selection(self, required=False):
         return {'additional_query_sets': [{'name': 'rewrite', 'path': 'evaluation/queries/test.jsonl',
                                          'required': required}]}

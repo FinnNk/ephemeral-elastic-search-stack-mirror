@@ -134,7 +134,7 @@ def resolve(observations, specification, source_rows, products, infer, batch_siz
                 if 'confidence' in outcome:
                     receipt['confidence'] = outcome['confidence']
             elif state == 'abstain':
-                pass
+                receipt['detail'] = str(outcome.get('detail', 'model_abstained'))[:120]
             elif state == 'error':
                 receipt['detail'] = str(outcome.get('detail', 'inference_error'))[:120]
             else:

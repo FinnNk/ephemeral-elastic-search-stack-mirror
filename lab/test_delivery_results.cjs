@@ -33,7 +33,14 @@ const {chromium}=require('playwright');
  assert.equal(await page.getByRole('cell',{name:'ranker-a vs baseline',exact:true}).count(),3);
  assert.equal(await page.getByRole('cell',{name:'baseline vs baseline',exact:true}).count(),0);
  assert.equal(await page.getByRole('columnheader',{name:'RBO@10 (p = 0.9)',exact:true}).count(),3);
- assert.ok(!(await page.locator('#content').innerText()).includes('Not available'));
+ assert.ok((await page.locator('#content').innerText()).includes('no usable judgement snapshot'));
+ assert.equal(await page.getByRole('columnheader',{name:'nDCG@10',exact:true}).count(),3);
+ // New resolution receipts explain why a score cannot be calculated.
+ const resolved={...extra,relevance_unavailable_reason:'All model responses abstained.',delta_from_baseline:{'ranker-a':{'nDCG@10':null,'nDCG@5':null}},judgement_resolution:{counts:{pool:{required:6,stored:0,newly_labelled:0,abstained:6,failed:0}},execution:{stored_pairs:0,cache_hits:0,inferred_pairs:6}}};
+ report={...standard,query_sets:{standard,sneakers:resolved},query_set_metadata:{standard:{required:true},sneakers:{required:false}}};
+ await page.goto(url+'/report');await page.getByRole('heading',{name:'sneakers — judgement resolution',exact:true}).waitFor();
+ assert.ok((await page.locator('#content').innerText()).includes('Not calculable: All model responses abstained.'));
+ assert.ok((await page.locator('#content').innerText()).includes('Pairs sent to the model'));
  // Each candidate has its own comparison against the named baseline.
  report={...standard,variants:{...standard.variants,'ranker-b':{}},metrics:{...standard.metrics,'ranker-b':{'nDCG@10':.69}},result_changes:{...standard.result_changes,'ranker-b':{changed_queries:10}},result_similarity:{...standard.result_similarity,'ranker-b':{rbo_at_10_p_0_9:.9,jaccard_at_10:.95}}};
  await page.goto(url+'/report');await page.getByRole('cell',{name:'ranker-b vs baseline',exact:true}).waitFor();

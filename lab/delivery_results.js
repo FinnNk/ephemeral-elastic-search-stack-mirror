@@ -16,10 +16,16 @@ function table(parent,headers,rows){const wrap=node('div',null,parent);wrap.clas
 function identity(values){$('identity').replaceChildren();for(const [key,value] of Object.entries(values)){if(value==null||typeof value==='object')continue;node('dt',label(key),$('identity'));node('dd',String(value),$('identity'))}}
 function summary(report,title,required,baseline=report.baseline_variant){
  const s=section(title,(report.query_count==null?'':fmt(report.query_count)+' queries. ')+(required==null?'':required?'Required by the gate.':'Report only.'));
- if(report.relevance_query_count!=null)node('p','Relevance scores cover '+fmt(report.relevance_query_count)+' queries; '+fmt(report.unlabelled_query_count)+' queries have no reference scores.',s);
+ if(report.relevance_query_count!=null)node('p','Relevance scores cover '+fmt(report.relevance_query_count)+' queries; '+fmt(report.unlabelled_query_count)+' queries are excluded from quality scores.',s);
  const metrics=report.metrics||{}, keys=[...new Set(Object.values(metrics).flatMap(m=>Object.keys(m||{}).filter(k=>typeof m[k]==='number'&&k!=='Judged@10')))];
  const variants=Object.keys(report.variants||metrics||{}), similarity=report.result_similarity||{};
- if(keys.length)table(s,['Variant',...keys.map(label)],variants.map(v=>[v,...keys.map(k=>fmt(metrics[v]?.[k]))]));
+ if(report.metrics===null&&!report.relevance_unavailable_reason)node('p','Relevance scores are unavailable: this frozen report has no usable judgement snapshot.',s);
+ if(!keys.length)keys.push('nDCG@5','nDCG@10');
+ table(s,['Variant',...keys.map(label)],variants.map(v=>[v,...keys.map(k=>metrics[v]?.[k]==null?'Not calculable':fmt(metrics[v][k]))]));
+ const deltas=report.delta_from_baseline||{};
+ if(Object.keys(deltas).length)table(s,['Variant vs baseline','nDCG@5 change','nDCG@10 change'],Object.entries(deltas).map(([v,m])=>[v+' vs '+baseline,m['nDCG@5']==null?'Not calculable':fmt(m['nDCG@5']),m['nDCG@10']==null?'Not calculable':fmt(m['nDCG@10'])]));
+ if(report.relevance_unavailable_reason)node('p','Not calculable: '+report.relevance_unavailable_reason,s);
+ if(report.judgement_resolution){const r=report.judgement_resolution,e=r.execution||{},c=r.counts.pool;const j=section(title+' — judgement resolution');table(j,['Measure','Count'],[['Pairs in the result union',fmt(c.required)],['Supplied labels reused',fmt(c.stored)],['Stored API labels reused',fmt(e.stored_pairs)],['Cached outcomes reused',fmt(e.cache_hits)],['Pairs sent to the model',fmt(e.inferred_pairs)],['Resolved labels',fmt(c.newly_labelled)],['Abstentions or ineligible predictions',fmt(c.abstained)],['Errors',fmt(c.failed)],['API requests without a response',fmt(e.response_errors||0)]]);node('p','One frozen judgement snapshot scores every variant. Model labels remain distinct from reference labels.',j);}
  const candidates=Object.keys(similarity).filter(v=>v!==baseline);
  if(candidates.length){
   node('h3','Results compared with '+baseline,s);
@@ -28,6 +34,7 @@ function summary(report,title,required,baseline=report.baseline_variant){
  }
  if(!keys.length)node('p','Relevance scores are unavailable for this set. Result overlap can still show whether the searches changed.',s);
 
+ if(report.unqualified_judgements>0)node('p',fmt(report.unqualified_judgements)+' model labels have unqualified accuracy. These scores are exploratory evidence.',s);
  const coverage=report.coverage||report.judgement_coverage;
  if(coverage){const c=section(title+' — judgement coverage');table(c,['Variant','Judged coverage','Labelled results','Returned results'],Object.entries(coverage).map(([v,x])=>[v,pct(x.fraction),fmt(x.judged),fmt(x.returned)]));}
  else if(Object.values(metrics).some(m=>m?.['Judged@10']!=null)){const c=section(title+' — judgement coverage');table(c,['Variant','Judged@10'],Object.entries(metrics).map(([v,m])=>[v,pct(m['Judged@10'])]));}

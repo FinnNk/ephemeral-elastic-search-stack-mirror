@@ -96,12 +96,12 @@ def combine(reports, requests_by_suite):
     variants = reports['standard']['variants']
     metrics = {}
     similarities = {}
-    labelled_cases = sum(r['query_count'] for r in reports.values() if r.get('relevance_available', True))
+    labelled_cases = sum(r.get('relevance_query_count', r['query_count']) for r in reports.values() if r.get('relevance_available', True))
     total = sum(r['query_count'] for r in reports.values())
     for variant in variants:
         names = reports['standard']['metrics'][variant]
         metrics[variant] = {metric: round(sum(
-            report['metrics'][variant][metric] * report['query_count']
+            report['metrics'][variant][metric] * report.get('relevance_query_count', report['query_count'])
             for report in reports.values() if report.get('relevance_available', True)) / labelled_cases, 6)
             if labelled_cases else None for metric in names}
         similarities[variant] = {metric: round(sum(
@@ -158,27 +158,50 @@ def score_extra(item, observations, specification_bytes, catalogue_manifest_byte
         for variant in variants}
     for value in changes.values():
         value['fraction'] = round(value['changed_queries'] / len(item['queries']), 6)
-    if not item['judgements_rows']:
+    labelled = {(row['query_id'], row['product_id']) for row in item['judgements_rows']}
+    positive_queries = {row['query_id'] for row in item['judgements_rows'] if row['grade'] > 0}
+    resolution = item.get('judgement_resolution')
+    coverage = {}
+    for name in variants:
+        returned = [(row['query_id'], pid) for row in observations['observations']
+                    for pid in row['results'][name]['ids']]
+        judged = sum(pair in labelled for pair in returned)
+        coverage[name] = {'judged': judged, 'returned': len(returned),
+                          'fraction': round(judged / len(returned), 6) if returned else None}
+    reason = None
+    if not any(c['returned'] for c in coverage.values()):
+        reason = 'No products were returned by any variant.'
+    elif not item['judgements_rows']:
+        reason = ('No judgements were supplied or requested.' if resolution is None else
+                  'No usable labels: all resolution outcomes were abstentions, errors or ineligible predictions.')
+    elif not positive_queries:
+        reason = 'No positive relevance labels: nDCG has no non-zero ideal gain.'
+    if reason:
         return {'kind': 'variant-evaluation-report', 'schema_version': 1, 'complete': True,
                 'variants': variants, 'default_variant': observations['default_variant'],
                 'baseline_variant': baseline, 'query_count': len(item['queries']),
                 'catalogue_sha256': observations['catalogue_sha256'],
                 'query_suite_sha256': item['query_sha256'], 'observation_sha256': sha(canonical(observations)),
                 'relevance_available': False, 'metrics': None,
-                'execution': observations.get('execution'),
-                'coverage': {name: {'judged': 0, 'returned': sum(len(row['results'][name]['ids'])
-                                                            for row in observations['observations']),
-                                    'fraction': 0.0} for name in variants},
-                'result_changes': changes, 'result_similarity': summarise(observations, baseline)}
+                'delta_from_baseline': {v: {'nDCG@5': None, 'nDCG@10': None} for v in variants if v != baseline},
+                'relevance_unavailable_reason': reason, 'relevance_query_count': 0,
+                'unlabelled_query_count': len(item['queries']),
+                'judgement_resolution': resolution, 'execution': observations.get('execution'),
+                'coverage': coverage, 'result_changes': changes,
+                'result_similarity': summarise(observations, baseline)}
     manifest = {'kind': 'judgement-set', 'schema_version': 1,
                 'record_count': len(item['judgements_rows']),
                 'content': {'sha256': item['judgement_sha256']},
                 'dependencies': {'catalogue': observations['catalogue_sha256'],
                                  'query-suite': item['query_sha256']},
-                'producer': {'selection': 'gate', 'rubric': 'esci-v1'}}
+                'producer': {'selection': item.get('judgement_selection', 'gate'), 'rubric': 'esci-v1'}}
+    # Exclude cases without positive references from quality averages; disclose
+    # their coverage separately instead of making unknown quality look like zero.
+    scored_observations = {**observations, 'observations': [r for r in observations['observations']
+                                                          if r['query_id'] in positive_queries]}
     with tempfile.TemporaryDirectory() as directory:
         folder = Path(directory)
-        contents = {'observations': canonical(observations), 'judgements': item['judgement_bytes'],
+        contents = {'observations': canonical(scored_observations), 'judgements': item['judgement_bytes'],
                     'specification': specification_bytes, 'catalogue': catalogue_manifest_bytes,
                     'queries': canonical({'kind': 'query-suite', 'content': {'sha256': item['query_sha256']}}),
                     'manifest': canonical(manifest)}
@@ -186,4 +209,9 @@ def score_extra(item, observations, specification_bytes, catalogue_manifest_byte
             (folder / name).write_bytes(payload)
         result = evaluate(*(folder / name for name in (
             'observations', 'judgements', 'specification', 'catalogue', 'queries', 'manifest')))
-    return {**result, 'relevance_available': True}
+    result['coverage'] = coverage
+    return {**result, 'query_count': len(item['queries']), 'relevance_query_count': len(positive_queries),
+            'unlabelled_query_count': len(item['queries']) - len(positive_queries),
+            'observation_sha256': sha(canonical(observations)), 'result_changes': changes,
+            'result_similarity': summarise(observations, baseline),
+            'judgement_resolution': resolution, 'relevance_available': True}

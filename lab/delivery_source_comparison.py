@@ -24,6 +24,7 @@ from preview_routes import url
 
 sys.path[:0] = [str(ROOT / 'evaluation'), str(ROOT / 'lab/search-app')]
 from offline import evaluate  # noqa: E402
+from additional_judgements import resolve_extra
 from query_sets import assemble, freeze, score_extra  # noqa: E402
 from delivery.ci.relevance_scope import classify  # noqa: E402
 
@@ -219,8 +220,13 @@ def compare(request, progress, operation_id):
             (folder / name).write_bytes(payload)
         standard = evaluate(*(folder / name for name in (
             'observations', 'judgements', 'specification', 'catalogue', 'queries', 'manifest')))
-    extra_reports = {item['name']: score_extra(item, capture(item['query_bytes'], item['name']),
-        spec_bytes, canonical(inputs['catalogue'])) for item in extra}
+    extra_reports = {}
+    for index, item in enumerate(extra):
+        extra_observations = capture(item['query_bytes'], item['name'])
+        progress('Resolving judgement gaps: ' + item['name'])
+        extra[index] = resolve_extra(item, extra_observations, spec_bytes, inputs['catalogue'], retain_input)
+        extra_reports[item['name']] = score_extra(extra[index], extra_observations,
+            spec_bytes, canonical(inputs['catalogue']))
     report = assemble(standard, extra_reports, extra, inputs['queries'], selection)
     report['source_context'] = {'source_sha': revision, 'baseline_sha': baseline_receipt['source_sha'],
                                 'pr': number, 'build_run': candidate_run}
@@ -230,7 +236,8 @@ def compare(request, progress, operation_id):
         'observations': captured, 'additional_query_sets': {item['name']: {
             'queries': retain_input(item['query_bytes'], 'queries.jsonl'),
             'judgements': retain_input(item['judgement_bytes'], 'judgements.jsonl')
-                if item.get('judgement_bytes') else None} for item in extra}}
+                if item.get('judgement_bytes') else None,
+            'resolution': item['resolved_references']['resolution']} for item in extra}}
     report_bytes = canonical(report)
     report_sha = sha(report_bytes)
     blob = immutable_blob('runs', report_sha + '/variant-evaluation-report.json', report_bytes)

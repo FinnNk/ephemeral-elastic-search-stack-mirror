@@ -101,9 +101,18 @@ that file. The coordinator reads and freezes the files from the exact PR commit.
 Each suite sends fresh requests, including requests repeated in another suite.
 
 The report contains separate suites and a combined view. Combined scores give
-each query case equal weight and disclose repeated requests. Relevance scores
-include only labelled suites; unlabelled suites still report result overlap,
-order and unknown coverage. The combined view never decides the gate.
+each scored query case equal weight and disclose repeated requests.
+
+The judgement API resolves missing query/product pairs from the union of
+all variants' results. It reuses stored reference labels, predictions and
+abstentions before calling the pinned model. Every variant is scored against
+one frozen judgement snapshot. Supplied reference-label files take precedence.
+
+Quality averages include only additional query cases with positive relevance
+labels. Cases without positive labels have no calculable nDCG and are disclosed
+separately. Result overlap and coverage still include every query. The report
+shows model calls, reused outcomes, labels, abstentions and errors alongside
+nDCG and its change from the baseline. The combined view never decides the gate.
 
 Extra suites report only by default. To require one, set `required` to `true`
 and provide `judgements`, the path to its matching reference-label JSONL file.
