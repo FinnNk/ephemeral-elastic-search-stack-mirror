@@ -23,6 +23,16 @@ Install the accepted decision flow and complete one human-reviewed bounded excep
 6. Verify missing approval and changed source/report/policy cannot pass. Confirm a retry cannot merge or issue a different receipt for the same variant.
 7. Retain an evidence record with revisions, hashes, observed results and limitations. Update the roadmap and resume the [workstation rehearsal](remote-delivery-user-check.md).
 
+## Installed runtime
+
+The accepted lab and source revisions are installed. The control smoke check
+passed, all four containers use the accepted image, and the deployment and
+state volume identities are unchanged. See the [activation evidence](../research/evidence/relevance-decision-activation.md).
+
+The next step is the user's workstation walkthrough. A real bounded-regression
+decision still needs the human's reason and review; no exception was created
+during installation.
+
 ## References
 
 - [Implementation plan](relevance-decision-records.md)

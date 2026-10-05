@@ -78,8 +78,10 @@ def install():
         source_api(endpoint(SOURCE, '/actions/variables/' + name), 'PUT' if name in existing else 'POST', {'value': value})
     # Signing belongs to the coordinator. Source workflows receive only the
     # delivery client credential and their existing release publishing credential.
+    existing_secrets = {row['name'] for row in source_api(endpoint(SOURCE, '/actions/secrets'))}
     for name in ('LAB_VARIANT_EVIDENCE_KEY', 'LAB_VARIANT_APPROVAL_KEY'):
-        source_api(endpoint(SOURCE, '/actions/secrets/' + name), 'DELETE')
+        if name in existing_secrets:
+            source_api(endpoint(SOURCE, '/actions/secrets/' + name), 'DELETE')
     k('rollout', 'status', 'deployment/lab-control', '-n', 'lab-control', '--timeout=240s')
     print('Remote delivery authentication configured. Run ci/lab_delivery.py login to sign in.')
 

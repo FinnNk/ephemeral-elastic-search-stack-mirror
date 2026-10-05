@@ -3,6 +3,10 @@
 Take the next accepted search change through Actions and reviewed deployments.
 Use the installed remote commands; the developer needs no kubeconfig.
 
+The previous `trainers` rewrite is already on source main. Use a fresh related
+phrase, such as `gym trainers`, for the next change. Keep the deployed rewrite
+and begin by checking the user's clean checkout and pulling accepted main.
+
 ## Constraints
 
 - Complete the workstation sign-in with the user's own lab identity. Do not

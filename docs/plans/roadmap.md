@@ -21,7 +21,8 @@ See the [activation evidence](../research/evidence/walkthrough-activation.md).
 | Adaptive pacing | Eight workers; fresh 1,000-query captures and bounded transient recovery checked | Retain fresh requests and diagnostics; Gatling unchanged |
 | Provider selection and byte pins | Checked against Gitea receipts and fresh Windows checkout bytes | Retain exact source/client/policy pins during activation |
 | Actions delivery and documentation | Installed; preview, verification, promotion/rollback proposals and signed gate rechecks exercised | Review the bootstrap corrections found during activation |
-| Durable relevance decisions | Implemented in review branch; activation follows acceptance | Review the [decision batch](relevance-decision-records.md), then install the accepted control/source revisions |
+| Durable relevance decisions | Accepted and installed; runtime files and protected pins verified | Rehearse a fresh human-reviewed decision using the [activation plan](relevance-decision-activation.md) |
+| GitHub backup | Native push-mirror setup in progress | Preserve existing GitHub history and resolve protection before the first mirror push |
 | Developer workstation rehearsal | [Next detailed plan](remote-delivery-user-check.md) | Complete device sign-in and a fresh human-approved deployment through Actions |
 
 Source PR 27 passed release CI and the installed relevance gate after a fresh
@@ -73,5 +74,6 @@ model accuracy or a percentile target.
 - [HTTPS OCI transport](https-oci-transport.md)
 
 Work on a branch, commit the batch and open a PR. Update this roadmap and the
-next detailed plan before review. Merge only after human acceptance. GitHub
-backup review batches remain separate from primary Gitea acceptance.
+next detailed plan before review. Merge only after human acceptance. Gitea owns
+review and acceptance. Native GitHub mirroring will replace separate backup PRs
+once its setup is verified.
