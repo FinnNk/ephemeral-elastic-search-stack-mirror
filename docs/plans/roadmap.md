@@ -231,3 +231,12 @@ the [production walkthrough](production-release-walkthrough.md#production-load-r
 through the unchanged full gate and reviewed route switch. Queue visibility,
 idempotency, live logs, failure evidence and resource visibility are recorded in
 the [walkthrough feedback](walkthrough-feedback.md).
+
+### Walkthrough feedback completion
+
+The queue, logs, release diagnostics, evaluator boundary and focused workflow
+changes are ready for review in the [completion batch](walkthrough-feedback-completion.md).
+A separate source batch restores search telemetry for new releases. The judgement
+APIs now use the ready abstaining v1 predictor. Next: accept the batches, activate
+when the coordinator is idle, then verify a fresh instrumented preview and resume
+the production resource investigation without relaxing its gate.

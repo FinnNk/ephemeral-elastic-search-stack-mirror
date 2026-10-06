@@ -110,9 +110,9 @@ A gate update requires review and protected policy/code pin updates after mergin
 For a `decision_required` result, open **Accept relevance regression** beside
 the source PR report. A human lab administrator chooses the variant and records
 the reason. Review and approve the resulting `delivery-state` decision PR as
-its named reviewer, then run **Actions → Lab delivery → merge-exception** with
+its named reviewer, then run **Actions → Advanced delivery → merge-exception** with
 that PR number. The coordinator merges the reviewed decision and rechecks the
-source gate. A direct human merge is also processed. No `kubectl` command is needed.
+source gate. Only the coordinator merges approved delivery-state changes. No `kubectl` command is needed.
 
 The decision file and PR approval remain in Git. Its signed receipt names the
 report, source commit, policy, selection, variant, reviewer and decision merge

@@ -28,7 +28,8 @@ class RelevanceProtectionTests(unittest.TestCase):
                    'gate/evaluation.json': 'lab/delivery/bootstrap/gate/evaluation.json',
                    'ci/variant_gate.py': 'lab/variant_gate.py',
                    'gate/policy.json': 'lab/delivery/policies/variant-merge-v1.json'}
-        path = mapping.get(source_path, 'lab/delivery/' + source_path)
+        path = ('lab/delivery/workflows/' + source_path.rsplit('/', 1)[1] if source_path.startswith('.github/workflows/')
+                else mapping.get(source_path, 'lab/delivery/' + source_path))
         return (setup.ROOT / path).read_text(encoding='utf-8').strip()
 
     def test_unaccepted_source_does_not_change_protection(self):

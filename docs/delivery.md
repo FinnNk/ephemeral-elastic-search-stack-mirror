@@ -53,8 +53,8 @@ preserves stricter existing rules. Deployment proposals require a separate revie
 
 ## Preview or compare manually
 
-In `delivery-source` → **Actions** → **Lab delivery** → **Run workflow**, select
-**main** and choose `preview` or `compare`. Supply the successful build run ID
+In `delivery-source` → **Actions**, choose **Create preview** or **Compare builds**,
+then **Run workflow** on **main**. Supply the successful build run ID
 from its `/actions/runs/<id>` URL; compare also needs a baseline run.
 
 The workflow prints a durable progress URL and releases the runner. Follow that
@@ -85,17 +85,18 @@ Both paths call the same coordinator; neither requires kubectl.
 The three targets share one cluster. They are separate deployment namespaces,
 not separate failure domains or performance-isolated systems.
 
-1. Run **Lab delivery** on **main** with `propose-promotion`. Enter the successful
-   merged-source run ID, target `integration`, frozen dataset and intent.
+1. Run **Promote to integration** on **main**. Enter the successful merged-source
+   build number and change intent. The lab uses `esci-gb-v1`.
 2. Follow the operation to its `delivery-state` PR. The coordinator first
    evaluates the candidate against the target, then proposes the pinned release.
    A failed evaluation cannot create a valid promotion.
 3. Review the evidence and wait for `delivery/validation`. A permitted reviewer
    must approve the exact PR head. Approval does not deploy it.
-4. Run **Lab delivery** with `merge-reviewed` and that **desired-state PR number**.
+4. Run **Deploy approved promotion** with that **desired-state PR number**.
    The coordinator rechecks the proposal and approval, merges it, then waits for
    Argo CD and the public API. The operation must finish with `state: verified`.
-5. Repeat for `staging` using the **same merged build** and frozen inputs.
+5. Run **Promote to staging**, then repeat review and deployment using the
+   **same merged build** and frozen inputs.
    Each preceding target must be verified first. No image is rebuilt.
 6. Use the [production release UI](https://control.localhost:34443/production-release)
    for the final release, as described below.
@@ -169,7 +170,7 @@ The Actions steps below apply to integration and staging.
 1. Find the previous verified fingerprint under
    `delivery-state/history/<target>/`. Its retained definition pins the old
    image, configuration, inputs and index recipe.
-2. Run **Lab delivery** with `propose-rollback`, the target, fingerprint and intent.
+2. Run **Request rollback** with the target, fingerprint and intent.
    The coordinator evaluates **current → previous** and creates a new PR.
    Reversing an old report is insufficient. Production rollback uses the full
    `production-load` profile too.
@@ -195,3 +196,32 @@ replace provider-specific repository/run/PR/status calls, and configure runner
 credentials and protection. Local Gitea execution does not establish GHES compatibility.
 See [dated delivery evidence](research/evidence/promotion-deployment.md) and
 [remaining native/cloud checks](plans/native-cloud-validation.md).
+
+## Follow queued and running work
+
+The production release page lists queued and active delivery work. Submission
+feedback appears beside the button used. Repeated candidate preparation for the
+same verified staging release and active production reuses its operation and PR,
+including from another browser tab. Refresh before preparing a changed release.
+
+The progress page shows the queue position and the active blocker. Expand
+**Live logs** for timestamped steps and operation results. **Pause** stops log
+updates and scrolling; **Resume** continues from the same cursor. Only bounded,
+operation-scoped messages are shown; raw subprocess output is kept out of this
+view. Missing logs do not prevent status or report access.
+
+During a Gatling check, live driver counters show the side, phase, completed
+requests, failures and mean latency. These are provisional. Job elapsed time
+includes startup; planned traffic time does not. The retained report supplies
+the gate's workload validity, percentiles and outcome. A failed check links its
+evidence and identifies a missed side, phase and threshold when available.
+An incomplete driver run cannot satisfy the gate.
+
+Humans approve delivery-state PRs but cannot directly merge them. Use **Deploy
+approved promotion** or the production release UI. Only the coordinator may
+merge to delivery-state main after revalidation; source PRs use normal merging.
+
+The live Gatling panel links to SigNoz with the tested search environment and
+the sampled run interval selected. Search panels use that environment filter;
+operation panels remain lab-wide. Apply the reviewed dashboard definition when
+activating this batch. No data is not evidence that a check passed.

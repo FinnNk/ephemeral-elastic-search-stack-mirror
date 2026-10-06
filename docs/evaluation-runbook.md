@@ -95,7 +95,7 @@ The command prints the retained executed-notebook reference. This saved analysis
 
    The publisher verifies the exact receipt and reads back the stored bytes. A conflict means existing frozen evidence differs; investigate instead of replacing it. Signing confirms provenance, not relevance quality.
 4. Run `python ci/lab_delivery.py gate-check --pr PR_NUMBER --source-sha SOURCE_SHA`
-   from `delivery-source`, or choose `gate-check` in **Lab delivery**.
+   from `delivery-source`, or choose `gate-check` in **Advanced delivery**.
    Use the unchanged PR's number and exact commit. A new commit requires its own build and evidence. A later build attempt can have another image; the attested receipt identifies the evaluated one.
 
 ## Human exceptions

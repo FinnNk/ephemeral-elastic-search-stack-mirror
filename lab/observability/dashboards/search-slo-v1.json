@@ -144,7 +144,7 @@
             "kind": "signoz/TextPanel",
             "spec": {
               "mode": "markdown",
-              "text": "**No data is unknown, not healthy.** Check the eligible count and at least 100 normal requests before interpreting search percentages. The current time picker sets the calculation window; the policy window is 7 days, with 99% success and 95% responsiveness targets. A missing or partial collection interval cannot be treated as good.\n\nThe charts show per-interval increases. Negative remaining budget means the interval exceeded its allowance. Inspect the same service, cohort and time in Traces and Logs, then open the immutable run report for the promotion decision.",
+              "text": "**No data is unknown, not healthy.** An instrumented service with no requests has no activity. A release without the OTLP endpoint exports no search metrics. Check the environment, time window and collector before interpreting an empty panel. Check the eligible count and at least 100 normal requests before interpreting search percentages. The current time picker sets the calculation window; the policy window is 7 days, with 99% success and 95% responsiveness targets. A missing or partial collection interval cannot be treated as good.\n\nThe charts show per-interval increases. Negative remaining budget means the interval exceeded its allowance. Inspect the same service, cohort and time in Traces and Logs, then open the immutable run report for the promotion decision.",
               "presentation": {
                 "textAlign": "left",
                 "verticalAlign": "top"
@@ -198,7 +198,7 @@
                           "disabled": false,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -258,7 +258,7 @@
                           "disabled": false,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -318,7 +318,7 @@
                           "disabled": false,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -378,7 +378,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -397,7 +397,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -465,7 +465,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -484,7 +484,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -552,7 +552,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -571,7 +571,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -639,7 +639,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -658,7 +658,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -726,7 +726,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -745,7 +745,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -813,7 +813,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -832,7 +832,7 @@
                           "disabled": true,
                           "stepInterval": 60,
                           "filter": {
-                            "expression": "lab.traffic_class = 'normal'"
+                            "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
@@ -1054,6 +1054,25 @@
         }
       }
     },
-    "variables": []
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "environment",
+          "display": {
+            "name": "Search environment"
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "deployment.environment.name",
+              "signal": "metrics"
+            }
+          }
+        }
+      }
+    ]
   }
 }

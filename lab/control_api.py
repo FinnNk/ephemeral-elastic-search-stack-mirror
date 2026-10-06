@@ -139,6 +139,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(401, {'error': 'Sign in to the lab.'})
         if parts == ['api', 'me']:
             return self.send_json(200, {key: value for key, value in identity.items() if key != 'expires_at'})
+        if parts == ['api', 'delivery', 'operations']:
+            from delivery_operations import Operations
+            return self.send_json(200, {'operations': [row for row in Operations().active() if self.visible(row, identity)]})
         if parts[:3] == ['api', 'delivery', 'operations'] and len(parts) in (4, 5, 6):
             from delivery_operations import Operations
             row = Operations().get(parts[3])
@@ -147,7 +150,17 @@ class Handler(BaseHTTPRequestHandler):
             if not self.visible(row, identity):
                 return self.send_json(403, {'error': 'Delivery operation belongs to another owner.'})
             if len(parts) == 4:
+                blocker = (row.get('queue') or {}).get('blocker')
+                if blocker and not self.visible(Operations().get(blocker['id']), identity):
+                    row['queue']['blocker'] = {'id': None, 'progress': 'Another delivery operation is active'}
                 return self.send_json(200, row)
+            if len(parts) == 5 and parts[4] == 'logs':
+                try:
+                    after = int(query.get('after', ['0'])[0])
+                    if not 0 <= after <= 2**63-1: raise ValueError()
+                except ValueError:
+                    return self.send_json(400, {'error': 'Invalid log cursor.'})
+                return self.send_json(200, {'logs': Operations().logs(row['id'], after)})
             if parts[4] == 'report' and (row.get('result') or {}).get('report'):
                 reference = row['result']['report']
                 container, name = reference['blob'].split('/', 1)
@@ -316,6 +329,8 @@ class Handler(BaseHTTPRequestHandler):
                 from delivery_operations import Operations
                 store = Operations()
                 row = store.submit(payload, identity, self.headers.get('Idempotency-Key'))
+                if not self.visible(row, identity):
+                    return self.send_json(403, {'error': 'Existing delivery operation belongs to another owner.'})
                 if payload.get('pr') and row['state'] == 'accepted':
                     from delivery_source_comparison import status
                     status(payload['source_sha'], 'pending', row['progress'], row['id'])

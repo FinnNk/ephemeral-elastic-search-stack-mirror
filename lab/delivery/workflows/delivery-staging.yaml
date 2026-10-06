@@ -1,28 +1,17 @@
-name: Advanced delivery
+name: Promote to staging
 'on':
   workflow_dispatch:
     inputs:
-      operation:
-        description: Operation
+      run:
+        description: Successful build number
+        type: string
         required: true
+      intent:
+        description: Change intent
         type: choice
         options:
-        - verify
-        - gate-check
-        - merge-exception
-      pr:
-        description: Desired-state PR (merge-reviewed or merge-exception) or source PR (gate-check)
-        type: string
-      source_sha:
-        description: Exact source commit (gate-check only)
-        type: string
-      target:
-        description: Promotion target
-        type: choice
-        options:
-        - integration
-        - staging
-        - production
+        - ranking-change
+        - preserve-results
         required: true
 permissions:
   contents: read
@@ -49,14 +38,14 @@ jobs:
         git checkout --detach "$SOURCE_SHA"
     - name: Run the selected operation
       env:
-        OPERATION: ${{ inputs.operation }}
-        BUILD_RUN: ''
+        OPERATION: propose-promotion
+        BUILD_RUN: ${{ inputs.run }}
         BASELINE_RUN: ''
-        TARGET: ${{ inputs.target }}
-        INTENT: ''
+        TARGET: staging
+        INTENT: ${{ inputs.intent }}
         DATASET: esci-gb-v1
-        DELIVERY_PR: ${{ inputs.pr }}
-        SOURCE_COMMIT: ${{ inputs.source_sha }}
+        DELIVERY_PR: ''
+        SOURCE_COMMIT: ''
         FINGERPRINT: ''
         SUBMISSION_KEY: manual-${{ github.run_id }}
         LAB_DELIVERY_URL: ${{ vars.LAB_DELIVERY_URL }}

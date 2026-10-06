@@ -408,3 +408,15 @@ def view():
             'production': observed_release('production', definition), 'candidate': candidate,
             'staging': staging_release, 'slots': slots,
             'browser_url': 'https://' + NAMESPACE + '.preview.relevance.test:34443/'}
+
+
+def preparation_context():
+    """Bind repeated preparation requests to observed staging and active production."""
+    observed = view()
+    staging, production = observed.get('staging'), observed.get('production')
+    if not staging or not staging.get('verified') or not production:
+        raise ValueError('Verified staging and active production are required.')
+    from gitea import api
+    revision = api(endpoint(DESIRED, '/branches/main'))['commit']['id']
+    return {'staging': staging['fingerprint'], 'production': production['fingerprint'],
+            'active': observed.get('active'), 'desired_revision': revision}

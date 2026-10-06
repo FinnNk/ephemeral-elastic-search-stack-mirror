@@ -71,6 +71,7 @@ class Operations:
         self.path = Path(path or STATE / 'delivery-operations.sqlite3')
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS operation_logs (operation_id TEXT, sequence INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT, message TEXT)')
             db.execute('CREATE TABLE IF NOT EXISTS operations '
                        '(id TEXT PRIMARY KEY, owner TEXT, identity TEXT, request TEXT, state TEXT, '
                        'progress TEXT, result TEXT, error TEXT, created_at TEXT, updated_at TEXT)')
@@ -108,6 +109,10 @@ class Operations:
             raise ValueError('Supply a stable Idempotency-Key of 1–128 characters.')
         owner = identity.get('issuer', '') + ':' + identity.get('subject', identity['username'])
         identifier = hashlib.sha256((owner + '\n' + key).encode()).hexdigest()[:32]
+        if payload['kind'] == 'prepare-production':
+            from production_release import preparation_context
+            payload = {**payload, '_preparation_context': preparation_context()}
+            identifier = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:32]
         encoded = json.dumps(payload, sort_keys=True, separators=(',', ':'))
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -124,7 +129,32 @@ class Operations:
 
     def get(self, identifier):
         with self.connect() as db:
-            return self.row(db.execute('SELECT * FROM operations WHERE id=?', (identifier,)).fetchone())
+            row = self.row(db.execute('SELECT * FROM operations WHERE id=?', (identifier,)).fetchone())
+            if row and row['state'] == 'queued':
+                active = db.execute("SELECT id,progress FROM operations WHERE state='running' ORDER BY created_at LIMIT 1").fetchone()
+                ahead = db.execute("SELECT COUNT(*) FROM operations WHERE state='queued' AND updated_at < ?", (row['updated_at'],)).fetchone()[0]
+                row['queue'] = {'position': ahead + 1, 'blocker': dict(active) if active else None}
+            return row
+
+    def active(self):
+        """Return a bounded queue snapshot; the HTTP handler applies owner visibility."""
+        with self.connect() as db:
+            return [self.row(row) for row in db.execute(
+                "SELECT * FROM operations WHERE state IN ('accepted','queued','running') ORDER BY updated_at LIMIT 50")]
+
+    def log(self, identifier, message):
+        """Retain safe step messages and structured events, never raw subprocess output."""
+        with self.connect() as db:
+            db.execute('INSERT INTO operation_logs(operation_id,at,message) VALUES (?,?,?)',
+                       (identifier, stamp(), str(message)[:1000]))
+            db.execute('DELETE FROM operation_logs WHERE operation_id=? AND sequence NOT IN '
+                       '(SELECT sequence FROM operation_logs WHERE operation_id=? ORDER BY sequence DESC LIMIT 500)',
+                       (identifier, identifier))
+
+    def logs(self, identifier, after=0):
+        with self.connect() as db:
+            return [dict(row) for row in db.execute('SELECT sequence,at,message FROM operation_logs '
+                'WHERE operation_id=? AND sequence>? ORDER BY sequence LIMIT 100', (identifier, after))]
 
     def next(self):
         """Claim one request while the caller holds the delivery writer lock."""
@@ -158,7 +188,11 @@ def execute_next():
         return None
     identifier, request = row['id'], row['request']
     def progress(message):
+        store.log(identifier, message)
         store.update(identifier, progress=message)
+    from operation_telemetry import event_sink
+    token = event_sink.set(lambda event: store.log(identifier, json.dumps(event, sort_keys=True)))
+    store.log(identifier, 'Coordinator started this operation')
     try:
         kind = request['kind']
         options = []
@@ -168,6 +202,9 @@ def execute_next():
         if kind == 'prepare-production':
             from production_release import prepare
             progress('Creating the reviewed inactive production candidate')
+            from production_release import preparation_context
+            if request.get('_preparation_context') != preparation_context():
+                raise ValueError('Staging or production changed while this preparation was queued. Refresh and prepare again.')
             result = prepare()
         elif kind == 'release-production':
             from production_release import release
@@ -238,12 +275,18 @@ def execute_next():
         import traceback
         traceback.print_exc()
         detail = type(error).__name__
-        if request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production') and isinstance(error, ValueError):
+        if isinstance(error, ValueError) and (getattr(error, 'reference', None) or
+                request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production')):
             # Decision validation errors contain public evidence/review facts,
             # never credentials or provider response bodies.
             detail += ': ' + str(error)[:240]
-        store.update(identifier, state='failed', progress='Operation failed', error=detail)
+        failed_reference = getattr(error, 'reference', None)
+        store.log(identifier, detail)
+        store.update(identifier, state='failed', progress='Operation failed', error=detail,
+                     result={'report': failed_reference} if failed_reference else None)
         if request.get('source_sha') and request['kind'] in ('compare', 'gate-check'):
             from delivery_source_comparison import status
             status(request['source_sha'], 'failure', 'Comparison failed: ' + type(error).__name__, identifier)
+    finally:
+        event_sink.reset(token)
     return store.get(identifier)

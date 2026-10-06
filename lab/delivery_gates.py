@@ -14,6 +14,28 @@ from input_selection import DEFAULTS
 from delivery_load_policy import validate as validate_production_load
 
 
+class EvidenceFailure(ValueError):
+    """A rejected gate with retained evidence available for human inspection."""
+    def __init__(self, detail, reference):
+        super().__init__(detail)
+        self.reference = reference
+
+
+def performance_failure(report):
+    if not report.get('valid') or not report.get('same_workload') or not report.get('warmup_ready'):
+        return 'Performance execution is incomplete or invalid; inspect workload and warm-up evidence.'
+    misses = []
+    for phase, measured in report.get('measured_phases', {}).items():
+        if phase.startswith('stress-'):
+            continue
+        for side in ('baseline', 'candidate'):
+            for metric, limit in measured.get('budget', {}).items():
+                value = measured[side].get(metric)
+                if value is not None and (value >= limit if metric == 'failed_percent' else value > limit):
+                    misses.append(f'{side} {phase} {metric}: {value} (limit {limit})')
+    return 'Performance budget missed: ' + '; '.join(misses) if misses else 'Performance check failed or is incomplete.'
+
+
 def deployment_inputs(deployment):
     fields = deployment['fields']
     defaults = DEFAULTS[fields['dataset_release']]
@@ -76,7 +98,7 @@ def check_report(report, mode, baseline, candidate, intent):
         if (report.get('kind') != 'paired-api-performance' or not report.get('valid') or
                 not report.get('same_workload') or not report.get('warmup_ready') or
                 report.get('verdict') != 'within-budget' or not report.get('measured_phases')):
-            raise ValueError('Performance check failed or is incomplete.')
+            raise ValueError(performance_failure(report))
     else:
         if (report.get('mode') != mode or report.get('scope') != 'full' or not report.get('complete') or
                 not report.get('query_count') or report.get('completed_query_count') != report['query_count']):
@@ -164,6 +186,8 @@ def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):
              'reports': reports, 'previews': [first['name'], second['name']]}
     reference = retain(value, 'delivery-evidence.json')
     print('Retained evaluation reference: ' + json.dumps(reference), flush=True)
-    validate_evidence(reference, baseline['fingerprint'], candidate['fingerprint'], intent,
-                      selected)
+    try:
+        validate_evidence(reference, baseline['fingerprint'], candidate['fingerprint'], intent, selected)
+    except ValueError as error:
+        raise EvidenceFailure(str(error), reference) from error
     return reference

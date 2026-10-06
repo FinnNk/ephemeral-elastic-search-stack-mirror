@@ -90,11 +90,14 @@ existing trainers rewrite.
 
 ## Preview and promote from Actions
 
-Open **Actions** → **Lab delivery** → **Run workflow** on **main**. Choose a
-preview, comparison or promotion operation and supply its successful build run
-ID from `/actions/runs/<id>`. Follow the printed progress URL to completion.
-Promotions need a reviewed `delivery-state` PR; `merge-reviewed` checks its
-separate approval and verifies deployment. No kubectl commands are needed.
+Open **Actions** and choose **Create preview**, **Compare builds**, **Promote to
+integration** or **Promote to staging**. Select **main**, enter the successful
+build number from `/actions/runs/<id>` and follow the printed progress link.
+
+Review and approve the resulting `delivery-state` PR, then run **Deploy approved
+promotion** with that PR number. The coordinator checks approval and verifies
+deployment. **Request rollback** has its own workflow. Production release uses
+the control UI. These developer steps require no kubectl commands.
 See the [delivery guide](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/delivery.md)
 for the target sequence, production load gate and rollback.
 

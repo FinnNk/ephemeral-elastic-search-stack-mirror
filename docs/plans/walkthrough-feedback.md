@@ -96,7 +96,7 @@ the remaining developer kubectl steps. The next executable batch is
 [activation](walkthrough-activation.md), after review; earlier “next” links above
 record the sequence of completed review batches.
 
-## Deferred: comparison evaluator boundary
+## Recorded follow-up: comparison evaluator boundary
 
 Requested on 6 October 2026. Record for later implementation; do not change the
 runtime or diagram as part of this follow-up record.
@@ -141,7 +141,7 @@ Starting points: `lab/delivery_source_comparison.py`,
 `docs/diagrams/archify/relevance-sdlc.json`. Create the detailed implementation
 plan when this deferred work is scheduled.
 
-## Deferred: focused delivery workflows
+## Recorded follow-up: focused delivery workflows
 
 Requested on 6 October 2026 during the build 158 promotion walkthrough. Implement
 after the walkthrough; keep the running promotion unchanged.
@@ -173,7 +173,7 @@ supported by both Gitea and GitHub Actions, calls the shared client and publishe
 the existing progress/review links. Update delivery guides and source templates
 together. Create the detailed plan when this batch is scheduled.
 
-## Deferred: coordinator-only merges for delivery state
+## Recorded follow-up: coordinator-only merges for delivery state
 
 Requested on 6 October 2026. Implement after the walkthrough; keep the current
 promotion process unchanged.
@@ -197,7 +197,7 @@ workflow or UI. Failed validation prevents the merge, and successful deployment
 retains its verification and completion report. Document the developer steps
 and administrator configuration. Create the detailed plan when scheduled.
 
-## Deferred: live logs on the operation progress page
+## Recorded follow-up: live logs on the operation progress page
 
 Requested on 6 October 2026. Implement after the walkthrough.
 
@@ -217,7 +217,7 @@ the reader's position. The page remains usable when logs are empty or retrieval
 fails, and links to the final report remain visible. Document the progress page
 in the developer guides. Create the detailed plan when scheduled.
 
-## Deferred: visible queued work and idempotent preparation
+## Recorded follow-up: visible queued work and idempotent preparation
 
 Requested on 6 October 2026 after repeated production preparation submissions
 created PRs #21–24. Implement after the walkthrough.
@@ -238,7 +238,7 @@ browser tab, produce one preparation proposal for identical inputs. Queued work
 shows its blocker and progress link; completion and failure are visible. Retain
 the exact approval and deployment checks. Create the detailed plan when scheduled.
 
-## Deferred: release progress and resource diagnostics
+## Recorded follow-up: release progress and resource diagnostics
 
 Requested during the 6 October 2026 production walkthrough.
 
@@ -276,3 +276,25 @@ dashboard rendering as well as query responses, and show clear no-activity and
 not-instrumented states. Include trace propagation and collector connectivity in
 the new-release verification. Historical Gatling runs without exported search
 metrics cannot be backfilled as though they were instrumented.
+
+## Completion batch, 6 October
+
+The recorded follow-ups are now implemented on `codex/walkthrough-feedback-completion`
+for review. Focused workflows and delivery search telemetry also have a separate
+source-repository review batch. Activation follows acceptance; old bundles and
+retained reports stay immutable.
+
+- Queue visibility, preparation deduplication and feedback beside release buttons.
+- Coordinator-only delivery-state merges, preserving stricter reviews and checks.
+- Bounded, scoped live logs with pause/resume.
+- Provisional Gatling phase counters and retained failed evidence.
+- A comparison evaluator owns additional-suite judgement resolution and frozen
+  scoring; the pure scorer does not call external services. Recalculation mode
+  requires retained labels and makes no resolution calls. The standard suite
+  continues to use its frozen published snapshot.
+- New source releases include the missing OTLP endpoint, release/environment
+  identity and collector egress. Historical search telemetry cannot be backfilled.
+
+[Acceptance and activation plan](walkthrough-feedback-completion.md) records the
+remaining runtime checks. OpenCost assessment is included there; installation
+remains a separate proposed batch, as requested in the original feedback.

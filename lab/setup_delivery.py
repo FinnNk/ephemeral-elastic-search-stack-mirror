@@ -75,7 +75,8 @@ def seed_source(path):
     (path / '.github/workflows').mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/workflows/release.yaml', path / '.github/workflows/release.yaml')
     shutil.copyfile(ROOT / 'lab/delivery/workflows/relevance.yaml', path / '.github/workflows/relevance.yaml')
-    shutil.copyfile(ROOT / 'lab/delivery/workflows/delivery.yaml', path / '.github/workflows/delivery.yaml')
+    for workflow in (ROOT / 'lab/delivery/workflows').glob('delivery*.yaml'):
+        shutil.copyfile(workflow, path / '.github/workflows' / workflow.name)
     (path / 'contracts').mkdir(exist_ok=True)
     (path / 'gate').mkdir(exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/bootstrap/gate/evaluation.json', path / 'gate/evaluation.json')

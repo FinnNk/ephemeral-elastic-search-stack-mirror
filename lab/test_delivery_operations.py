@@ -63,6 +63,9 @@ class DeliveryOperationTests(unittest.TestCase):
                 with patch.object(client, 'bearer', return_value='fixture'):
                     row = client.submit(self.payload, key='http', wait=False)
                     self.assertEqual(row['state'], 'queued')
+                    self.store.log(row['id'], 'Safe step')
+                    self.assertEqual(client.call('/api/delivery/operations/' + row['id'] + '/logs')['logs'][0]['message'], 'Safe step')
+                    self.assertEqual(len(client.call('/api/delivery/operations')['operations']), 1)
                     self.store.update(row['id'], state='complete', result={'browser_url': 'https://preview.test'})
                     repeated = client.submit(self.payload, key='http', wait=True)
                     self.assertEqual(repeated['result']['browser_url'], 'https://preview.test')
@@ -81,6 +84,9 @@ class DeliveryOperationTests(unittest.TestCase):
                     provider.verify.return_value = {**self.identity, 'username': 'another'}
                     with self.assertRaises(error.HTTPError) as failure:
                         client.call('/api/delivery/operations/' + row['id'])
+                    self.assertEqual(failure.exception.code, 403)
+                    with self.assertRaises(error.HTTPError) as failure:
+                        client.call('/api/delivery/operations/' + row['id'] + '/logs')
                     self.assertEqual(failure.exception.code, 403)
                     raw = request.Request(client.server + '/api/delivery/operations', data=json.dumps(self.payload).encode(),
                         headers={'Content-Type': 'application/json', 'Authorization': 'Bearer fixture'})

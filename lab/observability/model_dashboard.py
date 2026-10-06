@@ -27,7 +27,8 @@ def text_panel():
         'display': {'name': 'Interpretation'},
         'plugin': {'kind': 'signoz/TextPanel', 'spec': {
             'mode': 'markdown',
-            'text': ('**No data is unknown.** The current model abstains on every gap. '
+            'text': ('**No data is unknown.** No inference calls means no activity, not a failed or healthy model. '
+                     'Check the chosen time window and collector. The bootstrap v1 model abstains on every gap. '
                      'Prediction mix, inference failures, batch latency and judged coverage '
                      'are operational signals, not relevance accuracy. The label-mix panel '
                      'has no model-labelled values until a reviewed model produces them.\n\n'

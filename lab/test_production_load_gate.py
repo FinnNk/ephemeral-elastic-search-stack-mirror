@@ -91,10 +91,12 @@ class ProductionLoadTests(unittest.TestCase):
     def test_pr_validation_rechecks_production_policy(self):
         deployment = {'fingerprint': 'C'}
         previous = {'fingerprint': 'B'}
-        proposal = {'target': 'production', 'base_revision': 'base',
+        proposal = {'kind': 'promotion', 'target': 'production', 'base_revision': 'base',
                     'expected_target': 'B', 'deployment': deployment,
                     'evidence': {}, 'intent': 'ranking-change'}
-        paths = ['proposals/p.json', 'targets/production/deployment.json',
+        slots = {'active': 'blue', 'slots': {'blue': previous, 'green': deployment}}
+        proposal.update(previous_slots=slots, slots={**slots, 'active': 'green'})
+        paths = ['targets/production/slots.json', 'proposals/p.json', 'targets/production/deployment.json',
                  'targets/production/rendered/search.yaml', 'history/production/B.json']
         def git(_repo, *args):
             if args[0] == 'rev-parse':
@@ -111,6 +113,9 @@ class ProductionLoadTests(unittest.TestCase):
              patch('delivery_promote.read_target', return_value=previous), \
              patch('delivery_promote.rendered', return_value='manifest'), \
              patch('delivery_promote.deployment_inputs', return_value={}), \
+             patch('production_release.state', return_value=slots), patch('production_release.live', return_value=slots), \
+             patch('production_release.validate_files'), patch('production_release.validate_final'), \
+             patch('delivery_gates.read', return_value={}), \
              patch('delivery_promote.validate_evidence', side_effect=ValueError('load rejected')) as gate:
             with self.assertRaisesRegex(ValueError, 'load rejected'):
                 inspect_pr(15)

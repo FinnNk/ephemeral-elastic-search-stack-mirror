@@ -63,9 +63,16 @@ def protect():
             'block_on_rejected_reviews': True, 'block_on_outdated_branch': True,
             'block_admin_merge_override': True, 'enable_status_check': True,
             'status_check_contexts': [STATUS], 'enable_approvals_whitelist': True,
-            'approvals_whitelist_username': ['finnnk', reviewer]}
+            'approvals_whitelist_username': ['finnnk', reviewer],
+            'enable_merge_whitelist': True, 'merge_whitelist_usernames': [c['agent']['username']],
+            'merge_whitelist_teams': []}
     rules = api(endpoint(DESIRED, '/branch_protections'))
-    exists = any(row['rule_name'] == 'main' for row in rules)
+    current = next((row for row in rules if row['rule_name'] == 'main'), {})
+    exists = bool(current)
+    rule = {**current, **rule,
+        'required_approvals': max(1, current.get('required_approvals', 0)),
+        'status_check_contexts': list(dict.fromkeys([*current.get('status_check_contexts', []), STATUS])),
+        'approvals_whitelist_username': list(dict.fromkeys([*current.get('approvals_whitelist_username', []), 'finnnk', reviewer]))}
     api(endpoint(DESIRED, '/branch_protections' + ('/main' if exists else '')),
         'PATCH' if exists else 'POST', rule)
 

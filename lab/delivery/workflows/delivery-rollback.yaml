@@ -1,21 +1,7 @@
-name: Advanced delivery
+name: Request rollback
 'on':
   workflow_dispatch:
     inputs:
-      operation:
-        description: Operation
-        required: true
-        type: choice
-        options:
-        - verify
-        - gate-check
-        - merge-exception
-      pr:
-        description: Desired-state PR (merge-reviewed or merge-exception) or source PR (gate-check)
-        type: string
-      source_sha:
-        description: Exact source commit (gate-check only)
-        type: string
       target:
         description: Promotion target
         type: choice
@@ -23,6 +9,17 @@ name: Advanced delivery
         - integration
         - staging
         - production
+        required: true
+      fingerprint:
+        description: Previous verified deployment fingerprint (propose-rollback only)
+        type: string
+        required: true
+      intent:
+        description: Promotion intent
+        type: choice
+        options:
+        - preserve-results
+        - ranking-change
         required: true
 permissions:
   contents: read
@@ -49,15 +46,15 @@ jobs:
         git checkout --detach "$SOURCE_SHA"
     - name: Run the selected operation
       env:
-        OPERATION: ${{ inputs.operation }}
+        OPERATION: propose-rollback
         BUILD_RUN: ''
         BASELINE_RUN: ''
         TARGET: ${{ inputs.target }}
-        INTENT: ''
+        INTENT: ${{ inputs.intent }}
         DATASET: esci-gb-v1
-        DELIVERY_PR: ${{ inputs.pr }}
-        SOURCE_COMMIT: ${{ inputs.source_sha }}
-        FINGERPRINT: ''
+        DELIVERY_PR: ''
+        SOURCE_COMMIT: ''
+        FINGERPRINT: ${{ inputs.fingerprint }}
         SUBMISSION_KEY: manual-${{ github.run_id }}
         LAB_DELIVERY_URL: ${{ vars.LAB_DELIVERY_URL }}
         LAB_OIDC_ISSUER: ${{ vars.LAB_OIDC_ISSUER }}

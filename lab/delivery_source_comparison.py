@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
-import tempfile
 import re
 import urllib.error
 from urllib.parse import quote
@@ -23,9 +22,7 @@ from variant_gate_issue import operator_key
 from preview_routes import url
 
 sys.path[:0] = [str(ROOT / 'evaluation'), str(ROOT / 'lab/search-app')]
-from offline import evaluate  # noqa: E402
-from additional_judgements import resolve_extra
-from query_sets import assemble, freeze, score_extra  # noqa: E402
+from query_sets import freeze  # noqa: E402
 from delivery.ci.relevance_scope import classify  # noqa: E402
 
 STATUS = 'relevance-lab/merge-gate'
@@ -205,29 +202,19 @@ def compare(request, progress, operation_id):
         return value
     query_bytes = retained_bytes(inputs['query_manifest'])
     observations = capture(query_bytes, 'standard')
-    with tempfile.TemporaryDirectory() as directory:
-        folder = Path(directory)
-        values = {'observations': canonical(observations), 'judgements': retained_bytes(inputs['judgement_manifest']),
-                  'specification': spec_bytes, 'catalogue': canonical(inputs['catalogue']),
-                  'queries': canonical(inputs['query_manifest']), 'manifest': canonical(inputs['judgement_manifest'])}
-        # Preserve the original judgement manifest identity rather than re-encode it.
-        content = service().get_blob_client(settings()[1], 'manifests/judgement-set/' +
-                    inputs['judgement_manifest_sha256'] + '.json').download_blob().readall()
-        if sha(content) != inputs['judgement_manifest_sha256']:
-            raise ValueError('Frozen judgement manifest differs.')
-        values['manifest'] = content
-        for name, payload in values.items():
-            (folder / name).write_bytes(payload)
-        standard = evaluate(*(folder / name for name in (
-            'observations', 'judgements', 'specification', 'catalogue', 'queries', 'manifest')))
-    extra_reports = {}
-    for index, item in enumerate(extra):
-        extra_observations = capture(item['query_bytes'], item['name'])
-        progress('Resolving judgement gaps: ' + item['name'])
-        extra[index] = resolve_extra(item, extra_observations, spec_bytes, inputs['catalogue'], retain_input)
-        extra_reports[item['name']] = score_extra(extra[index], extra_observations,
-            spec_bytes, canonical(inputs['catalogue']))
-    report = assemble(standard, extra_reports, extra, inputs['queries'], selection)
+    values = {'observations': canonical(observations), 'judgements': retained_bytes(inputs['judgement_manifest']),
+              'specification': spec_bytes, 'catalogue': canonical(inputs['catalogue']),
+              'queries': canonical(inputs['query_manifest'])}
+    content = service().get_blob_client(settings()[1], 'manifests/judgement-set/' +
+                inputs['judgement_manifest_sha256'] + '.json').download_blob().readall()
+    if sha(content) != inputs['judgement_manifest_sha256']:
+        raise ValueError('Frozen judgement manifest differs.')
+    values['manifest'] = content
+    extra_observations = {item['name']: capture(item['query_bytes'], item['name']) for item in extra}
+    from comparison_evaluator import evaluate_comparison
+    progress('Evaluating the captured comparison')
+    report, extra = evaluate_comparison(values, extra_observations, extra, inputs['catalogue'],
+        spec_bytes, inputs['queries'], selection, retain_input, progress)
     report['source_context'] = {'source_sha': revision, 'baseline_sha': baseline_receipt['source_sha'],
                                 'pr': number, 'build_run': candidate_run}
     report['frozen_inputs'] = {'selection': retain_input(selection_bytes, 'selection.json'),

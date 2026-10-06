@@ -18,6 +18,8 @@ def install():
         'ci/variant_gate.py': ROOT / 'lab/variant_gate.py',
         'gate/policy.json': ROOT / 'lab/delivery/policies/variant-merge-v1.json',
     }
+    files.update({'.github/workflows/' + workflow.name: workflow
+        for workflow in (ROOT / 'lab/delivery/workflows').glob('delivery*.yaml')})
     for name, expected in files.items():
         try:
             deployed = git(SOURCE, 'show', 'origin/main:' + name)

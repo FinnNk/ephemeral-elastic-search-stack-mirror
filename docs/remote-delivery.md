@@ -1,7 +1,7 @@
 # Run lab delivery commands
 
 Create a preview, compare builds or propose a deployment from your workstation
-or the **Lab delivery** Actions workflow. The coordinator keeps the operation
+or the focused Actions workflows. The coordinator keeps the operation
 running if you close your terminal. A promotion still needs a reviewed
 `delivery-state` PR before Argo CD deploys it.
 
@@ -62,21 +62,27 @@ the recorded failure; it does not restart the operation.
 
 ## Run from Actions
 
-Open `delivery-source` → **Actions** → **Lab delivery** → **Run workflow**.
-Select **main**, an operation and its build IDs. Promotions also need a target
-and intent. The workflow submits the operation and prints its progress URL.
-Its success means **submitted**, not evaluated or deployed. Follow the operation
-to its report or promotion PR. Submission releases the lab's single runner so
-other builds can proceed during a long evaluation.
+Open `delivery-source` → **Actions**. Select **main** in the workflow form.
 
-The workflow also offers `merge-reviewed`, `merge-exception`, `verify`, `propose-rollback` and
-`gate-check`. Supply the relevant PR, target, source commit or previous fingerprint;
-unused build fields can stay blank. Use the [production release UI](https://control.localhost:34443/production-release)
-for candidate preparation and final production activation. Ordinary
-`propose-promotion` operations cover integration and staging. Production rollback
-checks still use the full Gatling profile. `merge-reviewed` requires an existing, exact-head approval
-from a permitted separate reviewer. It cannot create that approval.
-See the [promotion procedure](delivery.md#promote-a-merged-release).
+| Workflow | Enter |
+| --- | --- |
+| Create preview | Successful build number |
+| Compare builds | Baseline and candidate build numbers |
+| Promote to integration | Merged build number and change intent |
+| Promote to staging | Merged build number and change intent |
+| Deploy approved promotion | Approved delivery-state PR number |
+| Request rollback | Target, retained verified fingerprint and change intent |
+
+The form fixes the operation and, for promotions, the target. The lab catalogue
+is `esci-gb-v1`. Follow the printed progress URL; submission does not mean that
+evaluation or deployment has completed. **Advanced delivery** offers `verify`,
+`gate-check` and `merge-exception` for less common operations.
+
+Use the [production release UI](https://control.localhost:34443/production-release)
+for production preparation, final checks, route switching and rollback. Its full
+Gatling gate remains required. A human approves the exact delivery-state PR head;
+the coordinator alone merges and verifies it. Workstation CLI commands remain
+optional and use the same checks.
 
 ## Automatic source comparisons
 

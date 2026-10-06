@@ -46,6 +46,44 @@ def local_copy_target(path, root=ROOT, in_cluster=IN_CLUSTER):
     return str(path) if in_cluster else os.path.relpath(path, root).replace('\\', '/')
 
 
+def wait_for_gatling(name, workload, target, environment):
+    """Poll a finite Job and publish safe driver counters while an operation runs."""
+    from operation_telemetry import event_sink
+    sink = event_sink.get()
+    if sink is None:
+        return k('wait', '--for=condition=complete', 'job/' + name, '-n', NAMESPACE,
+                 '--timeout=' + str(workload['duration_seconds'] + 480) + 's')
+    started = time.monotonic()
+    started_ms = int(time.time() * 1000)
+    previous = None
+    while time.monotonic() - started < workload['duration_seconds'] + 480:
+        obj = json.loads(k('get', 'job/' + name, '-n', NAMESPACE, '-o', 'json').stdout)
+        logs = k('logs', 'job/' + name, '-n', NAMESPACE, '--tail=40', check=False)
+        samples = []
+        for line in logs.stdout.splitlines():
+            if 'LAB_GATLING_METRICS ' in line:
+                try:
+                    samples.append(json.loads(line.split('LAB_GATLING_METRICS ', 1)[1]))
+                except (ValueError, IndexError):
+                    pass
+        metric = samples[-1] if samples else None
+        event = {'event': 'gatling.live', 'side': target, 'environment': environment,
+                 'started_ms': started_ms, 'observed_ms': int(time.time() * 1000),
+                 'elapsed_seconds': round(time.monotonic() - started),
+                 'planned_seconds': workload['duration_seconds'], 'provisional': True,
+                 'metrics': metric}
+        if metric != previous or not metric:
+            sink(event)
+            previous = metric
+        status = obj.get('status', {})
+        if status.get('succeeded'):
+            return
+        if status.get('failed'):
+            raise RuntimeError('Gatling Job failed; inspect retained driver logs.')
+        time.sleep(10)
+    raise TimeoutError('Gatling Job did not complete before its deadline.')
+
+
 def cleanup_orphans():
     """Remove only resources owned by interrupted control comparisons."""
     if not IN_CLUSTER:
@@ -128,8 +166,7 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
                 'metadata': {'name': part['name'], 'namespace': NAMESPACE,
                              'labels': owned_label}, 'binaryData': part['binaryData']})
         apply(job)
-        k('wait', '--for=condition=complete', 'job/' + name, '-n', NAMESPACE,
-          '--timeout=' + str(workload['duration_seconds'] + 480) + 's')
+        wait_for_gatling(name, workload, target, environment)
         pods = json.loads(k('get', 'pods', '-n', NAMESPACE, '-l', 'job-name=' + name, '-o', 'json').stdout)['items']
         if len(pods) != 1:
             raise RuntimeError('Expected one Gatling Job pod.')
@@ -192,6 +229,13 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
         record('gatling-job-failure-' + short, {'profile': profile, 'target': target,
             'environment': environment, 'job_name': name,
             'error_kind': type(error).__name__, 'error': str(error)[:500]})
+        failure = {'kind': 'gatling-execution-failure', 'complete': False,
+            'profile': profile, 'side': target, 'environment': environment,
+            'job_name': name, 'error_kind': type(error).__name__,
+            'reason': 'The driver did not complete; no passing performance evidence was produced.'}
+        payload = (json.dumps(failure, sort_keys=True) + '\n').encode()
+        checksum = hashlib.sha256(payload).hexdigest()
+        error.reference = {'sha256': checksum, 'blob': immutable_blob('runs', checksum + '/gatling-failure.json', payload)}
         raise
     finally:
         k('delete', 'pod/' + name + '-reader', '-n', NAMESPACE, '--ignore-not-found', '--wait=true', check=False)

@@ -8,9 +8,9 @@
 <section><h2>2. Check and request release</h2><p>Run the normal and peak Gatling gate, then compare 1,000 simulated recent queries against the active API and the prepared candidate. Resolve judgement gaps and score both sides with the same frozen labels. Review the report and approve the route-switch PR in Gitea.</p>
 <label>Change intent<select id="intent"><option value="ranking-change">Intentional ranking change</option><option value="preserve-results">Preserve search results</option></select></label><button id="release">Check and release production</button></section>
 <section><h2>3. Deploy an approved PR</h2><p>Select an approved preparation, route-switch or rollback PR. The coordinator checks its exact approval, asks Argo CD to deploy it and verifies the APIs.</p><form id="merge"><label>Approved production PR<select id="pr" required disabled><option value="">Loading approved PRs…</option></select></label><p id="approval-state" role="status"></p><p><a id="review-pr" hidden>Review selected PR in Gitea</a></p><button id="deploy" disabled>Deploy approved PR</button></form></section>
-<section><h2>Rollback</h2><p>The previous API stays in the other slot. Rollback checks that retained release, creates a reviewed PR and switches the route after approval.</p><button id="rollback">Request rollback to the other slot</button></section><p id="message" role="status"></p><div id="operation"></div></main>
+<section><h2>Rollback</h2><p>The previous API stays in the other slot. Rollback checks that retained release, creates a reviewed PR and switches the route after approval.</p><button id="rollback">Request rollback to the other slot</button></section><section><h2>Queued and active work</h2><div id="work"></div></section><p id="message" role="status"></p><div id="operation"></div></main>
 <script>
-let current=null,approved=[];
+let current=null,approved=[],sending=false;
 const $=id=>document.getElementById(id);
 async function request(path,body){const response=await fetch(path,{method:body?'POST':'GET',headers:{Accept:'application/json','Content-Type':'application/json','X-Lab-Intent':'1',...(body?{'Idempotency-Key':crypto.randomUUID()}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok){$('signin').hidden=response.status!==401;throw new Error(value.error||'Request failed')}return value}
 function text(tag,value,parent){const el=document.createElement(tag);el.textContent=value;parent.append(el);return el}
@@ -35,21 +35,32 @@ async function refresh(){try{
  for(const [name,slot] of Object.entries(value.slots||{})){const row=text('tr',null,$('slots'));text('td',name,row);text('td',name===value.active?'Active':name===candidate?.prepared_slot?'Prepared candidate':'Retained release',row);text('td',slot.software_release_id.slice(0,12),row);text('td',slot.source_sha.slice(0,12),row)}
  $('store').href=value.browser_url||'#';$('store').hidden=!value.browser_url;
  for(const b of document.querySelectorAll('button:not(#refresh)'))b.disabled=!identity.is_admin;
- $('prepare').disabled=!identity.is_admin||!staging?.verified||same;
+ $('prepare').disabled=!identity.is_admin||!staging?.verified||same||Boolean(candidate?.prepared_slot);
  $('release').disabled=!identity.is_admin||!candidate?.verified||!candidate?.prepared_slot||same;
  $('rollback').disabled=!identity.is_admin||!value.can_rollback;
  await loadApproved(identity.is_admin);
 }catch(e){$('message').textContent=e.message}}
 function chooseApproved(admin){const selected=approved.find(pr=>String(pr.number)===$('pr').value);$('deploy').disabled=!admin||!selected;$('review-pr').hidden=!selected;if(selected)$('review-pr').href=selected.url}
 async function loadApproved(admin){
+ const selected=$('pr').value;
  $('pr').disabled=true;$('deploy').disabled=true;$('review-pr').hidden=true;
  try{const value=await request('/api/delivery/production/approved-prs');approved=value.prs;
   $('pr').replaceChildren();const placeholder=text('option',approved.length?'Select an approved PR':'No approved production PRs',$('pr'));placeholder.value='';
   for(const pr of approved){text('option','#'+pr.number+' — '+pr.title,$('pr')).value=String(pr.number)}
+  if(approved.some(pr=>String(pr.number)===selected))$('pr').value=selected;
   $('pr').disabled=!admin||!approved.length;$('approval-state').textContent=approved.length?'Approval is checked again before deployment.':'Approve a production PR in Gitea, then refresh.';
   $('pr').onchange=()=>chooseApproved(admin);chooseApproved(admin);
  }catch(e){approved=[];$('pr').replaceChildren();text('option','Approved PRs unavailable',$('pr')).value='';$('approval-state').textContent=e.message}
 }
-async function submit(body){try{$('message').textContent='Submitting…';const row=await request('/api/delivery/operations',body);$('operation').replaceChildren();const a=text('a','Open progress and review links',$('operation'));a.href='/api/delivery/operations/'+row.id;$('message').textContent='Operation queued. Open progress to follow the checks.'}catch(e){$('message').textContent=e.message}}
-$('prepare').onclick=()=>submit({kind:'prepare-production'});$('release').onclick=()=>submit({kind:'release-production',intent:$('intent').value});$('merge').onsubmit=e=>{e.preventDefault();submit({kind:'merge-reviewed',pr:Number($('pr').value)})};$('rollback').onclick=()=>{const other=Object.entries(current.slots).find(([name])=>name!==current.active);if(other)submit({kind:'rollback',target:'production',fingerprint:other[1].fingerprint,intent:'ranking-change'})};$('refresh').onclick=refresh;refresh();
+async function refreshWork(){try{const value=await request('/api/delivery/operations');$('work').replaceChildren();for(const row of value.operations){const p=text('p',null,$('work')),a=text('a',row.state+' — '+row.progress,p);a.href='/api/delivery/operations/'+row.id;}if(!value.operations.length)text('p','No delivery work is queued or running.',$('work'));}catch(e){$('work').textContent='Queue status is temporarily unavailable.'}}
+async function submit(body,button){
+ if(sending)return;sending=true;button.disabled=true;
+ const area=button.closest('section');let feedback=area.querySelector('.submission-feedback');
+ if(!feedback){feedback=text('p',null,area);feedback.className='submission-feedback';feedback.setAttribute('role','status');}
+ feedback.textContent='Submitting…';
+ try{const row=await request('/api/delivery/operations',body);feedback.replaceChildren();text('span',row.state==='complete'?'Existing operation complete. ':'Operation '+row.state+'. ',feedback);const a=text('a','Open progress and review links',feedback);a.href='/api/delivery/operations/'+row.id;await refreshWork();}
+ catch(e){feedback.textContent=e.message;}
+ finally{sending=false;await refresh();}
+}
+$('prepare').onclick=()=>submit({kind:'prepare-production'},$('prepare'));$('release').onclick=()=>submit({kind:'release-production',intent:$('intent').value},$('release'));$('merge').onsubmit=e=>{e.preventDefault();submit({kind:'merge-reviewed',pr:Number($('pr').value)},$('deploy'))};$('rollback').onclick=()=>{const other=Object.entries(current.slots).find(([name])=>name!==current.active);if(other)submit({kind:'rollback',target:'production',fingerprint:other[1].fingerprint,intent:'ranking-change'},$('rollback'))};$('refresh').onclick=()=>{refresh();refreshWork();};refresh();refreshWork();setInterval(refreshWork,5000);
 </script></body></html>

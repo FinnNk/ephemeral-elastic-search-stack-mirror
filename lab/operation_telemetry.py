@@ -5,6 +5,9 @@ in metric dimensions. Export failures must never affect an operation's result.
 """
 
 from contextlib import nullcontext
+from contextvars import ContextVar
+
+event_sink = ContextVar("delivery_event_sink", default=None)
 from datetime import datetime, timezone
 from functools import wraps
 import json
@@ -163,6 +166,8 @@ def operation(name, deadline_seconds=None):
                                 event['trace_id'] = format(context.trace_id, '032x')
                                 event['span_id'] = format(context.span_id, '016x')
                         print(json.dumps(event, sort_keys=True), flush=True)
+                        if event_sink.get() is not None:
+                            event_sink.get()(event)
                     except Exception:
                         pass
         return wrapped

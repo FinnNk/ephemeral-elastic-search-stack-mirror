@@ -187,7 +187,7 @@ The current policy checks nDCG@10, at least **80% judged coverage for both basel
 2. Read the report and required query-set results. Choose a `decision_required` variant and explain the benefit and measured loss you accept.
 3. Select **Create decision PR**. Open its `delivery-state` PR and review the decision file. It records the source commit, baseline, variant, measured result, evidence hashes, reason and named reviewer.
 4. As the named reviewer, approve the exact decision PR head in Gitea.
-5. In `delivery-source` **Actions → Lab delivery**, choose **main**, `merge-exception`, and the decision PR number. Follow the operation URL. The coordinator merges the reviewed decision, signs its Git-bound receipt and rechecks the source gate. A direct human merge is also picked up by the coordinator.
+5. In `delivery-source` **Actions → Advanced delivery**, choose **main**, `merge-exception`, and the decision PR number. Follow the operation URL. The coordinator merges the reviewed decision, signs its Git-bound receipt and rechecks the source gate. Use the coordinator to deploy the approved decision; direct human merges to delivery state are disabled.
 
 The source commit stays unchanged. New source or baseline commits, changed policy or different reports require a new decision. An approval cannot turn a `blocked` variant into a pass. The narrow unchanged-results coverage exception described in the [evaluation runbook](evaluation-runbook.md#human-exceptions) uses the same review flow.
 

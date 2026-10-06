@@ -27,7 +27,8 @@ def metric(name, label, cohort='normal', hidden=True, deadlines_only=False):
         expression = 'lab.operation.kind IN [' + ', '.join(
             repr(kind) for kind in DEADLINE_KINDS) + ']'
     else:
-        expression = f"lab.traffic_class = '{cohort}'" if cohort else ''
+        expression = (f"lab.traffic_class = '{cohort}' AND deployment.environment.name IN $environment"
+                      if cohort else '')
     spec = {
         'name': label, 'signal': 'metrics', 'disabled': hidden, 'stepInterval': 60,
         'filter': {'expression': expression},
@@ -62,7 +63,9 @@ def guidance(policy):
         'display': {'name': 'Read this dashboard'},
         'plugin': {'kind': 'signoz/TextPanel', 'spec': {
             'mode': 'markdown',
-            'text': ('**No data is unknown, not healthy.** Check the eligible count and '
+            'text': ('**No data is unknown, not healthy.** An instrumented service with no requests has no activity. '
+                     'A release without the OTLP endpoint exports no search metrics. Check the environment, '
+                     'time window and collector before interpreting an empty panel. Check the eligible count and '
                      f'at least {policy["minimum_sample_count"]} normal requests before interpreting '
                      'search percentages. The current time picker sets the calculation window; '
                      f'the policy window is {policy["window_days"]} days, with '
@@ -133,7 +136,12 @@ def build():
                                  'description': 'Normal search cohort and accepted operations. '
                                                 'No data means unknown; check sample count and collection coverage.'},
                      'layouts': [{'kind': 'Grid', 'spec': {'items': items}}],
-                     'panels': panels, 'variables': []}}
+                     'panels': panels, 'variables': [{
+                         'kind': 'ListVariable', 'spec': {
+                             'name': 'environment', 'display': {'name': 'Search environment'},
+                             'allowMultiple': True, 'allowAllValue': True,
+                             'plugin': {'kind': 'signoz/DynamicVariable', 'spec': {
+                                 'name': 'deployment.environment.name', 'signal': 'metrics'}}}}]}}
 
 
 def request(url, token, method='GET', body=None):

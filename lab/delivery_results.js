@@ -2,7 +2,8 @@
 'use strict';
 const $=id=>document.getElementById(id), path=location.pathname;
 const operationPage=/^\/api\/delivery\/operations\/[0-9a-f]{32}$/.test(path);
-let timer=null, loading=false;
+let timer=null, loading=false, logsPaused=false, logsLoading=false, logCursor=0, latestGatling=null;
+$("pause-logs").onclick=()=>{logsPaused=!logsPaused;$("pause-logs").textContent=logsPaused?"Resume":"Pause";if(!logsPaused&&operationPage)updateLogs({});};
 const stateNames={accepted:'Waiting for the source build',queued:'Queued',running:'In progress',complete:'Complete',failed:'Failed',interrupted:'Interrupted',pass:'Passed',approved_exception:'Accepted with a recorded exception',decision_required:'Decision required',blocked:'Blocked',invalid:'Invalid evidence',verified:'Deployment verified'};
 const operationTitles={'prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
 const names={ndcg_at_10:'nDCG@10',ndcg_at_20:'nDCG@20',precision_at_10:'Precision@10',recall_at_10:'Recall@10',rbo_at_10_p_0_9:'RBO@10',jaccard_at_10:'Jaccard@10'};
@@ -52,6 +53,10 @@ function operation(row){
  const result=row.result||{},request=row.request||{};
  $('title').textContent=operationTitles[request.kind]||'Lab delivery';
  $('state').textContent=stateNames[row.state]||label(row.state);$('stage').textContent=row.progress||'';
+ if(latestGatling)showGatling(latestGatling);
+ updateLogs(row);
+ $('queue-panel').hidden=!row.queue;
+ if(row.queue){$('queue-detail').replaceChildren();node('span','Position '+row.queue.position+'. ', $('queue-detail'));if(row.queue.blocker?.id){const a=node('a','Waiting for: '+row.queue.blocker.progress,$('queue-detail'));a.href='/api/delivery/operations/'+row.queue.blocker.id;}else node('span','Waiting for the coordinator to take this request.', $('queue-detail'));}
  $('updated').textContent='Last updated: '+new Date(row.updated_at).toLocaleString();
  $('explanation').textContent=row.state==='complete'?'The operation finished. Review its outcome and evidence below.':['failed','interrupted'].includes(row.state)?'The operation did not finish successfully. Review the error before starting another operation.':'This page refreshes every five seconds. You can leave it and return using the same link.';
  if(row.error)node('p','Error: '+row.error,section('What happened'));
@@ -134,3 +139,30 @@ async function load(){if(loading)return;loading=true;clearTimeout(timer);try{
  const active=operationPage?operation(value):(report(value,record),false);if(active)timer=setTimeout(load,5000);
  }catch(error){$('state').textContent='Unable to load';$('stage').textContent=error.message;$('explanation').textContent='Refresh to try again. This does not restart the operation.';if(error.status===401)link('signin','/oauth2/start?rd='+encodeURIComponent(location.pathname+location.search));}finally{loading=false}}
 $('json').href=path+'?format=json';$('refresh').addEventListener('click',load);load();
+
+async function updateLogs(row){
+ $('live-logs').hidden=false;
+ if(logsPaused||logsLoading)return;
+ logsLoading=true;
+ try{const response=await fetch(path+'/logs?after='+logCursor,{headers:{Accept:'application/json'}});
+  if(!response.ok)throw new Error('Logs unavailable');
+  const value=await response.json();
+  for(const line of value.logs){const pre=$('log-lines');let message=line.message;try{const event=JSON.parse(message);if(event.event==='gatling.live'){latestGatling=event;showGatling(event);const m=event.metrics;message=event.side+' — '+(m?.phase||'Starting driver')+' · '+fmt(event.elapsed_seconds)+' / '+fmt(event.planned_seconds)+' s'+(m?' · '+fmt(m.completed)+' completed, '+fmt(m.failed)+' failed':'');}else message=event.operation+' — '+event.state+' ('+fmt(event.duration_ms)+' ms)';}catch(e){}pre.textContent+=new Date(line.at).toLocaleTimeString()+' '+message+'\n';logCursor=line.sequence;}
+  const lines=$('log-lines').textContent.split('\n');if(lines.length>501)$('log-lines').textContent=lines.slice(-501).join('\n');
+  $('log-lines').scrollTop=$('log-lines').scrollHeight;
+  $('log-status').textContent=value.logs.length?'':'No new log entries.';
+  if(value.logs.length===100&&!logsPaused)setTimeout(()=>updateLogs(row),0);
+ }catch(e){$('log-status').textContent='Logs are temporarily unavailable. Status and reports remain available.';}finally{logsLoading=false;}
+}
+
+function showGatling(event){
+ let panel=$('gatling-live');if(!panel){panel=node('section',null,$('content'));panel.id='gatling-live';}
+ panel.replaceChildren();node('h2','Live Gatling check',panel);
+ node('p','Provisional driver counters; the retained Gatling report decides the gate. Job elapsed time includes driver startup.',panel);
+ const m=event.metrics;
+ table(panel,['Side','Phase','Job elapsed / planned traffic','Completed in phase','Failures in phase','Completion rate','Mean latency'],[[event.side,m?.phase||'Starting driver',fmt(event.elapsed_seconds)+' / '+fmt(event.planned_seconds)+' s',fmt(m?.completed),fmt(m?.failed),fmt(m?.completed_rps)+' requests/s',fmt(m?.mean_latency_ms)+' ms']]);
+ const a=node('a','Open observability dashboard',panel);const dashboard=new URL('https://signoz.localhost:34443/dashboard/01a0e51c-1043-79cb-94a8-9511cb0c665b');
+ dashboard.searchParams.set('variables',JSON.stringify({environment:[event.environment]}));
+ dashboard.searchParams.set('startTime',String(event.started_ms));dashboard.searchParams.set('endTime',String(event.observed_ms));a.href=dashboard.href;
+ node('p','Environment: '+event.environment+'. The dashboard opens this environment and the sampled run interval. Operation panels remain lab-wide. Missing telemetry is not a healthy result.',panel);
+}
