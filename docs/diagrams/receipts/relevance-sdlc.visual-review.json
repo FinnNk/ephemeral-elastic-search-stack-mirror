@@ -1,12 +1,12 @@
 {
-  "observed_at": "2026-10-06T10:20:50.091284+00:00",
+  "observed_at": "2026-10-06T10:26:05.462008+00:00",
   "artifact": "interactive/relevance-sdlc.html",
-  "sha256": "ca7215bf0341a34d3676af231b2835cae3d8ca6e0740638d78568cfe057ebad2",
+  "sha256": "0fb7e635d4dc7ceed385803c8b5fc7451bbf4ba81daac9b4c42c99ef979bfca7",
   "reviewed_image": "rendered/relevance-sdlc.png",
   "viewport": [
     1440,
     900
   ],
-  "review": "Inspected the full timeline. The scorer stays on the common vertical axis. Captures join at the scorer, which calls the judgement resolver on its right through a labelled horizontal branch. Labels and connectors are contained without observed overlap. Promotion gates still precede their corresponding promotions.",
+  "review": "Inspected the full timeline. Stage 2 says Build the ephemeral environments with the pinned baseline/variant APIs and frozen index beneath it. Text is contained and the existing call branch, capture pair and promotion gates retain their layout.",
   "scope": "Diagram-only requested abstraction; resolver ownership in the implementation remains deferred."
 }

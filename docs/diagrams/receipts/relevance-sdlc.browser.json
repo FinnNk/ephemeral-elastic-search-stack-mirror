@@ -2,7 +2,7 @@
   "ok": true,
   "status": "pass",
   "method": "Pinned Archify Chrome browser; full-page timeline",
-  "sha256": "ca7215bf0341a34d3676af231b2835cae3d8ca6e0740638d78568cfe057ebad2",
+  "sha256": "0fb7e635d4dc7ceed385803c8b5fc7451bbf4ba81daac9b4c42c99ef979bfca7",
   "scope": "Vertical scrolling is intentional. Horizontal overflow, unreadable text and dock overlap remain failures.",
   "viewports": [
     {
