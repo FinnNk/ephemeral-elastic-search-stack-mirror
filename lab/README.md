@@ -13,7 +13,8 @@ To inspect Pods, deployments, events and logs, use [Headlamp](../docs/headlamp.m
 For release progress from source merge to active production, open the
 [Release dashboard](https://control.localhost:34443/release-dashboard).
 Its searchable cards lead to a connected tree of gates, reviews and verified
-deployments. It is read-only; use the existing delivery workflows for actions.
+deployments. Administrators can submit reviewed promotions from the tree;
+readers inspect its records. Existing delivery workflows remain available.
 See [Follow a release](../docs/delivery.md#follow-a-release) for status meanings.
 
 ## Open the control UI

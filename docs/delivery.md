@@ -69,9 +69,43 @@ the active route. **Previously verified** identifies a historical deployment.
 Use **Inputs & policy** for pinned inputs and the source gate configuration;
 **Activity** shows attempts, durations and progress links. The current active
 production release is shown alongside the selected release. The page refreshes
-every 30 seconds while visible. It reads existing records and never starts
-work, reruns checks or extends leases. Continue promotions through the workflows
-and production release page described below.
+every 30 seconds while visible. Refreshing reads records without starting work
+or extending leases. Administrators can submit the named operations below;
+readers see the same tree with unavailable controls and an explanation.
+
+### Promote from the release tree
+
+1. Select the successful merged-source build. Choose an environment node in the
+   tree, or use **Stage** in **Promotion controls**.
+2. Choose **Change intent**, then **Check and propose Integration** or
+   **Check and propose Staging**. Staging requires this exact release to be
+   currently verified in Integration. Follow **Open progress and review links**.
+3. Review the proposal and retained check report in Gitea. Approve the exact PR
+   head. Select it under **Approved proposal**, then choose **Deploy approved
+   proposal**. The coordinator rechecks the approval and evidence, merges the
+   desired state, waits for Argo CD and verifies the API.
+4. After verified Staging, select **Production candidate** and choose **Prepare
+   production candidate**. Approve and deploy its preparation proposal using
+   the same controls. Active production continues serving its current release.
+5. Select **Active production**, then **Check and request production release**.
+   This runs the normal and peak load gate and the final comparison against
+   active production. Review, approve and deploy the route-switch proposal.
+6. For rollback, choose **Check and request rollback** on the active release.
+   A different, ready and previously verified release must exist in the other
+   slot. Review and deploy the rollback proposal separately.
+
+The panel pins the selected build and observed environment definitions. If a
+release, target or reviewed head changes before queued work executes, the
+operation fails with a refresh instruction; it cannot silently deploy a different
+release. Retrying the same submission retains its durable operation. After a
+failed or interrupted operation, inspect its progress before choosing **Submit a
+new attempt**. The existing Actions workflows and production release page remain
+available.
+
+**Customise the next comparison** links to the selected source commit’s variants,
+query-set selection and gate policy. These inputs are frozen for this release.
+Edit the source and build a new release to change them. The panel supports intent
+selection; it does not provide an arbitrary workflow or shell editor.
 
 Unknown records are shown explicitly. The dashboard reads recent source runs
 and operations plus retained verification history; it is not a complete archive

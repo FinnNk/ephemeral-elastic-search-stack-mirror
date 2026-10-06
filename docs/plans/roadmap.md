@@ -8,8 +8,9 @@ step” is not an instruction to repeat completed work.
 
 [Lab experience and Mac transfer](lab-experience-and-mac.md) is the active
 programme: shared design system, promotion controls in the release tree, then
-current documentation and native Mac setup/transfer guidance. The design batch
-is prepared for review; native Mac execution remains outstanding.
+current documentation and native Mac setup/transfer guidance. The design and promotion panel batches
+are prepared for review; current documentation and Mac transfer checks are next.
+Native Mac execution remains outstanding.
 
 [Delivery notebook comparisons](delivery-notebook-comparisons.md), their
 status/proxy fixes and the [saved notebook browser view](notebook-browser-view.md)

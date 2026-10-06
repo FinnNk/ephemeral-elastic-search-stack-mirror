@@ -157,6 +157,13 @@ class LocalControlApi(unittest.TestCase):
                     urllib.request.urlopen(request)
                 self.assertEqual(error.exception.code,400)
 
+    def test_dashboard_control_requires_sign_in(self):
+        req = urllib.request.Request(self.base + '/api/delivery/dashboard/actions',
+            data=b'{}', headers={'Content-Type':'application/json','X-Lab-Intent':'1'}, method='POST')
+        with self.assertRaises(urllib.error.HTTPError) as error:
+            urllib.request.urlopen(req)
+        self.assertEqual(error.exception.code, 401)
+
     def test_actions_identity_cannot_read_dashboard(self):
         service = {'username':'actions','is_admin':False,'is_delivery_service':True}
         with patch.object(Handler,'oidc_provider',Mock(verify=Mock(return_value=service))), \

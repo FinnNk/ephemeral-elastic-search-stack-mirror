@@ -103,7 +103,7 @@ def review(number):
         else:
             raise ValueError('Review history exceeds the dashboard limit.')
         for r in sorted(all_reviews, key=lambda r:r['id']):
-            if not r.get('dismissed') and r.get('commit_id') == head and r.get('state') in ('APPROVED', 'REQUEST_CHANGES'):
+            if r.get('user', {}).get('login') != 'elastic-agent' and not r.get('dismissed') and r.get('commit_id') == head and r.get('state') in ('APPROVED', 'REQUEST_CHANGES'):
                 latest[r['user']['login']] = r['state']
         state = 'changes requested' if 'REQUEST_CHANGES' in latest.values() else 'approved' if 'APPROVED' in latest.values() else 'awaiting review'
     return {'number': number, 'state': state, 'head_sha': head,
@@ -174,12 +174,12 @@ def project(run, rows, receipts, environments, reviews, builds, notices):
     activity = []
     for r in rows:
         d = operation_deployment(r)
-        bound = matches(d) if d else r['request'].get('run') == run and run is not None
+        bound = matches(d) if d else (r['request'].get('run') or r['request'].get('_release_binding', {}).get('request', {}).get('run')) == run and run is not None
         if not bound:
             continue
         url = '/api/delivery/operations/' + r['id']
         activity.append({'id': r['id'], 'kind': r['request']['kind'], 'state': r['state'],
-            'target': (r['result'].get('proposal') or proposals.get(r['request'].get('pr'), {})).get('target', r['request'].get('target')),
+            'target': (r['result'].get('proposal') or proposals.get(r['request'].get('pr'), {})).get('target', r['request'].get('target') or {'prepare':'production','release':'production','deploy':'production','rollback':'production'}.get(r['request'].get('_release_binding', {}).get('request', {}).get('action'))),
             'progress': r['progress'], 'error': r['error'], 'created_at': r['created_at'],
             'updated_at': r['updated_at'], 'duration_seconds': duration(r['created_at'], now if r['state'] in ('running','queued','accepted') else r['updated_at']),
             'url': url, 'report_url': url + '/report' if r['result'].get('report') else None,
@@ -220,12 +220,17 @@ def project(run, rows, receipts, environments, reviews, builds, notices):
                        'operation': latest, 'review_operation': next((r for r in related if r.get('pr')), None),
                        'check_operation': next((r for r in related
                            if r['kind'] in ('promotion','release-production','rollback') and r.get('evidence')), None)})
+    for environment in environments.values():
+        environment['rollback_verified'] = any(r.get('state') == 'verified' and r.get('target') == 'production' and
+            r.get('deployment', {}).get('fingerprint') == environment['definition'].get('fingerprint') and
+            r['deployment']['fields'] == {k: v for k, v in environment['definition'].items() if k not in ('fingerprint', 'environment')}
+            for r in receipts)
     active = next((r for r in environments.values() if r['active']), None)
     # Unbound production requests are shown separately. Never infer their release
     # from whatever happens to be in the inactive slot at read time.
     unbound = [{'kind':r['request']['kind'], 'state':r['state'], 'progress':r['progress'],
                 'error':r['error'], 'updated_at':r['updated_at'], 'url':'/api/delivery/operations/'+r['id']}
-               for r in rows if r['request']['kind'] == 'release-production' and not operation_deployment(r)][:5]
+               for r in rows if r['request']['kind'] == 'release-production' and not operation_deployment(r) and not r['request'].get('_release_binding')][:5]
     build = next((r for r in builds if r['id'] == run), None)
     return {'updated_at': now, 'releases': choices, 'selected': selected,
         'build': {'state':build.get('conclusion') or build.get('status'), 'url':GITEA+SOURCE+'/actions/runs/'+str(run),

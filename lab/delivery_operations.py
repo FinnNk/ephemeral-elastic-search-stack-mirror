@@ -14,7 +14,7 @@ FIELDS = {
     'release-production': {'intent'},
     'preview': {'run', 'dataset', 'recipe'},
     'compare': {'baseline_run', 'candidate_run', 'dataset', 'recipe', 'pr', 'source_sha', 'baseline_sha'},
-    'promotion': {'target', 'run', 'dataset', 'recipe', 'intent'},
+    'promotion': {'target', 'run', 'dataset', 'recipe', 'intent', 'query_manifest', 'judgement_manifest'},
     'gate-check': {'pr', 'source_sha'},
     'request-exception': {'pr', 'source_sha', 'variant', 'reason'},
     'merge-exception': {'pr'},
@@ -54,7 +54,7 @@ def validate(payload):
         raise ValueError('Promotion target or intent is invalid.')
     if 'dataset' in payload and not re.fullmatch(r'[a-z][a-z0-9-]{0,63}', str(payload['dataset'])):
         raise ValueError('Dataset name is invalid.')
-    for field, size in (('recipe', 64), ('fingerprint', 64), ('source_sha', 40), ('baseline_sha', 40)):
+    for field, size in (('query_manifest', 64), ('judgement_manifest', 64), ('recipe', 64), ('fingerprint', 64), ('source_sha', 40), ('baseline_sha', 40)):
         if field in payload and not re.fullmatch('[0-9a-f]{' + str(size) + '}', str(payload[field])):
             raise ValueError('Frozen source or recipe identity is invalid.')
     if kind == 'compare' and 'pr' in payload and not {'source_sha', 'baseline_sha'} <= set(payload):
@@ -99,7 +99,7 @@ class Operations:
             ((result.get('result') or {}).get('gate') or {}).get('state') == 'decision_required' else None
         return result
 
-    def submit(self, payload, identity, key):
+    def submit(self, payload, identity, key, *, release_binding=None):
         """Retry the same submission key safely; changed payloads require a new key."""
         validate(payload)
         if payload['kind'] == 'request-exception' and (
@@ -109,10 +109,13 @@ class Operations:
             raise ValueError('Supply a stable Idempotency-Key of 1–128 characters.')
         owner = identity.get('issuer', '') + ':' + identity.get('subject', identity['username'])
         identifier = hashlib.sha256((owner + '\n' + key).encode()).hexdigest()[:32]
+        if release_binding:
+            payload = {**payload, '_release_binding': release_binding}
         if payload['kind'] == 'prepare-production':
             from production_release import preparation_context
             payload = {**payload, '_preparation_context': preparation_context()}
-            identifier = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:32]
+            if not release_binding:
+                identifier = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:32]
         encoded = json.dumps(payload, sort_keys=True, separators=(',', ':'))
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -194,11 +197,14 @@ def execute_next():
     token = event_sink.set(lambda event: store.log(identifier, json.dumps(event, sort_keys=True)))
     store.log(identifier, 'Coordinator started this operation')
     try:
+        if request.get('_release_binding'):
+            from release_control import validate_binding
+            validate_binding(request['_release_binding'])
         kind = request['kind']
         options = []
-        for field in ('dataset', 'recipe'):
+        for field in ('dataset', 'recipe', 'query_manifest', 'judgement_manifest'):
             if field in request:
-                options += ['--' + field, request[field]]
+                options += ['--' + field.replace('_', '-'), request[field]]
         if kind == 'prepare-production':
             from production_release import prepare
             progress('Creating the reviewed inactive production candidate')

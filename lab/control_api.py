@@ -119,7 +119,7 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['production-release']:
             return self.send_bytes(200, UI.with_name('production-release.html').read_bytes(),
                                    'text/html; charset=utf-8')
-        if parts in (['lab-design.css'], ['lab_shell.js']):
+        if parts in (['lab-design.css'], ['lab_shell.js'], ['release_control.js']):
             name = parts[0]
             return self.send_bytes(200, UI.with_name(name).read_bytes(),
                                    'text/css; charset=utf-8' if name.endswith('.css') else 'text/javascript; charset=utf-8')
@@ -196,7 +196,18 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(409, {'error': 'Delivery report is not available.'})
         if identity.get('is_delivery_service'):
             return self.send_json(403, {'error': 'Actions identity is restricted to delivery operations.'})
+        if parts == ['api', 'delivery', 'dashboard', 'actions']:
+            from release_control import choices
+            from release_dashboard import snapshot
+            try:
+                values = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('run', [])
+                if len(values) != 1 or not values[0].isdigit() or int(values[0]) < 1:
+                    raise ValueError('Choose a release build.')
+                return self.send_json(200, choices(snapshot(identity, int(values[0])), identity))
+            except ValueError as error:
+                return self.send_json(400, {'error': str(error)})
         if parts == ['api', 'delivery', 'dashboard']:
+
             from release_dashboard import snapshot
             try:
                 values = query.get('run')
@@ -356,6 +367,12 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, {'signed_out': True}, {'Set-Cookie': expired_cookie()})
             if identity.get('is_reader', False):
                 return self.send_json(403, {'error': 'Reader accounts cannot change lab resources.'})
+            if parts == ['api', 'delivery', 'dashboard', 'actions']:
+                if not identity.get('is_admin') or identity.get('is_delivery_service'):
+                    return self.send_json(403, {'error': 'A human lab administrator must request a promotion.'})
+                from release_control import submit
+                row = submit(payload, identity, self.headers.get('Idempotency-Key'))
+                return self.send_json(202, row)
             if parts == ['api', 'delivery', 'operations']:
                 if not identity['is_admin'] and not identity.get('is_delivery_service'):
                     return self.send_json(403, {'error': 'Delivery operations require a lab administrator.'})

@@ -11,12 +11,13 @@ async function main(){
   const livePath=process.argv[2],live=livePath?JSON.parse(fs.readFileSync(livePath,'utf8')):null;
   const server=http.createServer((req,res)=>{
     requests.push(req.method+' '+req.url);
+    if(req.url.startsWith('/api/delivery/dashboard/actions')){res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({context:'a'.repeat(64),actions:['integration','staging','prepare','release','deploy','rollback'].map(name=>({name,label:name,enabled:false,reason:'Read-only fixture'})),approved_prs:[]}));return;}
     if(req.url.startsWith('/api/delivery/dashboard')){
       res.writeHead(responseStatus,{'Content-Type':'application/json'});
       const run=Number(new URL(req.url,'http://localhost').searchParams.get('run'))||158;
       res.end(JSON.stringify(responseStatus===200?(live||{...fixture,selected:{...fixture.selected,run}}):{error:'Sign in'}));return;
     }
-    const file=req.url.startsWith('/lab-design.css')?'lab-design.css':req.url.startsWith('/release_dashboard.js')?'release_dashboard.js':'release-dashboard.html';
+    const file=req.url.startsWith('/release_control.js')?'release_control.js':req.url.startsWith('/lab-design.css')?'lab-design.css':req.url.startsWith('/release_dashboard.js')?'release_dashboard.js':'release-dashboard.html';
     res.writeHead(200,{'Content-Type':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'});res.end(fs.readFileSync(path.join(__dirname,file)));
   });
   await new Promise(r=>server.listen(0,'127.0.0.1',r));

@@ -38,6 +38,7 @@ function tree(data) {
     }
     return `<div class="tree-column"><article class="stage tree-node ${tone(s.state)}"><div class="number">0${i+1}</div><h3>${escapeText(s.title)}</h3>${badge(s.state)}<p>${escapeText(s.message)}</p>${i === 0 ? link(source.url,'Source PR') : s.environment ? `<p>${escapeText(s.environment.slot || s.name)} · ${s.environment.ready_replicas}/${s.environment.replicas} ready</p>` : ''}</article>${details}</div>`;
   }).join('');
+  if(new URL(location.href).searchParams.get('run'))window.releaseControls?.load(data);else window.releaseControls?.invalidate();
   requestAnimationFrame(drawEdges);
 }
 function drawEdges() {
@@ -63,7 +64,7 @@ function render(data) {
   $('release').disabled = !data.releases.length;
   $('dashboard').hidden = false;
   const detail=!!new URL(location.href).searchParams.get('run');
-  $('dashboard').hidden=!detail;$('catalogue').hidden=detail;$('all-releases').hidden=!detail;
+  $('dashboard').hidden=!detail;$('catalogue').hidden=detail;$('promotion-panel').hidden=!detail;$('all-releases').hidden=!detail;
   $('release').hidden=!detail;document.querySelector('label[for="release"]').hidden=!detail;
   $('page-title').textContent=detail&&data.selected ? `Release · Build ${data.selected.run}` : 'Releases';
   $('page-description').textContent=detail ? 'Source merge, recorded gates and deployment progress.' : 'Browse releases and follow their journey to active production.';
@@ -96,17 +97,18 @@ async function refresh() {
     const run = new URL(location.href).searchParams.get('run');
     const response = await fetch('/api/delivery/dashboard'+(run ? '?run='+encodeURIComponent(run) : ''), {headers:{Accept:'application/json'}});
     if (response.status === 401) {
-      lastData=null;$('dashboard').hidden=true;$('catalogue').hidden=true;$('release').disabled=true;
+      window.releaseControls?.invalidate();lastData=null;$('dashboard').hidden=true;$('catalogue').hidden=true;$('promotion-panel').hidden=true;$('release').disabled=true;
       $('message').innerHTML = '<div class="alert">Sign in to view release progress. <a href="/oauth2/start?rd='+encodeURIComponent(location.pathname+location.search)+'">Sign in to the lab</a></div>';
       return;
     }
-    if(response.status===403){lastData=null;$('dashboard').hidden=true;$('catalogue').hidden=true;}
+    if(response.status===403){lastData=null;$('dashboard').hidden=true;$('catalogue').hidden=true;$('promotion-panel').hidden=true;}
     if (!response.headers.get('Content-Type')?.includes('application/json')) throw new Error('The dashboard service did not return release data. Retry Refresh.');
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Release status could not be read.');
     if(new URL(location.href).searchParams.get('run') !== run) {refreshPending=true;return;}
     render(data);
   } catch(error) {
+    window.releaseControls?.invalidate();
     $('message').innerHTML = `<div class="alert error">${escapeText(error.message)}${lastData ? ' Showing the last successful snapshot below; it may be out of date.' : ''}</div>`;
   } finally {busy = false; $('refresh').disabled = false;if(refreshPending){refreshPending=false;refresh();}}
 }

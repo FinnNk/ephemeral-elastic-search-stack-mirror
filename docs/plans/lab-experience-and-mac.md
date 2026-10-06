@@ -34,6 +34,14 @@ checks passed, as did the release tree against retained real data. Desktop and
 390-pixel environment views were visually inspected. These are disposable
 fixtures; the installed lab has not been changed by this batch.
 
-Next: attach reviewed promotion controls to the release projection. Bind every
-submission to the selected build and observed inputs, preserve the coordinator’s
-approval enforcement, and test stale selections and retry safety.
+Promotion controls are implemented on the next stacked branch. They submit
+existing named operations and pin the observed build, environments and review
+heads. The worker rejects drift before executing checks. Tests cover reader and
+service restrictions, exact manifest forwarding, durable retries and stale work.
+Chromium exercises stage keyboard selection, approved proposal selection, a
+transport retry using the same key, reader controls and the narrow layout.
+No live promotion or load run was performed.
+
+Next: reconcile maintained documentation and runbooks, inventory portability
+constraints, and prepare Mac setup and transfer instructions with explicit
+native verification limits.
