@@ -1,12 +1,12 @@
 {
-  "observed_at": "2026-10-06T10:17:02.253458+00:00",
+  "observed_at": "2026-10-06T10:20:50.091284+00:00",
   "artifact": "interactive/relevance-sdlc.html",
-  "sha256": "8ec161ae35ab27df377af5d4173a1e0bcd667a59f246c6bc994f4b925c7bc3f2",
+  "sha256": "ca7215bf0341a34d3676af231b2835cae3d8ca6e0740638d78568cfe057ebad2",
   "reviewed_image": "rendered/relevance-sdlc.png",
   "viewport": [
     1440,
     900
   ],
-  "review": "Inspected the full fifteen-stage timeline. Each integration, staging and production gate precedes its promotion on the common vertical axis. Gate labels, warm timing annotations and promotion labels are contained; no observed connector overlap or clipping. Existing capture and decision branches retain their balanced layout.",
-  "scope": "Diagram presentation only; no runtime workflow or gate changed."
+  "review": "Inspected the full timeline. The scorer stays on the common vertical axis. Captures join at the scorer, which calls the judgement resolver on its right through a labelled horizontal branch. Labels and connectors are contained without observed overlap. Promotion gates still precede their corresponding promotions.",
+  "scope": "Diagram-only requested abstraction; resolver ownership in the implementation remains deferred."
 }

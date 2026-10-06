@@ -39,10 +39,6 @@
       "label": "Capture · ~1 min (both APIs)"
     },
     {
-      "id": "labels",
-      "label": "Judgements · ~5–6 s (cached replay)"
-    },
-    {
       "id": "score",
       "label": "Report · seconds (estimate)"
     },
@@ -126,11 +122,11 @@
     },
     {
       "id": "labels",
-      "lane": "labels",
-      "col": 2,
+      "lane": "score",
+      "col": 4,
       "type": "backend",
-      "label": "Resolve missing judgements",
-      "sublabel": "Pool results · freeze shared labels",
+      "label": "Judgement resolver",
+      "sublabel": "Shared frozen labels · ~5–6 s cached",
       "width": 258
     },
     {
@@ -280,7 +276,7 @@
       "from": "build"
     },
     {
-      "to": "labels",
+      "to": "score",
       "label": "",
       "role": "branch",
       "fromSide": "bottom",
@@ -289,22 +285,13 @@
       "from": "capture"
     },
     {
-      "to": "labels",
+      "to": "score",
       "label": "",
       "role": "branch",
       "fromSide": "bottom",
       "toSide": "top",
       "route": "drop",
       "from": "candidate"
-    },
-    {
-      "to": "score",
-      "label": "",
-      "role": "main",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "route": "straight",
-      "from": "labels"
     },
     {
       "to": "gate",
@@ -422,10 +409,18 @@
       "fromSide": "bottom",
       "toSide": "top",
       "route": "straight"
+    },
+    {
+      "from": "score",
+      "to": "labels",
+      "label": "Resolve gaps",
+      "role": "branch",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight"
     }
   ],
   "mainPath": [
-    "labels",
     "score",
     "gate",
     "pass",
