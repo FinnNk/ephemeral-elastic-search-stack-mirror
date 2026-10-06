@@ -30,9 +30,9 @@ def metric(name, label, cohort='normal', hidden=True, deadlines_only=False):
         expression = (f"lab.traffic_class = '{cohort}' AND deployment.environment.name IN $environment"
                       if cohort else '')
     spec = {
-        'name': label, 'signal': 'metrics', 'disabled': hidden, 'stepInterval': 60,
+        'name': label, 'signal': 'metrics', 'disabled': hidden, 'stepInterval': 0,
         'filter': {'expression': expression},
-        'aggregations': [{'metricName': name, 'timeAggregation': 'increase',
+        'aggregations': [{'metricName': name, 'temporality': 'cumulative', 'timeAggregation': 'increase',
                           'spaceAggregation': 'sum'}]}
     if cohort is None:
         spec['groupBy'] = [{'name': 'lab.operation.kind'}]
@@ -42,6 +42,16 @@ def metric(name, label, cohort='normal', hidden=True, deadlines_only=False):
 def formula(name, expression):
     return {'type': 'builder_formula', 'spec': {
         'name': name, 'expression': expression, 'disabled': False}}
+
+
+def activity():
+    """Show collection and traffic without assigning a passing SLO to idle time."""
+    query = metric('lab.search.eligible', 'A', cohort=None, hidden=False)
+    spec = query['spec']
+    spec['filter']['expression'] = 'deployment.environment.name IN $environment'
+    spec['groupBy'] = [{'name': 'lab.traffic_class'}]
+    spec['aggregations'][0]['timeAggregation'] = 'latest'
+    return query
 
 
 def panel(title, queries, unit='none'):
@@ -72,7 +82,12 @@ def guidance(policy):
                      f'{targets["search-success"]:.0%} success and '
                      f'{targets["responsive-search"]:.0%} responsiveness targets. A missing or partial '
                      'collection interval cannot be treated as good.\n\n'
-                     'The charts show per-interval increases. Negative remaining budget '
+                     '**Search activity** shows the latest process counters, including probes and '
+                     'unclassified browser requests. Counters reset when a process restarts; they are '
+                     'not totals for the selected window. The SLO charts below use only normal traffic. '
+                     'An idle counter has zero increase, so its percentages have no value. '
+                     'Short bursts before the first export can be missing from increases.\n\n'
+                     'The remaining charts show per-interval increases. Negative remaining budget '
                      'means the interval exceeded its allowance. Inspect the same service, '
                      'cohort and time in Traces and Logs, then open the immutable run report '
                      'for the promotion decision.'),
@@ -96,6 +111,8 @@ def build():
     operation_deadline = lambda label='B': metric('lab.operation.deadline_good', label, None,
                                                   deadlines_only=True)
     definitions = [
+        ('activity', 'Search activity by traffic class (process counters)',
+         [activity()], 'none'),
         ('eligible', 'Normal search requests', [metric('lab.search.eligible', 'A', hidden=False)], 'none'),
         ('success_good', 'Successful searches',
          [metric('lab.search.success_good', 'A', hidden=False)], 'none'),
@@ -124,9 +141,9 @@ def build():
     ]
     panels = {'guidance': guidance(policy)}
     panels.update({key: panel(title, queries, unit) for key, title, queries, unit in definitions})
-    items = [{'x': 0, 'y': 0, 'width': 12, 'height': 3,
+    items = [{'x': 0, 'y': 0, 'width': 12, 'height': 5,
               'content': {'$ref': '#/spec/panels/guidance'}}]
-    items += [{'x': (index % 2) * 6, 'y': 3 + (index // 2) * 6,
+    items += [{'x': (index % 2) * 6, 'y': 5 + (index // 2) * 6,
               'width': 6, 'height': 6, 'content': {'$ref': '#/spec/panels/' + key}}
              for index, (key, _, _, _) in enumerate(definitions)]
     return {'schemaVersion': 'v6', 'name': NAME,

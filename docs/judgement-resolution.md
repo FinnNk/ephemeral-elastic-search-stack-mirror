@@ -183,7 +183,7 @@ Follow [model installation](esci-model-installation.md) for packaging, qualifica
 
 The predictor timeout defaults to eight seconds. `JUDGEMENT_PREDICT_TIMEOUT_SECONDS` accepts a positive value up to 600; `--resolve-timeout` defaults to ten and accepts up to 900. Slower candidate limits need measured validation, not just larger timeouts.
 
-The [model dashboard](observability-backend.md#interpret-dashboards) shows outcomes, failures, latency and coverage. Input shift compares query-length buckets with the attempted pair mix; it is not training drift or accuracy. Trace context crosses evaluator, judgement API and KServe when the evaluator can reach the OTLP gateway. Telemetry excludes query text and product bodies.
+The [model dashboard](observability-backend.md#interpret-dashboards) shows outcomes, failures, latency and coverage. Select the model version to separate the current judge from historical activity. Gap-pool shift compares the frozen query-length mix with pairs sent for resolution, including cached outcomes; it is not training drift or accuracy. Coverage and shift are separated by label selection. The frozen resolution report owns exact pool counts. Trace context crosses the comparison, judgement API and KServe when they can reach the OTLP gateway. Telemetry excludes query text and product bodies.
 
 After local storage/container recreation, `lab/setup_judgement_secrets.py` refreshes the model-store EndpointSlice; `lab/setup_nexus.py` refreshes Nexus connectivity. Azure uses platform endpoints and requires separate identity/storage validation.
 

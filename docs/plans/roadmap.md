@@ -244,3 +244,14 @@ limits. The abstaining v1 judge remains active.
 Next: resume the production resource investigation, then run the unchanged full
 load gate and reviewed route switch. OpenCost installation remains a separate
 proposed batch.
+
+### SigNoz dashboard repairs
+
+The [dashboard repair batch](signoz-dashboard-repairs.md) distinguishes browser
+and probe activity from normal SLO traffic, removes interval warnings and adds
+model-version selection. It also supplies coverage and gap-pool shift from the
+current resolution path. Temporary dashboards and diagnostic metric transport
+were checked; installation awaits acceptance.
+
+Next: activate the accepted batch and verify a new comparison's retained pool
+against its coverage gauge, then resume the unchanged production load gate.

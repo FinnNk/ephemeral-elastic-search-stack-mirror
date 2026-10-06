@@ -26,7 +26,7 @@ Open `http://127.0.0.1:18090` while it runs. Stopping the forward closes that di
 
 ## Investigate a search or model problem
 
-1. Open the search SLO or model-health dashboard. Select the relevant time range, service/version, tier and traffic cohort. Note whether the issue is slow success, an error, low coverage or missing telemetry.
+1. Open the [search dashboard](https://signoz.localhost:34443/dashboard/01a0e51c-1043-79cb-94a8-9511cb0c665b) or [model dashboard](https://signoz.localhost:34443/dashboard/01a0ea97-de6a-74fb-bbc2-319512f4a8d2). Select the time range and the `$environment` (search environment) or `$model_version` selector. Use Traces for further service and tier filters. Note whether the issue is slow success, an error, low coverage or missing telemetry.
 2. Find a trace for that service and time. A search trace has `search.request` → `search.query_understanding` / `search.elasticsearch`. Compare stage durations to locate the delay.
 3. For judgement inference, follow `judgement.evaluate` → `judgement.resolve` → `judgement.http` → `kserve.predict` → `model.http` → `model.predict`. The evaluator continues W3C context through both HTTP hops.
 4. Find the completion log with the same trace ID. Read its outcome and retained observation/report references. A sampled-out trace may have only a log; a missing span is not proof the operation succeeded.
@@ -38,11 +38,16 @@ The [investigation diagram](diagrams/interactive/observability-investigation.htm
 
 | View | Useful for | Limits and next action |
 | --- | --- | --- |
-| Search SLO | Normal-cohort eligible/good counts, percentages, allowance and burn; lifecycle success/deadline trends | Plots are interval increases selected by the time picker. Use the companion below for a coverage-verified seven-day verdict. |
-| Model health | Inference errors, outcomes, batch latency, labelled coverage and label mix | The calibrated model returns labels or abstains. Label mix and coverage describe its activity; they do not establish accuracy. Inspect source/model counts in the frozen report. |
-| Query-length input shift | Changes in which query-product pairs reach inference | Measures selection into inference, not drift against training data. Inspect recall and existing-label coverage before attributing a change to the model. |
+| Search activity | Whether the selected environment exports search counters, including probes and browser requests | Latest process counters reset on restart. They are not request totals for the selected window. |
+| Search SLO | Normal-cohort eligible/good counts, percentages, allowance and burn; lifecycle success/deadline trends | Interval increases use the time picker; operation panels are lab-wide. Use the companion below for a coverage-verified seven-day verdict. |
+| Model health | Inference errors, outcomes, batch latency, labelled coverage and label mix | Select `$model_version` to avoid combining historical judges. Version 1 abstains on every gap. These signals describe activity, not relevance accuracy. |
+| Query-length gap-pool shift | Differences between the frozen query mix and pairs needing resolution | Includes cached resolution outcomes. It measures which queries lack labels, not drift against training data. |
 
-Input shift is Jensen–Shannon divergence, bounded 0–1. The reference has one occurrence of each frozen query; the observed side is the query-length mix of inferred pairs. No inference attempts means no divergence value. The metric dimensions are the numbered model version and fixed feature name; detailed counts remain in frozen artefacts.
+Gap-pool shift is Jensen–Shannon divergence, bounded 0–1. The reference has one occurrence of each frozen query; the observed side is the query-length mix of pairs sent for gap resolution. No missing pairs means no new divergence value. Coverage and shift come from completed resolution pools and are separated by label selection: `gate`, `exploratory` or `demo`. Charts show interval averages of their last reported observations; exact pool counts remain in the frozen resolution report.
+
+An empty chart is not a passing check. Start with **Search activity**: ordinary browser requests are unclassified, offline comparisons use probes, and normal-phase Gatling requests use the normal cohort. Only the latter belongs in the SLO charts. A diagnostic request can explicitly use that cohort, but a small sample does not establish an SLO. Idle counters have zero increase, so percentages and mean latency have no value. Short bursts before the first counter export can be missing from increases. Chart intervals adapt to the selected time range.
+
+Coverage and gap-pool shift appear after a new additional-query or production-release comparison resolves its pool. Replaying retained scores makes no resolution calls. Neither dashboard reconstructs missing historical telemetry; widen the time window for earlier activity, or run a new comparison when appropriate.
 
 Older retained Search API images or NetworkPolicies may lack OTLP instrumentation/egress. Deploy an instrumented release before expecting search spans; do not reinterpret an old frozen release as the new implementation.
 

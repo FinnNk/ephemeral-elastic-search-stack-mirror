@@ -19,6 +19,8 @@ _eligible = None
 _good = None
 _deadline_good = None
 _duration = None
+_pool_coverage = None
+_input_shift = None
 _service_name = 'lab-control'
 
 SAFE_RESULT_FIELDS = (
@@ -32,7 +34,7 @@ GOOD_TERMINAL_STATES = frozenset({'complete', 'ready', 'deleted', 'verified'})
 
 def configure(service_name):
     """Enable OTLP/HTTP only when a gateway endpoint is configured."""
-    global _tracer, _eligible, _good, _deadline_good, _duration, _service_name
+    global _tracer, _eligible, _good, _deadline_good, _duration, _service_name, _pool_coverage, _input_shift
     _service_name = service_name
     endpoint = os.environ.get('OTEL_EXPORTER_OTLP_ENDPOINT', '').rstrip('/')
     if not endpoint or _tracer is not None:
@@ -68,6 +70,20 @@ def configure(service_name):
     _good = meter.create_counter('lab.operation.good', unit='{operation}')
     _deadline_good = meter.create_counter('lab.operation.deadline_good', unit='{operation}')
     _duration = meter.create_histogram('lab.operation.duration', unit='ms')
+    _pool_coverage = meter.create_gauge('lab.judgement.pool_coverage_percent', unit='%')
+    _input_shift = meter.create_gauge('lab.judgement.input_shift_jsd', unit='1')
+
+
+def judgement_pool(model_version, selection, required, judged, shift):
+    """Publish a completed resolution pool; telemetry must not change its result."""
+    attributes = {'lab.model.version': str(model_version), 'lab.judgement.selection': selection}
+    try:
+        if _pool_coverage is not None and required:
+            _pool_coverage.set(100 * judged / required, attributes)
+        if _input_shift is not None and shift is not None:
+            _input_shift.set(shift, attributes)
+    except Exception:
+        pass
 
 
 def request_span(method, path, headers):

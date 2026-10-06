@@ -46,11 +46,15 @@ class AdditionalResolutionTests(unittest.TestCase):
                         return api.register_queries(body['context'], base64.b64decode(body['query_bytes']), body['query_suite_sha256'])
                     return api.resolve(body['context'], body['pairs'], body['selection'])
                 with patch('additional_judgements.call', side_effect=call), \
-                        patch('additional_judgements.products_for', return_value=products):
+                        patch('additional_judgements.products_for', return_value=products), \
+                        patch('additional_judgements.judgement_pool') as observed:
                     first = resolve_extra(item, captured, canonical({'metrics': ['nDCG@10']}), {},
                         lambda payload, name: {'sha256': sha(payload), 'blob': 'runs/'+sha(payload)+'/'+name})
                     second = resolve_extra(item, captured, canonical({'metrics': ['nDCG@10']}), {},
                         lambda payload, name: {'sha256': sha(payload), 'blob': 'runs/'+sha(payload)+'/'+name})
+                self.assertEqual(observed.call_count, 2)
+                self.assertEqual(observed.call_args.args, ('1', 'exploratory', 6, 4, 0.0))
+                self.assertEqual(second['judgement_resolution']['input_shift']['observed'], 'gap_resolution_pairs')
                 self.assertEqual(len(predictions), 2)
                 self.assertEqual(second['judgement_resolution']['execution']['inferred_pairs'], 0)
                 self.assertEqual(second['judgement_resolution']['execution']['cache_hits'], 2)

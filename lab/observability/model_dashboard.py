@@ -13,9 +13,11 @@ NAME = 'relevance-lab-model-health'
 
 
 def metric(name, label, condition='', group=None, aggregation='increase', hidden=False):
+    condition = 'lab.model.version IN $model_version' + (' AND ' + condition if condition else '')
     query = {'name': label, 'signal': 'metrics', 'disabled': hidden,
-             'stepInterval': 60, 'filter': {'expression': condition},
+             'stepInterval': 0, 'filter': {'expression': condition},
              'aggregations': [{'metricName': name, 'timeAggregation': aggregation,
+                               'temporality': 'unspecified' if aggregation == 'avg' else 'cumulative',
                                'spaceAggregation': 'avg' if aggregation == 'avg' else 'sum'}]}
     if group:
         query['groupBy'] = [{'name': group}]
@@ -28,16 +30,21 @@ def text_panel():
         'plugin': {'kind': 'signoz/TextPanel', 'spec': {
             'mode': 'markdown',
             'text': ('**No data is unknown.** No inference calls means no activity, not a failed or healthy model. '
-                     'Check the chosen time window and collector. The bootstrap v1 model abstains on every gap. '
+                     'Select the model version and time window. Version 1 is the bootstrap judge and '
+                     'abstains on every gap. ALL combines historical model versions. '
+                     'Percentages and latency have no value during idle intervals. '
                      'Prediction mix, inference failures, batch latency and judged coverage '
                      'are operational signals, not relevance accuracy. The label-mix panel '
                      'has no model-labelled values until a reviewed model produces them.\n\n'
                      '**Input shift** is Jensen–Shannon divergence (0 to 1) between query-length '
-                     'buckets of the frozen observation queries and the pairs sent to the model. '
-                     'It measures selection into inference, not drift against model training data. '
+                     'buckets of the frozen observation queries and pairs sent for gap resolution, '
+                     'including cached outcomes. It measures which queries have missing labels, '
+                     'not drift against model training data. '
                      'Open a trace by `judgement.evaluate` or `judgement.http` and follow '
                      '`judgement.resolve` → `kserve.predict` → `model.http` → `model.predict`. '
-                     'The frozen resolution report owns exact inputs and coverage.'),
+                     'Coverage and gap-pool shift show interval averages of the last completed pool '
+                     'observations, grouped by label selection (gate, exploratory or demo). They are not a whole-window '
+                     'average or a gate verdict. The frozen resolution report owns exact inputs and coverage.'),
             'presentation': {'textAlign': 'left', 'verticalAlign': 'top'},
             'headerOptions': {'hide': False}}}, 'queries': []}}
 
@@ -63,14 +70,14 @@ def build():
           metric('lab.model.inference_duration.count', 'B', hidden=True),
           formula('F1', 'A/B')], 'ms'),
         ('coverage', 'Pooled pairs with a label %',
-         [metric('lab.judgement.pool_coverage_percent', 'A', aggregation='avg')], 'percent'),
+         [metric('lab.judgement.pool_coverage_percent', 'A', group='lab.judgement.selection', aggregation='avg')], 'percent'),
         ('judgements', 'Judgement API responses by outcome',
          [metric('lab.judgement.results', 'A', group='lab.judgement.outcome')], 'none'),
         ('labels', 'Model label mix',
          [metric('lab.model.predictions', 'A', "lab.model.outcome = 'labelled'",
                  group='lab.model.label')], 'none'),
-        ('shift', 'Query-length input shift (JSD)',
-         [metric('lab.model.input_shift_jsd', 'A', aggregation='avg')], 'none'),
+        ('shift', 'Query-length gap-pool shift (JSD)',
+         [metric('lab.judgement.input_shift_jsd', 'A', group='lab.judgement.selection', aggregation='avg')], 'none'),
     ]
     panels = {'guidance': text_panel()}
     panels.update({key: panel(title, queries, unit) for key, title, queries, unit in definitions})
@@ -86,7 +93,12 @@ def build():
             'spec': {'display': {'name': 'Model health and input shift',
                                  'description': 'Inference, abstention, coverage and frozen-input mix.'},
                      'layouts': [{'kind': 'Grid', 'spec': {'items': items}}],
-                     'panels': panels, 'variables': []}}
+                     'panels': panels, 'variables': [{
+                         'kind': 'ListVariable', 'spec': {
+                             'name': 'model_version', 'display': {'name': 'Model version'},
+                             'allowMultiple': True, 'allowAllValue': True,
+                             'plugin': {'kind': 'signoz/DynamicVariable', 'spec': {
+                                 'name': 'lab.model.version', 'signal': 'metrics'}}}}]}}
 
 
 def apply(url, token):

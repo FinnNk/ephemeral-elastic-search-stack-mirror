@@ -25,14 +25,23 @@
               "x": 0,
               "y": 0,
               "width": 12,
-              "height": 3,
+              "height": 5,
               "content": {
                 "$ref": "#/spec/panels/guidance"
               }
             },
             {
               "x": 0,
-              "y": 3,
+              "y": 5,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/activity"
+              }
+            },
+            {
+              "x": 6,
+              "y": 5,
               "width": 6,
               "height": 6,
               "content": {
@@ -40,8 +49,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 3,
+              "x": 0,
+              "y": 11,
               "width": 6,
               "height": 6,
               "content": {
@@ -49,8 +58,8 @@
               }
             },
             {
-              "x": 0,
-              "y": 9,
+              "x": 6,
+              "y": 11,
               "width": 6,
               "height": 6,
               "content": {
@@ -58,8 +67,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 9,
+              "x": 0,
+              "y": 17,
               "width": 6,
               "height": 6,
               "content": {
@@ -67,8 +76,8 @@
               }
             },
             {
-              "x": 0,
-              "y": 15,
+              "x": 6,
+              "y": 17,
               "width": 6,
               "height": 6,
               "content": {
@@ -76,8 +85,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 15,
+              "x": 0,
+              "y": 23,
               "width": 6,
               "height": 6,
               "content": {
@@ -85,8 +94,8 @@
               }
             },
             {
-              "x": 0,
-              "y": 21,
+              "x": 6,
+              "y": 23,
               "width": 6,
               "height": 6,
               "content": {
@@ -94,8 +103,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 21,
+              "x": 0,
+              "y": 29,
               "width": 6,
               "height": 6,
               "content": {
@@ -103,8 +112,8 @@
               }
             },
             {
-              "x": 0,
-              "y": 27,
+              "x": 6,
+              "y": 29,
               "width": 6,
               "height": 6,
               "content": {
@@ -112,8 +121,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 27,
+              "x": 0,
+              "y": 35,
               "width": 6,
               "height": 6,
               "content": {
@@ -121,8 +130,8 @@
               }
             },
             {
-              "x": 0,
-              "y": 33,
+              "x": 6,
+              "y": 35,
               "width": 6,
               "height": 6,
               "content": {
@@ -144,7 +153,7 @@
             "kind": "signoz/TextPanel",
             "spec": {
               "mode": "markdown",
-              "text": "**No data is unknown, not healthy.** An instrumented service with no requests has no activity. A release without the OTLP endpoint exports no search metrics. Check the environment, time window and collector before interpreting an empty panel. Check the eligible count and at least 100 normal requests before interpreting search percentages. The current time picker sets the calculation window; the policy window is 7 days, with 99% success and 95% responsiveness targets. A missing or partial collection interval cannot be treated as good.\n\nThe charts show per-interval increases. Negative remaining budget means the interval exceeded its allowance. Inspect the same service, cohort and time in Traces and Logs, then open the immutable run report for the promotion decision.",
+              "text": "**No data is unknown, not healthy.** An instrumented service with no requests has no activity. A release without the OTLP endpoint exports no search metrics. Check the environment, time window and collector before interpreting an empty panel. Check the eligible count and at least 100 normal requests before interpreting search percentages. The current time picker sets the calculation window; the policy window is 7 days, with 99% success and 95% responsiveness targets. A missing or partial collection interval cannot be treated as good.\n\n**Search activity** shows the latest process counters, including probes and unclassified browser requests. Counters reset when a process restarts; they are not totals for the selected window. The SLO charts below use only normal traffic. An idle counter has zero increase, so its percentages have no value. Short bursts before the first export can be missing from increases.\n\nThe remaining charts show per-interval increases. Negative remaining budget means the interval exceeded its allowance. Inspect the same service, cohort and time in Traces and Logs, then open the immutable run report for the promotion decision.",
               "presentation": {
                 "textAlign": "left",
                 "verticalAlign": "top"
@@ -155,6 +164,72 @@
             }
           },
           "queries": []
+        }
+      },
+      "activity": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Search activity by traffic class (process counters)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 0,
+                          "filter": {
+                            "expression": "deployment.environment.name IN $environment"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.traffic_class"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
         }
       },
       "eligible": {
@@ -196,13 +271,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": false,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -256,13 +332,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": false,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.success_good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -316,13 +393,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": false,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.responsive_good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -376,13 +454,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -395,13 +474,14 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.success_good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -463,13 +543,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -482,13 +563,14 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.responsive_good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -550,13 +632,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -569,13 +652,14 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.success_good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -637,13 +721,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -656,13 +741,14 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.responsive_good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -724,13 +810,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -743,13 +830,14 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.success_good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -811,13 +899,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -830,13 +919,14 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.traffic_class = 'normal' AND deployment.environment.name IN $environment"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.search.responsive_good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -898,13 +988,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.operation.kind IN ['delivery.verify', 'environment.delete', 'environment.delete_many', 'environment.expire']"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.operation.eligible",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -922,13 +1013,14 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": "lab.operation.kind IN ['delivery.verify', 'environment.delete', 'environment.delete_many', 'environment.expire']"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.operation.deadline_good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -995,13 +1087,14 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": ""
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.operation.eligible",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }
@@ -1019,13 +1112,14 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
                             "expression": ""
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.operation.good",
+                              "temporality": "cumulative",
                               "timeAggregation": "increase",
                               "spaceAggregation": "sum"
                             }

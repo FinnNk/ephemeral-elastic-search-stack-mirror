@@ -10,6 +10,31 @@ from operation_telemetry import GOOD_TERMINAL_STATES, correlation, operation
 
 
 class OperationTelemetryContract(unittest.TestCase):
+    def test_pool_coverage_separates_selection_and_keeps_empty_inputs_unknown(self):
+        class Gauge:
+            def __init__(self):
+                self.values = []
+
+            def set(self, value, attributes):
+                self.values.append((value, attributes))
+
+        coverage, shift = Gauge(), Gauge()
+        with patch.object(operation_telemetry, '_pool_coverage', coverage), \
+                patch.object(operation_telemetry, '_input_shift', shift):
+            operation_telemetry.judgement_pool('1', 'exploratory', 8, 2, 0.25)
+            operation_telemetry.judgement_pool('1', 'gate', 0, 0, None)
+        attributes = {'lab.model.version': '1', 'lab.judgement.selection': 'exploratory'}
+        self.assertEqual(coverage.values, [(25, attributes)])
+        self.assertEqual(shift.values, [(0.25, attributes)])
+
+    def test_pool_export_failure_does_not_interrupt_resolution(self):
+        class BrokenGauge:
+            def set(self, *_):
+                raise RuntimeError('collector unavailable')
+
+        with patch.object(operation_telemetry, '_pool_coverage', BrokenGauge()):
+            operation_telemetry.judgement_pool('1', 'gate', 8, 2, None)
+
     def test_job_correlation_is_optional(self):
         self.assertEqual(correlation(baseline_fingerprint='a' * 64), {})
 

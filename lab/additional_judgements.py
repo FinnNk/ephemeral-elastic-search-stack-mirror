@@ -14,6 +14,8 @@ from blob_config import service, settings
 from common import ROOT
 sys.path.insert(0, str(ROOT))
 from judgements.core import pool, resolve
+from judgements.drift import input_shift
+from operation_telemetry import judgement_pool
 from variant_gate import canonical, sha
 
 
@@ -116,8 +118,14 @@ def resolve_extra(item, observations, specification, catalogue, retain):
     payload = b''.join(canonical(row) for row in labels)
     receipt.update(model=model, inference_identity=health['inference'],
                    query_registration=registration, execution={**execution, 'seconds': round(time.monotonic()-started, 3)})
+    receipt['input_shift'] = input_shift(observations, receipt['attempts'])
+    receipt['input_shift']['observed'] = 'gap_resolution_pairs'
+    references = {'judgements': retain(payload, 'judgements.jsonl'),
+                  'resolution': retain(canonical(receipt), 'judgement-resolution.json')}
+    pool_keys = {(pair['query_id'], pair['product_id']) for pair in pairs}
+    judged = len(pool_keys & {(row['query_id'], row['product_id']) for row in labels})
+    judgement_pool(model['version'], selection, len(pool_keys), judged,
+                   receipt['input_shift']['js_divergence'])
     return {**item, 'judgements_rows': labels, 'judgement_bytes': payload,
             'judgement_sha256': sha(payload), 'judgement_selection': selection,
-            'judgement_resolution': receipt, 'resolved_references': {
-                'judgements': retain(payload, 'judgements.jsonl'),
-                'resolution': retain(canonical(receipt), 'judgement-resolution.json')}}
+            'judgement_resolution': receipt, 'resolved_references': references}

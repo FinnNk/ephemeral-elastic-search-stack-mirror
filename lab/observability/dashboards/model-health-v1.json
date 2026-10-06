@@ -126,7 +126,7 @@
             "kind": "signoz/TextPanel",
             "spec": {
               "mode": "markdown",
-              "text": "**No data is unknown.** No inference calls means no activity, not a failed or healthy model. Check the chosen time window and collector. The bootstrap v1 model abstains on every gap. Prediction mix, inference failures, batch latency and judged coverage are operational signals, not relevance accuracy. The label-mix panel has no model-labelled values until a reviewed model produces them.\n\n**Input shift** is Jensen\u2013Shannon divergence (0 to 1) between query-length buckets of the frozen observation queries and the pairs sent to the model. It measures selection into inference, not drift against model training data. Open a trace by `judgement.evaluate` or `judgement.http` and follow `judgement.resolve` \u2192 `kserve.predict` \u2192 `model.http` \u2192 `model.predict`. The frozen resolution report owns exact inputs and coverage.",
+              "text": "**No data is unknown.** No inference calls means no activity, not a failed or healthy model. Select the model version and time window. Version 1 is the bootstrap judge and abstains on every gap. ALL combines historical model versions. Percentages and latency have no value during idle intervals. Prediction mix, inference failures, batch latency and judged coverage are operational signals, not relevance accuracy. The label-mix panel has no model-labelled values until a reviewed model produces them.\n\n**Input shift** is Jensen\u2013Shannon divergence (0 to 1) between query-length buckets of the frozen observation queries and pairs sent for gap resolution, including cached outcomes. It measures which queries have missing labels, not drift against model training data. Open a trace by `judgement.evaluate` or `judgement.http` and follow `judgement.resolve` \u2192 `kserve.predict` \u2192 `model.http` \u2192 `model.predict`. Coverage and gap-pool shift show interval averages of the last completed pool observations, grouped by label selection (gate, exploratory or demo). They are not a whole-window average or a gate verdict. The frozen resolution report owns exact inputs and coverage.",
               "presentation": {
                 "textAlign": "left",
                 "verticalAlign": "top"
@@ -178,14 +178,15 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": false,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": ""
+                            "expression": "lab.model.version IN $model_version"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.model.predictions",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ],
@@ -243,14 +244,15 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": ""
+                            "expression": "lab.model.version IN $model_version"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.model.predictions",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ]
@@ -262,14 +264,15 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": "lab.model.outcome = 'abstain'"
+                            "expression": "lab.model.version IN $model_version AND lab.model.outcome = 'abstain'"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.model.predictions",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ]
@@ -330,14 +333,15 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": false,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": ""
+                            "expression": "lab.model.version IN $model_version"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.model.requests",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ],
@@ -395,14 +399,15 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": ""
+                            "expression": "lab.model.version IN $model_version"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.model.requests",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ]
@@ -414,14 +419,15 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": "lab.model.request_outcome = 'error'"
+                            "expression": "lab.model.version IN $model_version AND lab.model.request_outcome = 'error'"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.model.requests",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ]
@@ -482,14 +488,15 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": ""
+                            "expression": "lab.model.version IN $model_version"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.model.inference_duration.sum",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ]
@@ -501,14 +508,15 @@
                           "name": "B",
                           "signal": "metrics",
                           "disabled": true,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": ""
+                            "expression": "lab.model.version IN $model_version"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.model.inference_duration.count",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ]
@@ -569,15 +577,21 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": false,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": ""
+                            "expression": "lab.model.version IN $model_version"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.judgement.pool_coverage_percent",
                               "timeAggregation": "avg",
+                              "temporality": "unspecified",
                               "spaceAggregation": "avg"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.judgement.selection"
                             }
                           ]
                         }
@@ -629,14 +643,15 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": false,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": ""
+                            "expression": "lab.model.version IN $model_version"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.judgement.results",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ],
@@ -694,14 +709,15 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": false,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": "lab.model.outcome = 'labelled'"
+                            "expression": "lab.model.version IN $model_version AND lab.model.outcome = 'labelled'"
                           },
                           "aggregations": [
                             {
                               "metricName": "lab.model.predictions",
                               "timeAggregation": "increase",
+                              "temporality": "cumulative",
                               "spaceAggregation": "sum"
                             }
                           ],
@@ -724,7 +740,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Query-length input shift (JSD)"
+            "name": "Query-length gap-pool shift (JSD)"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -759,15 +775,21 @@
                           "name": "A",
                           "signal": "metrics",
                           "disabled": false,
-                          "stepInterval": 60,
+                          "stepInterval": 0,
                           "filter": {
-                            "expression": ""
+                            "expression": "lab.model.version IN $model_version"
                           },
                           "aggregations": [
                             {
-                              "metricName": "lab.model.input_shift_jsd",
+                              "metricName": "lab.judgement.input_shift_jsd",
                               "timeAggregation": "avg",
+                              "temporality": "unspecified",
                               "spaceAggregation": "avg"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "name": "lab.judgement.selection"
                             }
                           ]
                         }
@@ -781,6 +803,25 @@
         }
       }
     },
-    "variables": []
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "model_version",
+          "display": {
+            "name": "Model version"
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "lab.model.version",
+              "signal": "metrics"
+            }
+          }
+        }
+      }
+    ]
   }
 }
