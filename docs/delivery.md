@@ -11,6 +11,14 @@ the lab using [control runtime](control-runtime.md).
 
 ![Source build, frozen comparison and merge decision](diagrams/rendered/variant-merge-gate.png)
 
+## Relevance change lifecycle
+
+![Relevance change from source PR to simulated production](diagrams/rendered/relevance-sdlc.png)
+
+[Open the interactive workflow](diagrams/interactive/relevance-sdlc.html).
+The source gate checks the PR commit. Deployment uses a separate build of the
+merged commit, promoted unchanged through three reviewed targets.
+
 ## Make and evaluate a change
 
 1. In `delivery-source`, create a branch, change the API or ranking settings and

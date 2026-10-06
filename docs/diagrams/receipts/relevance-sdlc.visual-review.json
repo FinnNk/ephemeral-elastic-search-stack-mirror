@@ -1,0 +1,12 @@
+{
+  "observed_at": "2026-10-06T08:38:02.679088+00:00",
+  "artifact": "interactive/relevance-sdlc.html",
+  "sha256": "02c838fa765044e45f0d7366f1b93eb81ef1bbc270703ab5302eab10e9eedd2e",
+  "reviewed_image": "rendered/relevance-sdlc.png",
+  "viewport": [
+    1440,
+    900
+  ],
+  "review": "Inspected node labels, separated source/deployment decisions, return path, arrow labels and evidence cards. No overlapping labels or clipped nodes observed.",
+  "scope": "Diagram presentation only; no runtime workflow changed."
+}

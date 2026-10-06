@@ -1,6 +1,6 @@
 # Architecture diagrams
 
-Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These twenty-five views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
+Open the [diagram gallery](index.html) in a browser, or start with the [system context](rendered/01-context.svg). These twenty-six views accompany the [prototype design](../prototype-design.md). The recovery views show implemented selection logic and the local deployment includes the verified S3 snapshot repository.
 
 ## Reading order
 
@@ -35,6 +35,7 @@ The gallery groups diagrams by task. The identifiers below remain stable.
 
 | View | Contents | Editable source |
 | --- | --- | --- |
+| [Relevance change lifecycle](interactive/relevance-sdlc.html) | Source PR, frozen API comparison, recorded exception and three reviewed deployment targets. | [Archify workflow](archify/relevance-sdlc.json) |
 | [18 · C4 release delivery](rendered/18-delivery.svg) | Build, artefact verification, reviewed state, Argo deployment and API verification. | [Structurizr DSL](workspace.dsl) |
 | [19 · Promote a release](interactive/release-promotion.html) | Frozen baseline/candidate checks, three targets and full-definition rollback. | [Archify workflow](archify/release-promotion.json) |
 
@@ -167,7 +168,7 @@ Prerequisites: Node.js, Git, a working Docker daemon with Linux containers and, 
    node docs/diagrams/render.mjs --browser
    ```
 
-   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders nine C4 SVGs and PNG inspection copies, validates and delivers sixteen Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
+   This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders nine C4 SVGs and PNG inspection copies, validates and delivers seventeen Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
 
    For a focused rebuild, use `--c4` or `--archify`, optionally with `--browser`. The script checks the Archify commit before use. Docker pulls the pinned Structurizr image when missing. A Docker connection failure means the daemon must be started before retrying.
 

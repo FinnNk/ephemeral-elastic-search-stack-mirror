@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\archify\\relevance-sdlc.json",
+  "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\relevance-sdlc.html",
+  "specification": {
+    "sha256": "2a7b107f72b1dae13ae2c79d53bffaf3780a288a7a63c90500df8a84a7791c6d",
+    "bytes": 7065
+  },
+  "artifact": {
+    "sha256": "02c838fa765044e45f0d7366f1b93eb81ef1bbc270703ab5302eab10e9eedd2e",
+    "bytes": 822196
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

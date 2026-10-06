@@ -40,7 +40,7 @@ if (all || args.has('--archify')) {
   const cli = path.join(checkout, 'archify/bin/archify.mjs');
   fs.mkdirSync(path.join(dir, 'receipts'), {recursive: true});
   fs.mkdirSync(path.join(dir, 'interactive'), {recursive: true});
-  for (const [name, type] of [['change-to-comparison', 'workflow'], ['pr-to-verdict', 'workflow'], ['variant-merge-gate', 'workflow'], ['release-promotion', 'workflow'], ['observability-investigation', 'workflow'], ['environment-lifecycle', 'lifecycle'], ['evaluation-dataflow', 'dataflow'], ['judgement-coverage', 'workflow'], ['label-qualification', 'workflow'], ['shared-index-reuse', 'architecture'], ['result-regression', 'workflow'], ['performance-check', 'workflow'], ['traffic-workload', 'workflow'], ['schema-evolution', 'workflow'], ['live-index-clone', 'workflow'], ['snapshot-restore', 'workflow']]) {
+  for (const [name, type] of [['relevance-sdlc', 'workflow'], ['change-to-comparison', 'workflow'], ['pr-to-verdict', 'workflow'], ['variant-merge-gate', 'workflow'], ['release-promotion', 'workflow'], ['observability-investigation', 'workflow'], ['environment-lifecycle', 'lifecycle'], ['evaluation-dataflow', 'dataflow'], ['judgement-coverage', 'workflow'], ['label-qualification', 'workflow'], ['shared-index-reuse', 'architecture'], ['result-regression', 'workflow'], ['performance-check', 'workflow'], ['traffic-workload', 'workflow'], ['schema-evolution', 'workflow'], ['live-index-clone', 'workflow'], ['snapshot-restore', 'workflow']]) {
     const input = path.join(dir, 'archify', `${name}.json`);
     const output = path.join(dir, 'interactive', `${name}.html`);
     run(process.execPath, [cli, 'validate', type, input, '--quality', 'showcase']);

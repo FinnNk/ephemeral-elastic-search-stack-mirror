@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [relevance change lifecycle diagram](relevance-sdlc-diagram.md) covers
+source CI, frozen comparison, merge decisions and reviewed promotion. It is
+linked from the gallery and delivery guide. Next: review the diagram and resume
+the [sneakers walkthrough](sneakers-demo-walkthrough.md).
+
 [Gitea 28.0.0](gitea-28-upgrade.md) is installed using the existing chart,
 SQLite storage, OIDC and runners. Its complete stopped-server backup is retained
 in ignored lab state. The image pin and operations guide are prepared for review.
