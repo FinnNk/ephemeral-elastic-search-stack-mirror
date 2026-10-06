@@ -9,7 +9,8 @@ Separate the PR-head merge gate from the build of the merged commit.
 ## Acceptance and result
 
 - Include the frozen baseline/variant APIs, pooled missing labels and shared
-  judgement selection. Compatible runtimes and indexes may be reused.
+  judgement selection. Centre the capture pair around the common vertical axis.
+  Compatible runtimes and indexes may be reused.
 - Show current-head gating, iteration and eligible recorded exceptions.
 - Show unchanged release promotion, reviewed Git state, Argo CD deployment,
   verification and the production normal/peak Gatling gate.

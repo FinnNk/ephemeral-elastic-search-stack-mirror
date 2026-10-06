@@ -101,7 +101,7 @@
     {
       "id": "capture",
       "lane": "capture",
-      "col": 1,
+      "col": 0,
       "type": "database",
       "label": "Capture baseline results",
       "sublabel": "Pinned baseline API and index",
@@ -238,10 +238,10 @@
     {
       "to": "capture",
       "label": "",
-      "role": "main",
+      "role": "branch",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight",
+      "route": "drop",
       "from": "build"
     },
     {
@@ -256,10 +256,10 @@
     {
       "to": "labels",
       "label": "",
-      "role": "main",
+      "role": "branch",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight",
+      "route": "drop",
       "from": "capture"
     },
     {
@@ -381,9 +381,6 @@
     }
   ],
   "mainPath": [
-    "change",
-    "build",
-    "capture",
     "labels",
     "score",
     "gate",

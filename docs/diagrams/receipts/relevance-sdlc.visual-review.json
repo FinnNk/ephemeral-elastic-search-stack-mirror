@@ -1,12 +1,12 @@
 {
-  "observed_at": "2026-10-06T09:07:31.398963+00:00",
+  "observed_at": "2026-10-06T09:10:25.843330+00:00",
   "artifact": "interactive/relevance-sdlc.html",
-  "sha256": "cbabd8622e18eeebaf8cc7bc356583b04744f023a4025ab9733a0ac56cd5ee31",
+  "sha256": "bee2166cb56ba2db90e6124bc3a514b5fdad7fa0263d739d52f62526cc6b1b4b",
   "reviewed_image": "rendered/relevance-sdlc.png",
   "viewport": [
     1440,
     900
   ],
-  "review": "Inspected the complete warm-run timeline: timing labels for stages 2\u201313, horizontal capture split and three gate outcomes remain readable. Timing key distinguishes targets, SLOs, estimates and variable human time. No clipping or connector overlaps observed.",
+  "review": "Inspected the full warm-run timeline. Stage 3 baseline and variant boxes are symmetric around the common vertical axis; fork and join connectors are balanced. Timing labels, gate branches and downstream stages remain readable, with no clipping or connector overlaps.",
   "scope": "Diagram presentation only; no runtime workflow changed."
 }
