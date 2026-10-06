@@ -17,6 +17,8 @@ the lab using [control runtime](control-runtime.md).
 
 [Open the interactive timeline](diagrams/interactive/relevance-sdlc.html).
 Read from top to bottom; spacing shows sequence, not elapsed time.
+Stage timings cover warm runs only, with reused judgements and a compatible index.
+Review and queueing time are additional. See the [timing sources and boundaries](plans/relevance-sdlc-diagram.md#timing-sources-and-boundaries).
 The source gate checks the PR commit. Deployment uses a separate build of the
 merged commit, promoted unchanged through three reviewed targets.
 

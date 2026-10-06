@@ -32,51 +32,51 @@
     },
     {
       "id": "build",
-      "label": "Development"
+      "label": "Development \u00b7 target <5 min"
     },
     {
       "id": "capture",
-      "label": "Offline evaluation"
+      "label": "Capture \u00b7 ~1 min (both APIs)"
     },
     {
       "id": "labels",
-      "label": "Offline evaluation"
+      "label": "Judgements \u00b7 ~5\u20136 s (cached replay)"
     },
     {
       "id": "score",
-      "label": "Offline evaluation"
+      "label": "Report \u00b7 seconds (estimate)"
     },
     {
       "id": "gate",
-      "label": "Source acceptance"
+      "label": "Gate \u00b7 seconds (estimate)"
     },
     {
       "id": "outcome",
-      "label": "Source acceptance"
+      "label": "Decision \u00b7 human time varies"
     },
     {
       "id": "merge",
-      "label": "Source acceptance"
+      "label": "Merge \u00b7 seconds after approval"
     },
     {
       "id": "mainbuild",
-      "label": "Release delivery"
+      "label": "Release build \u00b7 target <5 min"
     },
     {
       "id": "integration",
-      "label": "Release delivery"
+      "label": "Integration \u00b7 ~2\u20135 min + deploy \u22642 min"
     },
     {
       "id": "staging",
-      "label": "Release delivery"
+      "label": "Staging \u00b7 ~2\u20135 min + deploy \u22642 min"
     },
     {
       "id": "load",
-      "label": "Release delivery"
+      "label": "Load gate \u00b7 \u226542 min + setup"
     },
     {
       "id": "production",
-      "label": "Release delivery"
+      "label": "Production \u00b7 deploy SLO \u22642 min"
     }
   ],
   "nodes": [
@@ -87,7 +87,7 @@
       "type": "frontend",
       "label": "Change API and open PR",
       "sublabel": "Local tests \u00b7 variants \u00b7 intent",
-      "width": 270
+      "width": 258
     },
     {
       "id": "build",
@@ -96,7 +96,7 @@
       "type": "backend",
       "label": "Build the exact PR commit",
       "sublabel": "Pinned image and receipt in Nexus",
-      "width": 270
+      "width": 258
     },
     {
       "id": "capture",
@@ -105,7 +105,7 @@
       "type": "database",
       "label": "Capture baseline results",
       "sublabel": "Pinned baseline API and index",
-      "width": 270
+      "width": 258
     },
     {
       "id": "candidate",
@@ -114,7 +114,7 @@
       "type": "database",
       "label": "Capture variant results",
       "sublabel": "Pinned API and index per variant",
-      "width": 270
+      "width": 258
     },
     {
       "id": "labels",
@@ -123,7 +123,7 @@
       "type": "backend",
       "label": "Resolve missing judgements",
       "sublabel": "Pool results \u00b7 freeze shared labels",
-      "width": 270
+      "width": 258
     },
     {
       "id": "score",
@@ -132,7 +132,7 @@
       "type": "backend",
       "label": "Score and review the comparison",
       "sublabel": "nDCG \u00b7 RBO \u00b7 Jaccard \u00b7 coverage \u00b7 timing",
-      "width": 270
+      "width": 258
     },
     {
       "id": "gate",
@@ -141,7 +141,7 @@
       "type": "security",
       "label": "Check the source gate",
       "sublabel": "All selected variants and required suites",
-      "width": 270
+      "width": 258
     },
     {
       "id": "pass",
@@ -150,7 +150,7 @@
       "type": "backend",
       "label": "Gate passed",
       "sublabel": "Required checks satisfied",
-      "width": 270
+      "width": 258
     },
     {
       "id": "decision",
@@ -159,7 +159,7 @@
       "type": "security",
       "label": "Review a bounded regression",
       "sublabel": "Accept in Git or revise the change",
-      "width": 270
+      "width": 258
     },
     {
       "id": "blocked",
@@ -168,7 +168,7 @@
       "type": "frontend",
       "label": "Revise the change",
       "sublabel": "Hard block or regression rejected",
-      "width": 270
+      "width": 258
     },
     {
       "id": "merge",
@@ -177,7 +177,7 @@
       "type": "security",
       "label": "Merge the source PR",
       "sublabel": "Current-head evidence and review",
-      "width": 270
+      "width": 258
     },
     {
       "id": "mainbuild",
@@ -186,7 +186,7 @@
       "type": "backend",
       "label": "Build the merged source commit",
       "sublabel": "One release for all targets",
-      "width": 270
+      "width": 258
     },
     {
       "id": "integration",
@@ -195,7 +195,7 @@
       "type": "cloud",
       "label": "Promote to integration",
       "sublabel": "Evaluate \u00b7 review PR \u00b7 deploy \u00b7 verify",
-      "width": 270
+      "width": 258
     },
     {
       "id": "staging",
@@ -204,7 +204,7 @@
       "type": "cloud",
       "label": "Promote to staging",
       "sublabel": "Same release \u00b7 evaluate \u00b7 review \u00b7 verify",
-      "width": 270
+      "width": 258
     },
     {
       "id": "load",
@@ -213,7 +213,7 @@
       "type": "security",
       "label": "Pass the production load gate",
       "sublabel": "Gatling normal and peak load on previews",
-      "width": 270
+      "width": 258
     },
     {
       "id": "production",
@@ -222,7 +222,7 @@
       "type": "cloud",
       "label": "Promote to simulated production",
       "sublabel": "Review \u00b7 Argo CD \u00b7 verify API",
-      "width": 270
+      "width": 258
     }
   ],
   "edges": [
@@ -418,6 +418,15 @@
       "items": [
         "Use Actions for each target. A separate reviewer approves the exact delivery-state PR before merge and deployment verification.",
         "Rollback re-evaluates a retained release through the same reviewed process."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Timing key",
+      "items": [
+        "Warm runs only: retained images, compatible index and reused judgements; 1,000 queries and two APIs.",
+        "Build times are targets; deployment times are SLOs. Other estimates are labelled or explained in the linked timing key.",
+        "Review and queueing time are additional. Stage height does not represent duration."
       ]
     }
   ]

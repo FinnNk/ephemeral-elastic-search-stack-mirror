@@ -1,12 +1,12 @@
 {
-  "observed_at": "2026-10-06T08:56:24.887572+00:00",
+  "observed_at": "2026-10-06T09:07:31.398963+00:00",
   "artifact": "interactive/relevance-sdlc.html",
-  "sha256": "2e8278a7feeef9a76aaa977afec767f04d2dba1dbe612e437b0e74fd94fbb533",
+  "sha256": "cbabd8622e18eeebaf8cc7bc356583b04744f023a4025ab9733a0ac56cd5ee31",
   "reviewed_image": "rendered/relevance-sdlc.png",
   "viewport": [
     1440,
     900
   ],
-  "review": "Inspected the full timeline: baseline and variant capture split horizontally and join at pooled judgements. Gate outcomes show pass, bounded review and revision. Accepted decisions rejoin before source merge. No backward loops, overlapping labels or clipped nodes observed.",
+  "review": "Inspected the complete warm-run timeline: timing labels for stages 2\u201313, horizontal capture split and three gate outcomes remain readable. Timing key distinguishes targets, SLOs, estimates and variable human time. No clipping or connector overlaps observed.",
   "scope": "Diagram presentation only; no runtime workflow changed."
 }
