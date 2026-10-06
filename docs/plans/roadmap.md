@@ -6,13 +6,15 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-[Delivery notebook comparisons](delivery-notebook-comparisons.md) and their
-status/proxy fixes are merged and activated. The user's first production-slot
-notebook comparison completed all 50 queries per side, and its download is
-verified. A [saved notebook browser view](notebook-browser-view.md) is ready for
-review, with links from completed comparisons and inline feedback. Next: accept
-and activate the viewer, inspect that existing notebook, then compare the
-prepared delivery previews.
+[Delivery notebook comparisons](delivery-notebook-comparisons.md), their
+status/proxy fixes and the [saved notebook browser view](notebook-browser-view.md)
+are merged and activated. The user's first production-slot notebook comparison
+completed all 50 queries per side. Its retained download and browser route are
+verified. The next review batch is the
+[read-only release dashboard](read-only-release-dashboard.md): searchable release
+cards and a connected tree from source merge, including its recorded gate, to
+active production. Next: accept and activate the dashboard, then resume the
+promotion and purpose-created-preview notebook walkthroughs.
 
 The [SigNoz dashboard repairs](signoz-dashboard-repairs.md) are merged and
 installed at their existing URLs. The updated coordinator is Ready on both

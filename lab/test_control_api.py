@@ -135,6 +135,38 @@ class LocalControlApi(unittest.TestCase):
         with urllib.request.urlopen(self.base + '/') as response:
             self.assertIn(b'Search environments', response.read())
 
+    def test_release_dashboard_requires_identity_and_validates_run(self):
+        with urllib.request.urlopen(self.base + '/release-dashboard') as response:
+            self.assertIn(b'Release tree', response.read())
+        with self.assertRaises(urllib.error.HTTPError) as error:
+            urllib.request.urlopen(self.base + '/api/delivery/dashboard')
+        self.assertEqual(error.exception.code, 401)
+        cookie = self.login('admin')
+        with patch('release_dashboard.snapshot', return_value={'selected': {'run':158}}) as snapshot:
+            request = urllib.request.Request(self.base + '/api/delivery/dashboard?run=158',headers={'Cookie':cookie})
+            with urllib.request.urlopen(request) as response:
+                self.assertEqual(json.load(response)['selected']['run'],158)
+            self.assertEqual(snapshot.call_args.args[1],158)
+            for value in ('0','-1','abc','158&run=165'):
+                request = urllib.request.Request(self.base + '/api/delivery/dashboard?run='+value,headers={'Cookie':cookie})
+                # Zero is rejected by the snapshot itself; negative/non-numeric
+                # and duplicate values are rejected before any provider read.
+                if value == '0':
+                    snapshot.side_effect = ValueError('Build run must be a positive integer.')
+                with self.assertRaises(urllib.error.HTTPError) as error:
+                    urllib.request.urlopen(request)
+                self.assertEqual(error.exception.code,400)
+
+    def test_actions_identity_cannot_read_dashboard(self):
+        service = {'username':'actions','is_admin':False,'is_delivery_service':True}
+        with patch.object(Handler,'oidc_provider',Mock(verify=Mock(return_value=service))), \
+                patch('release_dashboard.snapshot') as snapshot:
+            request=urllib.request.Request(self.base+'/api/delivery/dashboard',headers={'Authorization':'Bearer fixture'})
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(request)
+            self.assertEqual(error.exception.code,403)
+            snapshot.assert_not_called()
+
     def test_selected_input_hashes_reach_comparison(self):
         cookie = self.login('admin')
         inputs = urllib.request.Request(self.base + '/api/input-sets', headers={'Cookie': cookie})

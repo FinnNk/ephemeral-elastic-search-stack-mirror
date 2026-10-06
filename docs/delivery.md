@@ -51,6 +51,33 @@ Changes confined to the two source README paths receive the
 Source repositories default to no required approvals for the lab, while setup
 preserves stricter existing rules. Deployment proposals require a separate reviewer.
 
+## Follow a release
+
+Open [Release dashboard](https://control.localhost:34443/release-dashboard) and
+sign in with your lab identity. Search or filter the release cards, then choose
+**View release tree**. The selected build URL can be bookmarked or shared with
+another authorised lab user.
+
+The tree follows source merge through Integration, Staging, the inactive
+production candidate and active production. Attached records show the source
+gate at merge, build outcome, saved check results, current proposal review and
+deployment verification. **Merged** means the proposal merged; **Verified**
+means its exact release has a matching deployment receipt and ready rollout.
+**Prepared** means the inactive production slot is ready. It does not switch
+the active route. **Previously verified** identifies a historical deployment.
+
+Use **Inputs & policy** for pinned inputs and the source gate configuration;
+**Activity** shows attempts, durations and progress links. The current active
+production release is shown alongside the selected release. The page refreshes
+every 30 seconds while visible. It reads existing records and never starts
+work, reruns checks or extends leases. Continue promotions through the workflows
+and production release page described below.
+
+Unknown records are shown explicitly. The dashboard reads recent source runs
+and operations plus retained verification history; it is not a complete archive
+of every source PR. Older production checks without a recorded release identity
+appear separately. A missing gate record does not imply a passing gate.
+
 ## Preview or compare manually
 
 In `delivery-source` → **Actions**, choose **Create preview** or **Compare builds**,

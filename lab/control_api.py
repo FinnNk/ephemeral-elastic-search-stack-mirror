@@ -119,6 +119,12 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['production-release']:
             return self.send_bytes(200, UI.with_name('production-release.html').read_bytes(),
                                    'text/html; charset=utf-8')
+        if parts == ['release-dashboard']:
+            return self.send_bytes(200, UI.with_name('release-dashboard.html').read_bytes(),
+                                   'text/html; charset=utf-8')
+        if parts == ['release_dashboard.js']:
+            return self.send_bytes(200, UI.with_name('release_dashboard.js').read_bytes(),
+                                   'text/javascript; charset=utf-8')
         if parts == ['delivery_results.js']:
             return self.send_bytes(200, UI.with_name('delivery_results.js').read_bytes(),
                                    'text/javascript; charset=utf-8')
@@ -184,6 +190,17 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(409, {'error': 'Delivery report is not available.'})
         if identity.get('is_delivery_service'):
             return self.send_json(403, {'error': 'Actions identity is restricted to delivery operations.'})
+        if parts == ['api', 'delivery', 'dashboard']:
+            from release_dashboard import snapshot
+            try:
+                values = query.get('run')
+                if values is not None and (len(values) != 1 or not values[0].isdigit()):
+                    raise ValueError('Build run must be a positive integer.')
+                return self.send_json(200, snapshot(identity, int(values[0]) if values else None))
+            except ValueError as error:
+                return self.send_json(400, {'error': str(error)})
+            except (RuntimeError, OSError):
+                return self.send_json(502, {'error': 'Release status could not be read. Retry Refresh.'})
         if parts == ['api', 'delivery', 'production']:
             from production_release import view
             return self.send_json(200, view())

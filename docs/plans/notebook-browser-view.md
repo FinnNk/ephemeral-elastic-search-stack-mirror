@@ -33,12 +33,18 @@ The local browser preview showed its 50-query saved output and collapsed code,
 with no horizontal overflow at a 390-pixel viewport. No cells were run.
 This preview used a local file, not the installed authenticated route. The API
 route was tested with its loopback test server. The new viewer awaits acceptance
-and coordinator activation.
+and coordinator activation at the time of that verification.
+
+## Activation — 6 October 2026
+
+PR #146 is merged and the coordinator image is installed. All four containers
+are Ready, and the Gitea, Elasticsearch and Nexus service smoke checks passed.
+The existing notebook browser route returned its saved output through the
+installed authenticated handler. No notebook cells or comparisons were rerun.
+The image digest is
+`aad7bbcc416bcbf4ef1e7ae01dd6c271289bf1061cf8d664f7450ca4017348fa`.
 
 ## Next batch
 
-1. Accept and merge the viewer batch.
-2. Publish the merged coordinator, wait for no active operation and activate it.
-3. Confirm the existing authenticated comparison offers **View notebook** and
-   that it opens the saved 50-query output. No fresh comparison is required.
-4. Resume the walkthrough with the purpose-created previews.
+The viewer activation is complete. Resume the walkthrough with the
+purpose-created previews after the current release-dashboard review batch.
