@@ -196,3 +196,23 @@ the coordinator can merge an approved, valid proposal through the existing
 workflow or UI. Failed validation prevents the merge, and successful deployment
 retains its verification and completion report. Document the developer steps
 and administrator configuration. Create the detailed plan when scheduled.
+
+## Deferred: live logs on the operation progress page
+
+Requested on 6 October 2026. Implement after the walkthrough.
+
+Add a collapsible **Live logs** section to the friendly operation progress page.
+Show recent coordinator logs for that operation, with timestamps and the current
+step. Update automatically using a small polling endpoint; keep the status and
+eventual report prominent above the logs.
+
+Provide automatic scrolling and a pause control so readers can inspect earlier
+lines. Keep unrelated operations out of the view and avoid exposing credentials
+or tokens. Use bounded responses and retained log limits so polling and long
+operations do not grow memory or response sizes without limit.
+
+Acceptance: logs update while an operation runs, remain available when it
+finishes or fails, and stay scoped to the selected operation. Pausing preserves
+the reader's position. The page remains usable when logs are empty or retrieval
+fails, and links to the final report remain visible. Document the progress page
+in the developer guides. Create the detailed plan when scheduled.
