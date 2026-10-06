@@ -2,7 +2,7 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "Relevance change lifecycle \u00b7 time runs downwards",
+    "title": "Relevance change lifecycle · time runs downwards",
     "locale": "en",
     "quality_profile": "showcase",
     "legend": {
@@ -32,51 +32,59 @@
     },
     {
       "id": "build",
-      "label": "Development \u00b7 target <5 min"
+      "label": "Development · target <5 min"
     },
     {
       "id": "capture",
-      "label": "Capture \u00b7 ~1 min (both APIs)"
+      "label": "Capture · ~1 min (both APIs)"
     },
     {
       "id": "labels",
-      "label": "Judgements \u00b7 ~5\u20136 s (cached replay)"
+      "label": "Judgements · ~5–6 s (cached replay)"
     },
     {
       "id": "score",
-      "label": "Report \u00b7 seconds (estimate)"
+      "label": "Report · seconds (estimate)"
     },
     {
       "id": "gate",
-      "label": "Gate \u00b7 seconds (estimate)"
+      "label": "Gate · seconds (estimate)"
     },
     {
       "id": "outcome",
-      "label": "Decision \u00b7 human time varies"
+      "label": "Decision · human time varies"
     },
     {
       "id": "merge",
-      "label": "Merge \u00b7 seconds after approval"
+      "label": "Merge · seconds after approval"
     },
     {
       "id": "mainbuild",
-      "label": "Release build \u00b7 target <5 min"
+      "label": "Release build · target <5 min"
+    },
+    {
+      "id": "integration-gate",
+      "label": "Integration gate · ~2–5 min (estimate)"
     },
     {
       "id": "integration",
-      "label": "Integration \u00b7 ~2\u20135 min + deploy \u22642 min"
+      "label": "Integration · deploy SLO ≤2 min"
+    },
+    {
+      "id": "staging-gate",
+      "label": "Staging gate · ~2–5 min (estimate)"
     },
     {
       "id": "staging",
-      "label": "Staging \u00b7 ~2\u20135 min + deploy \u22642 min"
+      "label": "Staging · deploy SLO ≤2 min"
     },
     {
       "id": "load",
-      "label": "Load gate \u00b7 \u226542 min + setup"
+      "label": "Production gate · ≥42 min load + other checks"
     },
     {
       "id": "production",
-      "label": "Production \u00b7 deploy SLO \u22642 min"
+      "label": "Production · deploy SLO ≤2 min"
     }
   ],
   "nodes": [
@@ -86,7 +94,7 @@
       "col": 2,
       "type": "frontend",
       "label": "Change API and open PR",
-      "sublabel": "Local tests \u00b7 variants \u00b7 intent",
+      "sublabel": "Local tests · variants · intent",
       "width": 258
     },
     {
@@ -122,7 +130,7 @@
       "col": 2,
       "type": "backend",
       "label": "Resolve missing judgements",
-      "sublabel": "Pool results \u00b7 freeze shared labels",
+      "sublabel": "Pool results · freeze shared labels",
       "width": 258
     },
     {
@@ -131,7 +139,7 @@
       "col": 2,
       "type": "backend",
       "label": "Score and review the comparison",
-      "sublabel": "nDCG \u00b7 RBO \u00b7 Jaccard \u00b7 coverage \u00b7 timing",
+      "sublabel": "nDCG · RBO · Jaccard · coverage · timing",
       "width": 258
     },
     {
@@ -189,12 +197,30 @@
       "width": 258
     },
     {
+      "id": "integration-gate",
+      "lane": "integration-gate",
+      "col": 2,
+      "type": "security",
+      "label": "Pass the integration promotion gate",
+      "sublabel": "Results · frozen relevance · Gatling probe",
+      "width": 258
+    },
+    {
       "id": "integration",
       "lane": "integration",
       "col": 2,
       "type": "cloud",
       "label": "Promote to integration",
-      "sublabel": "Evaluate \u00b7 review PR \u00b7 deploy \u00b7 verify",
+      "sublabel": "Review PR · deploy same release · verify",
+      "width": 258
+    },
+    {
+      "id": "staging-gate",
+      "lane": "staging-gate",
+      "col": 2,
+      "type": "security",
+      "label": "Pass the staging promotion gate",
+      "sublabel": "Results · frozen relevance · Gatling probe",
       "width": 258
     },
     {
@@ -203,7 +229,7 @@
       "col": 2,
       "type": "cloud",
       "label": "Promote to staging",
-      "sublabel": "Same release \u00b7 evaluate \u00b7 review \u00b7 verify",
+      "sublabel": "Review PR · deploy same release · verify",
       "width": 258
     },
     {
@@ -211,8 +237,8 @@
       "lane": "load",
       "col": 2,
       "type": "security",
-      "label": "Pass the production load gate",
-      "sublabel": "Gatling normal and peak load on previews",
+      "label": "Pass the production promotion gate",
+      "sublabel": "Results · relevance · Gatling normal + peak",
       "width": 258
     },
     {
@@ -221,7 +247,7 @@
       "col": 2,
       "type": "cloud",
       "label": "Promote to simulated production",
-      "sublabel": "Review \u00b7 Argo CD \u00b7 verify API",
+      "sublabel": "Review · Argo CD · verify API",
       "width": 258
     }
   ],
@@ -344,7 +370,7 @@
       "from": "merge"
     },
     {
-      "to": "integration",
+      "to": "integration-gate",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
@@ -353,7 +379,7 @@
       "from": "mainbuild"
     },
     {
-      "to": "staging",
+      "to": "staging-gate",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
@@ -378,6 +404,24 @@
       "toSide": "top",
       "route": "straight",
       "from": "load"
+    },
+    {
+      "from": "integration-gate",
+      "to": "integration",
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "from": "staging-gate",
+      "to": "staging",
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     }
   ],
   "mainPath": [
@@ -387,7 +431,9 @@
     "pass",
     "merge",
     "mainbuild",
+    "integration-gate",
     "integration",
+    "staging-gate",
     "staging",
     "load",
     "production"
@@ -413,6 +459,7 @@
       "dot": "emerald",
       "title": "Reviewed deployment and recovery",
       "items": [
+        "Each promotion requires fresh evidence for the exact release, target and intent. Failed gates block promotion.",
         "Use Actions for each target. A separate reviewer approves the exact delivery-state PR before merge and deployment verification.",
         "Rollback re-evaluates a retained release through the same reviewed process."
       ]

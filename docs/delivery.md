@@ -16,6 +16,8 @@ the lab using [control runtime](control-runtime.md).
 ![Relevance change from source PR to simulated production](diagrams/rendered/relevance-sdlc.png)
 
 [Open the interactive timeline](diagrams/interactive/relevance-sdlc.html).
+Each promotion follows its own evidence gate. Integration and staging use short
+performance probes; simulated production requires the normal/peak load check.
 Read from top to bottom; spacing shows sequence, not elapsed time.
 Stage timings cover warm runs only, with reused judgements and a compatible index.
 Review and queueing time are additional. See the [timing sources and boundaries](plans/relevance-sdlc-diagram.md#timing-sources-and-boundaries).

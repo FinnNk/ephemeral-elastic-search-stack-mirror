@@ -191,3 +191,11 @@ Consolidate optional gap resolution and frozen scoring behind one comparison
 evaluator; keep the metric scorer pure and retained comparisons repeatable.
 Implementation and diagram changes are deferred at the user's request.
 See the [recorded follow-up](walkthrough-feedback.md#deferred-comparison-evaluator-boundary).
+
+## Explicit promotion gates in the SDLC diagram
+
+The timeline separates each promotion gate from review, deployment and verification.
+Integration and staging show short probes; the production gate shows normal/peak
+Gatling load alongside result and relevance evidence. Warm timings now separate
+evaluation from deployment. Next: review the diagram and continue the source
+walkthrough using the [timeline plan](relevance-sdlc-diagram.md).

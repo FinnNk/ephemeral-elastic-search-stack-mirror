@@ -13,11 +13,12 @@ Separate the PR-head merge gate from the build of the merged commit.
   Compatible runtimes and indexes may be reused.
 - Show current-head gating, iteration and eligible recorded exceptions.
 - Show unchanged release promotion, reviewed Git state, Argo CD deployment,
-  verification and the production normal/peak Gatling gate.
+  verification and an explicit gate before each promotion. Integration and
+  staging use short Gatling probes; production requires normal/peak load.
 - Link the diagram from the gallery and delivery guide.
 - Pass showcase rendering and light/dark browser checks at all four supported
   desktop sizes; inspect the resulting diagram visually. Vertical scrolling
-  is intentional: thirteen stages run downwards, with parallel capture and
+  is intentional: fifteen stages run downwards, with parallel capture and
   explicit pass, bounded-decision and blocked paths with clear horizontal gaps
   between the decision outcomes.
 
@@ -44,9 +45,10 @@ Step 1 has no duration estimate.
 | 6: Automated gate | Seconds estimate | Small validation and evidence checks; no dedicated stage SLO or representative timing series. Queueing is additional. |
 | 7: Gate outcome | Automatic pass; decision / revision time varies | Human decisions and code revision have no bounded duration. A revision restarts the build and comparison; the diagram does not add a return arrow. |
 | 8: Source merge | Seconds estimate after approval | Git operation only, excluding approval and any gate rerun. No dedicated stage SLO. |
-| 10 / 11: Integration / staging | ~2–5 min evaluation estimate + review; deploy ≤2 min SLO | Planning allowance for two fresh 1,000-query comparisons, short paired Gatling probes and preview preparation. The [ESCI probe observations](../research/evidence/esci-catalogue.json) took ~43–47 s per side including runner overhead. The [deployment SLO](otel-observability.md) starts at approved desired-state merge and ends at Argo health plus API verification; it does not cover evaluation or review. |
-| 12: Production load gate | ≥42 min + setup and reports | [Pinned workload](../delivery.md#promote-a-merged-release): 1 min warmup + 5 min normal + 15 min peak per API, executed sequentially. This is a scheduled minimum, not a completion estimate. Fresh correctness/relevance checks precede it in the real evaluation command. |
-| 13: Production deployment | Review varies; deploy ≤2 min SLO | Same approved-merge to verified-API boundary as integration/staging. The load gate is counted at stage 12, not repeated here. |
+| 10 / 12: Integration / staging gates | ~2–5 min evaluation estimate | Planning allowance for fresh paired 1,000-query comparisons, short Gatling probes and preview preparation. The [ESCI probe observations](../research/evidence/esci-catalogue.json) took ~43–47 s per side including runner overhead. Gates validate matching release/target/intent, full result and frozen relevance evidence, and performance budgets. Result preservation depends on the declared intent. |
+| 11 / 13: Integration / staging promotion | Review varies; deploy ≤2 min SLO | The [deployment SLO](otel-observability.md) starts at approved desired-state merge and ends at Argo health plus API verification; it excludes gate evaluation and human review. |
+| 14: Production promotion gate | ≥42 min load + other checks | [Pinned workload](../delivery.md#promote-a-merged-release): 1 min warmup + 5 min normal + 15 min peak per API, executed sequentially. This is a scheduled minimum, not a completion estimate. Fresh result/relevance checks and setup add time. The same evidence identity/freshness rules apply. |
+| 15: Production deployment | Review varies; deploy ≤2 min SLO | Same approved-merge to verified-API boundary as integration/staging. The production gate is counted at stage 14, not repeated here. |
 
 Do not sum these headings as an end-to-end promise: they mix observed samples,
 estimates and SLOs, and omit queueing and unbounded human work. Model inference,

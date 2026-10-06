@@ -1,12 +1,12 @@
 {
-  "observed_at": "2026-10-06T09:15:28.002412+00:00",
+  "observed_at": "2026-10-06T10:17:02.253458+00:00",
   "artifact": "interactive/relevance-sdlc.html",
-  "sha256": "0d5bc3b93601c07c598bcc1f3407b1ddbb351efd0d250719bca9764f7dad599a",
+  "sha256": "8ec161ae35ab27df377af5d4173a1e0bcd667a59f246c6bc994f4b925c7bc3f2",
   "reviewed_image": "rendered/relevance-sdlc.png",
   "viewport": [
     1440,
     900
   ],
-  "review": "Inspected the full warm-run timeline. Stage 7 outcome boxes have wider, balanced horizontal gaps and readable shortened labels. Stage 3 remains symmetric around the common axis. Forks, joins, timing labels and downstream stages have no observed clipping or connector overlap.",
-  "scope": "Diagram presentation only; no runtime workflow changed."
+  "review": "Inspected the full fifteen-stage timeline. Each integration, staging and production gate precedes its promotion on the common vertical axis. Gate labels, warm timing annotations and promotion labels are contained; no observed connector overlap or clipping. Existing capture and decision branches retain their balanced layout.",
+  "scope": "Diagram presentation only; no runtime workflow or gate changed."
 }
