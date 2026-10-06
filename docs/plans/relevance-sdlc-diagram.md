@@ -18,7 +18,8 @@ Separate the PR-head merge gate from the build of the merged commit.
 - Pass showcase rendering and light/dark browser checks at all four supported
   desktop sizes; inspect the resulting diagram visually. Vertical scrolling
   is intentional: thirteen stages run downwards, with parallel capture and
-  explicit pass, bounded-decision and blocked paths.
+  explicit pass, bounded-decision and blocked paths with clear horizontal gaps
+  between the decision outcomes.
 
 The generated receipts bind the JSON source and HTML output. Browser checks
 passed with intentional vertical scrolling; labels and the full timeline were

@@ -83,7 +83,7 @@
     {
       "id": "change",
       "lane": "change",
-      "col": 1,
+      "col": 2,
       "type": "frontend",
       "label": "Change API and open PR",
       "sublabel": "Local tests \u00b7 variants \u00b7 intent",
@@ -92,7 +92,7 @@
     {
       "id": "build",
       "lane": "build",
-      "col": 1,
+      "col": 2,
       "type": "backend",
       "label": "Build the exact PR commit",
       "sublabel": "Pinned image and receipt in Nexus",
@@ -110,7 +110,7 @@
     {
       "id": "candidate",
       "lane": "capture",
-      "col": 2,
+      "col": 4,
       "type": "database",
       "label": "Capture variant results",
       "sublabel": "Pinned API and index per variant",
@@ -119,7 +119,7 @@
     {
       "id": "labels",
       "lane": "labels",
-      "col": 1,
+      "col": 2,
       "type": "backend",
       "label": "Resolve missing judgements",
       "sublabel": "Pool results \u00b7 freeze shared labels",
@@ -128,7 +128,7 @@
     {
       "id": "score",
       "lane": "score",
-      "col": 1,
+      "col": 2,
       "type": "backend",
       "label": "Score and review the comparison",
       "sublabel": "nDCG \u00b7 RBO \u00b7 Jaccard \u00b7 coverage \u00b7 timing",
@@ -137,7 +137,7 @@
     {
       "id": "gate",
       "lane": "gate",
-      "col": 1,
+      "col": 2,
       "type": "security",
       "label": "Check the source gate",
       "sublabel": "All selected variants and required suites",
@@ -146,20 +146,20 @@
     {
       "id": "pass",
       "lane": "outcome",
-      "col": 1,
+      "col": 2,
       "type": "backend",
       "label": "Gate passed",
       "sublabel": "Required checks satisfied",
-      "width": 258
+      "width": 200
     },
     {
       "id": "decision",
       "lane": "outcome",
-      "col": 2,
+      "col": 4,
       "type": "security",
-      "label": "Review a bounded regression",
-      "sublabel": "Accept in Git or revise the change",
-      "width": 258
+      "label": "Review regression",
+      "sublabel": "Accept in Git or revise",
+      "width": 200
     },
     {
       "id": "blocked",
@@ -167,13 +167,13 @@
       "col": 0,
       "type": "frontend",
       "label": "Revise the change",
-      "sublabel": "Hard block or regression rejected",
-      "width": 258
+      "sublabel": "Hard block or rejection",
+      "width": 200
     },
     {
       "id": "merge",
       "lane": "merge",
-      "col": 1,
+      "col": 2,
       "type": "security",
       "label": "Merge the source PR",
       "sublabel": "Current-head evidence and review",
@@ -182,7 +182,7 @@
     {
       "id": "mainbuild",
       "lane": "mainbuild",
-      "col": 1,
+      "col": 2,
       "type": "backend",
       "label": "Build the merged source commit",
       "sublabel": "One release for all targets",
@@ -191,7 +191,7 @@
     {
       "id": "integration",
       "lane": "integration",
-      "col": 1,
+      "col": 2,
       "type": "cloud",
       "label": "Promote to integration",
       "sublabel": "Evaluate \u00b7 review PR \u00b7 deploy \u00b7 verify",
@@ -200,7 +200,7 @@
     {
       "id": "staging",
       "lane": "staging",
-      "col": 1,
+      "col": 2,
       "type": "cloud",
       "label": "Promote to staging",
       "sublabel": "Same release \u00b7 evaluate \u00b7 review \u00b7 verify",
@@ -209,7 +209,7 @@
     {
       "id": "load",
       "lane": "load",
-      "col": 1,
+      "col": 2,
       "type": "security",
       "label": "Pass the production load gate",
       "sublabel": "Gatling normal and peak load on previews",
@@ -218,7 +218,7 @@
     {
       "id": "production",
       "lane": "production",
-      "col": 1,
+      "col": 2,
       "type": "cloud",
       "label": "Promote to simulated production",
       "sublabel": "Review \u00b7 Argo CD \u00b7 verify API",

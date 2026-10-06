@@ -1,12 +1,12 @@
 {
-  "observed_at": "2026-10-06T09:10:25.843330+00:00",
+  "observed_at": "2026-10-06T09:15:28.002412+00:00",
   "artifact": "interactive/relevance-sdlc.html",
-  "sha256": "bee2166cb56ba2db90e6124bc3a514b5fdad7fa0263d739d52f62526cc6b1b4b",
+  "sha256": "0d5bc3b93601c07c598bcc1f3407b1ddbb351efd0d250719bca9764f7dad599a",
   "reviewed_image": "rendered/relevance-sdlc.png",
   "viewport": [
     1440,
     900
   ],
-  "review": "Inspected the full warm-run timeline. Stage 3 baseline and variant boxes are symmetric around the common vertical axis; fork and join connectors are balanced. Timing labels, gate branches and downstream stages remain readable, with no clipping or connector overlaps.",
+  "review": "Inspected the full warm-run timeline. Stage 7 outcome boxes have wider, balanced horizontal gaps and readable shortened labels. Stage 3 remains symmetric around the common axis. Forks, joins, timing labels and downstream stages have no observed clipping or connector overlap.",
   "scope": "Diagram presentation only; no runtime workflow changed."
 }
