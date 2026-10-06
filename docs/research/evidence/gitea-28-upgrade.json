@@ -1,0 +1,89 @@
+{
+  "observed_at": "2026-10-06T05:32:17.318803+00:00",
+  "server_before": "1.27.0",
+  "server_after": "28.0.0",
+  "chart": "12.7.0",
+  "image": "docker.gitea.com/gitea:28.0.0-rootless@sha256:c168e7ccb767164793a67e1e874639488260795567337452b06292d1515bea12",
+  "backup": {
+    "archive": "gitea-data-before.tar.gz",
+    "bytes": 60739288,
+    "sha256": "e1c2880bc8ccffd296bab6aad1d4b4f04071524410ece088e5409acc2719949b",
+    "sqlite_integrity": "ok",
+    "counts": {
+      "repository": 6,
+      "user": 4,
+      "pull_request": 193,
+      "action_run": 151
+    }
+  },
+  "oidc": {
+    "explicit_account_linking": true,
+    "repeat_oidc_sign_in": true,
+    "account_id_preserved": true,
+    "wrong_existing_password_rejected": true,
+    "automatic_registration": false,
+    "roles_remapped": false
+  },
+  "actions": {
+    "repository": "delivery-source",
+    "run": 155,
+    "conclusion": "success",
+    "runner": "delivery-rootless",
+    "checks": [
+      "Git installed",
+      "Docker daemon available",
+      "Actions token authenticated Git access with lab CA"
+    ],
+    "failed_probe_runs": {
+      "153": "Test used curl, which is not installed",
+      "154": "Test omitted the lab CA; TLS verification rejected the connection"
+    },
+    "temporary_branch_removed": true
+  },
+  "mirrors": {
+    "ephemeral-elastic-search-stack": {
+      "refs_match": true,
+      "ref_count": 6,
+      "last_update": "2026-10-06T05:26:20Z",
+      "failed": false
+    },
+    "delivery-source": {
+      "refs_match": true,
+      "ref_count": 12,
+      "last_update": "2026-10-06T05:30:38Z",
+      "failed": false
+    },
+    "delivery-state": {
+      "refs_match": true,
+      "ref_count": 60,
+      "last_update": "2026-10-06T05:26:22Z",
+      "failed": false
+    }
+  },
+  "https_git_main_verified": true,
+  "restore_rehearsed": false,
+  "history_after": {
+    "repositories": 6,
+    "pull_requests": 193,
+    "action_runs": 154
+  },
+  "webhook": {
+    "signed_delivery_received": true,
+    "delivery": "3a0b3cd3-9f87-44a2-a22c-144a952ab4d4",
+    "event": "push",
+    "duplicate": false,
+    "body_sha256": "84ad6d734ee0f94690f39ac83c9f3867c823bef7e1fa038c044f37a2e1b5c525",
+    "source_revision": "e333d1b01744372110fa576a8bcaa80db78def13",
+    "repository": "elastic-agent/search-spike"
+  },
+  "egress_warning_absent_after_explicit_setting": true,
+  "settings": {
+    "security.EGRESS_MODE": "lax",
+    "actions.RUN_RETENTION_DAYS": 0
+  },
+  "limits": [
+    "Smoke checks do not repeat a full release, relevance evaluation or promotion.",
+    "Temporary workflow branches were rejected by the GitHub mirror App workflow permission; removing the test branch restored matching refs.",
+    "Backup integrity was checked; full volume restore was not rehearsed."
+  ]
+}

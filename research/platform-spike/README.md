@@ -2,6 +2,8 @@
 
 **Historical experimental recipe.** The current lab is operated through [lab/README.md](../../lab/README.md). The commands below reproduce isolated probes; they are not the maintained control-service installer.
 
+For Gitea upgrades and recovery, use the [operations guide](../../docs/gitea-upgrade.md).
+
 These scripts exercise Gitea builds, Argo CD environments and real Elasticsearch searches against a 10,000-product synthetic fixture. Read the [results](../../docs/research/platform-spike.md) before using the timings.
 
 **Status:** tested as individual experiments on Windows x64. This is an experimental, sequential research recipe, not an idempotent lab installer. Run it in a fresh `relevance-lab` cluster and empty research repositories. Do not rerun initialisation over the retained review environment: some probes deliberately create and remove named indices.
@@ -16,7 +18,7 @@ Run PowerShell from the repository root. `python` below means a Python 3.12+ int
 | k3d / k3s | 5.9.0 / 1.35.8+k3s1 |
 | kind alternative | 0.33.0, Kubernetes 1.35.8 |
 | Helm | 4.3.0 |
-| Gitea chart / server / runner | 12.7.0 / 1.27.0 / 3.5.0-dind-rootless |
+| Gitea chart / server / runner | 12.7.0 / 28.0.0 / 3.5.0-dind-rootless |
 | Argo CD / ECK | 3.5.3 / 3.5.0 |
 | Shared / exceptional Elasticsearch | 9.5.4 / 9.5.3 |
 | Floci / Azure Blob Python SDK | 0.13.0 / 12.27.0 |

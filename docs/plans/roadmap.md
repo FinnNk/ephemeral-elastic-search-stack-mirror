@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+[Gitea 28.0.0](gitea-28-upgrade.md) is installed using the existing chart,
+SQLite storage, OIDC and runners. Its complete stopped-server backup is retained
+in ignored lab state. The image pin and operations guide are prepared for review.
+Next, review this batch and [resume the relevance walkthrough](sneakers-demo-walkthrough.md).
+
 Readable delivery results are deployed from accepted commit `d589859`.
 Existing progress and report URLs serve the browser views; JSON remains available.
 Runtime readiness and smoke checks passed.

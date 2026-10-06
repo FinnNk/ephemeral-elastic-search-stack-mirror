@@ -10,7 +10,7 @@ apply({'apiVersion':'v1','kind':'ConfigMap','metadata':{'name':'coredns-custom',
 k('rollout','restart','deployment/coredns','-n','kube-system')
 start=time.monotonic()
 r=run([HELM,'upgrade','--install','gitea','gitea-charts/gitea','--version','12.7.0','--namespace','platform','--kubeconfig',str(STATE/'kubeconfig.yaml'),'-f','research/platform-spike/gitea-values.yaml','--wait','--timeout','5m'])
-record('gitea-install',{'seconds':round(time.monotonic()-start,3),'chart':'12.7.0','application':'1.27.0'})
+record('gitea-install',{'seconds':round(time.monotonic()-start,3),'chart':'12.7.0','application':'28.0.0'})
 print('Gitea installed',flush=True)
 for namespace,url in [('argocd','https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.3/manifests/install.yaml'),('elastic-system','https://download.elastic.co/downloads/eck/3.5.0/crds.yaml'),('elastic-system','https://download.elastic.co/downloads/eck/3.5.0/operator.yaml')]:
     apply({'apiVersion':'v1','kind':'Namespace','metadata':{'name':namespace}})
