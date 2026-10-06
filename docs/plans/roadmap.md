@@ -10,11 +10,13 @@ step” is not an instruction to repeat completed work.
 status/proxy fixes and the [saved notebook browser view](notebook-browser-view.md)
 are merged and activated. The user's first production-slot notebook comparison
 completed all 50 queries per side. Its retained download and browser route are
-verified. The next review batch is the
+verified. The
 [read-only release dashboard](read-only-release-dashboard.md): searchable release
 cards and a connected tree from source merge, including its recorded gate, to
-active production. Next: accept and activate the dashboard, then resume the
-promotion and purpose-created-preview notebook walkthroughs.
+active production. PR #147 is merged and activated; readiness, service smoke
+checks and the installed read-only projection passed. Next: review build 158
+in the dashboard, then resume the promotion and purpose-created-preview
+notebook walkthroughs.
 
 The [SigNoz dashboard repairs](signoz-dashboard-repairs.md) are merged and
 installed at their existing URLs. The updated coordinator is Ready on both

@@ -68,17 +68,29 @@ comparison, inference or load test was triggered. The affected delivery guide,
 lab README and current roadmap were reviewed for consistent navigation and
 status meanings.
 
-## Next batch: activate and walk through
+## Activation — 6 October 2026
 
-1. Accept and merge this batch.
-2. Publish the merged coordinator image. Check for active operations before
-   rolling the coordinator; wait for readiness and run its service smoke check.
-3. Sign in and open **Release dashboard**. Select build 158 and confirm its
+PR #147 is merged and installed from accepted commit `d09c67a`. The immutable
+coordinator image is
+`nexus.localhost:18185/lab-control@sha256:fe58cdaee558a5d7636a545e36b0cfdeb475c66f145fa4af80d6685042513ab6`.
+Both supported architectures were published. No delivery operation, comparison
+or environment transition was active before rollout. All four containers became
+Ready and the service smoke check passed.
+
+The installed HTML and JavaScript routes returned HTTP 200. The unsigned data
+endpoint returned HTTP 401. A separate HTTP handler rehearsal using a test
+administrator identity confirmed the installed projection against real lab
+records: build 158 is the prepared green candidate, Integration and Staging
+are verified, and blue build 108 remains active production. This does not
+replace verification of the user’s browser sign-in. No comparison, inference,
+load test or promotion was triggered.
+
+## Next batch: browser review and walkthrough
+
+1. Sign in and open **Release dashboard**. Select build 158 and confirm its
    source gate, Integration and Staging verification, prepared green candidate
    and unchanged active blue production.
-4. Continue the existing authorised promotion walkthrough and confirm that the
-   tree follows the actual reviews, checks and activation. The dashboard itself
-   does not trigger any of those steps.
+2. Continue the existing authorised promotion walkthrough. The dashboard
+   follows recorded checks and reviews without triggering those steps.
 
-Future guided actions need a separate batch. No workflow designer or deployment
-button is included in this first version.
+Future guided actions need a separate batch.
