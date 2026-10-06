@@ -6,13 +6,13 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-[Delivery notebook comparisons](delivery-notebook-comparisons.md) are merged
-and activated. The user's first production-slot notebook comparison completed
-all 50 queries per side. A follow-up puts running, completed and failed feedback
-beside **Run comparison**, with a direct report link and repeat-click protection. The same batch addresses
-the sign-in proxy timeout that returned HTML before that successful run finished.
-Next: accept and activate that feedback fix, inspect the completed notebook and
-repeat the walkthrough on the prepared delivery previews.
+[Delivery notebook comparisons](delivery-notebook-comparisons.md) and their
+status/proxy fixes are merged and activated. The user's first production-slot
+notebook comparison completed all 50 queries per side, and its download is
+verified. A [saved notebook browser view](notebook-browser-view.md) is ready for
+review, with links from completed comparisons and inline feedback. Next: accept
+and activate the viewer, inspect that existing notebook, then compare the
+prepared delivery previews.
 
 The [SigNoz dashboard repairs](signoz-dashboard-repairs.md) are merged and
 installed at their existing URLs. The updated coordinator is Ready on both

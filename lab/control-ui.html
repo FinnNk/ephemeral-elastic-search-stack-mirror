@@ -157,7 +157,7 @@
       if(row.summary){
         card.append(text('div',row.mode==='performance'?'Workload '+row.summary.workload_sha256:'Queries '+row.summary.completed_query_count+'/'+row.summary.query_count,'meta'));
         if(row.summary.notebook){card.append(text('div','Notebook '+row.summary.notebook.source+' · '+row.summary.notebook.state+(row.summary.notebook.error?' · '+row.summary.notebook.error:''),'meta'));
-          if(row.summary.notebook.state==='complete'){const link=text('a','Download executed notebook','report-link');link.href='/api/comparisons/'+row.id+'/notebook';link.download=row.summary.notebook.source;card.append(link)}}
+          if(row.summary.notebook.state==='complete'){const view=text('a','View notebook','report-link');view.href='/api/comparisons/'+row.id+'/notebook-view';card.append(view,text('span',' · '));const link=text('a','Download executed notebook','report-link');link.href='/api/comparisons/'+row.id+'/notebook';link.download=row.summary.notebook.source;card.append(link)}}
       }
       if(row.report_blob)card.append(action('Open report','secondary',()=>showReport(row.id)));
       comparisonList.append(card);
@@ -186,6 +186,7 @@
     feedback.replaceChildren(text('p','Comparison running. The selected notebook runs after scoring.'));
     try{ const mode=document.querySelector('#mode').value;const row=await request('/api/comparisons','POST',{baseline_id:baselineSelect.value,candidate_id:candidateSelect.value,mode,profile:document.querySelector('#profile').value,scope:mode==='performance'?'full':document.querySelector('#scope').value,query_manifest_sha256:mode==='performance'?null:document.querySelector('#query-manifest').value||null,judgement_manifest_sha256:mode==='relevance'?document.querySelector('#judgement-manifest').value||null:null,notebook:document.querySelector('#notebook').value||null});feedback.replaceChildren(text('p','Comparison '+row.state+' · '+(row.verdict||'no verdict')+'.'+(row.summary?.notebook?' Notebook '+row.summary.notebook.state+'.':'')));
       if(row.report_blob){const link=text('a','Open comparison report','report-link');link.href='/?comparison='+encodeURIComponent(row.id);feedback.append(link)}
+      if(row.summary?.notebook?.state==='complete'){const view=text('a','View notebook','report-link');view.href='/api/comparisons/'+row.id+'/notebook-view';feedback.append(text('span',' · '),view)}
       try{await refresh()}catch(error){feedback.append(text('p','Could not refresh the list: '+error.message))}
     }catch(error){feedback.replaceChildren(text('p','Comparison could not finish: '+error.message))}
     finally{form.setAttribute('aria-busy','false');button.disabled=Boolean(currentIdentity?.is_reader)}

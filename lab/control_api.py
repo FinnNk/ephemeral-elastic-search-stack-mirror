@@ -51,11 +51,13 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-store')
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('Referrer-Policy', 'no-referrer')
-        self.send_header('Content-Security-Policy',
+        headers = extra_headers or {}
+        self.send_header('Content-Security-Policy', headers.get('Content-Security-Policy',
             "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
-            "connect-src 'self'; base-uri 'none'; form-action 'self'")
-        for key, value in (extra_headers or {}).items():
-            self.send_header(key, value)
+            "connect-src 'self'; base-uri 'none'; form-action 'self'"))
+        for key, value in headers.items():
+            if key != 'Content-Security-Policy':
+                self.send_header(key, value)
         self.end_headers()
         self.wfile.write(payload)
 
@@ -231,7 +233,7 @@ class Handler(BaseHTTPRequestHandler):
                 if hashlib.sha256(payload).hexdigest() != row['report_sha256']:
                     return self.send_json(502, {'error': 'Saved report hash differs from its record.'})
                 return self.send_bytes(200, payload, 'application/json; charset=utf-8')
-            if len(parts) == 4 and parts[3] == 'notebook':
+            if len(parts) == 4 and parts[3] in ('notebook', 'notebook-view'):
                 notebook = (row.get('summary') or {}).get('notebook') or {}
                 if notebook.get('state') != 'complete':
                     return self.send_json(409, {'error': 'Comparison has no executed notebook.'})
@@ -239,6 +241,13 @@ class Handler(BaseHTTPRequestHandler):
                 payload = service().get_blob_client(container, blob_name).download_blob().readall()
                 if hashlib.sha256(payload).hexdigest() != notebook['executed_sha256']:
                     return self.send_json(502, {'error': 'Executed notebook hash differs from its record.'})
+                if parts[3] == 'notebook-view':
+                    from notebook_view import render, CSP
+                    try:
+                        page = render(payload, row['id'], notebook)
+                    except (ValueError, KeyError, TypeError):
+                        return self.send_json(502, {'error': 'Saved notebook could not be displayed. Use its download instead.'})
+                    return self.send_bytes(200, page, 'text/html; charset=utf-8', {'Content-Security-Policy': CSP})
                 return self.send_bytes(200, payload, 'application/x-ipynb+json')
         if len(parts) >= 3 and parts[:2] == ['api', 'environments']:
             row = self.controller.store.get(parts[2])

@@ -196,6 +196,28 @@ class LocalControlApi(unittest.TestCase):
                 urllib.request.urlopen(request)
             self.assertEqual(error.exception.code, 502)
 
+    def test_notebook_view_shares_download_authorisation_and_hash_check(self):
+        blob = Mock()
+        blob.download_blob.return_value.readall.return_value = b'{"cells":[],"nbformat":4}'
+        account = Mock()
+        account.get_blob_client.return_value = blob
+        url = self.base + '/api/comparisons/notebook-demo/notebook-view'
+        with patch('control_api.service', return_value=account):
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(urllib.request.Request(url, headers={'Cookie': self.login('bob')}))
+            self.assertEqual(error.exception.code, 403)
+            account.get_blob_client.assert_not_called()
+            request = urllib.request.Request(url, headers={'Cookie': self.login('alice')})
+            with urllib.request.urlopen(request) as response:
+                self.assertEqual(response.headers['Content-Type'], 'text/html; charset=utf-8')
+                self.assertIn("default-src 'none'", response.headers['Content-Security-Policy'])
+                self.assertNotIn('script-src', response.headers['Content-Security-Policy'])
+                self.assertIn(b'Back to comparison', response.read())
+            blob.download_blob.return_value.readall.return_value = b'changed'
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(request)
+            self.assertEqual(error.exception.code, 502)
+
     def test_mutation_requires_json_intent_header(self):
         request = urllib.request.Request(self.base + '/api/environments', method='POST', data=b'{}',
                                          headers={'Content-Type': 'application/json'})

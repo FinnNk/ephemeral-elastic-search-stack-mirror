@@ -125,7 +125,7 @@ For a short notebook demonstration, choose **Relevance**, **Quick · first 50**
 and `comparison-explorer.ipynb`, then **Run comparison**. Repeat with a pair of
 new previews to exercise the same flow without promoting either release.
 
-When a selected notebook completes, its comparison card shows **Download executed notebook**. Open that `.ipynb` in Jupyter or another notebook viewer to inspect its saved outputs. It reads the frozen report and cannot alter the standard verdict. A notebook failure is reported separately.
+When a selected notebook completes, choose **View notebook** beside the run status or on its comparison card. The browser displays the saved text and outputs; expand **Code** to inspect a cell. Opening it does not execute cells. Use **Back to comparison** to return. **Download executed notebook** remains available for Jupyter or another notebook viewer. It reads the frozen report and cannot alter the standard verdict. A notebook failure is reported separately. The browser view supports Markdown, text outputs and saved PNG/JPEG figures. Interactive widgets and HTML-only outputs require the downloaded notebook.
 
 The example counts changed results and summarises scores, deltas and coverage. It is exploratory evidence, not a merge check. See [notebook operation](../docs/data-evaluation-contracts.md#exploratory-notebooks-after-a-comparison) and [dated execution evidence](../docs/research/evidence/exploratory-notebook.md).
 
