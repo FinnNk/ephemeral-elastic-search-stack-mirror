@@ -140,3 +140,35 @@ Starting points: `lab/delivery_source_comparison.py`,
 `evaluation/query_sets.py` and
 `docs/diagrams/archify/relevance-sdlc.json`. Create the detailed implementation
 plan when this deferred work is scheduled.
+
+## Deferred: focused delivery workflows
+
+Requested on 6 October 2026 during the build 158 promotion walkthrough. Implement
+after the walkthrough; keep the running promotion unchanged.
+
+Replace the general developer form with focused Actions workflows. Each fixes
+its operation and, where applicable, its target, exposing only relevant inputs.
+Keep one shared delivery client and the existing approval and gate checks.
+
+| Workflow | Inputs |
+| --- | --- |
+| Create preview | Build number |
+| Promote to integration | Build number, change intent |
+| Promote to staging | Build number, change intent |
+| Deploy approved promotion | Delivery-state PR number |
+| Compare builds | Baseline build, candidate build |
+| Request rollback | Target, previously verified release fingerprint, change intent |
+
+**Rollback must have its own visible workflow**, rather than being tucked into
+advanced operations. It creates a reviewed rollback proposal; it does not bypass
+evaluation, approval or deployment verification. Production retains its full
+load gate and prepared-slot checks.
+
+Keep production release in the control UI, including its rollback control and
+approved-PR dropdown. Reserve **Advanced delivery** for less common verification
+and maintenance tasks. Default the catalogue to `esci-gb-v1` for the lab.
+
+Acceptance: each workflow shows only relevant fields, uses bounded choices where
+supported by both Gitea and GitHub Actions, calls the shared client and publishes
+the existing progress/review links. Update delivery guides and source templates
+together. Create the detailed plan when this batch is scheduled.
