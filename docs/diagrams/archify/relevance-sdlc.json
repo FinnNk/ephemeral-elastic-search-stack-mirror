@@ -99,7 +99,7 @@
       "col": 2,
       "type": "backend",
       "label": "Build the exact PR commit",
-      "sublabel": "Pinned image and receipt in Nexus",
+      "sublabel": "Pinned build · reuse or restore index and catalogue",
       "width": 258
     },
     {
