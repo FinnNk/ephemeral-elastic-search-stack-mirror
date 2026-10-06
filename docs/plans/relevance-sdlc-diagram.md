@@ -16,11 +16,12 @@ Separate the PR-head merge gate from the build of the merged commit.
 - Link the diagram from the gallery and delivery guide.
 - Pass showcase rendering and light/dark browser checks at all four supported
   desktop sizes; inspect the resulting diagram visually. Vertical scrolling
-  is intentional: eleven chronological stages have only downward connectors.
+  is intentional: thirteen stages run downwards, with parallel capture and
+  explicit pass, bounded-decision and blocked paths.
 
 The generated receipts bind the JSON source and HTML output. Browser checks
 passed with intentional vertical scrolling; labels and the full timeline were
-inspected at 1440×900. Stage order is not proportional to elapsed time. These are
+inspected at 1440Ã—900. Stage order is not proportional to elapsed time. These are
 diagram checks, not a fresh release or deployment rehearsal.
 
 ## Next batch

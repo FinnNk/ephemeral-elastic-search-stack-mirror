@@ -47,6 +47,14 @@
       "label": "Offline evaluation"
     },
     {
+      "id": "gate",
+      "label": "Source acceptance"
+    },
+    {
+      "id": "outcome",
+      "label": "Source acceptance"
+    },
+    {
       "id": "merge",
       "label": "Source acceptance"
     },
@@ -75,193 +83,301 @@
     {
       "id": "change",
       "lane": "change",
-      "col": 0,
+      "col": 1,
       "type": "frontend",
       "label": "Change API and open PR",
       "sublabel": "Local tests \u00b7 variants \u00b7 intent",
-      "width": 330
+      "width": 270
     },
     {
       "id": "build",
       "lane": "build",
-      "col": 0,
+      "col": 1,
       "type": "backend",
       "label": "Build the exact PR commit",
-      "sublabel": "Publish pinned image and receipt to Nexus",
-      "width": 330
+      "sublabel": "Pinned image and receipt in Nexus",
+      "width": 270
     },
     {
       "id": "capture",
       "lane": "capture",
-      "col": 0,
+      "col": 1,
       "type": "database",
-      "label": "Capture baseline and variant results",
-      "sublabel": "Same frozen catalogue and query suites",
-      "width": 330
+      "label": "Capture baseline results",
+      "sublabel": "Pinned baseline API and index",
+      "width": 270
+    },
+    {
+      "id": "candidate",
+      "lane": "capture",
+      "col": 2,
+      "type": "database",
+      "label": "Capture variant results",
+      "sublabel": "Pinned API and index per variant",
+      "width": 270
     },
     {
       "id": "labels",
       "lane": "labels",
-      "col": 0,
+      "col": 1,
       "type": "backend",
       "label": "Resolve missing judgements",
-      "sublabel": "Pool results \u00b7 reuse predictions \u00b7 freeze labels",
-      "width": 330
+      "sublabel": "Pool results \u00b7 freeze shared labels",
+      "width": 270
     },
     {
       "id": "score",
       "lane": "score",
-      "col": 0,
+      "col": 1,
       "type": "backend",
       "label": "Score and review the comparison",
       "sublabel": "nDCG \u00b7 RBO \u00b7 Jaccard \u00b7 coverage \u00b7 timing",
-      "width": 330
+      "width": 270
+    },
+    {
+      "id": "gate",
+      "lane": "gate",
+      "col": 1,
+      "type": "security",
+      "label": "Check the source gate",
+      "sublabel": "All selected variants and required suites",
+      "width": 270
+    },
+    {
+      "id": "pass",
+      "lane": "outcome",
+      "col": 1,
+      "type": "backend",
+      "label": "Gate passed",
+      "sublabel": "Required checks satisfied",
+      "width": 270
+    },
+    {
+      "id": "decision",
+      "lane": "outcome",
+      "col": 2,
+      "type": "security",
+      "label": "Review a bounded regression",
+      "sublabel": "Accept in Git or revise the change",
+      "width": 270
+    },
+    {
+      "id": "blocked",
+      "lane": "outcome",
+      "col": 0,
+      "type": "frontend",
+      "label": "Revise the change",
+      "sublabel": "Hard block or regression rejected",
+      "width": 270
     },
     {
       "id": "merge",
       "lane": "merge",
-      "col": 0,
+      "col": 1,
       "type": "security",
-      "label": "Pass the source gate and merge",
-      "sublabel": "Current-head evidence or eligible Git decision",
-      "width": 330
+      "label": "Merge the source PR",
+      "sublabel": "Current-head evidence and review",
+      "width": 270
     },
     {
       "id": "mainbuild",
       "lane": "mainbuild",
-      "col": 0,
+      "col": 1,
       "type": "backend",
       "label": "Build the merged source commit",
-      "sublabel": "Use this release for every deployment target",
-      "width": 330
+      "sublabel": "One release for all targets",
+      "width": 270
     },
     {
       "id": "integration",
       "lane": "integration",
-      "col": 0,
+      "col": 1,
       "type": "cloud",
       "label": "Promote to integration",
       "sublabel": "Evaluate \u00b7 review PR \u00b7 deploy \u00b7 verify",
-      "width": 330
+      "width": 270
     },
     {
       "id": "staging",
       "lane": "staging",
-      "col": 0,
+      "col": 1,
       "type": "cloud",
       "label": "Promote to staging",
       "sublabel": "Same release \u00b7 evaluate \u00b7 review \u00b7 verify",
-      "width": 330
+      "width": 270
     },
     {
       "id": "load",
       "lane": "load",
-      "col": 0,
+      "col": 1,
       "type": "security",
       "label": "Pass the production load gate",
       "sublabel": "Gatling normal and peak load on previews",
-      "width": 330
+      "width": 270
     },
     {
       "id": "production",
       "lane": "production",
-      "col": 0,
+      "col": 1,
       "type": "cloud",
       "label": "Promote to simulated production",
-      "sublabel": "Review PR \u00b7 Argo CD deploys \u00b7 API verification",
-      "width": 330
+      "sublabel": "Review \u00b7 Argo CD \u00b7 verify API",
+      "width": 270
     }
   ],
   "edges": [
     {
-      "from": "change",
       "to": "build",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "change"
     },
     {
-      "from": "build",
       "to": "capture",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "build"
     },
     {
-      "from": "capture",
+      "to": "candidate",
+      "label": "",
+      "role": "branch",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "drop",
+      "from": "build"
+    },
+    {
       "to": "labels",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "capture"
     },
     {
-      "from": "labels",
+      "to": "labels",
+      "label": "",
+      "role": "branch",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "drop",
+      "from": "candidate"
+    },
+    {
       "to": "score",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "labels"
     },
     {
-      "from": "score",
+      "to": "gate",
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight",
+      "from": "score"
+    },
+    {
+      "to": "pass",
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight",
+      "from": "gate"
+    },
+    {
+      "to": "decision",
+      "label": "Eligible regression",
+      "role": "branch",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "drop",
+      "from": "gate"
+    },
+    {
+      "to": "blocked",
+      "label": "Hard block",
+      "role": "branch",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "drop",
+      "from": "gate"
+    },
+    {
       "to": "merge",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "pass"
     },
     {
-      "from": "merge",
+      "to": "merge",
+      "label": "Accepted in Git",
+      "role": "branch",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "drop",
+      "from": "decision"
+    },
+    {
       "to": "mainbuild",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "merge"
     },
     {
-      "from": "mainbuild",
       "to": "integration",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "mainbuild"
     },
     {
-      "from": "integration",
       "to": "staging",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "integration"
     },
     {
-      "from": "staging",
       "to": "load",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "staging"
     },
     {
-      "from": "load",
       "to": "production",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
       "toSide": "top",
-      "route": "straight"
+      "route": "straight",
+      "from": "load"
     }
   ],
   "mainPath": [
@@ -270,6 +386,8 @@
     "capture",
     "labels",
     "score",
+    "gate",
+    "pass",
     "merge",
     "mainbuild",
     "integration",
@@ -290,8 +408,8 @@
       "dot": "amber",
       "title": "If the source gate fails",
       "items": [
-        "Revise the change and push a new commit for fresh evidence.",
-        "An eligible bounded regression may use a reviewed Git decision. Invalid evidence stays blocked."
+        "Rejected regressions and hard blocks require a new commit and fresh comparison.",
+        "Only eligible bounded regressions can be accepted. The reviewed Git decision retains the original scores."
       ]
     },
     {
