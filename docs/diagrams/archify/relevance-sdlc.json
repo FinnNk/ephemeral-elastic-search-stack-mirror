@@ -75,8 +75,20 @@
       "label": "Staging · deploy SLO ≤2 min"
     },
     {
+      "id": "prepare-production",
+      "label": "Production candidate · deploy SLO ≤2 min"
+    },
+    {
       "id": "load",
       "label": "Production gate · ≥42 min load + other checks"
+    },
+    {
+      "id": "final-production",
+      "label": "Final comparison · warm ~1–2 min (estimate)"
+    },
+    {
+      "id": "release-review",
+      "label": "Release decision · human time varies"
     },
     {
       "id": "production",
@@ -242,9 +254,54 @@
       "lane": "production",
       "col": 2,
       "type": "cloud",
-      "label": "Promote to simulated production",
-      "sublabel": "Review · Argo CD · verify API",
+      "label": "Switch the production route",
+      "sublabel": "Argo CD · verify API · retain previous slot",
       "width": 258
+    },
+    {
+      "id": "prepare-production",
+      "lane": "prepare-production",
+      "col": 2,
+      "type": "cloud",
+      "label": "Prepare the inactive API",
+      "sublabel": "Verified staging release · same frozen catalogue",
+      "width": 258
+    },
+    {
+      "id": "final-production",
+      "lane": "final-production",
+      "col": 2,
+      "type": "database",
+      "label": "Compare active API and candidate",
+      "sublabel": "Recent queries · shared frozen labels · coverage",
+      "width": 258
+    },
+    {
+      "id": "production-labels",
+      "lane": "final-production",
+      "col": 4,
+      "type": "backend",
+      "label": "Resolve missing judgements",
+      "sublabel": "Reuse labels and outcomes · infer remaining gaps",
+      "width": 258
+    },
+    {
+      "id": "release-review",
+      "lane": "release-review",
+      "col": 2,
+      "type": "security",
+      "label": "Approve the exact route switch",
+      "sublabel": "Review load gate and final relevance evidence",
+      "width": 258
+    },
+    {
+      "id": "hold-release",
+      "lane": "release-review",
+      "col": 0,
+      "type": "frontend",
+      "label": "Keep the active release",
+      "sublabel": "Revise or decline the candidate",
+      "width": 200
     }
   ],
   "edges": [
@@ -375,7 +432,7 @@
       "from": "integration"
     },
     {
-      "to": "load",
+      "to": "prepare-production",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
@@ -384,7 +441,7 @@
       "from": "staging"
     },
     {
-      "to": "production",
+      "to": "final-production",
       "label": "",
       "role": "main",
       "fromSide": "bottom",
@@ -418,6 +475,51 @@
       "fromSide": "right",
       "toSide": "left",
       "route": "straight"
+    },
+    {
+      "from": "prepare-production",
+      "to": "load",
+      "role": "main",
+      "label": "",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "from": "final-production",
+      "to": "production-labels",
+      "role": "branch",
+      "label": "Resolve gaps",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight"
+    },
+    {
+      "from": "final-production",
+      "to": "release-review",
+      "role": "main",
+      "label": "",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "from": "release-review",
+      "to": "production",
+      "role": "main",
+      "label": "",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "from": "release-review",
+      "to": "hold-release",
+      "role": "branch",
+      "label": "Decline",
+      "fromSide": "left",
+      "toSide": "right",
+      "route": "straight"
     }
   ],
   "mainPath": [
@@ -430,7 +532,10 @@
     "integration",
     "staging-gate",
     "staging",
+    "prepare-production",
     "load",
+    "final-production",
+    "release-review",
     "production"
   ],
   "cards": [
@@ -454,16 +559,16 @@
       "dot": "emerald",
       "title": "Reviewed deployment and recovery",
       "items": [
-        "Each promotion requires fresh evidence for the exact release, target and intent. Failed gates block promotion.",
-        "Use Actions for each target. A separate reviewer approves the exact delivery-state PR before merge and deployment verification.",
-        "Rollback re-evaluates a retained release through the same reviewed process."
+        "Integration and staging use Actions; the production release UI prepares, checks and requests the route switch.",
+        "Production baseline is the active API. Candidate and baseline share one read-only catalogue throughout release.",
+        "The exact activation PR records final relevance evidence and the load gate. Keep the other slot for reviewed rollback."
       ]
     },
     {
       "dot": "cyan",
       "title": "Timing key",
       "items": [
-        "Warm runs only: retained images, compatible index and reused judgements; 1,000 queries and two APIs.",
+        "Warm runs only: retained images, shared frozen index and reused judgements; 1,000 queries and two APIs. New inference takes additional time.",
         "Build times are targets; deployment times are SLOs. Other estimates are labelled or explained in the linked timing key.",
         "Review and queueing time are additional. Stage height does not represent duration."
       ]

@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id), path=location.pathname;
 const operationPage=/^\/api\/delivery\/operations\/[0-9a-f]{32}$/.test(path);
 let timer=null, loading=false;
 const stateNames={accepted:'Waiting for the source build',queued:'Queued',running:'In progress',complete:'Complete',failed:'Failed',interrupted:'Interrupted',pass:'Passed',approved_exception:'Accepted with a recorded exception',decision_required:'Decision required',blocked:'Blocked',invalid:'Invalid evidence',verified:'Deployment verified'};
-const operationTitles={preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
+const operationTitles={'prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
 const names={ndcg_at_10:'nDCG@10',ndcg_at_20:'nDCG@20',precision_at_10:'Precision@10',recall_at_10:'Recall@10',rbo_at_10_p_0_9:'RBO@10',jaccard_at_10:'Jaccard@10'};
 const label=value=>names[value]||String(value).replaceAll('_',' ');
 const fmt=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:4}):value==null?'Not available':String(value);
@@ -56,10 +56,10 @@ function operation(row){
  $('explanation').textContent=row.state==='complete'?'The operation finished. Review its outcome and evidence below.':['failed','interrupted'].includes(row.state)?'The operation did not finish successfully. Review the error before starting another operation.':'This page refreshes every five seconds. You can leave it and return using the same link.';
  if(row.error)node('p','Error: '+row.error,section('What happened'));
  gate(result.gate);
- if(row.state==='complete'&&['promotion','rollback'].includes(request.kind)&&result.validation){$('state').textContent=result.validation.passed?'Ready for review':'Proposal validation failed';}
+ if(row.state==='complete'&&['promotion','rollback','prepare-production','release-production'].includes(request.kind)&&result.validation){$('state').textContent=result.validation.passed?'Ready for review':'Proposal validation failed';}
  if(result.state)node('p',stateNames[result.state]||label(result.state),section('Deployment outcome'));
  if(result.validation)node('p',result.validation.detail||'Review the recorded validation result.',section('Proposal validation'));
- link('report',row.report_url);$('report').textContent=['promotion','rollback'].includes(request.kind)?'Review promotion checks':['verify','merge-reviewed'].includes(request.kind)?'Open deployment verification':'Open comparison report';link('baseline',result.baseline_url);link('candidate',result.candidate_url);link('preview',result.browser_url);link('proposal',result.url);link('decision',row.decision_url);
+ link('report',row.report_url);$('report').textContent=['promotion','rollback','prepare-production','release-production'].includes(request.kind)?'Review promotion checks':['verify','merge-reviewed'].includes(request.kind)?'Open deployment verification':'Open comparison report';link('baseline',result.baseline_url);link('candidate',result.candidate_url);link('preview',result.browser_url);link('proposal',result.url);link('decision',row.decision_url);
  identity({operation:row.id,source_commit:request.source_sha||result.source_sha,baseline_commit:request.baseline_sha||result.baseline_source_sha,build_run:request.run,target:request.target,report_sha256:result.report?.sha256,updated_at:row.updated_at});
  return ['accepted','queued','running'].includes(row.state);
 }
@@ -93,6 +93,8 @@ function report(value,operationRecord){
  else if(value.verdict){$('state').textContent='Check outcome: '+label(value.verdict);}
  else if(value.state==='verified'){$('state').textContent='Deployment verified';$('stage').textContent='Argo CD and the public API verified the declared release.';}
  timings(value,operationRecord);
+ if(value.production_slots_sha256){node('p',value.recent_query_source,section('Final production release',value.release_review));}
+
  if(value.kind==='variant-evaluation-report'||value.kind==='controlled-api-comparison')section('Read the results','RBO describes order similarity; Jaccard describes product-set overlap. A value of 1 means identical at the captured depth. Coverage shows how many results have relevance labels; added labels do not establish better search.');
  if(value.judgement_selection==='demo')node('p','Lab demo: this report includes authorised model labels whose accuracy remains unqualified.',section('Label policy'));
  if(value.query_sets){for(const [name,suite] of Object.entries(value.query_sets))summary(suite,name==='standard'?'Standard suite':name,value.query_set_metadata?.[name]?.required);if(value.combined)summary(value.combined,'Combined view',false,value.baseline_variant);}
@@ -112,7 +114,9 @@ function report(value,operationRecord){
   table(s,['Field','Value'],[['Environment',fmt(value.environment)],['Build run',fmt(deployment.build_run)],['Image',fmt(fields.image)],['Index',fmt(fields.index)],['Source commit',fmt(fields.source_sha)],['Verified at',fmt(value.verified_at)],['Verification duration',fmt(value.seconds)+' s'],...(value.merge_to_verified_seconds==null?[]:[['Merge to verified',fmt(value.merge_to_verified_seconds)+' s']]),['Products checked',fmt(value.sample_ids?.length)]]);
   $('explanation').textContent='This records deployment verification, not a new relevance or load test.';
  }
- else if(value.reports){const s=section('Delivery checks','Open each retained check. The operation records the promotion decision.');for(const name of ['result-regression','relevance','performance'])if(value.reports[name]){const p=node('p',null,s),a=node('a','Open '+label(name)+' report',p);a.href=path+'/'+name;}}
+ else if(value.reports){
+ if(value.production_final){const s=section('Final production comparison','Active production and the prepared candidate use the same frozen catalogue. Review relevance and coverage before approving the route switch.');const a=node('a','Open final production comparison',s);a.href=path+'/production-final';}
+const s=section('Delivery checks','Open each retained check. The operation records the promotion decision.');for(const name of ['result-regression','relevance','performance'])if(value.reports[name]){const p=node('p',null,s),a=node('a','Open '+label(name)+' report',p);a.href=path+'/'+name;}}
  else{const s=section('Delivery evidence','This record combines the retained checks for a delivery operation. Open its operation page to review the decision, or view JSON for the complete evidence.');const values=Object.entries(value).filter(([k,v])=>v!=null&&typeof v!=='object');if(values.length)table(s,['Field','Value'],values.map(([k,v])=>[label(k),fmt(v)]));}
  if(path.startsWith('/api/delivery/operations/'))link('proposal',path.split('/report')[0]);$('proposal').textContent='Open operation progress';
  identity({report_kind:value.kind,source_commit:value.source_context?.source_sha,baseline:value.baseline_variant,default:value.default_variant,judgement_sha256:value.judgement_sha256,query_suite_sha256:value.query_suite_sha256,workload_sha256:value.workload_sha256,observation_sha256:value.observation_sha256,evaluated_at:value.evaluated_at});

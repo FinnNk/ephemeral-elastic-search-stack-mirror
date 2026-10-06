@@ -71,8 +71,10 @@ other builds can proceed during a long evaluation.
 
 The workflow also offers `merge-reviewed`, `merge-exception`, `verify`, `propose-rollback` and
 `gate-check`. Supply the relevant PR, target, source commit or previous fingerprint;
-unused build fields can stay blank. Production proposals and rollbacks run the
-full Gatling profile. `merge-reviewed` requires an existing, exact-head approval
+unused build fields can stay blank. Use the [production release UI](https://control.localhost:34443/production-release)
+for candidate preparation and final production activation. Ordinary
+`propose-promotion` operations cover integration and staging. Production rollback
+checks still use the full Gatling profile. `merge-reviewed` requires an existing, exact-head approval
 from a permitted separate reviewer. It cannot create that approval.
 See the [promotion procedure](delivery.md#promote-a-merged-release).
 

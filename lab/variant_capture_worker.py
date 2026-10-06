@@ -18,14 +18,14 @@ def request(variant, target, row, pacer=None):
     filters = validate_filters(row.get('filters', {}))
     query = urllib.parse.urlencode({'q': row['query'], 'country': row['country'],
                                     'currency': row['currency'], 'filters': encode_filters(filters)})
-    url = f"http://search.{target['environment']}.svc.cluster.local:8080/search?{query}"
+    url = f"http://{target.get('service', 'search')}.{target['environment']}.svc.cluster.local:8080/search?{query}"
     headers = {'X-Lab-Traffic-Class': 'probe'}
     trace_id, span_id = os.environ.get('LAB_TRACE_ID', ''), os.environ.get('LAB_SPAN_ID', '')
     if re.fullmatch('[0-9a-f]{32}', trace_id) and re.fullmatch('[0-9a-f]{16}', span_id) and \
             int(trace_id, 16) and int(span_id, 16):
         headers['traceparent'] = f'00-{trace_id}-{span_id}-01'
     if target['selection'] == 'explicit':
-        headers['X-Lab-Variant'] = variant
+        headers['X-Lab-Variant'] = target.get('variant_id', variant)
     value = (pacer or Pacer()).fetch(url, headers)
     if (value.get('query'), value.get('country'), value.get('currency')) != (
             row['query'], row['country'], row['currency']):
@@ -33,7 +33,7 @@ def request(variant, target, row, pacer=None):
     if value.get('filters') != filters:
         raise ValueError('Search API did not echo the frozen filters.')
     ids = value.get('ids')
-    if value.get('variant_id') != variant or \
+    if value.get('variant_id') != target.get('variant_id', variant) or \
             value.get('configuration_sha256') != target['configuration_sha256']:
         raise ValueError('Search API served another variant or configuration.')
     if not isinstance(ids, list) or len(ids) > 20 or len(ids) != len(set(ids)) or \
@@ -47,12 +47,12 @@ def run(rows, variants, worker_count=8, diagnostics=None):
     if not 1 <= worker_count <= 16:
         raise ValueError('Capture concurrency must be between 1 and 16.')
 
-    pacers = {target['environment']: Pacer() for target in variants.values()}
+    pacers = {name: Pacer() for name in variants}
 
     def one(row):
         try:
             return {'query_id': row['query_id'], 'results': {
-                variant: request(variant, target, row, pacers[target['environment']])
+                variant: request(variant, target, row, pacers[variant])
                 for variant, target in variants.items()}}
         except Exception as error:
             return {'query_id': row['query_id'], 'error': {

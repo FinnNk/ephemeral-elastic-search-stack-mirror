@@ -46,7 +46,8 @@ def definition(name):
     app = json.loads(k('get', 'application/' + name, '-n', 'argocd', '-o', 'json').stdout)
     assert app['status']['sync']['status'] == 'Synced'
     assert app['status']['health']['status'] == 'Healthy'
-    deployment = json.loads(k('get', 'deployment/search', '-n', name, '-o', 'json').stdout)
+    deployment_name = 'search-' + resource['data']['active-slot'] if name == 'lab-delivery-production' and resource['data'].get('active-slot') else 'search'
+    deployment = json.loads(k('get', 'deployment/' + deployment_name, '-n', name, '-o', 'json').stdout)
     container = deployment['spec']['template']['spec']['containers'][0]
     assert container['image'] == entry['image']
     assert next(env['value'] for env in container['env'] if env['name'] == 'ES_INDEX') == entry['index']

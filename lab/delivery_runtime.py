@@ -205,6 +205,9 @@ def read_target(target, revision='HEAD'):
 
 
 def write_target(target, deployment):
+    if target == 'production':
+        from production_release import initial, write
+        return write(initial(deployment))
     folder = LOCAL / 'targets' / target
     folder.mkdir(parents=True, exist_ok=True)
     (folder / 'deployment.json').write_bytes(canonical(deployment))
@@ -233,7 +236,8 @@ def application(name, path, revision='main', expires=None):
                      'finalizers': ['resources-finalizer.argocd.argoproj.io']},
         'spec': {'project': 'default', 'source': {'repoURL': REPO_URL, 'path': path, 'targetRevision': revision},
                  'destination': {'server': 'https://kubernetes.default.svc', 'namespace': name},
-                 'syncPolicy': {'automated': {'prune': True, 'selfHeal': True}}}})
+                 'syncPolicy': {'automated': {'prune': True, 'selfHeal': True},
+                                'syncOptions': ['PruneLast=true']}}})
 
 
 def verify(name, deployment, revision=None):
@@ -249,7 +253,12 @@ def verify(name, deployment, revision=None):
                 actual = definition(name)
                 if actual['fingerprint'] != deployment['fingerprint']:
                     raise ValueError('Serving definition is not the declared deployment.')
-                resource = json.loads(k('get', 'deployment/search', '-n', name, '-o', 'json').stdout)
+                deployment_name = 'search'
+                if name == 'lab-delivery-production':
+                    config = json.loads(k('get', 'configmap/frozen-definition', '-n', name, '-o', 'json').stdout)
+                    if config['data'].get('active-slot'):
+                        deployment_name += '-' + config['data']['active-slot']
+                resource = json.loads(k('get', 'deployment/' + deployment_name, '-n', name, '-o', 'json').stdout)
                 observed = resource.get('status', {})
                 if (observed.get('observedGeneration', 0) < resource['metadata']['generation'] or
                         observed.get('updatedReplicas') != 1 or observed.get('availableReplicas') != 1):

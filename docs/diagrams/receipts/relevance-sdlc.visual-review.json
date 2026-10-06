@@ -1,12 +1,12 @@
 {
-  "observed_at": "2026-10-06T10:31:04.291886+00:00",
+  "observed_at": "2026-10-06T11:02:28.936345+00:00",
   "artifact": "interactive/relevance-sdlc.html",
-  "sha256": "1dfca2087db01612f4d77cb66084c87f0a6b3e3a3ab36134bfec1ca2a8c4c172",
+  "sha256": "c0eedff1670d6fdfb893e21272f6991c241a93a2c0ad70b5ad31e783f215f64c",
   "reviewed_image": "rendered/relevance-sdlc.png",
   "viewport": [
     1440,
     900
   ],
-  "review": "Inspected the full timeline. The stage 2 heading remains Build environments. Its centred Build the exact PR commit box now mentions reuse or restoration of the index and catalogue. The supporting text fits within the box and existing layout remains intact.",
-  "scope": "Diagram-only requested abstraction; resolver ownership in the implementation remains deferred."
+  "review": "Inspected the full seventeen-stage timeline. Production candidate preparation precedes the existing load gate. The final comparison uses the active API, with the judgement resolver to its right, followed by review or decline and a route switch retaining the previous slot. Labels fit and the centre axis remains consistent.",
+  "scope": "Visual layout review; warm timing estimates exclude new inference. The earlier scorer-to-resolver abstraction remains a deferred runtime refactor."
 }

@@ -3,7 +3,7 @@
 ## Intent and constraints
 
 Show the implemented developer workflow from an API change to simulated
-production. Use the existing Archify gallery; developers use Actions and PRs.
+production. Use the existing Archify gallery; developers use Actions, the production release UI and PRs.
 Separate the PR-head merge gate from the build of the merged commit.
 
 ## Acceptance and result
@@ -18,7 +18,7 @@ Separate the PR-head merge gate from the build of the merged commit.
 - Link the diagram from the gallery and delivery guide.
 - Pass showcase rendering and light/dark browser checks at all four supported
   desktop sizes; inspect the resulting diagram visually. Vertical scrolling
-  is intentional: fifteen stages run downwards, with parallel capture and
+  is intentional: seventeen stages run downwards, with parallel capture and
   explicit pass, bounded-decision and blocked paths with clear horizontal gaps
   between the decision outcomes.
 
@@ -38,17 +38,16 @@ Step 1 has no duration estimate.
 
 | Stage | Diagram annotation | Basis and limits |
 | --- | --- | --- |
-| 2 / 9: PR / merged-source build | Target <5 min | [Cached CI target](reference-ci-cd.md#provisional-first-slice-targets); runner start to published artefacts, excluding queueing. This is a target, not a measured build duration. |
-| 3: Baseline and variant capture | ~1 min estimate | [Six paired captures](../research/evidence/evaluation-throughput-adoption.md) had a 45.530 s median on the earlier synthetic million-product catalogue. [Full ESCI capture plus scoring](../research/evidence/esci-catalogue.md) took 52.032 s in one run. Neither isolates each API's duration; the annotation covers both branches together, not a minute per side. |
-| 4: Missing judgements | ~5–6 s cached replay | [Inference reuse evidence](../research/evidence/inference-reuse/README.md): local resolution of 6,920 cached predictions took 5.469–5.875 s. Replay timings exclude catalogue loading and network deployment; they are an orientation sample, not an in-cluster SLO. No new inference is included. |
-| 5: Score and report | Seconds estimate | [Throughput breakdown](../research/evidence/evaluation-throughput.md#transport-confirmation) recorded 0.20 s scoring and 0.06 s retention on a synthetic-label screen. The current enriched report has no separately measured stage percentile; allow seconds and exclude human reading. |
-| 6: Automated gate | Seconds estimate | Small validation and evidence checks; no dedicated stage SLO or representative timing series. Queueing is additional. |
-| 7: Gate outcome | Automatic pass; decision / revision time varies | Human decisions and code revision have no bounded duration. A revision restarts the build and comparison; the diagram does not add a return arrow. |
-| 8: Source merge | Seconds estimate after approval | Git operation only, excluding approval and any gate rerun. No dedicated stage SLO. |
-| 10 / 12: Integration / staging gates | ~2–5 min evaluation estimate | Planning allowance for fresh paired 1,000-query comparisons, short Gatling probes and preview preparation. The [ESCI probe observations](../research/evidence/esci-catalogue.json) took ~43–47 s per side including runner overhead. Gates validate matching release/target/intent, full result and frozen relevance evidence, and performance budgets. Result preservation depends on the declared intent. |
-| 11 / 13: Integration / staging promotion | Review varies; deploy ≤2 min SLO | The [deployment SLO](otel-observability.md) starts at approved desired-state merge and ends at Argo health plus API verification; it excludes gate evaluation and human review. |
-| 14: Production promotion gate | ≥42 min load + other checks | [Pinned workload](../delivery.md#promote-a-merged-release): 1 min warmup + 5 min normal + 15 min peak per API, executed sequentially. This is a scheduled minimum, not a completion estimate. Fresh result/relevance checks and setup add time. The same evidence identity/freshness rules apply. |
-| 15: Production deployment | Review varies; deploy ≤2 min SLO | Same approved-merge to verified-API boundary as integration/staging. The production gate is counted at stage 14, not repeated here. |
+| 2 / 8: PR / merged-source build | Target <5 min | [Cached CI target](reference-ci-cd.md#provisional-first-slice-targets); runner start to published artefacts, excluding queueing. |
+| 3: Baseline and variant capture | ~1 min estimate | [Six paired captures](../research/evidence/evaluation-throughput-adoption.md) had a 45.530 s median; [one full ESCI capture and score](../research/evidence/esci-catalogue.md) took 52.032 s. Both APIs together. |
+| 4: Score and report, with resolver branch | Seconds estimate | [Throughput breakdown](../research/evidence/evaluation-throughput.md#transport-confirmation) recorded 0.20 s scoring and 0.06 s retention. [Cached resolution](../research/evidence/inference-reuse/README.md) took ~5–6 s, excluding catalogue loading. No new inference is included. |
+| 5 / 6 / 7: Gate, decision, merge | Seconds; human time varies | No bounded duration for review or revision. A new commit restarts comparison. |
+| 9 / 11: Integration / staging gates | ~2–5 min estimate | Fresh paired functional checks, short Gatling probes and preview preparation; no measured stage percentile. |
+| 10 / 12 / 13: Integration, staging, candidate preparation | Deploy ≤2 min SLO | Approved desired-state merge to Argo health and API verification; excludes review and checks. |
+| 14: Production load gate | ≥42 min load + other checks | [Pinned workload](../delivery.md#promote-a-merged-release): 1 min warmup + 5 min normal + 15 min peak for each API, sequentially. |
+| 15: Final production comparison | Warm ~1–2 min estimate | Planning allowance based on the paired capture and cached resolution samples above. Active API versus candidate slot, including catalogue reading and retention. New inference is additional. |
+| 16: Release review | Human time varies | Review the load gate, relevance, result changes and coverage before approving the route switch. |
+| 17: Route switch | Deploy ≤2 min SLO | Approved activation merge to verified active API; previous slot remains available. |
 
 Do not sum these headings as an end-to-end promise: they mix observed samples,
 estimates and SLOs, and omit queueing and unbounded human work. Model inference,

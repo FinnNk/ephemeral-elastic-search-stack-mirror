@@ -113,6 +113,9 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['relevance-decision']:
             return self.send_bytes(200, UI.with_name('relevance-decision.html').read_bytes(),
                                    'text/html; charset=utf-8')
+        if parts == ['production-release']:
+            return self.send_bytes(200, UI.with_name('production-release.html').read_bytes(),
+                                   'text/html; charset=utf-8')
         if parts == ['delivery_results.js']:
             return self.send_bytes(200, UI.with_name('delivery_results.js').read_bytes(),
                                    'text/javascript; charset=utf-8')
@@ -152,8 +155,9 @@ class Handler(BaseHTTPRequestHandler):
                 if hashlib.sha256(payload).hexdigest() != reference['sha256']:
                     return self.send_json(502, {'error': 'Frozen delivery report hash differs.'})
                 if len(parts) == 6:
-                    reports = json.loads(payload).get('reports', {})
-                    if parts[5] not in ('result-regression', 'relevance', 'performance') or parts[5] not in reports:
+                    parent = json.loads(payload)
+                    reports = {**parent.get('reports', {}), **({'production-final': parent['production_final']} if parent.get('production_final') else {})}
+                    if parts[5] not in ('result-regression', 'relevance', 'performance', 'production-final') or parts[5] not in reports:
                         return self.send_json(404, {'error': 'Delivery check report not found.'})
                     reference = reports[parts[5]]
                     container, name = reference['blob'].split('/', 1)
@@ -164,6 +168,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(409, {'error': 'Delivery report is not available.'})
         if identity.get('is_delivery_service'):
             return self.send_json(403, {'error': 'Actions identity is restricted to delivery operations.'})
+        if parts == ['api', 'delivery', 'production']:
+            from production_release import view
+            return self.send_json(200, view())
         if parts == ['api', 'datasets']:
             releases = []
             for release_id in RELEASES:

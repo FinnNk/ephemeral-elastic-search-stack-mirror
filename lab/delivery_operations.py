@@ -10,6 +10,8 @@ import sqlite3
 from common import STATE
 
 FIELDS = {
+    'prepare-production': set(),
+    'release-production': {'intent'},
     'preview': {'run', 'dataset', 'recipe'},
     'compare': {'baseline_run', 'candidate_run', 'dataset', 'recipe', 'pr', 'source_sha', 'baseline_sha'},
     'promotion': {'target', 'run', 'dataset', 'recipe', 'intent'},
@@ -34,7 +36,7 @@ def validate(payload):
     kind = payload['kind']
     if set(payload) - (FIELDS[kind] | {'kind'}):
         raise ValueError('Unknown delivery operation field.')
-    required = {'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
+    required = {'prepare-production': set(), 'release-production': {'intent'}, 'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
                 else {'baseline_run', 'candidate_run'},
                 'promotion': {'target', 'run', 'intent'}, 'gate-check': {'pr', 'source_sha'},
                 'request-exception': {'pr', 'source_sha', 'variant', 'reason'},
@@ -163,7 +165,14 @@ def execute_next():
         for field in ('dataset', 'recipe'):
             if field in request:
                 options += ['--' + field, request[field]]
-        if kind == 'preview':
+        if kind == 'prepare-production':
+            from production_release import prepare
+            progress('Creating the reviewed inactive production candidate')
+            result = prepare()
+        elif kind == 'release-production':
+            from production_release import release
+            result = release(request['intent'], progress)
+        elif kind == 'preview':
             progress('Preparing the frozen preview')
             result = execute(parser().parse_args(['preview', '--run', str(request['run']), *options]))
             result['browser_url'] = url(result['name'])
@@ -198,6 +207,8 @@ def execute_next():
             result['report'] = {key: evidence[key] for key in ('sha256', 'blob')}
         else:
             target = request['target']
+            if target == 'production':
+                raise ValueError('Use Prepare production candidate, then Check and release production.')
             progress('Evaluating the candidate against ' + target)
             args = ['evaluate-target', target, '--run', str(request['run']),
                     '--intent', request['intent'], *options]
@@ -207,6 +218,14 @@ def execute_next():
                 '--intent', request['intent'], '--evidence', evidence['reference_file'], *options]))
             result['url'] = 'https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/' + str(result['pr'])
             result['report'] = {key: evidence[key] for key in ('sha256', 'blob')}
+        if kind in ('prepare-production', 'release-production') and result.get('pr'):
+            from gitea import api
+            from delivery_provider import DESIRED, endpoint
+            result['url'] = 'https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/' + str(result['pr'])
+            body = '[Open release operation and evidence](https://control.localhost:34443/api/delivery/operations/' + identifier + '). '
+            body += ('Review the final comparison before approving activation.' if kind == 'release-production'
+                     else 'The active production route is unchanged.')
+            api(endpoint(DESIRED, '/issues/' + str(result['pr']) + '/comments'), 'POST', {'body': body})
         store.update(identifier, state='complete', progress='Complete', result=result)
     except Exception as error:
         from delivery_source_comparison import BuildPending
@@ -219,7 +238,7 @@ def execute_next():
         import traceback
         traceback.print_exc()
         detail = type(error).__name__
-        if request['kind'] in ('request-exception', 'merge-exception') and isinstance(error, ValueError):
+        if request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production') and isinstance(error, ValueError):
             # Decision validation errors contain public evidence/review facts,
             # never credentials or provider response bodies.
             detail += ': ' + str(error)[:240]

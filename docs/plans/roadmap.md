@@ -199,3 +199,13 @@ Integration and staging show short probes; the production gate shows normal/peak
 Gatling load alongside result and relevance evidence. Warm timings now separate
 evaluation from deployment. Next: review the diagram and continue the source
 walkthrough using the [timeline plan](relevance-sdlc-diagram.md).
+
+## Final production release
+
+Implemented for review: a blue–green route switch with a final comparison against the
+active production API. Both slots share a read-only catalogue; the control UI owns
+preparation, release checks, progress and approved deployment. Existing normal/peak
+Gatling gates remain required. See the [implementation and rehearsal plan](production-blue-green.md).
+The isolated four-query Argo rehearsal passed without changing active production.
+After acceptance, use the [next walkthrough plan](production-release-walkthrough.md)
+with a different verified staging release.

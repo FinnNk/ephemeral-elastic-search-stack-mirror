@@ -17,7 +17,8 @@ the lab using [control runtime](control-runtime.md).
 
 [Open the interactive timeline](diagrams/interactive/relevance-sdlc.html).
 Each promotion follows its own evidence gate. Integration and staging use short
-performance probes; simulated production requires the normal/peak load check.
+performance probes; simulated production requires the normal/peak load check,
+then compares its active API with the prepared candidate before the route switch.
 Read from top to bottom; spacing shows sequence, not elapsed time.
 Stage timings cover warm runs only, with reused judgements and a compatible index.
 Review and queueing time are additional. See the [timing sources and boundaries](plans/relevance-sdlc-diagram.md#timing-sources-and-boundaries).
@@ -94,8 +95,10 @@ not separate failure domains or performance-isolated systems.
 4. Run **Lab delivery** with `merge-reviewed` and that **desired-state PR number**.
    The coordinator rechecks the proposal and approval, merges it, then waits for
    Argo CD and the public API. The operation must finish with `state: verified`.
-5. Repeat for `staging`, then `production`, using the **same merged build** and
-   frozen inputs. Each preceding target must be verified first. No image is rebuilt.
+5. Repeat for `staging` using the **same merged build** and frozen inputs.
+   Each preceding target must be verified first. No image is rebuilt.
+6. Use the [production release UI](https://control.localhost:34443/production-release)
+   for the final release, as described below.
 
 If desired-state main or the target baseline changes, create a fresh proposal.
 Evidence must match the exact inputs and intent and be no more than three days old.
@@ -107,8 +110,10 @@ Use `verify` with the target to recheck after an operator repairs a failed deplo
 | Integration / staging | `probe` | Short wiring/regression check |
 | Simulated production | `production-load` | One minute warmup, five minutes at 10 requests/s and fifteen minutes at 20 requests/s, for each release |
 
-Production tests run sequentially against temporary baseline/candidate previews,
-not the deployed production service. They take at least 42 minutes plus setup.
+The production **load gate** runs sequentially against temporary baseline/candidate
+previews. The additional final relevance check calls the active production API
+and prepared candidate slot directly. The two load runs take at least 42 minutes
+plus setup; the final relevance check adds capture, resolution and scoring time.
 Both runs must complete every scheduled arrival and satisfy the pinned
 [workload](../lab/traffic/production-load-v1.json). Normal-load budgets are
 p95 ≤250 ms and p99 ≤500 ms; peak budgets are p95 ≤400 ms and p99 ≤800 ms.
@@ -116,7 +121,46 @@ Both phases require fewer than 1% failed requests. These are lab thresholds,
 not production capacity claims. Probes, smoke checks and stress tests cannot
 replace this gate. Validation checks the load evidence again before merge.
 
+## Release to production
+
+Blue–green deployment keeps two API releases available. The production URL
+selects one slot; preparing the other slot does not change that route.
+
+1. Open **Production release** from the control UI. Select **Prepare production
+   candidate** to use the verified staging release.
+2. Follow the operation to its preparation PR. Approve the exact head in Gitea,
+   then enter its number under **Deploy an approved PR**.
+3. Select the change intent and **Check and release production**. The coordinator
+   runs the existing full gates, including normal/peak Gatling load. It then
+   compares the active production API with the prepared candidate.
+4. Open the final production comparison from the friendly report. Check nDCG,
+   its change and significance, RBO/Jaccard, coverage and judgement resolution
+   outcomes. Both releases use one frozen set of labels.
+5. Review and approve the route-switch PR in Gitea. Use **Deploy an approved PR**
+   with its number. Wait for deployment verification and open active production.
+
+The final check uses up to 1,000 queries from the pinned ESCI suite as a
+**simulated recent-traffic fixture**. It does not claim to reproduce yesterday's
+traffic. The baseline calls the stable active service; the candidate calls its
+separate slot service. Their catalogue, concrete index, mapping and request
+context must match. Elasticsearch's write block represents paused catalogue
+updates and is checked before and after evaluation and before activation.
+
+The final report adds human-reviewed evidence; it does not introduce a new nDCG
+threshold or qualify model predictions. Missing scores, abstentions and errors
+remain visible. Existing delivery gates still apply. Changed slots or stale
+final evidence require a fresh check. Both slots remain deployed after switching.
+
+Use **Request rollback to the other slot** to re-evaluate the retained release
+and create a reviewed rollback PR. A subsequent candidate preparation replaces
+that inactive slot, so the one-step retained rollback covers the last switch.
+Older releases remain in Git history and can use the separate historical restore
+workflow.
+
 ## Roll back
+
+For production, use **Request rollback to the other slot** in the release UI.
+The Actions steps below apply to integration and staging.
 
 1. Find the previous verified fingerprint under
    `delivery-state/history/<target>/`. Its retained definition pins the old

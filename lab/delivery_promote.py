@@ -33,6 +33,12 @@ def save_verification(target, deployment, value):
 def verify_target(target, deployment=None, revision=None):
     deployment = deployment or read_target(target)
     value = verify('lab-delivery-' + target, deployment, revision)
+    if target == 'production':
+        from production_release import state, live, PATH
+        if git(DESIRED, 'ls-tree', '--name-only', 'HEAD', PATH):
+            slots = live(state())
+            value['active_slot'] = slots['active']
+            value['slots_sha256'] = __import__('hashlib').sha256(canonical(slots)).hexdigest()
     return save_verification(target, deployment, value)
 
 
@@ -116,6 +122,15 @@ def propose(target, deployment, evidence, intent='preserve-results', rollback=Fa
         path = RECORDS / 'verified' / target / (deployment['fingerprint'] + '.json')
         if not path.exists() or json.loads(path.read_text())['deployment'] != deployment:
             raise ValueError('Rollback requires a retained, previously verified deployment for this target.')
+    if target == 'production':
+        from production_release import state, inactive, live, validate_final, write
+        slots = live(state(base))
+        other = inactive(slots)
+        if slots['slots'].get(other) != deployment:
+            raise ValueError('Deploy the candidate into the inactive production slot first.')
+        if not rollback:
+            from delivery_gates import read
+            validate_final(read(evidence).get('production_final', {}), slots)
     materialise(deployment)
     # Grant only old/new frozen indices before Argo can roll between the two versions.
     access('lab-delivery-' + target, deployment)
@@ -131,7 +146,12 @@ def propose(target, deployment, evidence, intent='preserve-results', rollback=Fa
     if previous.exists() and json.loads(previous.read_text()) != current:
         raise ValueError('Retained deployment history differs.')
     previous.write_bytes(canonical(current))
-    write_target(target, deployment)
+    if target == 'production':
+        proposal['previous_slots'] = slots
+        proposal['slots'] = {**slots, 'active': other}
+        write(proposal['slots'])
+    else:
+        write_target(target, deployment)
     folder = LOCAL / 'proposals'
     folder.mkdir(exist_ok=True)
     (folder / (identifier + '.json')).write_bytes(canonical(proposal))
@@ -172,16 +192,32 @@ def inspect_pr(number):
     deployment = proposal['deployment']
     if proposal['expected_target'] != current['fingerprint']:
         raise ValueError('Target baseline changed after evaluation.')
+    if proposal['kind'] == 'prepare-production':
+        from production_release import inspect_preparation
+        return inspect_preparation(pr, proposal, base, head, changed, proposals[0])
     expected_paths = {proposals[0], 'targets/' + target + '/deployment.json',
                       'targets/' + target + '/rendered/search.yaml'}
     history_path = 'history/' + target + '/' + current['fingerprint'] + '.json'
+    if target == 'production':
+        expected_paths.add('targets/production/slots.json')
     if not expected_paths.issubset(changed) or set(changed) - expected_paths - {history_path}:
         raise ValueError('Promotion PR changes files outside its declared deployment.')
     if json.loads(git(DESIRED, 'show', head + ':' + history_path)) != current:
         raise ValueError('Prior deployment history differs.')
     if json.loads(git(DESIRED, 'show', head + ':targets/' + target + '/deployment.json')) != deployment:
         raise ValueError('Proposed deployment differs from the PR files.')
-    if git(DESIRED, 'show', head + ':targets/' + target + '/rendered/search.yaml') != rendered(deployment, 'lab-delivery-' + target).strip():
+    if target == 'production':
+        from production_release import state, live, inactive, validate_final, validate_files
+        from delivery_gates import read
+        before = live(state(base))
+        if proposal.get('previous_slots') != before or proposal.get('slots') != {**before, 'active': inactive(before)}:
+            raise ValueError('Production activation must switch only the prepared route.')
+        if before['slots'][inactive(before)] != deployment:
+            raise ValueError('Activation candidate differs from its prepared slot.')
+        validate_files(head, proposal['slots'], changed, {proposals[0], history_path})
+        if proposal['kind'] != 'rollback':
+            validate_final(read(proposal['evidence']).get('production_final', {}), before)
+    elif git(DESIRED, 'show', head + ':targets/' + target + '/rendered/search.yaml') != rendered(deployment, 'lab-delivery-' + target).strip():
         raise ValueError('Rendered workloads differ from the pinned release and deployment.')
     validate_evidence(proposal['evidence'], current['fingerprint'], deployment['fingerprint'],
                       proposal['intent'], deployment_inputs(deployment), target=target)
@@ -302,7 +338,10 @@ def watch_once():
         deployment = read_target(target)
         previous = RECORDS / (target + '.json')
         if (not previous.exists() or json.loads(previous.read_text())['deployment'] != deployment or
-                json.loads(previous.read_text()).get('state') != 'verified'):
+                json.loads(previous.read_text()).get('state') != 'verified' or
+                target == 'production' and git(DESIRED, 'ls-tree', '--name-only', 'HEAD', 'targets/production/slots.json') and
+                json.loads(previous.read_text()).get('slots_sha256') != __import__('hashlib').sha256(
+                    canonical(__import__('production_release').state())).hexdigest()):
             access('lab-delivery-' + target, deployment)
             try:
                 result = verify_target(target, deployment)

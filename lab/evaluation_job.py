@@ -78,7 +78,9 @@ def run_variants(suite_bytes, variants):
     guard()
     if not isinstance(variants, dict) or len(variants) < 2 or any(
             not NAME.fullmatch(target.get('environment', '')) or
-            target.get('selection') not in ('default', 'explicit')
+            target.get('selection') not in ('default', 'explicit') or
+            not re.fullmatch(r'[a-z][a-z0-9-]{0,62}', target.get('service', 'search')) or
+            not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', target.get('variant_id', 'default'))
             for target in variants.values()):
         raise ValueError('Variant targets are invalid.')
     if len(suite_bytes) > 700_000:

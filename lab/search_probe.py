@@ -12,10 +12,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / 'search-app'))
 from search_filters import encode_filters, parse_filters
 
 
-def search(name,query='running shoes',request_id=None,filters=None,country='GB',currency='GBP'):
+def search(name,query='running shoes',request_id=None,filters=None,country='GB',currency='GBP',service='search'):
     params = {'q': query, 'country': country, 'currency': currency,
               'filters': encode_filters(filters if filters is not None else {})}
-    url='http://search.'+name+'.svc.cluster.local:8080/search?'+urllib.parse.urlencode(params)
+    url='http://'+service+'.'+name+'.svc.cluster.local:8080/search?'+urllib.parse.urlencode(params)
     if request_id is not None:
         url+='&diagnostics=1&request_id='+urllib.parse.quote(request_id)
     if IN_CLUSTER:

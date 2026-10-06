@@ -6,12 +6,12 @@
   "input": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\archify\\relevance-sdlc.json",
   "output": "D:\\codex\\Ephemeral Elasticsearch\\.lab\\worktrees\\esci-category-increment-analysis\\docs\\diagrams\\interactive\\relevance-sdlc.html",
   "specification": {
-    "sha256": "4e2fd3d0b94520aa195f3f95fdc91c9b079cb2ab661d3da23023966b39b08642",
-    "bytes": 11491
+    "sha256": "c055c22bdb23ade6ba528117c6bc491e9b711d6536837ef156f80812ef91cbe9",
+    "bytes": 14318
   },
   "artifact": {
-    "sha256": "1dfca2087db01612f4d77cb66084c87f0a6b3e3a3ab36134bfec1ca2a8c4c172",
-    "bytes": 829169
+    "sha256": "c0eedff1670d6fdfb893e21272f6991c241a93a2c0ad70b5ad31e783f215f64c",
+    "bytes": 840586
   },
   "validation": {
     "checksPassed": 9,

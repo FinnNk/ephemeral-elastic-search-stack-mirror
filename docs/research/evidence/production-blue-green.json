@@ -1,0 +1,77 @@
+{
+  "blue_endpoints": [
+    "search-blue-7c9c754cdc-rf6hr"
+  ],
+  "coverage": {
+    "active": {
+      "fraction": 0.9,
+      "judged": 36,
+      "returned": 40
+    },
+    "candidate": {
+      "fraction": 0.9,
+      "judged": 36,
+      "returned": 40
+    }
+  },
+  "final_report": {
+    "blob": "runs/a88ba0c5e4e370db9da5e5b251e3833d044825b1f405f1c4492a15ad28b530bd/production-final-comparison.json",
+    "sha256": "a88ba0c5e4e370db9da5e5b251e3833d044825b1f405f1c4492a15ad28b530bd"
+  },
+  "green_endpoints": [
+    "search-green-6667794774-q2s2x"
+  ],
+  "metrics": {
+    "active": {
+      "Judged@10": 0.9,
+      "RR@10:rel=2": 0.833333,
+      "nDCG@10": 0.820996,
+      "nDCG@5": 0.850663
+    },
+    "candidate": {
+      "Judged@10": 0.9,
+      "RR@10:rel=2": 0.833333,
+      "nDCG@10": 0.820996,
+      "nDCG@5": 0.850663
+    }
+  },
+  "namespace": "lab-delivery-release-check",
+  "passed": true,
+  "production_unchanged": true,
+  "query_count": 4,
+  "resolution": {
+    "cache_hits": 0,
+    "inferred_pairs": 4,
+    "requests": 1,
+    "response_errors": 0,
+    "seconds": 33.146,
+    "stored_pairs": 0
+  },
+  "same_image_fixture": true,
+  "observed_at": "2026-10-06T11:28:39.138980+00:00",
+  "scope": "Four-query same-image Argo topology fixture; no new production release or full Gatling load run.",
+  "source_sha256": {
+    "lab/production_release.py": "0c9afbb9cd2121f0b8d9dc8ad989b098ecbabafb82bc6858928c097bc0d537eb",
+    "lab/verify_production_slots.py": "92341c7881e9aed07157bfbee8bc8f81f888ff88916a97fa3bfb714853e31a8b",
+    "lab/production-release.html": "82b8c016b87004c7d7b4d5c5745583b4497b5c4685b723df97392f2f20335674"
+  },
+  "checks": {
+    "route_switched": true,
+    "previous_slot_retained": true,
+    "stale_final_evidence_rejected": true
+  },
+  "validation": {
+    "python_tests": 54,
+    "browser_ui": "passed",
+    "friendly_reports": "passed",
+    "diagram_showcase": "9/9",
+    "diagram_browser": "8/8"
+  },
+  "cleanup": {
+    "resources_absent": true,
+    "index_credentials_removed": true,
+    "initial_wait": "Argo application deletion wait timed out after functional success; resources subsequently disappeared. Credential revocation was completed explicitly. The maintained verifier now revokes credentials in a nested finally block."
+  },
+  "runtime_image": "nexus.localhost:18185/lab-control@sha256:eec8d83778b414a4cb758fb603e2fc3ad21151c585d3db734a6738e9df5bf27d",
+  "maintained_verifier_sha256": "da7a58eeeb5f483d3e7a80be3d341ba3b2b04ad51dac27fab8ab048e965c2bb1"
+}
