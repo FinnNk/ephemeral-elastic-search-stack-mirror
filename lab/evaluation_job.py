@@ -13,7 +13,7 @@ NAMESPACE = 'lab-evaluation'
 IMAGE = ('python:3.13.7-alpine3.22@sha256:'
          '9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844')
 NAME = re.compile(r'lab-[a-z0-9-]{1,48}\Z')
-SOURCE = ROOT / 'lab/evaluation_worker.py'
+SOURCE = Path(__file__).with_name('evaluation_worker.py')
 VARIANT_SOURCE = ROOT / 'lab/variant_capture_worker.py'
 FILTER_SOURCE = ROOT / 'lab/search-app/search_filters.py'
 PACING_SOURCE = ROOT / 'lab/adaptive_pacing.py'
@@ -32,7 +32,7 @@ def run(suite_bytes, baseline, candidate):
     apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NAMESPACE}})
     source = SOURCE.read_text(encoding='utf-8')
     payload = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': config, 'namespace': NAMESPACE},
-               'data': {'worker.py': source, 'adaptive_pacing.py': PACING_SOURCE.read_text(encoding='utf-8'),
+               'data': {'worker.py': source, 'search_target.py': Path(__file__).with_name('search_target.py').read_text(encoding='utf-8'), 'adaptive_pacing.py': PACING_SOURCE.read_text(encoding='utf-8'),
                         'search_filters.py': FILTER_SOURCE.read_text(encoding='utf-8'),
                         'queries.jsonl': suite_bytes.decode('utf-8')}}
     job = {'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': job_name, 'namespace': NAMESPACE},
@@ -64,6 +64,7 @@ def run(suite_bytes, baseline, candidate):
             raise ValueError('Evaluator output does not match the frozen query order.')
         return rows, {'execution': 'in-cluster evaluator Job', 'seconds': round(time.monotonic() - started, 3),
                       'worker_sha256': hashlib.sha256(source.encode()).hexdigest(),
+                      'target_routing_sha256': hashlib.sha256(Path(__file__).with_name('search_target.py').read_bytes()).hexdigest(),
                       'adaptive_pacing_sha256': hashlib.sha256(PACING_SOURCE.read_text(encoding='utf-8').encode()).hexdigest(),
                       'pacing': json.loads(lines[-2])['pacing'],
                       'request_contract_sha256': hashlib.sha256(FILTER_SOURCE.read_text(encoding='utf-8').encode()).hexdigest(), 'worker_image': IMAGE,

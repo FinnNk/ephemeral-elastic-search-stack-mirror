@@ -15,6 +15,7 @@ from input_selection import DEFAULTS
 from control_identity import GiteaIdentity, Sessions, expired_cookie, session_cookie
 from operation_telemetry import configure as configure_telemetry, request_span, response_status
 from preview_routes import url as preview_url
+from comparison_targets import lookup as comparison_target
 
 PORT = 18082
 UI = Path(__file__).with_name('control-ui.html')
@@ -91,11 +92,11 @@ class Handler(BaseHTTPRequestHandler):
 
     @staticmethod
     def visible(row, identity):
-        return bool(row) and (identity['is_admin'] or identity.get('is_reader', False) or row['owner'] == identity['username'])
+        return bool(row) and (identity['is_admin'] or identity.get('is_reader', False) or row.get('shared', False) or row['owner'] == identity['username'])
 
     def comparison_visible(self, row, identity):
-        return bool(row) and self.visible(self.controller.store.get(row['baseline_id']), identity) and \
-            self.visible(self.controller.store.get(row['candidate_id']), identity)
+        return bool(row) and self.visible(comparison_target(self.controller.store, row['baseline_id']), identity) and \
+            self.visible(comparison_target(self.controller.store, row['candidate_id']), identity)
 
     def do_GET(self):
         with request_span('GET', route(self.path), self.headers):
@@ -204,6 +205,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(200, DEFAULTS)
         if parts == ['api', 'notebooks']:
             from notebook_task import available
+            return self.send_json(200, available())
+        if parts == ['api', 'comparison-targets']:
+            from comparison_targets import available
             return self.send_json(200, available())
         if parts == ['api', 'environments']:
             return self.send_json(200, [environment_view(row) for row in self.controller.store.all() if self.visible(row, identity)])
@@ -350,8 +354,8 @@ class Handler(BaseHTTPRequestHandler):
                                              index_recipe_sha256=payload.get('index_recipe_sha256') or None)
                 return self.send_json(201 if row['state'] == 'ready' else 202, row)
             if parts == ['api', 'comparisons']:
-                first = self.controller.store.get(payload['baseline_id'])
-                second = self.controller.store.get(payload['candidate_id'])
+                first = comparison_target(self.controller.store, payload['baseline_id'])
+                second = comparison_target(self.controller.store, payload['candidate_id'])
                 if not self.visible(first, identity) or not self.visible(second, identity):
                     return self.send_json(403, {'error': 'Comparison environment belongs to another owner.'})
                 row = self.controller.compare(payload['baseline_id'], payload['candidate_id'], payload['mode'],

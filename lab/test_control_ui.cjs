@@ -10,6 +10,7 @@ const environments=Array.from({length:55},(_,i)=>({id:'environment-'+i,name:'lab
   owner:i%2?'alice':'bob',state:i%5?'ready':'deleted',release_id:'esci-gb-v1',build_run:6,
   created_at:new Date(Date.UTC(2026,0,1,0,i)).toISOString(),expires_at:'2027-01-01T00:00:00Z',
   source_sha:'a'.repeat(40),image:'nexus/image@sha256:'+'b'.repeat(64),index_name:'esci-frozen',index_kind:'shared'}));
+const delivery=[{id:'delivery:integration',name:'lab-delivery-integration',label:'Integration — build 158',owner:'lab',managed_by:'delivery',state:'ready',release_id:'esci-gb-v1',build_run:158,created_at:'2026-10-06T00:00:00Z'},{id:'delivery:blue',name:'lab-delivery-production-blue',label:'Production blue — active — build 108',owner:'lab',managed_by:'delivery',state:'ready',release_id:'esci-gb-v1',build_run:108,created_at:'2026-10-06T00:00:00Z'}];
 let reader=true;
 const comparisons=Array.from({length:100},(_,i)=>({id:'comparison-'+i,baseline_id:'environment-1',candidate_id:'environment-'+(i%55),
   mode:i%3?'relevance':'performance',state:'complete',verdict:'unchanged',report_blob:'report.json',
@@ -23,17 +24,17 @@ await page.route('http://control.test/**',route=>{
  if(pathname==='/')return route.fulfill({contentType:'text/html; charset=utf-8',body:fs.readFileSync(path.join(process.cwd(),'lab/control-ui.html'),'utf8')});
  if(pathname==='/control_lists.js')return route.fulfill({contentType:'text/javascript; charset=utf-8',body:fs.readFileSync(path.join(process.cwd(),'lab/control_lists.js'),'utf8')});
  const data=pathname==='/api/auth'?{oidc:true}:pathname==='/api/me'?{username:reader?'demo-reader':'demo-admin',is_reader:reader,is_admin:!reader}:
- pathname==='/api/environments'?environments:pathname==='/api/comparisons'?comparisons:pathname.endsWith('/report')?report:
+ pathname==='/api/environments'?environments:pathname==='/api/comparison-targets'?delivery:pathname==='/api/comparisons'?comparisons:pathname.endsWith('/report')?report:
  pathname==='/api/datasets'?[{release:'esci-gb-v1',manifest:{count:1215854,query_count:1000}}]:
  pathname==='/api/index-kinds'?{'esci-gb-v1':[]}:pathname==='/api/notebooks'?['comparison-explorer.ipynb']:{};
  return route.fulfill({contentType:'application/json; charset=utf-8',body:JSON.stringify(data)});
 });
-await page.goto('http://control.test/');await page.locator('#environment-paging').getByText('1–12 of 44',{exact:true}).waitFor();
+await page.goto('http://control.test/');await page.locator('#environment-paging').getByText('1–12 of 46',{exact:true}).waitFor();
 assert.equal(await page.locator('#environments .card').count(),12);assert.equal(await page.locator('#comparisons .card').count(),12);
 await page.locator('#environment-paging').getByRole('button',{name:'Next',exact:true}).click();
-await page.locator('#environment-paging').getByText('13–24 of 44',{exact:true}).waitFor();
+await page.locator('#environment-paging').getByText('13–24 of 46',{exact:true}).waitFor();
 await page.locator('#environment-search').fill('alice');await page.locator('#environment-paging').getByText('1–12 of 22',{exact:true}).waitFor();
-assert.equal(await page.locator('#baseline option').count(),44);
+assert.equal(await page.locator('#baseline option').count(),46);
 assert.equal(await page.locator('#environments').getByRole('button',{name:'Delete',exact:true}).count(),0);
 await page.locator('#comparison-mode').selectOption('performance');await page.locator('#comparison-paging').getByText('1–12 of 34',{exact:true}).waitFor();
 await page.locator('#comparisons').getByRole('button',{name:'Open report',exact:true}).first().click();
@@ -53,7 +54,13 @@ await page.screenshot({path:path.join(output,'control-environments.png'),fullPag
 await page.screenshot({path:path.join(output,'control-lists-desktop.png'),fullPage:true});
 await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,'control-lists-mobile.png'),fullPage:true});
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
-reader=false;await page.setViewportSize({width:1440,height:1100});await page.goto('http://control.test/');await page.locator('#environment-paging').getByText('1–12 of 44',{exact:true}).waitFor();
+reader=false;await page.setViewportSize({width:1440,height:1100});await page.goto('http://control.test/');await page.locator('#environment-paging').getByText('1–12 of 46',{exact:true}).waitFor();
+await page.locator('#environment-search').fill('lab-delivery');
+assert.equal(await page.locator('#environments .card').count(),2);
+assert.equal(await page.locator('#environments').getByRole('button',{name:'Delete',exact:true}).count(),0);
+assert.equal(await page.locator('#environments').getByRole('button',{name:'Extend lease',exact:true}).count(),0);
+await page.locator('#baseline').selectOption('delivery:blue');
+assert.equal(await page.locator('#baseline option:checked').textContent(),'Production blue — active — build 108');
 await page.locator('#baseline').selectOption('environment-52');await page.locator('#candidate').selectOption('environment-54');
 await page.locator('#notebook').selectOption('comparison-explorer.ipynb');
 await page.locator('#compare').screenshot({path:path.join(output,'comparison-controls-current.png')});

@@ -59,7 +59,8 @@ The control UI scores its explicitly selected frozen labels. The separate [judge
 
 ## Exploratory notebooks after a comparison
 
-Select the packaged notebook in the [lab workflow](../lab/README.md#download-exploratory-analysis), or run it against a saved evaluation report using the runbook. Reuse the maintained illustrations there.
+Ready integration, staging, production slots and delivery previews can be paired
+with standalone ephemeral environments. Select the packaged notebook in the [lab workflow](../lab/README.md#download-exploratory-analysis), or run it against a saved evaluation report using the runbook. Reuse the maintained illustrations there.
 
 Papermill runs the selected `lab/notebooks/` file as a finite Kubernetes Job. It receives a read-only report URL, no Kubernetes API token or write credential, a five-minute deadline and Blob-only egress. Its output is retained by hash. Notebook failure is separate from the comparison verdict and cannot change a gate decision.
 

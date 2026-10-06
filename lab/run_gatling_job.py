@@ -11,6 +11,7 @@ import time
 import uuid
 
 from common import IN_CLUSTER, ROOT, STATE, apply, guard, k, record
+from search_target import api_url
 from compare_search import definition, immutable_blob
 from gatling_report import summarise
 from run_gatling import IMAGE, SIMULATION, archive, retain_workload
@@ -139,7 +140,7 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
                 'containers': [{'name': 'gatling', 'image': IMAGE, 'workingDir': '/workspace',
                     'command': ['sh', '/source/run-job.sh'],
                     'env': [{'name': 'LAB_BASE_URL',
-                             'value': 'http://search.' + environment + '.svc.cluster.local:8080'},
+                             'value': api_url(environment)},
                             {'name': 'LAB_TRAFFIC_PROFILE', 'value': profile}],
                     'resources': {'requests': {'cpu': '500m', 'memory': '512Mi'},
                                   'limits': {'cpu': '2', 'memory': '2Gi'}},

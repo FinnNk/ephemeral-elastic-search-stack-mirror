@@ -13,6 +13,10 @@ from search_filters import encode_filters, parse_filters
 
 
 def search(name,query='running shoes',request_id=None,filters=None,country='GB',currency='GBP',service='search'):
+    from search_target import coordinates
+    name, selected_service = coordinates(name)
+    if selected_service != 'search':
+        service = selected_service
     params = {'q': query, 'country': country, 'currency': currency,
               'filters': encode_filters(filters if filters is not None else {})}
     url='http://'+service+'.'+name+'.svc.cluster.local:8080/search?'+urllib.parse.urlencode(params)

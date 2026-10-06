@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+[Delivery notebook comparisons](delivery-notebook-comparisons.md) are prepared
+for review. The control selectors include ready integration, staging, production
+slots and current delivery previews. Actual 50-query notebook rehearsals passed
+for production slots and purpose-created previews. Next: activate the accepted
+batch, then walk through both pairs in the UI.
+
 The [SigNoz dashboard repairs](signoz-dashboard-repairs.md) are merged and
 installed at their existing URLs. The updated coordinator is Ready on both
 supported image architectures. A fresh Actions comparison confirmed real

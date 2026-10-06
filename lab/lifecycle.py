@@ -586,7 +586,15 @@ class Lifecycle:
         return expired
 
     @operation('comparison.evaluate')
-    def compare(self, baseline_id, candidate_id, mode, profile='probe', scope='full',
+    def compare(self, baseline_id, candidate_id, mode, **options):
+        """Compare pinned targets; delivery releases share the coordinator lock."""
+        from contextlib import nullcontext
+        from delivery_runtime import writer
+        lock_context = writer() if any(v.startswith('delivery:') for v in (baseline_id, candidate_id)) else nullcontext()
+        with lock_context:
+            return self._compare(baseline_id, candidate_id, mode, **options)
+
+    def _compare(self, baseline_id, candidate_id, mode, profile='probe', scope='full',
                 query_manifest_sha=None, judgement_manifest_sha=None, notebook=None):
         if notebook is not None:
             from notebook_task import source
@@ -594,8 +602,9 @@ class Lifecycle:
         if baseline_id == candidate_id:
             raise ValueError('Select two distinct environments.')
         with self.lock:
-            baseline = self.store.get(baseline_id)
-            candidate = self.store.get(candidate_id)
+            from comparison_targets import lookup
+            baseline = lookup(self.store, baseline_id, current=True)
+            candidate = lookup(self.store, candidate_id, current=True)
             if baseline is None or candidate is None:
                 raise KeyError('Environment not found.')
             if baseline['state'] != 'ready' or candidate['state'] != 'ready':
@@ -608,7 +617,7 @@ class Lifecycle:
                 raise ValueError('Comparisons require the same frozen catalogue.')
             if mode == 'performance' and baseline['release_id'] != candidate['release_id']:
                 raise ValueError('Performance requires the same frozen workload release.')
-            if self.clock() >= parse_stamp(baseline['expires_at']) or self.clock() >= parse_stamp(candidate['expires_at']):
+            if any(row.get('expires_at') and self.clock() >= parse_stamp(row['expires_at']) for row in (baseline, candidate)):
                 raise ValueError('An environment lease has expired.')
             if mode not in ('result-regression', 'relevance', 'performance'):
                 raise ValueError('Unknown comparison mode.')
@@ -631,8 +640,9 @@ class Lifecycle:
                     if selected_sha is not None and (not isinstance(selected_sha, str) or
                                                      not HASH.fullmatch(selected_sha)):
                         raise ValueError('Select a valid independent input manifest SHA-256.')
-            self.activity(baseline_id)
-            self.activity(candidate_id)
+            for row in (baseline, candidate):
+                if row.get('managed_by') != 'delivery':
+                    self.activity(row['id'])
             now = stamp(self.clock())
             comparison_id = str(uuid.uuid4())
             self.store.put_comparison({'id': comparison_id, 'baseline_id': baseline_id,

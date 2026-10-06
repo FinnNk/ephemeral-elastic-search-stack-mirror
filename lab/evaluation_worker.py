@@ -27,7 +27,8 @@ def request(name, row, pacer=None):
     filters = validate_filters(row.get('filters', {}))
     query = urllib.parse.urlencode({'q': row['query'], 'country': row['country'],
                                     'currency': row['currency'], 'filters': encode_filters(filters)})
-    url = f'http://search.{name}.svc.cluster.local:8080/search?' + query
+    from search_target import api_url
+    url = api_url(name) + '/search?' + query
     headers = {'traceparent': parent} if (parent := traceparent()) else {}
     value = (pacer or Pacer()).fetch(url, headers)
     if (value.get('query'), value.get('country'), value.get('currency')) != (row['query'], row['country'], row['currency']):

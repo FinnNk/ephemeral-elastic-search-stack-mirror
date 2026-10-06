@@ -2,8 +2,8 @@
 
 Use the lab control UI to deploy a pinned Search API, compare it with a baseline and remove it when finished. Each comparison keeps the environment definitions, selected inputs and report so it can be reproduced.
 
-This is the separate control-UI experiment workflow. Search API contributors
-normally use [Actions-based delivery](../docs/delivery.md), with automatic PR
+This page supports exploratory comparisons of deployed delivery targets and
+ephemeral environments. Search API contributors normally use [Actions-based delivery](../docs/delivery.md), with automatic PR
 comparisons and no kubectl commands.
 
 This guide assumes an **installed lab**. Operators should start with [control runtime](../docs/control-runtime.md); first-time platform experiments have a separate [bootstrap guide](../research/platform-spike/README.md). Search API development and the disconnected mock demo are in the [source README](delivery/bootstrap/README.md).
@@ -19,7 +19,7 @@ for readiness checks.
 
 1. Open [Control UI](https://control.localhost:34443/) and sign in with your lab identity.
 2. Administrators manage environments and comparisons; readers inspect searches and reports.
-3. Find a successful build in `elastic-agent/search-spike` → **Actions**. Copy the run ID from `/actions/runs/<id>`, not the PR number. The control UI resolves its commit and image digest.
+3. For the older standalone environment-creation form, find a successful build in `elastic-agent/search-spike` → **Actions**. Copy the run ID from `/actions/runs/<id>`, not the PR number. The control UI resolves its commit and image digest.
 
 The **Environments** list initially shows active environments, newest first.
 Search by name, owner, build or index; use **Status** and **Catalogue** to narrow
@@ -78,7 +78,25 @@ After `Forwarding from 127.0.0.1:18080` appears, open [http://127.0.0.1:18080/](
 
 ## Compare a pinned API candidate
 
-Create a baseline and candidate with the same frozen catalogue. They may share a compatible index while using different API images or settings.
+Choose a baseline and candidate with the same frozen catalogue. They may share
+a compatible index while using different API images or settings.
+
+The selectors include ready **Integration**, **Staging**, **Production blue**,
+**Production green** and delivery previews, alongside standalone ephemeral
+environments. Production labels identify the active and inactive slots. An
+absent, unhealthy or expired target is unavailable for selection.
+
+To create a delivery preview for an experiment, open delivery-source → **Actions**
+→ **Create preview**, enter its successful build run and start the workflow.
+Once it completes, choose **Refresh status** on the control page. Repeat for a
+second build if needed. Previews use the delivery lease policy; this page does
+not delete or extend them.
+
+Each delivery selection pins its observed release. Production slots use their
+own API endpoints, not the active route. If a release changes before the run,
+refresh and select it again. Delivery comparisons hold the coordinator lock;
+the functional capture checks the release again before retaining its report.
+Saved reports remain readable after a later promotion or preview removal.
 
 1. Under **Compare frozen environments**, choose the two ready environments as **Baseline** and **Candidate**.
 2. Choose a mode and scope using the table below. Blank manifest fields use the displayed pinned defaults. Alternative manifests must have been published and hash-checked through the [data contracts](../docs/data-evaluation-contracts.md).
@@ -102,6 +120,10 @@ The query inspector offers **Changed**, **All** and **Unjudged** filters and sid
 For two or more named variants and a release decision, use [variant evaluation](../docs/variant-evaluation.md). The control form's pair comparison and the source merge gate are distinct workflows. The gate requires evidence for the exact PR commit; an unrelated saved report cannot satisfy it.
 
 ## Download exploratory analysis
+
+For a short notebook demonstration, choose **Relevance**, **Quick · first 50**
+and `comparison-explorer.ipynb`, then **Run comparison**. Repeat with a pair of
+new previews to exercise the same flow without promoting either release.
 
 When a selected notebook completes, its comparison card shows **Download executed notebook**. Open that `.ipynb` in Jupyter or another notebook viewer to inspect its saved outputs. It reads the frozen report and cannot alter the standard verdict. A notebook failure is reported separately.
 

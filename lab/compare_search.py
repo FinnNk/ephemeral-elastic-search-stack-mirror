@@ -35,19 +35,22 @@ def rbo(first, second, persistence=RBO_P, depth=DEPTH):
 
 
 def definition(name):
+    from search_target import coordinates
+    namespace, service_name = coordinates(name)
+    slot = service_name.removeprefix('search-') if service_name != 'search' else None
     if name.startswith('lab-delivery-'):
-        resource = json.loads(k('get', 'configmap/frozen-definition', '-n', name, '-o', 'json').stdout)
+        resource = json.loads(k('get', 'configmap/frozen-definition' + ('-' + slot if slot else ''), '-n', namespace, '-o', 'json').stdout)
         entry = json.loads(resource['data']['definition.json'])
     else:
         entry = json.loads((REPO / 'environments' / (name + '.json')).read_text())
     fields = {key: value for key, value in entry.items() if key not in ('fingerprint', 'environment')}
     digest = hashlib.sha256(json.dumps(fields, sort_keys=True).encode()).hexdigest()
-    assert entry['fingerprint'] == digest and entry['environment'] == name
-    app = json.loads(k('get', 'application/' + name, '-n', 'argocd', '-o', 'json').stdout)
+    assert entry['fingerprint'] == digest and entry['environment'] == namespace
+    app = json.loads(k('get', 'application/' + namespace, '-n', 'argocd', '-o', 'json').stdout)
     assert app['status']['sync']['status'] == 'Synced'
     assert app['status']['health']['status'] == 'Healthy'
-    deployment_name = 'search-' + resource['data']['active-slot'] if name == 'lab-delivery-production' and resource['data'].get('active-slot') else 'search'
-    deployment = json.loads(k('get', 'deployment/' + deployment_name, '-n', name, '-o', 'json').stdout)
+    deployment_name = service_name if slot else ('search-' + resource['data']['active-slot'] if name == 'lab-delivery-production' and resource['data'].get('active-slot') else 'search')
+    deployment = json.loads(k('get', 'deployment/' + deployment_name, '-n', namespace, '-o', 'json').stdout)
     container = deployment['spec']['template']['spec']['containers'][0]
     assert container['image'] == entry['image']
     assert next(env['value'] for env in container['env'] if env['name'] == 'ES_INDEX') == entry['index']

@@ -96,6 +96,9 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
         except (AssertionError, KeyError, RuntimeError, TimeoutError, TypeError, ValueError) as error:
             errors.append({'query_id': query['query_id'], 'kind': type(error).__name__,
                            'detail': str(error)[:120]})
+    for row, pinned in ((baseline, first), (candidate, second)):
+        if row.get('managed_by') == 'delivery' and definition(row['name']) != pinned:
+            raise ValueError('Delivery release changed during capture; discard this comparison and retry.')
     complete = not errors and len(results) == len(suite)
     similarity = {
         'jaccard_at_10': round(sum(row['jaccard_at_10'] for row in results) / len(results), 6)
@@ -195,8 +198,8 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
         'observation-set/' + observation_sha + '/observations.json', observation_payload)
     report = {'kind': 'controlled-api-comparison', 'mode': mode, 'scope': scope,
               'complete': complete, 'verdict': verdict, 'execution': execution,
-              'baseline': {'runtime_id': baseline['id'], 'source_sha': baseline['source_sha'], **first},
-              'candidate': {'runtime_id': candidate['id'], 'source_sha': candidate['source_sha'], **second},
+              'baseline': {'runtime_id': baseline['id'], 'source_sha': baseline['source_sha'], 'api_url': baseline.get('api_url'), **first},
+              'candidate': {'runtime_id': candidate['id'], 'source_sha': candidate['source_sha'], 'api_url': candidate.get('api_url'), **second},
               'suite_sha256': suite_sha, 'suite_blob': suite_blob,
               'query_manifest_sha256': selected['query_manifest_sha256'],
               'observation_sha256': observation_sha, 'observation_blob': observation_blob,
