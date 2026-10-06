@@ -74,3 +74,31 @@ was stopped; focused comparison tests are the validation for this batch.
    **Create preview** for other successful builds. No kubectl commands are needed.
 5. Resume the production resource investigation and unchanged load gate after
    the walkthrough.
+
+
+## Activation and first UI run — 6 October 2026
+
+Merged PR #144 is installed using coordinator image
+`sha256:3d64cbeed515747df246f8b5a0542b1d3f3cd585af4a44c818689bb151ceac6e`.
+There were no queued or running delivery operations, running comparisons or
+active coordinator lock before rollout. All four containers became Ready;
+Gitea, Elasticsearch and Nexus service checks passed. Both production slots,
+integration, staging and the two prepared previews are selectable.
+
+The user's first UI comparison, `346f8b4a-b541-4fc9-b50d-40cd1367c8b0`, completed
+50 queries per side with no failed requests. Capture took 6.997 seconds and the
+notebook took 6.358 seconds. Its result lists matched, with nDCG@10 of 0.738912
+on each side and 84.2% coverage. The executed notebook is retained under hash
+`87456bd4dea5b03a4ace6e8c32a19fa2fab3b36001776a3fed3224e6081a1cd4`.
+
+The UI's general response hint remained unchanged, while comparison status was
+shown beside the unrelated environment-creation form. This follow-up places
+running, completed and failed messages beside **Run comparison**, adds a direct
+report link and disables repeat submission while the request is pending.
+Chromium checks passed for pending feedback, one submission despite a repeated
+submit event, notebook completion text, report link and retry after an error.
+No API, comparison or notebook execution behaviour changed.
+
+After accepting and activating the feedback fix, open the completed report and
+download its notebook. Then repeat the same settings with previews
+`lab-delivery-run-156-6bdbc9b0` and `lab-delivery-run-165-8ba17059`.

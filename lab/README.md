@@ -101,7 +101,7 @@ Saved reports remain readable after a later promotion or preview removal.
 1. Under **Compare frozen environments**, choose the two ready environments as **Baseline** and **Candidate**.
 2. Choose a mode and scope using the table below. Blank manifest fields use the displayed pinned defaults. Alternative manifests must have been published and hash-checked through the [data contracts](../docs/data-evaluation-contracts.md).
 3. Optionally select `comparison-explorer.ipynb` under **Exploratory notebook (optional)**.
-4. Choose **Run comparison**. When the record completes, choose **Open report**. A failed or incomplete run is not evidence that the change is safe.
+4. Choose **Run comparison**. Its running, completed or failed status appears beside the button. When it completes, choose **Open comparison report**, or **Open report** on its comparison card. A failed or incomplete run is not evidence that the change is safe.
 
 | Mode | Use it to | Interpret the result |
 | --- | --- | --- |

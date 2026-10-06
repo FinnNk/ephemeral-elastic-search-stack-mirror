@@ -6,11 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-[Delivery notebook comparisons](delivery-notebook-comparisons.md) are prepared
-for review. The control selectors include ready integration, staging, production
-slots and current delivery previews. Actual 50-query notebook rehearsals passed
-for production slots and purpose-created previews. Next: activate the accepted
-batch, then walk through both pairs in the UI.
+[Delivery notebook comparisons](delivery-notebook-comparisons.md) are merged
+and activated. The user's first production-slot notebook comparison completed
+all 50 queries per side. A follow-up puts running, completed and failed feedback
+beside **Run comparison**, with a direct report link and repeat-click protection.
+Next: accept and activate that feedback fix, inspect the completed notebook and
+repeat the walkthrough on the prepared delivery previews.
 
 The [SigNoz dashboard repairs](signoz-dashboard-repairs.md) are merged and
 installed at their existing URLs. The updated coordinator is Ready on both
