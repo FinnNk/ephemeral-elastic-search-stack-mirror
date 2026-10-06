@@ -95,3 +95,48 @@ This confirms the installed delivery path, not the uninstalled feedback changes.
 the remaining developer kubectl steps. The next executable batch is
 [activation](walkthrough-activation.md), after review; earlier “next” links above
 record the sequence of completed review batches.
+
+## Deferred: comparison evaluator boundary
+
+Requested on 6 October 2026. Record for later implementation; do not change the
+runtime or diagram as part of this follow-up record.
+
+Expose one **Evaluate comparison** operation to the SDLC coordinator. The
+comparison evaluator owns optional judgement resolution and frozen scoring;
+the pure scorer continues to calculate metrics from fixed inputs.
+
+| Component | Responsibility |
+| --- | --- |
+| Comparison evaluator | Pool query/product pairs across all variants, resolve gaps when allowed, freeze one shared judgement set and score the comparison |
+| Judgement service | Return stored labels, reuse cached inference or infer missing labels, retaining provenance |
+| Pure scorer | Calculate metrics from captured results and the fixed judgement snapshot |
+| SDLC coordinator | Request evaluation, publish the returned report and apply gates |
+
+Inputs include captured baseline/variant rankings, frozen catalogue and query
+identities, request context, metric specification and judgement policy. Product
+IDs must resolve to the frozen product content. Pin the inference model and
+acceptance policy, with a timeout or inference budget.
+
+Two explicit modes preserve repeatability:
+
+- **New comparison:** optionally resolve gaps across the union of all variants,
+  then freeze a shared judgement snapshot before calculating scores.
+- **Recalculate a retained comparison:** reuse its judgement snapshot without
+  inference or newly available labels changing the scores.
+
+Return metrics and the snapshot identity alongside coverage, stored labels,
+cache reuse, newly inferred labels, abstentions, errors and timings. Explain
+why nDCG is unavailable when it cannot be calculated. Keep coverage distinct
+from search quality and retain current gate policies.
+
+Acceptance for the eventual batch: identical frozen inputs reproduce scores;
+all variants use the same labels; retained comparisons make no inference calls;
+reports disclose resolution outcomes. Update the SDLC diagram to show
+**Evaluate comparison**, with a conditional **Resolve missing judgements**
+branch that rejoins scoring, followed by **Review the report**.
+
+Starting points: `lab/delivery_source_comparison.py`,
+`lab/additional_judgements.py`, `evaluation/offline.py`,
+`evaluation/query_sets.py` and
+`docs/diagrams/archify/relevance-sdlc.json`. Create the detailed implementation
+plan when this deferred work is scheduled.

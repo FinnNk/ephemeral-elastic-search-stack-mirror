@@ -184,3 +184,10 @@ The offline delivery runner has been restarted and the stale Nexus route repaire
 Startup and readiness checks are installed on both runner deployments and prepared for review.
 The focused Nexus route repair preserves stored releases and identities.
 Next: accept the recovery batch and resume the sneakers report review. See the [batch plan](runner-startup-health.md).
+
+## Deferred comparison evaluator
+
+Consolidate optional gap resolution and frozen scoring behind one comparison
+evaluator; keep the metric scorer pure and retained comparisons repeatable.
+Implementation and diagram changes are deferred at the user's request.
+See the [recorded follow-up](walkthrough-feedback.md#deferred-comparison-evaluator-boundary).
