@@ -397,11 +397,14 @@ def view():
     other = next((v for colour, v in slots.items() if colour != active), None)
     rollback = bool(other and (STATE / 'delivery/verified/production' / (other['fingerprint'] + '.json')).exists())
     staging = k('get','configmap/frozen-definition','-n','lab-delivery-staging','-o','json',check=False)
-    candidate = None
+    staging_release, candidate = None, None
     if not staging.returncode:
-        candidate = observed_release('staging', json.loads(json.loads(staging.stdout)['data']['definition.json']))
-        candidate['prepared_slot'] = next((colour for colour, slot in slots.items()
-            if colour != active and slot['fingerprint'] == candidate['fingerprint']), None)
+        staging_release = observed_release('staging', json.loads(json.loads(staging.stdout)['data']['definition.json']))
+        prepared = next((colour for colour, slot in slots.items()
+            if colour != active and slot['fingerprint'] == staging_release['fingerprint']), None)
+        if prepared and staging_release['fingerprint'] != definition['fingerprint']:
+            candidate = {**staging_release, 'prepared_slot': prepared}
     return {'state': 'ready' if active else 'not-prepared', 'active': active, 'can_rollback': rollback,
-            'production': observed_release('production', definition), 'candidate': candidate, 'slots': slots,
+            'production': observed_release('production', definition), 'candidate': candidate,
+            'staging': staging_release, 'slots': slots,
             'browser_url': 'https://' + NAMESPACE + '.preview.relevance.test:34443/'}

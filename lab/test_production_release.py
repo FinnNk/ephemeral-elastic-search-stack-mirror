@@ -137,10 +137,17 @@ class ProductionReleaseTests(unittest.TestCase):
                     result=release.view()
                 self.assertEqual(result['slots'],{})
                 self.assertEqual(result['production']['build_run'],1)
-                self.assertEqual(result['candidate']['fingerprint'],candidate['fingerprint'])
-                self.assertIsNone(result['candidate']['prepared_slot'])
-                self.assertEqual(result['candidate']['verified'],not stale)
-                self.assertEqual(result['candidate']['build_run'],None if stale else 1)
+                self.assertEqual(result['staging']['fingerprint'],candidate['fingerprint'])
+                self.assertIsNone(result['candidate'])
+                self.assertEqual(result['staging']['verified'],not stale)
+                self.assertEqual(result['staging']['build_run'],None if stale else 1)
+            (folder/'staging.json').write_text(json.dumps({'state':'verified','deployment':candidate}))
+            active=config(production)
+            data=json.loads(active.stdout);data['data']['active-slot']='blue';active.stdout=json.dumps(data)
+            with patch.object(release,'k',side_effect=[active,config(production),config(candidate),config(candidate)]):
+                result=release.view()
+            self.assertEqual(result['candidate']['fingerprint'],candidate['fingerprint'])
+            self.assertEqual(result['candidate']['prepared_slot'],'green')
 
     def test_approved_dropdown_requires_current_review_and_production_proposal(self):
         prs=[{'number':n,'title':'Release '+str(n),'head':{'ref':'promote/test-'+str(n),'sha':'a'*40},

@@ -52,7 +52,7 @@ The implementation is installed in the lab for review. [Retained evidence](../re
 
 | Check | Observed result |
 | --- | --- |
-| Focused Python tests | 56 passed; includes stale evidence, write blocks, route readiness, preparation boundaries and current/candidate details before preparation |
+| Focused Python tests | 56 passed; includes stale evidence, write blocks, route readiness, preparation boundaries and active release details and blank candidate values before preparation |
 | Browser tests | Named UI operations, reader restrictions, friendly reports, release details, approved-PR selection, empty states and mobile layout passed |
 | Diagram | 9 showcase checks and 8 light/dark browser cases passed; full timeline inspected |
 | Isolated rehearsal | Four real queries, same image in two slots; capture, shared labels, scoring and blue→green route switch passed |

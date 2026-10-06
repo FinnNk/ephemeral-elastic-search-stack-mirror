@@ -3,7 +3,7 @@
 <style>body{font:16px system-ui;background:#f4f7f8;color:#17313a;margin:0}main{max-width:900px;margin:2rem auto;padding:0 1rem}section{background:white;border:1px solid #ccd8dc;border-radius:8px;padding:1.2rem;margin:1rem 0}button,select,input{font:inherit;padding:.55rem;margin:.3rem}button{background:#165d58;color:white;border:0;border-radius:4px;cursor:pointer}button:disabled{opacity:.5}select{max-width:100%;box-sizing:border-box}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:.7rem;border-bottom:1px solid #dde5e8;vertical-align:top;overflow-wrap:anywhere}#releases{table-layout:fixed}#releases th:first-child{width:20%}details{margin-top:1rem}.missing{color:#536971}a{color:#12615b}#message{white-space:pre-wrap}label{display:block}.meta{overflow-wrap:anywhere;font-size:.85rem}</style></head>
 <body><main><a href="/">Search lab</a><h1>Production release</h1><p>Compare the candidate with active production, then switch the production URL. Both APIs share the same frozen catalogue.</p>
 <a id="signin" href="/oauth2/start?rd=/production-release" hidden>Sign in to the lab</a>
-<section><h2>Production and candidate</h2><p id="state">Loading…</p><p id="candidate-state"></p><table id="releases"><thead><tr><th>Detail</th><th>Active production</th><th>Staging candidate</th></tr></thead><tbody id="release-details"></tbody></table><details id="slot-section" hidden><summary>Deployed slots</summary><table><thead><tr><th>Slot</th><th>Route</th><th>Release</th><th>Source commit</th></tr></thead><tbody id="slots"></tbody></table></details><p><a id="store" hidden>Open active production</a></p><button id="refresh">Refresh status</button></section>
+<section><h2>Production and candidate</h2><p id="state">Loading…</p><p id="candidate-state"></p><table id="releases"><thead><tr><th>Detail</th><th>Active production</th><th>Candidate</th></tr></thead><tbody id="release-details"></tbody></table><details id="slot-section" hidden><summary>Deployed slots</summary><table><thead><tr><th>Slot</th><th>Route</th><th>Release</th><th>Source commit</th></tr></thead><tbody id="slots"></tbody></table></details><p><a id="store" hidden>Open active production</a></p><button id="refresh">Refresh status</button></section>
 <section><h2>1. Prepare the candidate</h2><p>Use the verified staging release. Review its preparation PR, approve it in Gitea, then deploy it below. Production keeps serving its current release.</p><button id="prepare">Prepare production candidate</button></section>
 <section><h2>2. Check and request release</h2><p>Run the normal and peak Gatling gate, then compare 1,000 simulated recent queries against the active API and the prepared candidate. Resolve judgement gaps and score both sides with the same frozen labels. Review the report and approve the route-switch PR in Gitea.</p>
 <label>Change intent<select id="intent"><option value="ranking-change">Intentional ranking change</option><option value="preserve-results">Preserve search results</option></select></label><button id="release">Check and release production</button></section>
@@ -19,7 +19,7 @@ function releaseDetails(value){
  $('release-details').replaceChildren();
  for(const [label,key] of fields){const row=text('tr',null,$('release-details'));text('th',label,row);
   for(const release of [value.production,value.candidate]){const cell=text('td',null,row),v=release?.[key];
-   if(v==null){text('span','Not available',cell).className='missing';continue}
+   if(v==null){text('span',release?'Not available':'—',cell).className='missing';continue}
    if(key==='source_sha'||key==='build_run'){const a=text('a',key==='source_sha'?v.slice(0,12):String(v),cell);a.title=String(v);a.href='https://gitea.localhost:34443/elastic-agent/delivery-source/'+(key==='source_sha'?'commit/':'actions/runs/')+encodeURIComponent(v)}
    else{const span=text('span',key==='software_release_id'?v.slice(0,12):String(v),cell);span.title=String(v)}
   }
@@ -28,13 +28,14 @@ function releaseDetails(value){
 async function refresh(){try{
  const [identity,value]=await Promise.all([request('/api/me'),request('/api/delivery/production')]);current=value;
  $('state').textContent=value.production?(value.active?'Active slot: '+value.active:'Active production')+' · shared frozen catalogue':'Production is unavailable.';
- const candidate=value.candidate,same=candidate&&candidate.fingerprint===value.production?.fingerprint;
- $('candidate-state').textContent=!candidate?'Staging candidate is unavailable.':same?'Staging matches active production. Promote a different release to staging to prepare a new candidate.':!candidate.verified?'Staging candidate is awaiting deployment verification.':candidate.prepared_slot?'Candidate is prepared in the '+candidate.prepared_slot+' slot.':'Candidate is in staging; not yet prepared in production.';
+ const candidate=value.candidate,staging=value.staging,same=staging&&staging.fingerprint===value.production?.fingerprint;
+ $('candidate-state').textContent=candidate?'Candidate is prepared in the '+candidate.prepared_slot+' slot.':'No candidate selected.';
+ if(!candidate&&same)$('candidate-state').textContent+=' Staging matches active production.';
  releaseDetails(value);$('slots').replaceChildren();$('slot-section').hidden=!Object.keys(value.slots||{}).length;
  for(const [name,slot] of Object.entries(value.slots||{})){const row=text('tr',null,$('slots'));text('td',name,row);text('td',name===value.active?'Active':name===candidate?.prepared_slot?'Prepared candidate':'Retained release',row);text('td',slot.software_release_id.slice(0,12),row);text('td',slot.source_sha.slice(0,12),row)}
  $('store').href=value.browser_url||'#';$('store').hidden=!value.browser_url;
  for(const b of document.querySelectorAll('button:not(#refresh)'))b.disabled=!identity.is_admin;
- $('prepare').disabled=!identity.is_admin||!candidate?.verified||same;
+ $('prepare').disabled=!identity.is_admin||!staging?.verified||same;
  $('release').disabled=!identity.is_admin||!candidate?.verified||!candidate?.prepared_slot||same;
  $('rollback').disabled=!identity.is_admin||!value.can_rollback;
  await loadApproved(identity.is_admin);

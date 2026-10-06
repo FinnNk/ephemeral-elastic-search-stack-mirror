@@ -207,8 +207,8 @@ active production API. Both slots share a read-only catalogue; the control UI ow
 preparation, release checks, progress and approved deployment. Existing normal/peak
 Gatling gates remain required. See the [implementation and rehearsal plan](production-blue-green.md).
 The isolated four-query Argo rehearsal passed without changing active production.
-The release UI also shows active production and staging details before any
-candidate is prepared, with build and source links and explicit preparation status.
+The release UI shows active production immediately, with build and source links.
+Candidate values stay blank until preparation is deployed.
 Deployment uses a dropdown of open production PRs approved at their current commit.
 After acceptance, use the [next walkthrough plan](production-release-walkthrough.md)
 with a different verified staging release.
