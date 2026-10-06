@@ -16,8 +16,8 @@ async function main(){
       const run=Number(new URL(req.url,'http://localhost').searchParams.get('run'))||158;
       res.end(JSON.stringify(responseStatus===200?(live||{...fixture,selected:{...fixture.selected,run}}):{error:'Sign in'}));return;
     }
-    const file=req.url.startsWith('/release_dashboard.js')?'release_dashboard.js':'release-dashboard.html';
-    res.writeHead(200,{'Content-Type':file.endsWith('.js')?'text/javascript':'text/html'});res.end(fs.readFileSync(path.join(__dirname,file)));
+    const file=req.url.startsWith('/lab-design.css')?'lab-design.css':req.url.startsWith('/release_dashboard.js')?'release_dashboard.js':'release-dashboard.html';
+    res.writeHead(200,{'Content-Type':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'});res.end(fs.readFileSync(path.join(__dirname,file)));
   });
   await new Promise(r=>server.listen(0,'127.0.0.1',r));
   const base='http://127.0.0.1:'+server.address().port,browser=await chromium.launch({headless:true});

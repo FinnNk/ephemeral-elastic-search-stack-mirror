@@ -1,5 +1,5 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {chromium}=require('playwright');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const output=path.join(process.env.LAB_STATE_DIR||path.join(process.cwd(),'.lab'),'ui-qa');fs.mkdirSync(output,{recursive:true});
 (async()=>{
 const browser=await chromium.launch({headless:true});
@@ -21,6 +21,7 @@ const report={mode:'relevance',verdict:'unchanged',completed_query_count:1000,qu
  equal_top_10:i%2===0,rbo_at_10_p_0_9:.9,ndcg_delta_at_10:0,baseline:{ids:[],unjudged_top_10_ids:[]},candidate:{ids:[],unjudged_top_10_ids:[]}}))};
 await page.route('http://control.test/**',route=>{
  const pathname=new URL(route.request().url()).pathname;
+ if(['/lab-design.css','/lab_shell.js'].includes(pathname))return route.fulfill({contentType:pathname.endsWith('.css')?'text/css':'text/javascript',body:fs.readFileSync(path.join(process.cwd(),'lab',pathname.slice(1)),'utf8')});
  if(pathname==='/')return route.fulfill({contentType:'text/html; charset=utf-8',body:fs.readFileSync(path.join(process.cwd(),'lab/control-ui.html'),'utf8')});
  if(pathname==='/control_lists.js')return route.fulfill({contentType:'text/javascript; charset=utf-8',body:fs.readFileSync(path.join(process.cwd(),'lab/control_lists.js'),'utf8')});
  const data=pathname==='/api/auth'?{oidc:true}:pathname==='/api/me'?{username:reader?'demo-reader':'demo-admin',is_reader:reader,is_admin:!reader}:

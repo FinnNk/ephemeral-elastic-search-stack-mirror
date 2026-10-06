@@ -2,6 +2,7 @@
 import base64
 from html import escape
 import json
+from pathlib import Path
 from urllib.parse import quote
 
 import mistune
@@ -33,7 +34,7 @@ def render(payload, comparison_id, receipt):
     name = escape(receipt.get('source', 'Executed notebook'))
     pieces = ['<!doctype html><html lang="en-GB"><head><meta charset="utf-8">',
               '<meta name="viewport" content="width=device-width,initial-scale=1">',
-              '<title>' + name + '</title><style>' + STYLE + '</style></head><body><main>',
+              '<title>' + name + '</title><style>' + STYLE + Path(__file__).with_name('lab-design.css').read_text(encoding='utf-8') + '</style></head><body class="lab-page"><main>',
               '<nav><a href="/?comparison=' + identifier + '">Back to comparison</a>',
               '<a href="/api/comparisons/' + identifier + '/notebook" download="' + name + '">Download executed notebook</a></nav>',
               '<h1>' + name + '</h1><p>Saved notebook · read only. These outputs were produced by the completed comparison; opening this page does not run the cells.</p>',

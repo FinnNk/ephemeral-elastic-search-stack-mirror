@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+[Lab experience and Mac transfer](lab-experience-and-mac.md) is the active
+programme: shared design system, promotion controls in the release tree, then
+current documentation and native Mac setup/transfer guidance. The design batch
+is prepared for review; native Mac execution remains outstanding.
+
 [Delivery notebook comparisons](delivery-notebook-comparisons.md), their
 status/proxy fixes and the [saved notebook browser view](notebook-browser-view.md)
 are merged and activated. The user's first production-slot notebook comparison

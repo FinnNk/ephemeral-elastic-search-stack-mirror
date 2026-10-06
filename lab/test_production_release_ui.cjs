@@ -1,5 +1,5 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {chromium}=require('playwright');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 (async()=>{
  const browser=await chromium.launch({headless:true});
  try{
@@ -11,6 +11,7 @@ const {chromium}=require('playwright');
  const candidate={...slots.green,build_run:109,image:'nexus.test/search@sha256:'+ 'd'.repeat(64),dataset_release:'esci-gb-v1',index:'esci-frozen',engine:'9.5.4',verified:true};
  await page.route('https://control.test/**',async route=>{
  const req=route.request(),u=new URL(req.url());
+ if(['/lab-design.css','/lab_shell.js'].includes(u.pathname))return route.fulfill({contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript',body:fs.readFileSync(path.join(__dirname,u.pathname.slice(1)),'utf8')});
  if(u.pathname==='/production-release')return route.fulfill({contentType:'text/html',body:fs.readFileSync(path.join(__dirname,'production-release.html'),'utf8')});
  if(u.pathname==='/api/me')return route.fulfill({json:{username:'reviewer',is_admin:admin}});
  if(u.pathname==='/api/delivery/production')return route.fulfill({json:{active:prepared?'blue':null,slots:prepared?slots:{},production,staging:same?production:candidate,candidate:prepared?{...candidate,prepared_slot:'green'}:null,can_rollback:prepared,browser_url:'https://production.test/'}});

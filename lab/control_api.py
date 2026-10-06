@@ -119,6 +119,12 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['production-release']:
             return self.send_bytes(200, UI.with_name('production-release.html').read_bytes(),
                                    'text/html; charset=utf-8')
+        if parts in (['lab-design.css'], ['lab_shell.js']):
+            name = parts[0]
+            return self.send_bytes(200, UI.with_name(name).read_bytes(),
+                                   'text/css; charset=utf-8' if name.endswith('.css') else 'text/javascript; charset=utf-8')
+        if parts == ['design-system']:
+            return self.send_bytes(200, UI.with_name('design-system.html').read_bytes(), 'text/html; charset=utf-8')
         if parts == ['release-dashboard']:
             return self.send_bytes(200, UI.with_name('release-dashboard.html').read_bytes(),
                                    'text/html; charset=utf-8')
