@@ -216,3 +216,24 @@ finishes or fails, and stay scoped to the selected operation. Pausing preserves
 the reader's position. The page remains usable when logs are empty or retrieval
 fails, and links to the final report remain visible. Document the progress page
 in the developer guides. Create the detailed plan when scheduled.
+
+## Deferred: visible queued work and idempotent preparation
+
+Requested on 6 October 2026 after repeated production preparation submissions
+created PRs #21–24. Implement after the walkthrough.
+
+Show queued and active delivery operations, their current steps and links on
+the release and progress pages. Explain which operation a queued request is
+waiting for. Keep this information available after a page refresh.
+
+Make preparation idempotent for the same verified staging release and production
+state: repeated clicks or submissions must reuse the existing operation and
+proposal rather than create another PR. Disable repeat submission while the
+request is being sent and show a link to the existing operation. A changed
+release or production state must be evaluated as a new request, with stale
+proposals prevented from deploying.
+
+Acceptance: repeated submissions, including after a refresh or from another
+browser tab, produce one preparation proposal for identical inputs. Queued work
+shows its blocker and progress link; completion and failure are visible. Retain
+the exact approval and deployment checks. Create the detailed plan when scheduled.
