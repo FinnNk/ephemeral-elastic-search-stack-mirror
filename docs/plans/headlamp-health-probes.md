@@ -33,6 +33,6 @@ The deployed probes, plugin hashes and ready service endpoint were checked after
 rollout. This is a short recovery check, not evidence
 of long-term availability or a new OIDC login test.
 
-Next: accept the source batch, then watch for fresh probe failures during the
+The source batch is merged. Next: watch for fresh probe failures during the
 next lab evaluation. If the issue recurs, measure worker pressure and Pod
 response times before changing resources or scheduling.

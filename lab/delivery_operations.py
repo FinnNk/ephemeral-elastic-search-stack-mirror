@@ -96,7 +96,7 @@ class Operations:
         result['url'] = PUBLIC + '/api/delivery/operations/' + result['id']
         result['report_url'] = result['url'] + '/report' if (result.get('result') or {}).get('report') else None
         result['decision_url'] = PUBLIC + '/relevance-decision?operation=' + result['id'] if \
-            (result.get('result') or {}).get('gate', {}).get('state') == 'decision_required' else None
+            ((result.get('result') or {}).get('gate') or {}).get('state') == 'decision_required' else None
         return result
 
     def submit(self, payload, identity, key):

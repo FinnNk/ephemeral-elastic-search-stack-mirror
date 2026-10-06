@@ -65,3 +65,44 @@ Coverage uses labels actually present in the frozen pool and separates `gate`,
 4. Verify the normal-traffic dashboard during the next authorised Gatling run.
    Continue the existing production resource investigation with unchanged gate
    thresholds. Historical missing telemetry cannot be reconstructed.
+
+## Activation — 6 October 2026
+
+PRs 140, 141 and 142 are merged. The coordinator image was built for AMD64
+and ARM64 and installed as
+`nexus.localhost:18185/lab-control@sha256:f435eb7496ce811884b6ba1ebe8eefda77cbd48ccb20095110b55ca65caf1e84`.
+All four coordinator containers became Ready. Both dashboard definitions were
+applied to their existing IDs, preserving their shared URLs.
+
+Headlamp remained Ready with no restarts after the merged probe repair; its
+public URL returned HTTP 200.
+
+A diagnostic comparison in Actions run 167 stopped before capture: build 108
+predates `configurations/baseline.json`. The workflow successfully submitted the
+operation, but that does not mean the comparison succeeded. Its failed operation
+is retained. Run 168 compares builds 158 and 163 instead, using the current
+configuration contract. It performs fresh capture and additional-query resolution
+without promoting a release or changing source PR gate evidence.
+
+The second comparison completed and retained its report and resolution receipt.
+The four extra query cases produced 40 pairs: all 40 reused cached abstentions,
+with zero new inference calls, zero labelled pairs and zero response errors.
+The frozen coverage is 0%; query-length Jensen–Shannon divergence is 0. SigNoz
+stored both zero values for model version 1 and exploratory selection. These
+are genuine zero observations, not missing telemetry. This check establishes
+coverage transport, not relevance quality or Gatling acceptance.
+
+Reading that completed manual operation exposed an optional-gate display error:
+manual comparisons return `gate: null`, which the operation reader treated as
+an object. The follow-up source fix handles that value and retains the report
+link without offering a relevance acceptance action. All twelve operation tests
+passed, including a persistent-store regression test for this case. This small
+fix awaits acceptance before deployment.
+
+## Next batch
+
+1. Accept and activate the optional-gate display fix. Check the completed
+   [comparison](https://control.localhost:34443/api/delivery/operations/8b2066507ae8f807d32c47d68ec2fb9b)
+   in its friendly view.
+2. Resume the production resource investigation, then verify normal-traffic
+   dashboards during the next authorised full Gatling gate. Preserve thresholds.

@@ -33,6 +33,19 @@ class DeliveryOperationTests(unittest.TestCase):
         other = self.store.submit(self.payload, {**self.identity, 'subject': 'another-machine'}, 'fixture')
         self.assertNotEqual(first['id'], other['id'])
 
+    def test_completed_comparison_without_merge_gate_is_readable(self):
+        operation = self.store.submit(
+            {'kind': 'compare', 'baseline_run': 158, 'candidate_run': 163},
+            self.identity, 'manual-comparison')
+        with self.store.connect() as db:
+            db.execute('UPDATE operations SET state=?, result=? WHERE id=?',
+                       ('complete', json.dumps({'gate': None, 'report': {
+                           'sha256': 'a'*64, 'blob': 'runs/report.json'}}), operation['id']))
+        completed = self.store.get(operation['id'])
+        self.assertEqual(completed['state'], 'complete')
+        self.assertTrue(completed['report_url'].endswith('/report'))
+        self.assertIsNone(completed['decision_url'])
+
     def test_claim_and_recovery_do_not_repeat_mutations(self):
         first = self.store.submit(self.payload, self.identity, 'fixture')
         self.assertEqual(self.store.next()['id'], first['id'])

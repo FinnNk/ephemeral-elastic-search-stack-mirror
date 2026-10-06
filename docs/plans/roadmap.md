@@ -6,9 +6,17 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [SigNoz dashboard repairs](signoz-dashboard-repairs.md) are merged and
+installed at their existing URLs. The updated coordinator is Ready on both
+supported image architectures. A fresh Actions comparison confirmed real
+additional-query coverage telemetry: 40 cached abstentions and 0% coverage.
+An optional-gate display fix is prepared for review. Next: activate that fix,
+then verify the normal-traffic charts
+during the next authorised Gatling run and resume the production walkthrough.
+
 The [Headlamp availability repair](headlamp-health-probes.md) is applied in the
 lab. Five-second health checks replace the one-second defaults that repeatedly
-withdrew and restarted the server. Next: accept the source values and observe
+withdrew and restarted the server. The source values are merged. Next: observe
 the next lab evaluation for fresh probe failures.
 
 The [relevance change lifecycle diagram](relevance-sdlc-diagram.md) covers
@@ -256,7 +264,8 @@ The [dashboard repair batch](signoz-dashboard-repairs.md) distinguishes browser
 and probe activity from normal SLO traffic, removes interval warnings and adds
 model-version selection. It also supplies coverage and gap-pool shift from the
 current resolution path. Temporary dashboards and diagnostic metric transport
-were checked; installation awaits acceptance.
+were checked; the merged definitions and coordinator are now installed.
 
-Next: activate the accepted batch and verify a new comparison's retained pool
-against its coverage gauge, then resume the unchanged production load gate.
+A fresh comparison confirmed matching frozen and stored coverage: 0% for 40
+cached abstentions, with no new inference. An optional-gate display fix awaits
+review. Next: activate that fix, then resume the unchanged production load gate.
