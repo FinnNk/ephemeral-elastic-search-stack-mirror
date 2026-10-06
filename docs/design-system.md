@@ -15,7 +15,11 @@ The release dashboard uses the same CSS with its existing static shell.
 The saved notebook view embeds these styles so that its strict, script-free
 content policy remains intact. Notebook cells remain inert. The retail Search
 API page keeps its storefront layout; Kubernetes tools retain their upstream UI.
-Markdown guides retain the repository’s technical authorship conventions.
+The diagram gallery and interactive document controls load the same styles
+through `docs/diagrams/diagram-theme.css`. Diagram geometry, semantic node
+colours and technical labels retain their specialised rendering, including
+light/dark theme controls. Markdown guides retain the repository’s technical
+authorship conventions.
 
 ## Use the components
 

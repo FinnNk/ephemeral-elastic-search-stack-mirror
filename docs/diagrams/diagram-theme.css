@@ -1,0 +1,27 @@
+/* Shared lab appearance for document pages; diagram geometry remains specialised. */
+@import url('../../lab/lab-design.css');
+
+html[data-theme="light"] {
+  --bg: var(--lab-background);
+  --text: var(--lab-text);
+  --text-muted: var(--lab-muted);
+  --panel: var(--lab-surface);
+  --panel-border: var(--lab-border);
+  --toolbar-bg: var(--lab-surface);
+  --toolbar-border: var(--lab-border);
+  --toolbar-text: var(--lab-text);
+  --toolbar-menu-bg: var(--lab-surface);
+}
+.header, .toolbar, .controls, button, select, input {
+  font-family: var(--lab-font);
+}
+body.diagram-gallery { font-family: var(--lab-font); background: var(--lab-background); color: var(--lab-text); }
+.diagram-gallery header { background: #142239; border-bottom-color: var(--lab-primary); }
+.diagram-gallery a { color: var(--lab-primary); }
+.diagram-gallery header a { color: #bfcce0; }
+.diagram-gallery article { border-color: var(--lab-border); border-radius: var(--lab-radius); }
+.diagram-gallery h1 { font-size: clamp(30px, 4vw, 48px); }
+.diagram-gallery h2 { font-size: 26px; margin-bottom: 16px; }
+.diagram-gallery h3 { font-size: 23px; }
+.diagram-gallery nav a { margin: 0; }
+.diagram-gallery .section-nav a { color: var(--lab-text); }

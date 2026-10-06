@@ -6,115 +6,37 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-[Lab experience and Mac transfer](lab-experience-and-mac.md) is the active
-programme: shared design system, promotion controls in the release tree, then
-current documentation and native Mac setup/transfer guidance. The design and promotion panel batches
-are prepared for review; current documentation and Mac transfer checks are next.
-Native Mac execution remains outstanding.
+The [lab experience and Mac transfer](lab-experience-and-mac.md) batches are
+prepared for review: shared design system, promotion controls in the release
+tree, reconciled operator guides and Mac setup/transfer instructions. The
+installed release dashboard remains read-only until these accepted batches
+are activated. Native Mac execution and whole-lab restore remain outstanding.
 
-[Delivery notebook comparisons](delivery-notebook-comparisons.md), their
-status/proxy fixes and the [saved notebook browser view](notebook-browser-view.md)
-are merged and activated. The user's first production-slot notebook comparison
-completed all 50 queries per side. Its retained download and browser route are
-verified. The
-[read-only release dashboard](read-only-release-dashboard.md): searchable release
-cards and a connected tree from source merge, including its recorded gate, to
-active production. PR #147 is merged and activated; readiness, service smoke
-checks and the installed read-only projection passed. Next: review build 158
-in the dashboard, then resume the promotion and purpose-created-preview
-notebook walkthroughs.
+## Completed delivery capabilities
 
-The [SigNoz dashboard repairs](signoz-dashboard-repairs.md) are merged and
-installed at their existing URLs. The updated coordinator is Ready on both
-supported image architectures. A fresh Actions comparison confirmed real
-additional-query coverage telemetry: 40 cached abstentions and 0% coverage.
-An optional-gate display fix is prepared for review. Next: activate that fix,
-then verify the normal-traffic charts
-during the next authorised Gatling run and resume the production walkthrough.
+- [Release dashboard](read-only-release-dashboard.md): PR #147 is merged and
+  activated. Its installed projection and runtime smoke checks passed; build
+  158 is verified in Integration and Staging and prepared in the inactive slot.
+- [Final production release](production-blue-green.md): active and candidate
+  APIs use the same frozen catalogue. Reviewed preparation, load/final relevance
+  checks, route switching and rollback are implemented.
+- [Notebook comparisons](delivery-notebook-comparisons.md) and the
+  [browser view](notebook-browser-view.md): existing delivery environments and
+  purpose-created environments can be compared; saved analysis can be viewed
+  or downloaded.
+- [Walkthrough feedback](walkthrough-feedback.md): named Actions workflows,
+  eight-worker adaptive pacing, additional query suites, inference reuse,
+  separate coverage/quality, RBO/Jaccard summaries, informational significance,
+  readable timings, request successes and durable relevance decisions.
+- [SigNoz repairs](signoz-dashboard-repairs.md),
+  [Headlamp health checks](headlamp-health-probes.md),
+  [Gitea 28.0.0](gitea-28-upgrade.md) and
+  [restart-safe OIDC](oidc-node-startup.md): accepted operational corrections.
+- [GitHub mirrors](../github-mirror.md): native Git push mirrors are configured;
+  service databases and artefacts still need separate backups.
 
-The [Headlamp availability repair](headlamp-health-probes.md) is applied in the
-lab. Five-second health checks replace the one-second defaults that repeatedly
-withdrew and restarted the server. The source values are merged. Next: observe
-the next lab evaluation for fresh probe failures.
-
-The [relevance change lifecycle diagram](relevance-sdlc-diagram.md) covers
-source CI, frozen comparison, merge decisions and reviewed promotion, with
-warm-run timing annotations and linked measurement boundaries. It is
-linked from the gallery and delivery guide. Next: review the diagram and resume
-the [sneakers walkthrough](sneakers-demo-walkthrough.md).
-
-[Gitea 28.0.0](gitea-28-upgrade.md) is installed using the existing chart,
-SQLite storage, OIDC and runners. Its complete stopped-server backup is retained
-in ignored lab state. The image pin and operations guide are prepared for review.
-Next, review this batch and [resume the relevance walkthrough](sneakers-demo-walkthrough.md).
-
-[Restart-safe cluster identity](oidc-node-startup.md) restores the API server’s
-issuer hostname through a k3d startup hook. Review the node restart evidence,
-then resume the walkthrough.
-
-Readable delivery results are deployed from accepted commit `d589859`.
-Existing progress and report URLs serve the browser views; JSON remains available.
-Runtime readiness and smoke checks passed.
-
-Prominent merge-gate status and conditional decision links are deployed from
-accepted commit `4115f78`; readiness and smoke checks passed.
-
-[Report timings](report-timings.md) are prepared for review. Friendly reports
-show operation duration, retained capture timing and request health; Gatling
-views include workload duration with their existing latency and failure results.
-Promotion and rollback operations expose retained check reports; deployment
-verification has a release summary.
-Next, [activate and check timings](report-timings-activation.md).
-
-Registry setup now discovers Docker-backed cluster workers instead of naming
-three fixed nodes. The testbed installer applies it after adding its worker.
-The affected preview recovered; the source comparison resumed fresh capture.
-This repair is prepared for review. Next, continue the
-[sneakers walkthrough](sneakers-demo-walkthrough.md).
-
-Copyable [sneakers demo snippets](../../lab/delivery/bootstrap/examples/sneakers/README.md)
-are published in the lab bootstrap template and await source-repository review.
-The gate guide now explains per-variant intent and the requirement for every
-selected variant to pass or receive an allowed exception.
-Next, resume the step-by-step developer walkthrough and review its comparison.
-
-
-The optional [Headlamp plugin testbed](../headlamp-testbed.md) is installed on
-an additional 8 GiB CPU worker: KServe LLM APIs/controller and presets, Knative
-with internal Kourier, KEDA and bounded Prometheus. Both lab judgement models
-remain Ready. Headlamp already runs the latest checked release, 0.45.0.
-The [internal Envoy gateway](headlamp-gateway.md) adds the data plane for CPU
-LLM routing tests. Next, [verify plugin workflows](headlamp-testbed-validation.md)
-against a routed simulator.
-[Judgement inference reuse](judgement-inference-reuse.md) is merged. A 6,920-pair replay reused every prediction and abstention after restart
-and threshold changes, with zero new score-provider calls. Coverage now has its
-own report section; variants still share one frozen judgement set.
-Next: [activate and rehearse the merged API](judgement-inference-activation.md).
-
-The developer walkthrough completed build 108 through integration, staging and
-simulated production. The owner confirmed the rewrite in all three storefronts.
-Production used the full Gatling gate; desired-state PR 16 was approved, merged
-and verified. The accepted remote workflow is now installed. A disposable
-source PR and Actions rehearsals verified fresh comparisons, independent extra
-query gates, preview creation, deployment proposals and approval enforcement.
-See the [activation evidence](../research/evidence/walkthrough-activation.md).
-
-| Batch | State | Next action |
-| --- | --- | --- |
-| Examples, similarity summaries and additional query sets | Installed; report-only and required-set live checks completed | Use separate and combined reports; required suites remain independent |
-| Remote Actions and fresh source comparisons | Installed; exact-commit comparison and scoped submissions checked | Rehearse the user's next change through reviewed deployments |
-| Adaptive pacing | Eight workers; fresh 1,000-query captures and bounded transient recovery checked | Retain fresh requests and diagnostics; Gatling unchanged |
-| Provider selection and byte pins | Checked against Gitea receipts and fresh Windows checkout bytes | Retain exact source/client/policy pins during activation |
-| Actions delivery and documentation | Installed; preview, verification, promotion/rollback proposals and signed gate rechecks exercised | Review the bootstrap corrections found during activation |
-| Durable relevance decisions | Accepted and installed; runtime files and protected pins verified | Rehearse a fresh human-reviewed decision using the [activation plan](relevance-decision-activation.md) |
-| GitHub backup | Three native mirrors enabled; refs and automatic pushes verified | Use Gitea for reviews; retain the old backup until the owner removes it |
-| Developer workstation rehearsal | [Next detailed plan](remote-delivery-user-check.md) | Complete device sign-in and a fresh human-approved deployment through Actions |
-
-Source PR 27 passed release CI and the installed relevance gate after a fresh
-1,000-query exact-image capture. Its base predates the new source contract, so
-that capture used the existing operator publication procedure. Follow-up source
-changes need their own exact-commit evidence; the parent verdict cannot cover
-a different head. See [verification](../research/evidence/walkthrough-feedback-verification.md).
+Plans below retain their original batch records. Their earlier review or next
+steps do not supersede the current guides or authorise repeating completed runs.
 
 ## Current lab configuration
 
@@ -126,7 +48,7 @@ a different head. See [verification](../research/evidence/walkthrough-feedback-v
 | Identity | Keycloak sign-in for Headlamp, Argo CD, linked Gitea accounts and the control UI; the reviewed decision flow uses human OIDC requests and exact Gitea PR approvals |
 | Serving | KServe 0.21 and supplied Headlamp KServe plugin dev.54; exact local asset/serving checks retained |
 | Secrets and access | ESO reads Azure Key Vault through the local emulator; wildcard preview DNS and CA-verified browser HTTPS |
-| Delivery | Gitea Actions, Nexus releases, reviewed desired state, Argo CD and three local namespaces |
+| Delivery | Gitea Actions, Nexus releases, reviewed desired state, Argo CD, Integration/Staging and two production slots |
 
 Demo model predictions remain **unqualified**. The coverage minimum is still
 80%; only the exact authorised source/model/policy scope receives the demo

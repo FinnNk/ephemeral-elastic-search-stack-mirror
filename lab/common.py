@@ -11,8 +11,15 @@ STATE = Path(os.environ.get('LAB_STATE_DIR', str(ROOT / '.lab')))
 EVIDENCE = STATE / 'evidence'
 IN_CLUSTER = os.environ.get('LAB_IN_CLUSTER') == '1'
 KUBE = ['kubectl'] if IN_CLUSTER else ['kubectl', '--kubeconfig', str(STATE / 'kubeconfig.yaml')]
-_bundled_helm = STATE / 'tools' / ('helm.exe' if os.name == 'nt' else 'helm')
-HELM = str(_bundled_helm) if _bundled_helm.exists() else shutil.which('helm') or 'helm'
+
+def host_tool(name):
+    """Use an OS-matched retained executable, otherwise the workstation PATH."""
+    bundled = STATE / 'tools' / (name + ('.exe' if os.name == 'nt' else ''))
+    return str(bundled) if bundled.is_file() else shutil.which(name) or name
+
+
+HELM = host_tool('helm')
+K3D = host_tool('k3d')
 
 
 def run(args, body=None, check=True):

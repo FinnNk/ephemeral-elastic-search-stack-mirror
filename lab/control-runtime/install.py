@@ -25,7 +25,22 @@ NAMESPACE = 'lab-control'
 TRANSFER = 'control-state-transfer'
 GITEA_INTERNAL = 'https://gitea-internal.lab-ingress.svc.cluster.local'
 COPIED = ('releases', 'state-source', 'delivery-state', 'delivery-source',
-          'delivery', 'evidence', 'workloads')
+          'delivery', 'evidence', 'workloads', 'delivery-operations.sqlite3')
+CHECKPOINT_SCRIPT = '''import sqlite3, sys
+from pathlib import Path
+for name in ('lifecycle.sqlite3', 'delivery-operations.sqlite3'):
+    path = Path(sys.argv[1]) / name
+    if not path.exists():
+        continue
+    connection = sqlite3.connect(path, timeout=5)
+    try:
+        if connection.execute('pragma wal_checkpoint(truncate)').fetchone()[0] != 0:
+            raise RuntimeError('State database is still busy: ' + name)
+        if connection.execute('pragma quick_check').fetchone()[0] != 'ok':
+            raise RuntimeError('State database integrity check failed: ' + name)
+    finally:
+        connection.close()
+'''
 
 
 def apply(payload):
@@ -130,11 +145,16 @@ def write_bundle(path):
             source = STATE / name
             if not source.exists():
                 continue
+            if source.is_file():
+                # SQLite is copied through its backup API below, including WAL data.
+                continue
             for member in source.rglob('*'):
                 if member.is_file() and '__pycache__' not in member.parts:
                     archive.add(member, arcname=member.relative_to(STATE).as_posix(), recursive=False)
-        source = STATE / 'lifecycle.sqlite3'
-        if source.exists():
+        for database in ('lifecycle.sqlite3', 'delivery-operations.sqlite3'):
+            source = STATE / database
+            if not source.exists():
+                continue
             with tempfile.TemporaryDirectory(prefix='lab-control-db-') as temp:
                 target = Path(temp) / source.name
                 with closing(sqlite3.connect(source)) as live, closing(sqlite3.connect(target)) as backup:
@@ -380,6 +400,10 @@ def export_bundle(path, image):
                 raise TimeoutError('Old control Pod did not release the state volume.')
             time.sleep(2)
         transfer_pod(image)
+        # All control writers are stopped. Seal both WALs before archiving only
+        # the database files, including after a process was forcibly terminated.
+        k('exec', '-n', NAMESPACE, TRANSFER, '--', 'python', '-c',
+          CHECKPOINT_SCRIPT, '/state')
         entries = [name for name in COPIED if
                    k('exec', '-n', NAMESPACE, TRANSFER, '--', 'test', '-e',
                      '/state/' + name, check=False).returncode == 0]

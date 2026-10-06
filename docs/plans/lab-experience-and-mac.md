@@ -42,6 +42,35 @@ Chromium exercises stage keyboard selection, approved proposal selection, a
 transport retry using the same key, reader controls and the narrow layout.
 No live promotion or load run was performed.
 
-Next: reconcile maintained documentation and runbooks, inventory portability
-constraints, and prepare Mac setup and transfer instructions with explicit
-native verification limits.
+The maintained guide review corrected stale Control HTTP routing and OIDC
+decision claims, current model routing and roadmap status. Mac prerequisites,
+the transfer inventory, restore dependencies and acceptance checks have guides.
+The diagram gallery and interactive document controls use the shared appearance.
+
+Portability checks found and corrected host installers that did not fall back to
+`k3d` on PATH, and a control archive omission of the durable delivery queue.
+Disposable archive tests preserve committed WAL rows in both databases and
+reject an existing destination. All 59 focused Python checks passed. The local
+gallery and lifecycle diagram rendered in Chromium without script errors.
+Image inspection, current model identity and CLI/help checks are recorded in
+[batch evidence](../research/evidence/lab-experience-and-mac.md).
+
+## Next detailed plan: activation and native transfer
+
+1. Obtain acceptance and merge the stacked activation, design, promotion-panel
+   and documentation/Mac batches in order. Wait for existing coordinator work
+   to finish before publishing and installing the accepted control image.
+2. Check readiness, smoke, shared pages and authenticated release controls.
+   Rehearse a single authorised named operation with the user; do not duplicate
+   or silently resume an earlier production-release check.
+3. Inspect the Mac's CPU architecture, RAM and free disk before selecting the
+   full or reduced CPU topology. Review unknown/amd64-only optional images and
+   retain the current abstaining judge.
+4. Agree a cutover window, take consistent service/volume backups and protected
+   host configuration, then rehearse the complete restore on the Mac. Preserve
+   Windows recovery copies until native acceptance, including restart/identity,
+   search, Actions and one small comparison/notebook, has passed.
+
+Native Keychain/DNS operation, whole-lab restore and binary database portability
+have not been tested. The transfer runbook describes their dependencies and
+acceptance checks; it is not a tested one-command migration.

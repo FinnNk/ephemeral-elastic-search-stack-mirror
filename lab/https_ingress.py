@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import NameOID
 
-from common import HELM, ROOT, STATE, apply, guard, k, run
+from common import HELM, K3D, ROOT, STATE, apply, guard, k, run
 from preview_routes import DOMAIN as PREVIEW_DOMAIN
 
 
@@ -175,15 +175,12 @@ def route(cert_path, key_path, browser_names=None):
 
 
 def expose():
-    k3d = STATE / 'tools' / ('k3d.exe' if os.name == 'nt' else 'k3d')
-    if not k3d.exists():
-        raise FileNotFoundError(k3d)
     # k3d edits the load-balancer container, preserving the server and its volumes.
     before = run(['docker', 'inspect', 'k3d-relevance-lab-serverlb', '--format',
                   '{{json .HostConfig.PortBindings}}']).stdout
     bindings = json.loads(before)
     if str(NODE_PORT) + '/tcp' not in bindings:
-        run([str(k3d), 'cluster', 'edit', 'relevance-lab', '--port-add',
+        run([K3D, 'cluster', 'edit', 'relevance-lab', '--port-add',
              f'127.0.0.1:{HOST_PORT}:{NODE_PORT}@server:0'])
 
 

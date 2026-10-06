@@ -9,7 +9,7 @@ from urllib.request import urlopen
 
 import yaml
 
-from common import HELM, ROOT, STATE, apply, guard, k, run
+from common import HELM, K3D, ROOT, STATE, apply, guard, k, run
 
 CONFIG = ROOT / 'lab/headlamp-testbed'
 CACHE = STATE / 'headlamp-testbed'
@@ -73,8 +73,7 @@ def install():
         before[kind] = {row['metadata']['uid']: row['spec'] for row in snapshot['items']}
         (CACHE / (kind + '-install-before.json')).write_text(json.dumps(snapshot, indent=2), encoding='utf-8')
     if k('get', 'node', NODE, check=False).returncode:
-        executable = STATE / 'tools' / ('k3d.exe' if os.name == 'nt' else 'k3d')
-        run([str(executable), 'node', 'create', 'headlamp-testbed', '-c', 'relevance-lab',
+        run([K3D, 'node', 'create', 'headlamp-testbed', '-c', 'relevance-lab',
              '--role', 'agent', '--memory', '8g', '--k3s-node-label', 'lab.relevance/testbed=true'])
     from setup_nexus import configure_node_registries
     configure_node_registries()

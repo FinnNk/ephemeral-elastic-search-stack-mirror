@@ -1,6 +1,6 @@
 # Portability and Azure deployment shape
 
-This is a migration assessment, not an Azure installation guide or fresh inspection of local services. Use the [roadmap](../plans/roadmap.md) for current validation status.
+This is a migration assessment, not an Azure installation guide or fresh inspection of local services. Use the [roadmap](../plans/roadmap.md) for current validation status and [Mac setup](../mac-setup.md) for current host prerequisites. The dated assessment below is not a whole-lab restore procedure.
 
 The [C4 local](../diagrams/rendered/05-local.svg) and [Azure](../diagrams/rendered/06-azure.svg) deployment views show the placements. The lab has run on Windows x64. The Azure view is a migration design; neither AKS nor Apple silicon has been exercised.
 

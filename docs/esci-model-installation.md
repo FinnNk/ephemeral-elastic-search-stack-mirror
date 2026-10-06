@@ -6,9 +6,12 @@ the learned four-score mapping, the exact question and a versioned abstention
 policy. The CUDA serving image is separate from the weights.
 
 Registration is possible on a CPU machine. Serving requires a GPU and matching
-numerical checks. The lab judgement APIs use the calibrated MLflow **version 4**
-through the loaded KServe predictor. It can return labels or abstain according
-to its acceptance policy. Model-label accuracy remains independently unqualified.
+numerical checks. The calibrated package is MLflow **version 4**. It can return
+labels or abstain according to its acceptance policy. Model-label accuracy
+remains independently unqualified. The current lab APIs use the CPU abstaining
+**version 1**; following this installation guide does not by itself switch them
+to the calibrated candidate. See [Mac setup](mac-setup.md#use-cpu-inference) for
+the CPU-only transfer boundary.
 
 The full catalogue's frozen gate snapshot uses published labels plus model-4
 predictions under the temporary [demo policy](judgement-resolution.md#temporary-esci-demo-labels).

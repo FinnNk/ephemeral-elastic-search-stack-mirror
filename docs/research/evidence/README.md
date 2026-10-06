@@ -14,6 +14,10 @@ The [roadmap](../../plans/roadmap.md) owns current status. These records retain
 failures, hashes, measurements and original follow-up statements, including work
 that was completed later.
 
+## Lab interface and portability
+
+- [Shared design, promotion controls and Mac preparation](lab-experience-and-mac.md)
+
 ## Inputs and scale
 
 - [Million-product scale evidence](million-scale.md)

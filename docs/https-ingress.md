@@ -6,12 +6,13 @@ Traefik routes lab browser hostnames through loopback port `34443` and terminate
 | --- | --- | --- |
 | Gitea | `https://gitea.localhost:34443/` | Public repository and account UI |
 | Argo CD | `https://argocd.localhost:34443/` | Deployment UI |
-| Control | `https://control.localhost:34443/` | Route exists; the installed API redirects to its canonical HTTP localhost address |
+| Control | `https://control.localhost:34443/` | Named OIDC sign-in; readers inspect pages, administrators operate the lab |
 | SigNoz | `https://signoz.localhost:34443/` | Observability UI |
 | Headlamp | `https://headlamp.localhost:34443/` | [Kubernetes workload UI](headlamp.md); install separately |
 | Nexus | `https://nexus.localhost:34443/` | Repository administration UI |
+| Identity | `https://identity.localhost:34443/` | Keycloak sign-in and account administration |
 
-These names address the current machine, not a laptop on the LAN. Use the [control forward](control-runtime.md#connect-and-check) for the current control UI; its [session boundary](identity-boundary.md) explains the HTTPS limitation.
+These names address the current machine, not a laptop on the LAN. Use the canonical HTTPS Control address for browser access. The [session boundary](identity-boundary.md) describes named users and permissions; an operator port forward is a diagnostic route.
 
 [Preview access](preview-access.md) adds local DNS for these names and automatic
 HTTPS addresses for dynamic search environments. Complete the workstation DNS

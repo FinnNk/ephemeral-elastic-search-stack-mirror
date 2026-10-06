@@ -18,6 +18,7 @@ They are not the current installation procedure.
 | Manage secrets and HTTPS | [Key Vault](../keyvault-secrets.md), [HTTPS](../https-ingress.md) |
 | Investigate telemetry | [SigNoz](../observability-backend.md) |
 | Check current status | [Roadmap](../plans/roadmap.md) |
+| Prepare or transfer to a Mac | [Mac setup](../mac-setup.md), [lab transfer](../lab-transfer.md) |
 
 ## Selection studies
 

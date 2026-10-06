@@ -67,6 +67,12 @@ resolved through these rules; other domains keep their normal DNS configuration.
 
 ## Configure Git once with a user-owned bundle
 
+On macOS, start with Keychain trust and test `git ls-remote` using your installed
+Git. Apple Git can use the system trust store. Use the bundle helper below only
+with an OpenSSL-backed Git; it explicitly selects that backend. Do not transfer
+Windows global Git TLS settings to a Mac. See [Mac setup](mac-setup.md) for the
+host prerequisites and native acceptance checks.
+
 On Windows, Git can use a user-owned OpenSSL CA bundle containing its standard
 trusted roots and the lab root. After this setup, normal clone commands work
 without extra certificate arguments. The settings apply to your Git user account.

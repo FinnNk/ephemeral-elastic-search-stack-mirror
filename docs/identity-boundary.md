@@ -9,7 +9,7 @@ token and applies its group permissions.
 | Identity | Control access |
 | --- | --- |
 | `lab-readers` | View environments, search and inspect retained reports |
-| `lab-admins` | Create, compare, renew and delete environments |
+| `lab-admins` | Manage environments and comparisons; submit reviewed delivery operations |
 | Neither group | Access denied |
 | Actions delivery | Verified `lab-delivery-actions` OIDC client; delivery operations only |
 
@@ -55,9 +55,11 @@ A submitted `merge-reviewed` operation uses the same coordinator to check the
 existing separate approval, merge and verify deployment. The Actions credential
 cannot manufacture an approval or administer other control resources.
 
-Recorded gate exceptions still use the existing verified Gitea approval CLI.
-Binding new decisions to an OIDC issuer and subject is the next integration
-batch; browser access alone does not change that contract.
+A bounded relevance decision records the named user’s OIDC issuer and subject,
+the exact comparison and its reason. The resulting desired-state PR retains
+the decision in Git and requires the existing review checks. Signing in or
+submitting a decision does not grant approval of the resulting PR. See
+[recorded relevance exceptions](relevance-gate.md) for the bounds and workflow.
 
 See [OIDC access](oidc-access.md), [control operations](control-runtime.md) and
 [measured control access](research/evidence/control-oidc.md).

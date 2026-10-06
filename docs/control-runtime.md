@@ -6,7 +6,9 @@ The Pod has one replica. Its 2 GiB persistent volume holds SQLite, Git checkouts
 
 ## Connect and check
 
-Prerequisites: an installed lab, `kubectl`, Python and the retained state directory containing `kubeconfig.yaml`. Commands below use PowerShell from the repository root. In another worktree, set `LAB_STATE_DIR` to the **existing** state directory rather than creating new state.
+Prerequisites: an installed lab, `kubectl`, Python and the retained state directory containing `kubeconfig.yaml`. Commands below use PowerShell from the repository root. macOS operators can use
+the Terminal commands in [Mac setup](mac-setup.md); the same Python entry points
+apply once its venv and `LAB_STATE_DIR` are set. In another worktree, set `LAB_STATE_DIR` to the **existing** state directory rather than creating new state.
 
 ```powershell
 # Replace this with your retained state directory if it is elsewhere.
@@ -97,11 +99,14 @@ $backupPath = Join-Path $labState ('control-backup-' + (Get-Date -Format yyyyMMd
 python lab/control-runtime/install.py export --image $controlImage --bundle $backupPath
 ```
 
-Export rejects an existing path, drains work, stops the sole writer, copies the PVC and resumes the Deployment. It prints the archive path and SHA-256 and writes a `.sha256` sidecar.
+Export rejects an existing path, drains work, stops the sole writer, checkpoints
+and checks both databases, copies the selected PVC state including
+`delivery-operations.sqlite3`, and resumes the Deployment. It prints the archive
+path and SHA-256 and writes a `.sha256` sidecar.
 
 | Included | Retain separately |
 | --- | --- |
-| SQLite, Git checkouts, frozen local inputs, reports and workload records | Kubeconfig, bootstrap credentials and CA keys |
+| Lifecycle SQLite, durable delivery queue/logs, Git checkouts, frozen local inputs, reports and workload records | Kubeconfig, bootstrap credentials and CA keys |
 | Control PVC contents selected by the exporter | Gitea, Nexus, Floci, Elasticsearch and snapshot-store data |
 
 To restore, stop the old writer and use a fresh checkout with a new empty `LAB_STATE_DIR`. Supply the separately retained scoped credentials and kubeconfig, then import the archive:
@@ -111,4 +116,4 @@ $backupPath = Read-Host 'Absolute path to the retained control archive'
 python lab/control-runtime/install.py import --bundle $backupPath
 ```
 
-Import validates the archive and refuses to overwrite existing state. Then follow first activation against a cluster without an active control Deployment. A local-path PVC is not a cross-host backup. See the [dated runtime checks](research/evidence/kubernetes-control-services.md) and [state-transfer checks](research/evidence/runtime-consolidation-delivery.md) for tested scope.
+Import validates the archive and refuses to overwrite existing state. Then follow first activation against a cluster without an active control Deployment. A local-path PVC is not a cross-host backup. The [whole-lab transfer runbook](lab-transfer.md) lists the other databases, volumes and credentials required for a Mac migration. See the [dated runtime checks](research/evidence/kubernetes-control-services.md) and [state-transfer checks](research/evidence/runtime-consolidation-delivery.md) for tested scope.

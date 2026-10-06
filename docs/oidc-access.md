@@ -1,7 +1,7 @@
 # Sign in to the lab with OIDC
 
 Keycloak provides a local OpenID Connect (OIDC) identity provider. Use your named
-account to sign in to Headlamp, Argo CD and Gitea. Each application checks its own
+account to sign in to Control, Headlamp, Argo CD and Gitea. Each application checks its own
 permissions; signing in does not grant administrator access by itself.
 
 ![Lab identity and permissions](diagrams/rendered/09-identity.svg)
@@ -29,7 +29,7 @@ The identity service uses the same lab root certificate.
 
    ```sh
    export LAB_STATE_DIR=/path/to/retained/.lab
-   python3 -c 'import json, os; from pathlib import Path; a = json.loads((Path(os.environ["LAB_STATE_DIR"]) / "oidc/users.json").read_text())["finnnk"]; print("Username:", a["username"]); print("Temporary password:", a["password"])'
+   python3 -c 'import json, os; from pathlib import Path; a = json.loads((Path(os.environ["LAB_STATE_DIR"]) / "oidc/users.json").read_text(encoding="utf-8"))["finnnk"]; print("Username:", a["username"]); print("Temporary password:", a["password"])'
    ```
 
 2. Open [Headlamp](https://headlamp.localhost:34443/), choose OIDC sign-in, and
@@ -190,5 +190,5 @@ click **Sign In**. The original Headlamp window should open the cluster after
 the login popup closes. Gitea login alone does not establish a Headlamp session.
 
 MLflow, Nexus and SigNoz access integrations remain planned.
-See the [next integration plan](plans/oidc-application-integration.md) and
+See the [application integration plan](plans/oidc-application-integration.md) and
 [verification evidence](research/evidence/local-oidc.md).

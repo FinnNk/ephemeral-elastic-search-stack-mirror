@@ -3,7 +3,7 @@ import base64
 import json
 import os
 
-from common import ROOT, STATE, apply, guard, k, run
+from common import K3D, ROOT, STATE, apply, guard, k, run
 from https_ingress import certificate, expose, route
 from preview_access import bind
 from preview_routes import DOMAIN
@@ -120,7 +120,7 @@ def install():
                                '--format', '{{json .HostConfig.PortBindings}}']).stdout)
     for protocol in ('udp', 'tcp'):
         if '30053/' + protocol not in bindings:
-            run([str(STATE / 'tools' / ('k3d.exe' if os.name == 'nt' else 'k3d')),
+            run([K3D,
                  'cluster', 'edit', 'relevance-lab', '--port-add',
                  f'127.0.0.1:53:30053/{protocol}@server:0'])
     print('DNS: 127.0.0.1:53 (UDP and TCP); preview HTTPS: *.' + DOMAIN + ':34443')
