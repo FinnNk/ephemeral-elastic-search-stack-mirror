@@ -12,8 +12,10 @@ make missing labels available.
 
 ## Review batches
 
-1. Accept the open blue–green release implementation first.
-2. Review the lab feedback branch, then its source workflow/telemetry companion.
+1. Accept [lab PR #138](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/pulls/138) first.
+2. Review [lab PR #139](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/pulls/139),
+   then [delivery-source PR #33](https://gitea.localhost:34443/elastic-agent/delivery-source/pulls/33).
+   Retarget #139 from the blue–green branch to main after #138 is merged.
 3. Merge accepted batches. Install the coordinator only when no delivery operation
    is running. Apply delivery-state protection with `delivery_promote.protect()`.
    Run the source Actions setup after the accepted workflows are on source main.
