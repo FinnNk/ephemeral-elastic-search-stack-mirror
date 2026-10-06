@@ -20,7 +20,6 @@ make missing labels available.
    is running. Apply delivery-state protection with `delivery_promote.protect()`.
    Run the source Actions setup after the accepted workflows are on source main.
    Apply the accepted search and model dashboard definitions.
-   Apply the accepted search and model dashboard definitions.
 4. Build a new source release and use its new preview for telemetry verification.
    Keep old immutable releases unchanged.
 
@@ -76,23 +75,5 @@ performance investigation. No additional monitoring stack is required.
   It was deleted afterwards; installed dashboards remain unchanged. This does
   not demonstrate search telemetry from the new source chart.
 
-Next: activate accepted batches during an idle coordinator window, verify a new
-source preview, and perform the human approval/coordinator merge rehearsal.
-
-## Verification, 6 October
-
-- 64 focused coordinator, HTTP, scoring, ownership and gate tests passed.
-- Release controls and readable reports passed browser checks, including mobile
-  layout, scoped logs and the Gatling dashboard link.
-- The source application passed its 18 existing tests. Helm rendered its telemetry
-  settings and collector egress rule. Seven focused/advanced workflows matched
-  their templates, retained the trusted client checks and passed shell parsing.
-- Gatling compiled in the pinned Maven image. A local counter probe recorded two
-  completions, one failure and their latency; it sent no search traffic.
-- A temporary SigNoz dashboard accepted the variable definition, rendered the
-  scoped interval and sent environment-filtered queries without query errors.
-  It was deleted afterwards; installed dashboards remain unchanged. This does
-  not demonstrate search telemetry from the new source chart.
-
-Next: activate accepted batches during an idle coordinator window, verify a new
-source preview, and perform the human approval/coordinator merge rehearsal.
+Activation is recorded in the [runtime evidence](walkthrough-feedback-activation.md).
+Next: resume the production resource investigation and the reviewed release rehearsal.

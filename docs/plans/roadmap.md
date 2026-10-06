@@ -234,9 +234,13 @@ the [walkthrough feedback](walkthrough-feedback.md).
 
 ### Walkthrough feedback completion
 
-The queue, logs, release diagnostics, evaluator boundary and focused workflow
-changes are ready for review in the [completion batch](walkthrough-feedback-completion.md).
-A separate source batch restores search telemetry for new releases. The judgement
-APIs now use the ready abstaining v1 predictor. Next: accept the batches, activate
-when the coordinator is idle, then verify a fresh instrumented preview and resume
-the production resource investigation without relaxing its gate.
+Lab PRs #138/#139 and delivery-source PR #33 are merged and activated. The
+coordinator, focused workflows, merge restriction and dashboards are installed.
+A verification-only Actions run completed through the coordinator, and build
+163's preview exported search counters and propagated traces to SigNoz. See the
+[activation evidence](walkthrough-feedback-activation.md) for measurements and
+limits. The abstaining v1 judge remains active.
+
+Next: resume the production resource investigation, then run the unchanged full
+load gate and reviewed route switch. OpenCost installation remains a separate
+proposed batch.
