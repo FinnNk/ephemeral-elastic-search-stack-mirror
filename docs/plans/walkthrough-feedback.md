@@ -237,3 +237,42 @@ Acceptance: repeated submissions, including after a refresh or from another
 browser tab, produce one preparation proposal for identical inputs. Queued work
 shows its blocker and progress link; completion and failure are visible. Retain
 the exact approval and deployment checks. Create the detailed plan when scheduled.
+
+## Deferred: release progress and resource diagnostics
+
+Requested during the 6 October 2026 production walkthrough.
+
+- Show submission feedback and the operation link beside the button used, rather
+  than only at the bottom of the release page.
+- During Gatling checks, show the tested side, phase, elapsed time and expected
+  duration. Provide provisional throughput, latency and failure counts, plus a
+  SigNoz link scoped to the test environment and interval. The retained Gatling
+  report remains the gate's evidence.
+- Retain and link failed performance evidence on the operation page. Explain
+  which side, phase and threshold failed instead of reporting only that a
+  performance check failed or was incomplete. Distinguish incomplete execution
+  from a valid run that missed its budget.
+- Assess OpenCost and its Headlamp integration for resource allocation and usage
+  visibility. Reuse the existing Prometheus installation where suitable; keep
+  laptop cost estimates distinct from measured CPU and memory. Installation is
+  a separate proposed batch, not a prerequisite for the current investigation.
+
+Create the detailed plan when scheduled. Keep the existing gate thresholds and
+human approval requirements unchanged.
+
+## Finding: delivery search telemetry is missing
+
+The 6 October dashboard review found that builds 108 and 158, their evaluation
+previews and both production slots lack `OTEL_EXPORTER_OTLP_ENDPOINT` and the
+release/environment telemetry labels. The bootstrap chart has these fields but
+the published delivery-source chart on main does not. Fix the published source
+chart in a reviewed batch and use a new frozen release; do not modify old bundles.
+
+SigNoz receives operation and judgement-service samples. The saved operation
+dashboard queries return data, while judgement result increases are zero in the
+recent window and no model inference samples arrived in the preceding two hours.
+Search and model no-data must remain distinct from healthy behaviour. Verify
+dashboard rendering as well as query responses, and show clear no-activity and
+not-instrumented states. Include trace propagation and collector connectivity in
+the new-release verification. Historical Gatling runs without exported search
+metrics cannot be backfilled as though they were instrumented.

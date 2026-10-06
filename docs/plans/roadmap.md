@@ -212,3 +212,22 @@ Candidate values stay blank until preparation is deployed.
 Deployment uses a dropdown of open production PRs approved at their current commit.
 After acceptance, use the [next walkthrough plan](production-release-walkthrough.md)
 with a different verified staging release.
+
+### Production load investigation, 6 October
+
+Build 158 reached verified integration, staging and the inactive production slot.
+The full production load run completed, but build 108's evaluation preview was
+OOM-killed at 96 MiB and missed the peak budget; build 158 passed. Release remains
+blocked before the final comparison and route-switch proposal.
+
+The user authorised a brief investigation and a 192 MiB experiment. Both
+evaluation previews now have separately committed diagnostic manifests; active
+production is unchanged. A short matched Gatling screen tests a difficult slice
+of the frozen traffic without replacing the required full gate. Preserve failed
+evidence and distinguish the resource experiment from a permanent default.
+
+Next: use the measured diagnostic to choose the next resource check, then resume
+the [production walkthrough](production-release-walkthrough.md#production-load-recovery)
+through the unchanged full gate and reviewed route switch. Queue visibility,
+idempotency, live logs, failure evidence and resource visibility are recorded in
+the [walkthrough feedback](walkthrough-feedback.md).

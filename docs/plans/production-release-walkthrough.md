@@ -26,6 +26,31 @@ Take the next relevancy change from verified staging through the blue–green re
 
 Rollback remains available through a separately reviewed request. Demonstrate it only if requested; it runs the full load gate again.
 
+## Production load recovery
+
+On 6 October, the first full gate completed but the build 108 baseline missed
+the peak budget and was OOM-killed at its 96 MiB limit. Build 158 passed.
+Both evaluation previews now use a separately committed 192 MiB diagnostic
+configuration, with CPU unchanged at 250m. Active production and the prepared
+production slots keep their original resource configuration.
+
+The short screen completed with no failures or restarts, but both sides missed
+peak latency limits. See the [investigation evidence](../research/evidence/production-load-memory-2026-10-06.md).
+Next, isolate CPU throttling and shared-node contention with equal resources and
+placement before spending another full-gate run. The screen is not a gate pass.
+
+Run a short matched Gatling screen using retained ESCI traffic, recording memory,
+CPU throttling, failures and restarts. This diagnostic cannot satisfy or replace
+the full production gate. If it passes, repeat the unchanged full gate from the
+release UI; retain the failed evidence and the resource configuration used for
+the new run. If failures persist, investigate the measured bottleneck before
+changing further resources or policy.
+
+Acceptance for the next release attempt: complete normal and peak evidence,
+no API restarts, both sides within the existing budgets, then the final shared
+judgement comparison and a human-approved route switch. Assess any permanent
+resource-default change in a separate reviewed batch.
+
 ## More information
 
 - [Release to production](../delivery.md#release-to-production): developer instructions.

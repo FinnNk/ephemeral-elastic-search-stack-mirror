@@ -1,0 +1,291 @@
+{
+  "failed_operation": "ebc001cea66a2fb0fb5949f3bf9b15fd",
+  "full_gate_reference": {
+    "sha256": "8a1ebefccf84beec3ab43b4026b6cf0bd328a419436da3b5425e4ccc5c3fc042",
+    "blob": "runs/8a1ebefccf84beec3ab43b4026b6cf0bd328a419436da3b5425e4ccc5c3fc042/delivery-evidence.json"
+  },
+  "full_gate_performance_reference": {
+    "blob": "runs/aad1b06529cf2af451e77c99500cc9cf0cc9202d2c38d541d14b4a70d84d22ca/performance-comparison.json",
+    "sha256": "aad1b06529cf2af451e77c99500cc9cf0cc9202d2c38d541d14b4a70d84d22ca"
+  },
+  "full_gate": {
+    "profile": "production-load",
+    "valid": true,
+    "verdict": "budget-missed",
+    "measured_phases": {
+      "normal": {
+        "baseline": {
+          "failed_percent": 0.0,
+          "offered_rps": 10.0,
+          "p95_ms": 106,
+          "p99_ms": 202,
+          "request_count": 3000,
+          "within_budget": true
+        },
+        "budget": {
+          "failed_percent": 1.0,
+          "p95_ms": 250,
+          "p99_ms": 500
+        },
+        "candidate": {
+          "failed_percent": 0.0,
+          "offered_rps": 10.0,
+          "p95_ms": 81,
+          "p99_ms": 180,
+          "request_count": 3000,
+          "within_budget": true
+        },
+        "candidate_p95_increase_percent": -23.585
+      },
+      "peak": {
+        "baseline": {
+          "failed_percent": 5.33,
+          "offered_rps": 20.0,
+          "p95_ms": 34601,
+          "p99_ms": 55603,
+          "request_count": 18000,
+          "within_budget": false
+        },
+        "budget": {
+          "failed_percent": 1.0,
+          "p95_ms": 400,
+          "p99_ms": 800
+        },
+        "candidate": {
+          "failed_percent": 0.0,
+          "offered_rps": 20.0,
+          "p95_ms": 119,
+          "p99_ms": 324,
+          "request_count": 18000,
+          "within_budget": true
+        },
+        "candidate_p95_increase_percent": -99.656
+      }
+    }
+  },
+  "resource_change": {
+    "created_at": "2026-10-06T16:34:25.857245+00:00",
+    "purpose": "Controlled diagnostic; production unchanged; full production gate remains required",
+    "previews": [
+      {
+        "build": 108,
+        "environment": "lab-delivery-run-108-7d99e451",
+        "old_revision": "be563ab3adac2b7de0e855d7b89ea4dad3b5df04",
+        "revision": "fe5ce1aa924c56367f0e03610f3aa29aa45103a0",
+        "memory_limit": "192Mi",
+        "cpu_limit": "250m",
+        "verification": {
+          "state": "verified",
+          "fingerprint": "7d99e451865ef138e725c35391b0139c1ac26721b9179d8837cabdee32732031",
+          "git_revision": "fe5ce1aa924c56367f0e03610f3aa29aa45103a0",
+          "environment": "lab-delivery-run-108-7d99e451",
+          "verified_at": "2026-10-06T16:34:16.930304+00:00",
+          "seconds": 5.253,
+          "sample_ids": [
+            "B07YDWFN1C",
+            "B07H29DYTZ",
+            "B084Z3KB8L",
+            "B07SK1G8PK",
+            "B07BKZ8D15",
+            "B07G3DC612",
+            "B07FZWJ9VT",
+            "B07FZX6BJH",
+            "B07FZZRP9M",
+            "B08CXQP5BG"
+          ]
+        }
+      },
+      {
+        "build": 158,
+        "environment": "lab-delivery-run-158-cfceaa22",
+        "old_revision": "a986853c551cbaea084eac8f7380a721b7589d72",
+        "revision": "12eb1056ffb83ec5e36f761a366c2e4ede1262db",
+        "memory_limit": "192Mi",
+        "cpu_limit": "250m",
+        "verification": {
+          "state": "verified",
+          "fingerprint": "cfceaa2279cf2a64fc70ecb07acf6ebb18c41d2a23359e9c08217efd0d75e71c",
+          "git_revision": "12eb1056ffb83ec5e36f761a366c2e4ede1262db",
+          "environment": "lab-delivery-run-158-cfceaa22",
+          "verified_at": "2026-10-06T16:34:25.839636+00:00",
+          "seconds": 7.206,
+          "sample_ids": [
+            "B07YDWFN1C",
+            "B07H29DYTZ",
+            "B084Z3KB8L",
+            "B07SK1G8PK",
+            "B07BKZ8D15",
+            "B07G3DC612",
+            "B07FZWJ9VT",
+            "B07FZX6BJH",
+            "B07FZZRP9M",
+            "B08CXQP5BG"
+          ]
+        }
+      }
+    ]
+  },
+  "diagnostic": {
+    "diagnostic_only": true,
+    "results": [
+      {
+        "profile": "memory-screen",
+        "workload_sha256": "aef16ff8d9d088693b37e6984db6eb1248c9d2ac263696f6014c1097a453b321",
+        "source_sha256": "2ae92f360bf3cd8080b22b76582727634a6404c25179093f809920edc4b5a3c8",
+        "recipe_sha256": "01401b18b1332671c79592b1e3ff97b85526f66778ce2c82e10289419612822e",
+        "duration_seconds": 180,
+        "phases": {
+          "warmup": {
+            "requests": 300,
+            "ok": 300,
+            "failed": 0,
+            "failed_percent": 0.0,
+            "gatling_reported_rps_over_whole_run": 1.64,
+            "p95_ms": 152,
+            "p99_ms": 273,
+            "offered_rps": 10.0,
+            "planned_seconds": 30
+          },
+          "normal": {
+            "requests": 300,
+            "ok": 300,
+            "failed": 0,
+            "failed_percent": 0.0,
+            "gatling_reported_rps_over_whole_run": 1.64,
+            "p95_ms": 81,
+            "p99_ms": 121,
+            "offered_rps": 10.0,
+            "planned_seconds": 30
+          },
+          "peak": {
+            "requests": 2400,
+            "ok": 2400,
+            "failed": 0,
+            "failed_percent": 0.0,
+            "gatling_reported_rps_over_whole_run": 13.11,
+            "p95_ms": 5432,
+            "p99_ms": 10053,
+            "offered_rps": 20.0,
+            "planned_seconds": 120
+          }
+        },
+        "arrival": {
+          "planned_count": 3000,
+          "actual_count": 3000,
+          "complete": true,
+          "arrival_drift_p95_ms": 18.0,
+          "arrival_drift_max_ms": 79.0,
+          "valid": true
+        },
+        "complete": true,
+        "valid": true,
+        "run_id": "21b4c833",
+        "target": "baseline",
+        "environment": "lab-delivery-run-108-7d99e451",
+        "release_id": "esci-gb-v1",
+        "fingerprint": "7d99e451865ef138e725c35391b0139c1ac26721b9179d8837cabdee32732031",
+        "index": "esci-gb-v1-rc5f6d204c4467d4c49f842e3",
+        "image": "nexus.localhost:18185/search-api@sha256:07a43b5d090ebd2429ec14c9c1a2203669ae3dd9ec9d8e254ff9693945bde93a",
+        "runner_image": "maven:3.9.11-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237",
+        "gatling_version": "3.15.1",
+        "maven_plugin": "4.21.12",
+        "simulation_sha256": "009ad1b65a5d15eb951397d08c285457af2f0330219d5326019d22007a88aae3",
+        "duration_wall_seconds": 221.306,
+        "runner_exit_code": 0,
+        "runner_limits": {
+          "cpu": 2,
+          "memory": "2Gi"
+        },
+        "host": "Kubernetes control Pod / local k3d",
+        "execution": "finite Kubernetes Job",
+        "job_name": "gatling-21b4c833",
+        "workload_archive_sha256": "712ec5bfb1f7f5678bc94de64933a115fc7073564b665628cdad73945cdaf195",
+        "workload_archive_blob": "runs/712ec5bfb1f7f5678bc94de64933a115fc7073564b665628cdad73945cdaf195/compiled-workload.zip",
+        "native_report_sha256": "8fef77410462ccf3bc9158864e8bbd3f2a1fae8b7a58406e32d1edcfd6c0819f",
+        "native_report_blob": "runs/8fef77410462ccf3bc9158864e8bbd3f2a1fae8b7a58406e32d1edcfd6c0819f/gatling-report.zip",
+        "diagnostic_only": true,
+        "api_memory_limit": "192Mi",
+        "api_cpu_limit": "250m"
+      },
+      {
+        "profile": "memory-screen",
+        "workload_sha256": "aef16ff8d9d088693b37e6984db6eb1248c9d2ac263696f6014c1097a453b321",
+        "source_sha256": "2ae92f360bf3cd8080b22b76582727634a6404c25179093f809920edc4b5a3c8",
+        "recipe_sha256": "01401b18b1332671c79592b1e3ff97b85526f66778ce2c82e10289419612822e",
+        "duration_seconds": 180,
+        "phases": {
+          "warmup": {
+            "requests": 300,
+            "ok": 300,
+            "failed": 0,
+            "failed_percent": 0.0,
+            "gatling_reported_rps_over_whole_run": 1.67,
+            "p95_ms": 200,
+            "p99_ms": 290,
+            "offered_rps": 10.0,
+            "planned_seconds": 30
+          },
+          "normal": {
+            "requests": 300,
+            "ok": 300,
+            "failed": 0,
+            "failed_percent": 0.0,
+            "gatling_reported_rps_over_whole_run": 1.67,
+            "p95_ms": 97,
+            "p99_ms": 155,
+            "offered_rps": 10.0,
+            "planned_seconds": 30
+          },
+          "peak": {
+            "requests": 2400,
+            "ok": 2400,
+            "failed": 0,
+            "failed_percent": 0.0,
+            "gatling_reported_rps_over_whole_run": 13.33,
+            "p95_ms": 2081,
+            "p99_ms": 4092,
+            "offered_rps": 20.0,
+            "planned_seconds": 120
+          }
+        },
+        "arrival": {
+          "planned_count": 3000,
+          "actual_count": 3000,
+          "complete": true,
+          "arrival_drift_p95_ms": 18.0,
+          "arrival_drift_max_ms": 61.0,
+          "valid": true
+        },
+        "complete": true,
+        "valid": true,
+        "run_id": "65c6d925",
+        "target": "candidate",
+        "environment": "lab-delivery-run-158-cfceaa22",
+        "release_id": "esci-gb-v1",
+        "fingerprint": "cfceaa2279cf2a64fc70ecb07acf6ebb18c41d2a23359e9c08217efd0d75e71c",
+        "index": "esci-gb-v1-rc5f6d204c4467d4c49f842e3",
+        "image": "nexus.localhost:18185/search-api@sha256:a252a3c1de22834ecf34772f96443dc85a4c1f385fbe663b7ef745c5448d1e74",
+        "runner_image": "maven:3.9.11-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237",
+        "gatling_version": "3.15.1",
+        "maven_plugin": "4.21.12",
+        "simulation_sha256": "009ad1b65a5d15eb951397d08c285457af2f0330219d5326019d22007a88aae3",
+        "duration_wall_seconds": 225.643,
+        "runner_exit_code": 0,
+        "runner_limits": {
+          "cpu": 2,
+          "memory": "2Gi"
+        },
+        "host": "Kubernetes control Pod / local k3d",
+        "execution": "finite Kubernetes Job",
+        "job_name": "gatling-65c6d925",
+        "workload_archive_sha256": "712ec5bfb1f7f5678bc94de64933a115fc7073564b665628cdad73945cdaf195",
+        "workload_archive_blob": "runs/712ec5bfb1f7f5678bc94de64933a115fc7073564b665628cdad73945cdaf195/compiled-workload.zip",
+        "native_report_sha256": "7df3e571dfd9b60a56870d9ff0c5ebc404e3bf40a46bdd9552128e1eeeb96182",
+        "native_report_blob": "runs/7df3e571dfd9b60a56870d9ff0c5ebc404e3bf40a46bdd9552128e1eeeb96182/gatling-report.zip",
+        "diagnostic_only": true,
+        "api_memory_limit": "192Mi",
+        "api_cpu_limit": "250m"
+      }
+    ]
+  }
+}
