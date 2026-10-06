@@ -12,6 +12,19 @@ clusterRoleBinding:
   create: false
 serviceAccount:
   name: headlamp
+# Leave room for brief delays on the shared lab worker before withdrawing
+# a healthy server or restarting it. The probes still detect sustained failure.
+probes:
+  livenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
 resources:
   requests:
     cpu: 25m

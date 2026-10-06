@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [Headlamp availability repair](headlamp-health-probes.md) is applied in the
+lab. Five-second health checks replace the one-second defaults that repeatedly
+withdrew and restarted the server. Next: accept the source values and observe
+the next lab evaluation for fresh probe failures.
+
 The [relevance change lifecycle diagram](relevance-sdlc-diagram.md) covers
 source CI, frozen comparison, merge decisions and reviewed promotion, with
 warm-run timing annotations and linked measurement boundaries. It is

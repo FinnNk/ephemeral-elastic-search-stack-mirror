@@ -59,8 +59,14 @@ Secret or anonymous administrator access.
 | --- | --- |
 | Name does not resolve | [Workstation DNS](workstation-access.md); reconcile installation to refresh lab DNS. |
 | Certificate rejected | Workstation trust; keep TLS verification enabled. |
-| UI unavailable | `headlamp` Deployment in `lab-headlamp`; Traefik in `lab-ingress`. |
+| `no available server` | Check whether the `headlamp` Pod in `lab-headlamp` is ready and has a service endpoint. Inspect probe failures and restarts before changing Traefik. |
 | Forbidden response | Your OIDC group or recovery token's Kubernetes role. |
 
 [Local OIDC evidence](research/evidence/local-oidc.md) covers real login callbacks
 and live permissions. Apple silicon installation has not been tested.
+
+Health checks allow five seconds for a response on the shared lab worker.
+Readiness removes the Pod after three consecutive failures; liveness restarts
+it after six. This tolerates brief scheduling delays while retaining checks for
+sustained failure. See the [availability repair](plans/headlamp-health-probes.md)
+for the observed failure and validation limits.
