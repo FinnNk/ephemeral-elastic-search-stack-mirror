@@ -1,0 +1,10 @@
+{
+  "approved_prs": [],
+  "dropdown_served": true,
+  "html_sha256": "03adb46b79a4ca923e7cf180a82fa0e9c2bbe9efe9031201625e5c2eca8d4c90",
+  "observed_at": "2026-10-06T13:41:58.229862+00:00",
+  "python_tests": 56,
+  "browser_checks": "Dropdown selection, review link, disabled empty state, reader restrictions and mobile layout passed.",
+  "qualification": "Listings require approval of the current head; deployment independently revalidates the exact proposal and reviews.",
+  "runtime_image": "nexus.localhost:18185/lab-control@sha256:d4cb8826d5c7888a56306fce917fc8fe33f14ff6e7e33c3061798bce5a038935"
+}

@@ -171,6 +171,12 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['api', 'delivery', 'production']:
             from production_release import view
             return self.send_json(200, view())
+        if parts == ['api', 'delivery', 'production', 'approved-prs']:
+            from production_release import approved_prs
+            try:
+                return self.send_json(200, {'prs': approved_prs()})
+            except (RuntimeError, ValueError, KeyError):
+                return self.send_json(502, {'error': 'Could not load approved production PRs. Retry Refresh status.'})
         if parts == ['api', 'datasets']:
             releases = []
             for release_id in RELEASES:

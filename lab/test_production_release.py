@@ -5,6 +5,7 @@ import hashlib
 import json
 import unittest
 import tempfile
+import base64
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -140,6 +141,24 @@ class ProductionReleaseTests(unittest.TestCase):
                 self.assertIsNone(result['candidate']['prepared_slot'])
                 self.assertEqual(result['candidate']['verified'],not stale)
                 self.assertEqual(result['candidate']['build_run'],None if stale else 1)
+
+    def test_approved_dropdown_requires_current_review_and_production_proposal(self):
+        prs=[{'number':n,'title':'Release '+str(n),'head':{'ref':'promote/test-'+str(n),'sha':'a'*40},
+              'base':{'ref':'main'}} for n in range(1,7)]
+        def review(number,state,head='a'*40,dismissed=False):
+            return {'id':number,'state':state,'commit_id':head,'dismissed':dismissed,'user':{'login':'finnnk'}}
+        reviews={1:[review(1,'APPROVED')],2:[review(2,'APPROVED','b'*40)],
+                 3:[review(3,'APPROVED',dismissed=True)],4:[review(4,'APPROVED')],
+                 5:[review(5,'APPROVED'),review(6,'REQUEST_CHANGES')],
+                 6:[review(7,'REQUEST_CHANGES'),review(8,'APPROVED')]}
+        def api(path):
+            if '/pulls?' in path:return prs
+            if '/reviews?' in path:return reviews[int(path.split('/pulls/')[1].split('/')[0])]
+            number=int(path.split('test-')[1].split('.')[0])
+            proposal={'target':'staging' if number==4 else 'production','kind':'promotion'}
+            return {'content':base64.b64encode(json.dumps(proposal).encode()).decode()}
+        with patch('gitea.api',side_effect=api),patch.object(release,'git',side_effect=AssertionError('UI read must not touch Git')):
+            self.assertEqual([row['number'] for row in release.approved_prs()],[1,6])
 
 
 if __name__=='__main__':

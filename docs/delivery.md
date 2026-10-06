@@ -132,7 +132,8 @@ selects one slot; preparing the other slot does not change that route.
    production candidate** to use the verified staging release. If staging matches
    active production, promote a different release to staging first.
 2. Follow the operation to its preparation PR. Approve the exact head in Gitea,
-   then enter its number under **Deploy an approved PR**.
+   then select it under **Deploy an approved PR**. Only open production PRs
+   approved at their current commit appear; use **Refresh status** after approval.
 3. Select the change intent and **Check and release production**. The coordinator
    runs the existing full gates, including normal/peak Gatling load. It then
    compares the active production API with the prepared candidate.
@@ -140,7 +141,7 @@ selects one slot; preparing the other slot does not change that route.
    its change and significance, RBO/Jaccard, coverage and judgement resolution
    outcomes. Both releases use one frozen set of labels.
 5. Review and approve the route-switch PR in Gitea. Use **Deploy an approved PR**
-   with its number. Wait for deployment verification and open active production.
+   and select that approved PR. Wait for deployment verification and open active production.
 
 The final check uses up to 1,000 queries from the pinned ESCI suite as a
 **simulated recent-traffic fixture**. It does not claim to reproduce yesterday's

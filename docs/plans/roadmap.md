@@ -209,5 +209,6 @@ Gatling gates remain required. See the [implementation and rehearsal plan](produ
 The isolated four-query Argo rehearsal passed without changing active production.
 The release UI also shows active production and staging details before any
 candidate is prepared, with build and source links and explicit preparation status.
+Deployment uses a dropdown of open production PRs approved at their current commit.
 After acceptance, use the [next walkthrough plan](production-release-walkthrough.md)
 with a different verified staging release.

@@ -1,5 +1,6 @@
 """Reviewed blue–green production releases on one frozen catalogue."""
 from copy import deepcopy
+import base64
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
@@ -341,6 +342,44 @@ def observed_release(target, definition):
                     if k not in ('fingerprint', 'environment')})
     return {**definition, 'verified': verified,
             'build_run': deployment.get('build_run') if verified else None}
+
+
+def approved_prs():
+    """List approved production proposals without mutating the delivery checkout."""
+    from gitea import api
+    from delivery_promote import approved_head
+
+    def pages(path):
+        page = 1
+        while True:
+            rows = api(path + ('&' if '?' in path else '?') + f'limit=50&page={page}')
+            yield from rows
+            if len(rows) < 50:
+                return
+            page += 1
+
+    result = []
+    for pr in pages(endpoint(DESIRED, '/pulls?state=open')):
+        branch = pr['head']['ref']
+        if pr['base']['ref'] != 'main' or not branch.startswith('promote/') or '/' in branch[8:]:
+            continue
+        reviews = list(pages(endpoint(DESIRED, f"/pulls/{pr['number']}/reviews")))
+        latest = {}
+        for review in sorted(reviews, key=lambda row: row['id']):
+            if (not review.get('dismissed') and review.get('commit_id') == pr['head']['sha']
+                    and review.get('state') in ('APPROVED', 'REQUEST_CHANGES')):
+                latest[review['user']['login']] = review
+        current = list(latest.values())
+        if not approved_head(current, pr['head']['sha']) or any(r.get('state') == 'REQUEST_CHANGES' for r in current):
+            continue
+        contents = api(endpoint(DESIRED, '/contents/proposals/' + branch[8:] + '.json?ref=' + pr['head']['sha']))
+        proposal = json.loads(base64.b64decode(contents['content']))
+        if proposal.get('target') != 'production' or proposal.get('kind') not in ('prepare-production', 'promotion', 'rollback'):
+            continue
+        result.append({'number': pr['number'], 'title': pr['title'], 'kind': proposal['kind'],
+                       'head_sha': pr['head']['sha'],
+                       'url': f"https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/{pr['number']}"})
+    return sorted(result, key=lambda row: row['number'])
 
 
 def view():
