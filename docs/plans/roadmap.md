@@ -17,6 +17,10 @@ SQLite storage, OIDC and runners. Its complete stopped-server backup is retained
 in ignored lab state. The image pin and operations guide are prepared for review.
 Next, review this batch and [resume the relevance walkthrough](sneakers-demo-walkthrough.md).
 
+[Restart-safe cluster identity](oidc-node-startup.md) restores the API server’s
+issuer hostname through a k3d startup hook. Review the node restart evidence,
+then resume the walkthrough.
+
 Readable delivery results are deployed from accepted commit `d589859`.
 Existing progress and report URLs serve the browser views; JSON remains available.
 Runtime readiness and smoke checks passed.

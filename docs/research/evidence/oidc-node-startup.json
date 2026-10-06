@@ -1,0 +1,62 @@
+{
+  "observed_at": "2026-10-06T09:50:59.997120+00:00",
+  "node": "k3d-relevance-lab-server-0",
+  "scope": "Real single-control-plane container restart, not Windows reboot or node recreation",
+  "mapping": "10.43.199.32 identity.localhost # relevance-lab-oidc",
+  "mapping_count_after_restart": 1,
+  "startup_log": [
+    "[2026-10-06T09:49:44+00:00] Running /bin/k3d-entrypoint-zz-lab-oidc.sh",
+    "Restored lab OIDC issuer resolution before k3s startup",
+    "[2026-10-06T09:49:44+00:00] Finished k3d entrypoint scripts!"
+  ],
+  "repair_repeated": 2,
+  "hook_sha256": "aa11e1c333ed5bc9247eeaa38089562c52bebf6684c343dbde9b00065ebfb287",
+  "all_five_nodes_ready": true,
+  "callback_checks": {
+    "admin": true,
+    "reader": true,
+    "unassigned": true,
+    "wrong_audience_rejected": true,
+    "argocd": true
+  },
+  "limitations": [
+    "Recreated node needs installer",
+    "Recreated OIDC edge Service with new IP needs repair",
+    "Browser popup UX confirmed by source inspection; real callbacks tested over HTTP"
+  ],
+  "callback_verification": {
+    "issuer": "https://identity.localhost:34443/realms/relevance-lab",
+    "scope": "disposable users, real authorization-code callbacks and live permissions",
+    "checks": {
+      "admin": {
+        "headlamp_callback": true,
+        "namespace_listing_allowed": true,
+        "secrets_read_allowed": true,
+        "configmap_create_allowed": true,
+        "argocd_callback": true,
+        "argocd_group": "lab-admins",
+        "argocd_sync_allowed": true
+      },
+      "reader": {
+        "headlamp_callback": true,
+        "namespace_listing_allowed": true,
+        "secrets_read_allowed": false,
+        "configmap_create_allowed": false,
+        "argocd_callback": true,
+        "argocd_group": "lab-readers",
+        "argocd_sync_allowed": false
+      },
+      "unassigned": {
+        "headlamp_callback": true,
+        "namespace_listing_allowed": false,
+        "secrets_read_allowed": false,
+        "configmap_create_allowed": false,
+        "argocd_callback": true,
+        "argocd_group": null,
+        "argocd_sync_allowed": false
+      },
+      "wrong_audience_rejected": true,
+      "discovery_https": true
+    }
+  }
+}

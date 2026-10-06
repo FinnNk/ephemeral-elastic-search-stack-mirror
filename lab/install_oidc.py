@@ -1,5 +1,6 @@
 """Install a persistent local OIDC provider and native Headlamp/Argo sign-in."""
 import argparse
+import ipaddress
 import json
 import os
 import secrets
@@ -216,6 +217,23 @@ def create_users():
         api('/admin/realms/relevance-lab/users/' + found[0]['id'] + '/groups/' + groups[group], 'PUT', token=token)
 
 
+def server_resolution(edge):
+    """Restore the issuer hostname now and before k3s starts on every node boot."""
+    address = str(ipaddress.ip_address(edge))
+    entrypoint = run(['docker', 'exec', SERVER, 'cat', '/bin/k3d-entrypoint.sh']).stdout
+    if '/bin/k3d-entrypoint-*.sh' not in entrypoint:
+        raise RuntimeError('The k3d node does not expose the expected startup hook.')
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    mapping = STATE_DIR / 'server-oidc-host'
+    mapping.write_text(address + ' ' + HOST + '\n', encoding='ascii', newline='\n')
+    hook = '/bin/k3d-entrypoint-zz-lab-oidc.sh'
+    run(['docker', 'cp', str(mapping), SERVER + ':/etc/rancher/k3s/lab-oidc-host'])
+    run(['docker', 'cp', str(ROOT / 'lab/oidc-node-startup.sh'), SERVER + ':' + hook])
+    run(['docker', 'exec', SERVER, 'chmod', '755', hook])
+    run(['docker', 'exec', SERVER, hook])
+    return address
+
+
 def server_configuration(edge, ca):
     """Keep existing k3s settings and volumes; restart only after a real change."""
     STATE_DIR.mkdir(parents=True, exist_ok=True)
@@ -233,12 +251,7 @@ def server_configuration(edge, ca):
            'oidc-username-prefix=lab-oidc:', 'oidc-groups-claim=groups', 'oidc-groups-prefix=lab-oidc:']
     configuration['kube-apiserver-arg'] = retained + new
     desired = yaml.safe_dump(configuration)
-    hosts = run(['docker', 'exec', SERVER, 'cat', '/etc/hosts']).stdout
-    updated = '\n'.join(line for line in hosts.splitlines() if not line.endswith('# relevance-lab-oidc')) + '\n' + edge + ' ' + HOST + ' # relevance-lab-oidc\n'
-    hosts_file = STATE_DIR / 'server-hosts'
-    hosts_file.write_text(updated, encoding='utf-8')
-    run(['docker', 'cp', str(hosts_file), SERVER + ':/tmp/lab-oidc-hosts'])
-    run(['docker', 'exec', SERVER, 'sh', '-c', 'cat /tmp/lab-oidc-hosts > /etc/hosts'])
+    server_resolution(edge)
     config_file = STATE_DIR / 'server-config.yaml'
     config_file.write_text(desired, encoding='utf-8')
     changed = configuration != (yaml.safe_load(old) or {})
@@ -247,8 +260,6 @@ def server_configuration(edge, ca):
         run(['docker', 'cp', str(ca), SERVER + ':/etc/rancher/k3s/lab-oidc-ca.pem'])
         run(['docker', 'cp', str(config_file), SERVER + ':/etc/rancher/k3s/config.yaml'])
         run(['docker', 'restart', SERVER])
-        # Docker owns /etc/hosts; reapply this internal resolution after restart.
-        run(['docker', 'exec', SERVER, 'sh', '-c', 'cat /tmp/lab-oidc-hosts > /etc/hosts'])
         for _ in range(90):
             if k('get', '--raw=/readyz', check=False).stdout.strip() == 'ok':
                 break
@@ -314,7 +325,7 @@ def applications(edge, ca):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['install', 'credentials'])
+    parser.add_argument('action', choices=['install', 'credentials', 'repair-server-resolution'])
     parser.add_argument('--user', help='Named account; required when explicitly displaying credentials')
     args = parser.parse_args()
     if args.action == 'credentials':
@@ -324,6 +335,11 @@ def main():
         print(json.dumps(data, indent=2))
         return
     guard()
+    if args.action == 'repair-server-resolution':
+        edge = json.loads(k('get', 'service/lab-oidc-edge', '-n', 'lab-ingress', '-o', 'json').stdout)['spec']['clusterIP']
+        print(json.dumps({'server': SERVER, 'identity_address': server_resolution(edge),
+                          'startup_hook_installed': True, 'server_restarted': False}))
+        return
     deploy_provider()
     edge, ca = connectivity()
     reconcile_realm()

@@ -14,3 +14,6 @@ evaluation/specs/esci-label-quality-v1.json -text
 lab/variant_gate.py text eol=lf
 lab/delivery/policies/variant-merge-v1.json text eol=lf
 lab/delivery/ci/lab_delivery.py text eol=lf
+
+# k3d executes this hook directly on Linux, including after Windows installation.
+lab/oidc-node-startup.sh text eol=lf

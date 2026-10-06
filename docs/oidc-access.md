@@ -152,11 +152,42 @@ the accounts afterwards.
 | --- | --- |
 | Name or certificate error | Run the checks in the workstation access guide. Do not disable TLS verification. |
 | Login succeeds but access is forbidden | Check the user's realm group in Keycloak; sign in again after changing membership. |
+| Headlamp login succeeds but Kubernetes rejects it after a restart | Run the node-resolution repair below, then use Headlamp’s **Sign In** button. |
+| Login remains on “Redirecting to main page…” | Close the callback tab and start again from Headlamp’s **Sign In** button. Keep the original window open; the login popup signals completion to it. Try a private window if old browser state persists. |
 | Identity service unavailable | Check `keycloak` and `keycloak-database` in `lab-identity`. Preserve the database PVC. |
 | Need cluster access while repairing sign-in | Use the retained operator kubeconfig, or [Headlamp token recovery](headlamp.md#recovery-token). |
 | Need identity administration | Run `python lab/install_oidc.py credentials --user bootstrap-admin`, then open [Keycloak administration](https://identity.localhost:34443/admin/). Keep this recovery account separate from everyday access. |
 | Need Gitea recovery | Use its existing local password sign-in; OAuth client linking does not replace it. |
 | Need Argo CD recovery | Use its retained local administrator account; automation credentials are unchanged. |
+
+### Repair API-server identity resolution
+
+The lab installer adds a k3d startup hook that restores `identity.localhost`
+in the control-plane node before Kubernetes starts. Docker regenerates that
+node's hosts file on restart. The hook preserves Docker's entries and adds
+one lab identity entry; workstation hosts files are unaffected.
+
+For an existing cluster, run from the **lab repository**, not `delivery-source`:
+
+```powershell
+Set-Location 'D:\codex\Ephemeral Elasticsearch'
+$env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
+python lab/install_oidc.py repair-server-resolution
+```
+
+On Linux or macOS, change to your lab checkout, set `LAB_STATE_DIR` to its retained
+state and use `python3`. Docker and the operator kubeconfig must be available.
+Expect `startup_hook_installed: true` and `server_restarted: false`.
+The command applies the mapping immediately without restarting the node or
+resetting users, passwords or sessions.
+
+Normal installation includes this hook. Run the installer again if you recreate
+the control-plane container; run the repair if the `lab-oidc-edge` Service is
+recreated with a different IP. No extra host process is required after installation.
+
+Then open [Headlamp](https://headlamp.localhost:34443/c/relevance-lab/login) and
+click **Sign In**. The original Headlamp window should open the cluster after
+the login popup closes. Gitea login alone does not establish a Headlamp session.
 
 MLflow, Nexus and SigNoz access integrations remain planned.
 See the [next integration plan](plans/oidc-application-integration.md) and
