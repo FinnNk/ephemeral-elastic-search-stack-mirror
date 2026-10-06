@@ -39,6 +39,8 @@ def configure():
             '--allowed-group=lab-admins', '--allowed-group=lab-readers', '--allowed-group=lab-delivery-actions',
             '--skip-jwt-bearer-tokens=true',
             '--upstream=http://lab-control.lab-control.svc.cluster.local:18082',
+            # A comparison can run bounded Gatling jobs on both sides, then a notebook.
+            '--upstream-timeout=60m',
             '--reverse-proxy=true', '--pass-authorization-header=true', '--pass-basic-auth=false',
             '--pass-user-headers=false', '--skip-provider-button=true',
             '--cookie-name=__Host-lab-control', '--cookie-secure=true', '--cookie-httponly=true',

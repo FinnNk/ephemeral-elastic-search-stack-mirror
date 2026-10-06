@@ -24,7 +24,17 @@
 <script src="/control_lists.js"></script>
 <script>
   const list=document.querySelector('#environments'),message=document.querySelector('#message'),results=document.querySelector('#results'),baselineSelect=document.querySelector('#baseline'),candidateSelect=document.querySelector('#candidate'),comparisonList=document.querySelector('#comparisons'),workspace=document.querySelector('#workspace'),loginForm=document.querySelector('#login'),identityLabel=document.querySelector('#identity'),logoutButton=document.querySelector('#logout');
-  async function request(path,method='GET',body){const options={method,headers:{'X-Lab-Intent':'1'}};if(body!==undefined){options.headers['Content-Type']='application/json';options.body=JSON.stringify(body)}const response=await fetch(path,options);const value=await response.json();if(!response.ok)throw new Error(value.error||'Request failed');return value}
+  async function request(path,method='GET',body){
+    const options={method,headers:{'X-Lab-Intent':'1'}};
+    if(body!==undefined){options.headers['Content-Type']='application/json';options.body=JSON.stringify(body)}
+    const response=await fetch(path,options);
+    if(!(response.headers.get('Content-Type')||'').includes('application/json')){
+      if(response.redirected&&new URL(response.url).pathname.startsWith('/oauth2/'))throw new Error('Your sign-in session needs refreshing. Reload this page and sign in again.');
+      throw new Error('The lab returned an unexpected page (HTTP '+response.status+'). '+(method==='GET'?'Refresh status or sign in again.':'The request may still be running. Refresh status and check the latest record before retrying.'));
+    }
+    let value;try{value=await response.json()}catch{throw new Error('The lab returned unreadable data. Refresh status before retrying.')}
+    if(!response.ok)throw new Error(value.error||'Request failed');return value;
+  }
   function text(tag,value,klass){const node=document.createElement(tag);node.textContent=value;if(klass)node.className=klass;return node}
   function action(label,klass,fn){const button=text('button',label,klass);button.type='button';button.addEventListener('click',async()=>{message.textContent='Working…';try{await fn();message.textContent='Done.';await refresh()}catch(error){message.textContent=error.message}});return button}
   let oidcAuth=false, currentIdentity=null;

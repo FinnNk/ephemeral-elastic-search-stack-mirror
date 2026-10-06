@@ -102,3 +102,23 @@ No API, comparison or notebook execution behaviour changed.
 After accepting and activating the feedback fix, open the completed report and
 download its notebook. Then repeat the same settings with previews
 `lab-delivery-run-156-6bdbc9b0` and `lab-delivery-run-165-8ba17059`.
+
+
+### Browser response timeout
+
+The sign-in proxy logged `timeout awaiting response headers` at 20:52:13 UTC.
+The comparison completed at 20:52:38 UTC, after 54.493 seconds, and the API's
+reply failed because the proxy had already closed the connection. The browser
+tried to parse the proxy's HTML error page as JSON. This explains the original
+page's error; the saved report and notebook succeeded.
+
+The installed proxy binary confirms a default upstream timeout of 30 seconds.
+The reviewed configuration sets it to 60 minutes to accommodate a comparison's
+two bounded Gatling jobs and optional notebook. Their existing execution
+limits remain in force. This configuration change awaits acceptance and proxy
+rollout; it does not alter authentication or start another comparison.
+
+The UI recognises non-JSON responses and gives a recovery instruction. For a
+submitted operation it says the request may still be running and directs the
+user to refresh status and inspect the latest record before retrying. The
+browser test covers the actual HTML 502 response shape, alongside JSON failures.

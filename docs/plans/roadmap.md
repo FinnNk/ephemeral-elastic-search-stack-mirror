@@ -9,7 +9,8 @@ step” is not an instruction to repeat completed work.
 [Delivery notebook comparisons](delivery-notebook-comparisons.md) are merged
 and activated. The user's first production-slot notebook comparison completed
 all 50 queries per side. A follow-up puts running, completed and failed feedback
-beside **Run comparison**, with a direct report link and repeat-click protection.
+beside **Run comparison**, with a direct report link and repeat-click protection. The same batch addresses
+the sign-in proxy timeout that returned HTML before that successful run finished.
 Next: accept and activate that feedback fix, inspect the completed notebook and
 repeat the walkthrough on the prepared delivery previews.
 
