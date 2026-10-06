@@ -172,3 +172,27 @@ Acceptance: each workflow shows only relevant fields, uses bounded choices where
 supported by both Gitea and GitHub Actions, calls the shared client and publishes
 the existing progress/review links. Update delivery guides and source templates
 together. Create the detailed plan when this batch is scheduled.
+
+## Deferred: coordinator-only merges for delivery state
+
+Requested on 6 October 2026. Implement after the walkthrough; keep the current
+promotion process unchanged.
+
+Restrict merges to `delivery-state` main to the delivery coordinator identity.
+Humans review and approve the exact proposal, then request deployment through
+Actions or the control UI. The coordinator revalidates the proposal immediately
+before merging, waits for deployment and publishes the completion report.
+
+Direct merges currently require approval and `delivery/validation`, but skip
+the coordinator's immediate revalidation and combined completion report.
+Argo CD still deploys the Git change and the watcher subsequently verifies it.
+
+Apply this restriction to delivery state only. Source PRs retain their normal
+review and merge workflow. Preserve approval requirements, stale-review
+protection, status checks and the prohibition on administrator merge overrides.
+
+Acceptance: a human can approve but cannot directly merge a delivery-state PR;
+the coordinator can merge an approved, valid proposal through the existing
+workflow or UI. Failed validation prevents the merge, and successful deployment
+retains its verification and completion report. Document the developer steps
+and administrator configuration. Create the detailed plan when scheduled.
