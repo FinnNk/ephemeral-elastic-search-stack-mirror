@@ -26,6 +26,21 @@ python lab/setup_nexus.py
 
 Setup creates or reuses the pinned containers, configures repositories/accounts and refreshes cluster endpoint addresses. It refuses to silently change an existing container's image. Check the command's result, open the UI and confirm `lab-images` and `lab-releases` exist. Repeat setup after cluster/container recreation to reconnect endpoints; do not delete retained volumes to resolve an address problem.
 
+## Repair access after a Docker restart
+
+Docker may assign Nexus a different address after restarting. If a build reports
+`connection refused` at `nexus.localhost:18185`, refresh its cluster route.
+Run from the lab repository root with Docker running and the operator kubeconfig
+in the retained state directory:
+
+```powershell
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
+python lab/setup_nexus.py --repair-network
+```
+
+This updates routing only. It preserves accounts, repository contents and volumes.
+Rerun the failed release workflow in Gitea Actions after the command succeeds.
+
 ## Storage and transport
 
 | Item | Location |

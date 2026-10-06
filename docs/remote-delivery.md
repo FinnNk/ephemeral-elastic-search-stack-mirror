@@ -133,3 +133,14 @@ For GitHub Enterprise, configure its self-hosted runner, service addresses,
 credentials and required status contexts. The coordinator's repository adapter
 currently calls Gitea; replace that adapter for GitHub rather than assuming the
 two providers' APIs are identical.
+
+## If Actions reports no runner online
+
+Ask the lab operator to check `platform/deployment/delivery-runner`. Kubernetes
+allows five minutes for the runner daemon to start, then restarts a container
+that is still stuck. Readiness checks verify that the daemon is running;
+Gitea's runner status verifies its connection to the server.
+
+Queued workflows start when the runner reconnects. No new commit is needed.
+If a release then fails to reach the registry, follow the
+[Nexus route repair](nexus.md#repair-access-after-a-docker-restart).

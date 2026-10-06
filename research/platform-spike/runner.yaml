@@ -70,6 +70,16 @@ spec:
           image: gitea/runner:3.5.0-dind-rootless
           securityContext:
             privileged: true
+          # Docker can be running while the runner waits for its startup signal.
+          startupProbe:
+            exec:
+              command: [pgrep, -f, '^gitea-runner daemon']
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command: [pgrep, -f, '^gitea-runner daemon']
+            periodSeconds: 10
           env:
             - name: GITEA_INSTANCE_URL
               value: https://gitea-internal.lab-ingress.svc.cluster.local

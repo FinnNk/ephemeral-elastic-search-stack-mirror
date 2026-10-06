@@ -1,0 +1,37 @@
+{
+  "observed_at": "2026-10-06",
+  "original_source_sha": "786d9bedf4c68ac7f365336695ebf49ab66a109d",
+  "original_comparison": "73843b8275567c2325066f1fdf9f01b7",
+  "replacement_comparison": "0e9425ead4d01b46f0af90b58673ef35",
+  "runner_failure": "Docker service up, s6 readiness absent; runner blocked at s6-svwait -U; no active job",
+  "recovery": "Restarted idle delivery-runner; both Gitea runners online",
+  "nexus_route": {
+    "previous": "172.30.0.6",
+    "actual": "172.30.0.3",
+    "registry_after_repair": "401 authentication challenge instead of connection refused",
+    "repair_repeated": 2
+  },
+  "source_actions": {
+    "release_run": 156,
+    "release_attempt": 2,
+    "release_job": 179,
+    "release_conclusion": "success",
+    "application_tests": 18,
+    "submission_run": 157,
+    "submission_job": 178,
+    "submission_conclusion": "success"
+  },
+  "verification": [
+    "Both runner manifests accepted by Kubernetes server dry run",
+    "Installed startup/readiness probe command matched real daemon",
+    "Both deployments rolled out with probes while runners idle",
+    "Both Gitea registrations online after rollout",
+    "Python compile and git diff --check passed"
+  ],
+  "limits": [
+    "No deliberate missing-daemon fault injection; Kubernetes restart policy validated by configuration, not an induced hang",
+    "Readiness checks the local process; Gitea connectivity is verified independently",
+    "Nexus Docker-address changes still require the focused operator repair",
+    "Fresh comparison was queued; relevance outcome not claimed here"
+  ]
+}

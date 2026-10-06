@@ -177,3 +177,10 @@ Headlamp readiness, exact KServe assets, unchanged Prometheus assets and repeate
 server-side application passed verification. OIDC and other Pod settings were
 preserved. Next: review the setup batch and test dev.54 in the browser. See the
 [installation and next-step plan](headlamp-kserve-dev54.md).
+
+## Runner startup recovery
+
+The offline delivery runner has been restarted and the stale Nexus route repaired.
+Startup and readiness checks are installed on both runner deployments and prepared for review.
+The focused Nexus route repair preserves stored releases and identities.
+Next: accept the recovery batch and resume the sneakers report review. See the [batch plan](runner-startup-health.md).

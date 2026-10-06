@@ -1,4 +1,5 @@
 """Provision the lab's pinned Nexus/PostgreSQL services and scoped identities."""
+import argparse
 import base64
 import json
 import secrets
@@ -175,7 +176,15 @@ def image_secret(namespace):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--repair-network', action='store_true',
+                        help='Refresh the existing Nexus route without changing accounts or storage.')
+    args = parser.parse_args()
     guard()
+    if args.repair_network:
+        configure_network()
+        print('Nexus cluster routes refreshed from the current Docker address.')
+        return
     value = ensure_services()
     configure(value)
     configure_network()
