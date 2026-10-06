@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import unittest
+import tempfile
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 from delivery_runtime import fingerprint
@@ -117,6 +119,27 @@ class ProductionReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'outside its declared slots'):
             release.validate_files('head',self.slots,
                 [release.PATH,'targets/production/rendered/search.yaml','targets/staging/deployment.json'],set())
+
+    def test_release_details_exist_before_named_slots_and_stale_receipt_is_not_reused(self):
+        production=deployment();candidate=deployment('f')
+        def config(deployment):
+            return Mock(returncode=0,stdout=json.dumps({'data':{
+                'definition.json':json.dumps(release.entry(deployment,release.NAMESPACE))}}))
+        with tempfile.TemporaryDirectory() as directory,patch.object(release,'STATE',Path(directory)):
+            folder=Path(directory)/'delivery';folder.mkdir()
+            for target,dep in [('production',production),('staging',candidate)]:
+                (folder/(target+'.json')).write_text(json.dumps({'state':'verified','deployment':dep}))
+            for stale in (False,True):
+                if stale:
+                    (folder/'staging.json').write_text(json.dumps({'state':'verified','deployment':production}))
+                with patch.object(release,'k',side_effect=[config(production),Mock(returncode=1),Mock(returncode=1),config(candidate)]):
+                    result=release.view()
+                self.assertEqual(result['slots'],{})
+                self.assertEqual(result['production']['build_run'],1)
+                self.assertEqual(result['candidate']['fingerprint'],candidate['fingerprint'])
+                self.assertIsNone(result['candidate']['prepared_slot'])
+                self.assertEqual(result['candidate']['verified'],not stale)
+                self.assertEqual(result['candidate']['build_run'],None if stale else 1)
 
 
 if __name__=='__main__':

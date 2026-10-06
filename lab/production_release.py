@@ -330,6 +330,19 @@ def release(intent, progress=lambda message: None):
     return {**result, 'report': evidence, 'final_report': final}
 
 
+def observed_release(target, definition):
+    """Attach verification only when its receipt matches the observed release."""
+    path = STATE / 'delivery' / (target + '.json')
+    receipt = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+    deployment = receipt.get('deployment', {})
+    verified = (receipt.get('state') == 'verified' and
+                deployment.get('fingerprint') == definition['fingerprint'] and
+                deployment.get('fields') == {k: v for k, v in definition.items()
+                    if k not in ('fingerprint', 'environment')})
+    return {**definition, 'verified': verified,
+            'build_run': deployment.get('build_run') if verified else None}
+
+
 def view():
     """Read observed release state without touching the coordinator Git checkout."""
     obj = k('get','configmap/frozen-definition','-n',NAMESPACE,'-o','json',check=False)
@@ -344,6 +357,12 @@ def view():
             slots[colour] = json.loads(json.loads(obj.stdout)['data']['definition.json'])
     other = next((v for colour, v in slots.items() if colour != active), None)
     rollback = bool(other and (STATE / 'delivery/verified/production' / (other['fingerprint'] + '.json')).exists())
+    staging = k('get','configmap/frozen-definition','-n','lab-delivery-staging','-o','json',check=False)
+    candidate = None
+    if not staging.returncode:
+        candidate = observed_release('staging', json.loads(json.loads(staging.stdout)['data']['definition.json']))
+        candidate['prepared_slot'] = next((colour for colour, slot in slots.items()
+            if colour != active and slot['fingerprint'] == candidate['fingerprint']), None)
     return {'state': 'ready' if active else 'not-prepared', 'active': active, 'can_rollback': rollback,
-            'production': definition, 'slots': slots,
+            'production': observed_release('production', definition), 'candidate': candidate, 'slots': slots,
             'browser_url': 'https://' + NAMESPACE + '.preview.relevance.test:34443/'}

@@ -126,8 +126,11 @@ replace this gate. Validation checks the load evidence again before merge.
 Blue–green deployment keeps two API releases available. The production URL
 selects one slot; preparing the other slot does not change that route.
 
-1. Open **Production release** from the control UI. Select **Prepare production
-   candidate** to use the verified staging release.
+1. Open **Production release** from the control UI. Compare active production
+   with the staging candidate: build, source commit, image, catalogue and index.
+   These details are visible before candidate preparation. Select **Prepare
+   production candidate** to use the verified staging release. If staging matches
+   active production, promote a different release to staging first.
 2. Follow the operation to its preparation PR. Approve the exact head in Gitea,
    then enter its number under **Deploy an approved PR**.
 3. Select the change intent and **Check and release production**. The coordinator
