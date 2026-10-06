@@ -32,7 +32,7 @@
     },
     {
       "id": "build",
-      "label": "Development · target <5 min"
+      "label": "Build environments · target <5 min"
     },
     {
       "id": "capture",
@@ -98,8 +98,8 @@
       "lane": "build",
       "col": 2,
       "type": "backend",
-      "label": "Build the ephemeral environments",
-      "sublabel": "Pinned baseline and variant APIs · frozen index",
+      "label": "Build the exact PR commit",
+      "sublabel": "Pinned image and receipt in Nexus",
       "width": 258
     },
     {

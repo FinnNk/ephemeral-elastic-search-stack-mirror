@@ -1,12 +1,12 @@
 {
-  "observed_at": "2026-10-06T10:26:05.462008+00:00",
+  "observed_at": "2026-10-06T10:28:31.895527+00:00",
   "artifact": "interactive/relevance-sdlc.html",
-  "sha256": "0fb7e635d4dc7ceed385803c8b5fc7451bbf4ba81daac9b4c42c99ef979bfca7",
+  "sha256": "d6ebe1e834c4c8a8d05662d908ce5822d0e205e2948122f92b2d8d9253f40b87",
   "reviewed_image": "rendered/relevance-sdlc.png",
   "viewport": [
     1440,
     900
   ],
-  "review": "Inspected the full timeline. Stage 2 says Build the ephemeral environments with the pinned baseline/variant APIs and frozen index beneath it. Text is contained and the existing call branch, capture pair and promotion gates retain their layout.",
+  "review": "Inspected the full timeline. Stage 2 heading says Build environments \u00b7 target <5 min. Its centred box again says Build the exact PR commit, with the original Nexus supporting text. Labels are contained and the diagram retains its existing layout.",
   "scope": "Diagram-only requested abstraction; resolver ownership in the implementation remains deferred."
 }
