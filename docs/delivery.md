@@ -15,7 +15,8 @@ the lab using [control runtime](control-runtime.md).
 
 ![Relevance change from source PR to simulated production](diagrams/rendered/relevance-sdlc.png)
 
-[Open the interactive workflow](diagrams/interactive/relevance-sdlc.html).
+[Open the interactive timeline](diagrams/interactive/relevance-sdlc.html).
+Read from top to bottom; spacing shows sequence, not elapsed time.
 The source gate checks the PR commit. Deployment uses a separate build of the
 merged commit, promoted unchanged through three reviewed targets.
 

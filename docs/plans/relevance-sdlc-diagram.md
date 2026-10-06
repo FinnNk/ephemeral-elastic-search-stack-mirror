@@ -15,10 +15,12 @@ Separate the PR-head merge gate from the build of the merged commit.
   verification and the production normal/peak Gatling gate.
 - Link the diagram from the gallery and delivery guide.
 - Pass showcase rendering and light/dark browser checks at all four supported
-  desktop sizes; inspect the resulting diagram visually.
+  desktop sizes; inspect the resulting diagram visually. Vertical scrolling
+  is intentional: eleven chronological stages have only downward connectors.
 
 The generated receipts bind the JSON source and HTML output. Browser checks
-passed; labels, routes and the overview were inspected at 1440×900. These are
+passed with intentional vertical scrolling; labels and the full timeline were
+inspected at 1440×900. Stage order is not proportional to elapsed time. These are
 diagram checks, not a fresh release or deployment rehearsal.
 
 ## Next batch

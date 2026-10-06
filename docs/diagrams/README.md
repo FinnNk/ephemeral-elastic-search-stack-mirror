@@ -170,6 +170,11 @@ Prerequisites: Node.js, Git, a working Docker daemon with Linux containers and, 
 
    This validates the DSL, exports the model, applies [presentation layout](layout.mjs), renders nine C4 SVGs and PNG inspection copies, validates and delivers seventeen Archify HTML files, and captures browser evidence and static previews. It stops on a failing command. If Chrome is unavailable, omit `--browser` to render sources; browser receipts and preview PNGs then remain from their previous run and must be treated as stale until hashes match.
 
+   The relevance lifecycle uses a tall timeline. Its browser check reuses the
+   pinned Archify Chrome driver and permits vertical scrolling while checking
+   readability, horizontal containment and viewer controls. Its PNG contains
+   the full page. Stage spacing indicates order, not duration.
+
    For a focused rebuild, use `--c4` or `--archify`, optionally with `--browser`. The script checks the Archify commit before use. Docker pulls the pinned Structurizr image when missing. A Docker connection failure means the daemon must be started before retrying.
 
 3. Inspect the results before committing. C4 PNGs are in the ignored `qa/c4/` directory; Archify screenshot/contact-sheet sidecars are beside the interactive files and ignored. Check long labels, boundaries, arrow routing and both themes. Record perceptual review separately from automated checks.

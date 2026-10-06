@@ -47,10 +47,15 @@ if (all || args.has('--archify')) {
     const receipt = run(process.execPath, [cli, 'deliver', type, input, output, '--quality', 'showcase', '--json'], true);
     fs.writeFileSync(path.join(dir, 'receipts', `${name}.delivery.json`), receipt, 'utf8');
     if (args.has('--browser')) {
-      run(process.execPath, [cli, 'visual-check', output, '--json'], true);
-      const base = output.slice(0, -5);
-      fs.copyFileSync(`${base}.visual-check.json`, path.join(dir, 'receipts', `${name}.browser.json`));
-      fs.copyFileSync(`${base}.visual-check.1440x900.light.png`, path.join(dir, 'rendered', `${name}.png`));
+      if (name === 'relevance-sdlc') {
+        run(process.execPath, [path.join(dir, 'check-timeline.mjs'), checkout, output,
+          path.join(dir, 'rendered', `${name}.png`), path.join(dir, 'receipts', `${name}.browser.json`)]);
+      } else {
+        run(process.execPath, [cli, 'visual-check', output, '--json'], true);
+        const base = output.slice(0, -5);
+        fs.copyFileSync(`${base}.visual-check.json`, path.join(dir, 'receipts', `${name}.browser.json`));
+        fs.copyFileSync(`${base}.visual-check.1440x900.light.png`, path.join(dir, 'rendered', `${name}.png`));
+      }
     }
     console.log(`Delivered ${name}${args.has('--browser') ? ' with browser evidence' : ''}.`);
   }

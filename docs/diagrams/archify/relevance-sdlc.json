@@ -2,7 +2,7 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "Relevance change: code to production in the lab",
+    "title": "Relevance change lifecycle \u00b7 time runs downwards",
     "locale": "en",
     "quality_profile": "showcase",
     "legend": {
@@ -27,291 +27,279 @@
   },
   "lanes": [
     {
-      "id": "source",
-      "label": "Source and CI"
+      "id": "change",
+      "label": "Development"
     },
     {
-      "id": "evaluation",
+      "id": "build",
+      "label": "Development"
+    },
+    {
+      "id": "capture",
       "label": "Offline evaluation"
     },
     {
-      "id": "judgements",
-      "label": "Judgement data"
+      "id": "labels",
+      "label": "Offline evaluation"
     },
     {
-      "id": "delivery",
-      "label": "Reviewed delivery"
+      "id": "score",
+      "label": "Offline evaluation"
+    },
+    {
+      "id": "merge",
+      "label": "Source acceptance"
+    },
+    {
+      "id": "mainbuild",
+      "label": "Release delivery"
+    },
+    {
+      "id": "integration",
+      "label": "Release delivery"
+    },
+    {
+      "id": "staging",
+      "label": "Release delivery"
+    },
+    {
+      "id": "load",
+      "label": "Release delivery"
+    },
+    {
+      "id": "production",
+      "label": "Release delivery"
     }
   ],
   "nodes": [
     {
       "id": "change",
-      "lane": "source",
+      "lane": "change",
       "col": 0,
       "type": "frontend",
-      "label": "Change API",
-      "sublabel": "Local tests",
-      "width": 120
-    },
-    {
-      "id": "pr",
-      "lane": "source",
-      "col": 1,
-      "type": "frontend",
-      "label": "Source PR",
-      "sublabel": "Variants + intent",
-      "width": 120
+      "label": "Change API and open PR",
+      "sublabel": "Local tests \u00b7 variants \u00b7 intent",
+      "width": 330
     },
     {
       "id": "build",
-      "lane": "source",
-      "col": 2,
+      "lane": "build",
+      "col": 0,
       "type": "backend",
-      "label": "PR build",
-      "sublabel": "Exact SHA",
-      "width": 120
+      "label": "Build the exact PR commit",
+      "sublabel": "Publish pinned image and receipt to Nexus",
+      "width": 330
     },
     {
-      "id": "review",
-      "lane": "source",
-      "col": 3,
-      "type": "frontend",
-      "label": "Read reports",
-      "sublabel": "PR links",
-      "width": 120
-    },
-    {
-      "id": "merge",
-      "lane": "source",
-      "col": 4,
-      "type": "security",
-      "label": "Source merge",
-      "sublabel": "Exact-head gate",
-      "width": 120
-    },
-    {
-      "id": "mainbuild",
-      "lane": "source",
-      "col": 5,
-      "type": "backend",
-      "label": "Merged build",
-      "sublabel": "Nexus receipt",
-      "width": 120
-    },
-    {
-      "id": "apis",
-      "lane": "evaluation",
-      "col": 2,
+      "id": "capture",
+      "lane": "capture",
+      "col": 0,
       "type": "database",
-      "label": "Pinned APIs",
-      "sublabel": "Baseline + variants",
-      "width": 120
+      "label": "Capture baseline and variant results",
+      "sublabel": "Same frozen catalogue and query suites",
+      "width": 330
     },
     {
       "id": "labels",
-      "lane": "judgements",
-      "col": 3,
+      "lane": "labels",
+      "col": 0,
       "type": "backend",
-      "label": "Fill label gaps",
-      "sublabel": "Labels / abstain",
-      "width": 120
+      "label": "Resolve missing judgements",
+      "sublabel": "Pool results \u00b7 reuse predictions \u00b7 freeze labels",
+      "width": 330
     },
     {
       "id": "score",
-      "lane": "evaluation",
-      "col": 3,
+      "lane": "score",
+      "col": 0,
       "type": "backend",
-      "label": "Score + compare",
-      "sublabel": "Frozen labels",
-      "width": 120
+      "label": "Score and review the comparison",
+      "sublabel": "nDCG \u00b7 RBO \u00b7 Jaccard \u00b7 coverage \u00b7 timing",
+      "width": 330
     },
     {
-      "id": "gate",
-      "lane": "evaluation",
-      "col": 4,
+      "id": "merge",
+      "lane": "merge",
+      "col": 0,
       "type": "security",
-      "label": "Merge gate",
-      "sublabel": "Selected variants",
-      "width": 120
+      "label": "Pass the source gate and merge",
+      "sublabel": "Current-head evidence or eligible Git decision",
+      "width": 330
     },
     {
-      "id": "exception",
-      "lane": "evaluation",
-      "col": 5,
-      "type": "frontend",
-      "label": "Accept loss",
-      "sublabel": "Git decision",
-      "width": 120
+      "id": "mainbuild",
+      "lane": "mainbuild",
+      "col": 0,
+      "type": "backend",
+      "label": "Build the merged source commit",
+      "sublabel": "Use this release for every deployment target",
+      "width": 330
     },
     {
       "id": "integration",
-      "lane": "delivery",
-      "col": 2,
+      "lane": "integration",
+      "col": 0,
       "type": "cloud",
-      "label": "Integration",
-      "sublabel": "Review + verify",
-      "width": 120
+      "label": "Promote to integration",
+      "sublabel": "Evaluate \u00b7 review PR \u00b7 deploy \u00b7 verify",
+      "width": 330
     },
     {
       "id": "staging",
-      "lane": "delivery",
-      "col": 3,
+      "lane": "staging",
+      "col": 0,
       "type": "cloud",
-      "label": "Staging",
-      "sublabel": "Same release",
-      "width": 120
+      "label": "Promote to staging",
+      "sublabel": "Same release \u00b7 evaluate \u00b7 review \u00b7 verify",
+      "width": 330
     },
     {
       "id": "load",
-      "lane": "delivery",
-      "col": 4,
+      "lane": "load",
+      "col": 0,
       "type": "security",
-      "label": "Load gate",
-      "sublabel": "Normal + peak",
-      "width": 120
+      "label": "Pass the production load gate",
+      "sublabel": "Gatling normal and peak load on previews",
+      "width": 330
     },
     {
       "id": "production",
-      "lane": "delivery",
-      "col": 5,
+      "lane": "production",
+      "col": 0,
       "type": "cloud",
-      "label": "Production (lab)",
-      "sublabel": "Review + verify",
-      "width": 120
+      "label": "Promote to simulated production",
+      "sublabel": "Review PR \u00b7 Argo CD deploys \u00b7 API verification",
+      "width": 330
     }
   ],
   "edges": [
     {
       "from": "change",
-      "to": "pr",
-      "label": "Push",
-      "role": "main"
-    },
-    {
-      "from": "pr",
       "to": "build",
-      "label": "Exact head",
-      "role": "main"
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     },
     {
       "from": "build",
-      "to": "apis",
-      "label": "Deploy previews",
-      "role": "main"
+      "to": "capture",
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     },
     {
-      "from": "apis",
+      "from": "capture",
       "to": "labels",
-      "label": "Fresh API results",
-      "role": "main"
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     },
     {
       "from": "labels",
       "to": "score",
-      "label": "Labels / abstentions",
-      "role": "main"
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     },
     {
       "from": "score",
-      "to": "review",
-      "label": "Scores + changes",
-      "role": "branch"
-    },
-    {
-      "from": "score",
-      "to": "gate",
-      "label": "Retained evidence",
-      "role": "main"
-    },
-    {
-      "from": "gate",
       "to": "merge",
-      "label": "Pass",
-      "role": "main"
-    },
-    {
-      "from": "gate",
-      "to": "change",
-      "label": "Fix or revise",
-      "role": "return"
-    },
-    {
-      "from": "gate",
-      "to": "exception",
-      "label": "Eligible regression",
-      "role": "branch"
-    },
-    {
-      "from": "exception",
-      "to": "merge",
-      "label": "Recorded acceptance",
-      "role": "branch"
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     },
     {
       "from": "merge",
       "to": "mainbuild",
-      "label": "CI on main",
-      "role": "main"
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     },
     {
       "from": "mainbuild",
       "to": "integration",
-      "label": "Promote release",
-      "role": "branch"
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     },
     {
       "from": "integration",
       "to": "staging",
-      "label": "Verified",
-      "role": "main"
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     },
     {
       "from": "staging",
       "to": "load",
-      "label": "Candidate vs baseline",
-      "role": "main"
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     },
     {
       "from": "load",
       "to": "production",
-      "label": "Passed + approved",
-      "role": "main"
+      "label": "",
+      "role": "main",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     }
   ],
   "mainPath": [
     "change",
-    "pr",
     "build",
-    "apis",
+    "capture",
     "labels",
     "score",
-    "gate",
     "merge",
-    "mainbuild"
+    "mainbuild",
+    "integration",
+    "staging",
+    "load",
+    "production"
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "Reproducible comparisons",
+      "title": "One reproducible comparison",
       "items": [
-        "Use the same queries and catalogue with pinned baseline and candidate APIs. Compatible indexes may be shared.",
-        "Pool missing labels across variants; reuse predictions and abstentions. Freeze one label set for scoring."
-      ]
-    },
-    {
-      "dot": "emerald",
-      "title": "Evidence before merge",
-      "items": [
-        "Review nDCG, RBO, Jaccard, coverage and timing. Extra query sets have separate and combined reports.",
-        "Each selected variant must pass or have an eligible Git decision. Invalid evidence stays blocked."
+        "Baseline and candidate definitions are pinned; compatible indexes may be shared.",
+        "All variants use one frozen judgement set. Scores and judgement coverage remain separate."
       ]
     },
     {
       "dot": "amber",
-      "title": "One merged build, three targets",
+      "title": "If the source gate fails",
       "items": [
-        "Actions evaluates, creates a reviewed delivery-state PR and merges approved state. Argo CD deploys; the API is verified.",
-        "Production requires normal/peak Gatling load on previews. Rollback rechecks a retained release through the same reviewed process."
+        "Revise the change and push a new commit for fresh evidence.",
+        "An eligible bounded regression may use a reviewed Git decision. Invalid evidence stays blocked."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Reviewed deployment and recovery",
+      "items": [
+        "Use Actions for each target. A separate reviewer approves the exact delivery-state PR before merge and deployment verification.",
+        "Rollback re-evaluates a retained release through the same reviewed process."
       ]
     }
   ]
