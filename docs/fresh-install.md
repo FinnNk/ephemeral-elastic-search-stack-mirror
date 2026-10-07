@@ -88,6 +88,20 @@ stages are retained in `.lab/fresh-install.json`; the current cluster identity
 and node readiness are checked again. The failed stage reconciles its partial
 resources. New credentials are generated once and retained locally.
 
+If an operator port (`14577` or `19200`) is reported as occupied on the Mac,
+inspect the listener before stopping anything:
+
+```sh
+lsof -nP -iTCP:14577 -sTCP:LISTEN
+```
+
+Use `19200` instead when that is the named port. If the output identifies an old
+`kubectl port-forward` for this installation, stop that specific forward and
+resume. The installer does not kill other processes. Its Unix port check permits
+recently closed sockets to be reused between stages; an active listener still
+blocks installation. If no listener is listed, rerun the same command with the
+current installer. The completed catalogue stage is retained.
+
 ### Catalogue source downloads
 
 The catalogue stage downloads retained datasets from the public

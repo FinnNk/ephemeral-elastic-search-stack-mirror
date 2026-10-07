@@ -19,6 +19,27 @@ import cleanup_fresh_install as cleanup
 
 
 class FreshApplications(unittest.TestCase):
+    def test_unix_forward_probe_enables_reuse_before_binding(self):
+        with patch.object(app.sys, 'platform', 'darwin'), patch.object(app.socket, 'socket') as factory:
+            probe = factory.return_value.__enter__.return_value
+            app.require_free_port(14577)
+            self.assertEqual([call[0] for call in probe.method_calls], ['setsockopt', 'bind'])
+            probe.setsockopt.assert_called_once_with(app.socket.SOL_SOCKET, app.socket.SO_REUSEADDR, 1)
+
+    def test_active_listener_still_blocks_forward_start(self):
+        with patch.object(app.sys, 'platform', 'darwin'), patch.object(app.socket, 'socket') as factory:
+            probe = factory.return_value.__enter__.return_value
+            probe.bind.side_effect = OSError('address in use')
+            with self.assertRaisesRegex(RuntimeError, '14577 is occupied'):
+                app.require_free_port(14577)
+
+    def test_windows_forward_probe_keeps_exclusive_binding_behaviour(self):
+        with patch.object(app.sys, 'platform', 'win32'), patch.object(app.socket, 'socket') as factory:
+            probe = factory.return_value.__enter__.return_value
+            app.require_free_port(14577)
+            probe.setsockopt.assert_not_called()
+            probe.bind.assert_called_once_with(('127.0.0.1', 14577))
+
     def test_frozen_snapshot_matches_selected_inputs(self):
         payloads = app.snapshot_payloads(app.ROOT / 'data/fresh-judgements')
         self.assertEqual(len(payloads), 4)

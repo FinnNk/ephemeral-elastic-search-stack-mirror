@@ -51,11 +51,7 @@ def forwards():
     logs = []
     try:
         for name, port, destination in (('floci', 14577, 4577), ('shared-es-http', 19200, 9200)):
-            with socket.socket() as probe:
-                try:
-                    probe.bind(('127.0.0.1', port))
-                except OSError:
-                    raise RuntimeError(f'Operator port {port} is occupied; stop its old forward before resuming.') from None
+            require_free_port(port)
             log = (STATE / ('fresh-' + name + '-forward.log')).open('a', encoding='utf-8')
             logs.append(log)
             process = subprocess.Popen(KUBE + ['-n', 'platform', 'port-forward', 'svc/' + name,
@@ -83,6 +79,20 @@ def forwards():
                 process.wait()
         for log in logs:
             log.close()
+
+
+def require_free_port(port):
+    """Reject active listeners while allowing a closed Unix forward's TIME_WAIT sockets."""
+    with socket.socket() as probe:
+        # kubectl's Unix listener permits address reuse. Match that behaviour so
+        # the next stage does not mistake a recently closed socket for a listener.
+        # Windows reuse semantics differ and can permit overlapping listeners.
+        if sys.platform != 'win32':
+            probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            probe.bind(('127.0.0.1', port))
+        except OSError:
+            raise RuntimeError(f'Operator port {port} is occupied; inspect its listener before resuming.') from None
 
 
 def store_ids():

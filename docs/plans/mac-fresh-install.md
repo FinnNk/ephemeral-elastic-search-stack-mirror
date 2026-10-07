@@ -43,6 +43,13 @@ ownership and data identity behaviour, not a completed native Mac deployment.
 
 ## Next detailed plan: native acceptance
 
+The Mac has completed catalogue import and materialised the 1,215,854-product
+full index and 10,000-product demo index. The images stage then reported operator
+port 14577 occupied immediately after the catalogue stage closed its forward.
+The next repair aligns Unix socket-probe reuse with kubectl's listener behaviour
+and preserves rejection of active listeners. The exact Mac listener state was
+not captured; a surviving forward remains an alternative explanation.
+
 The ESCI-S upstream bucket returned HTTP 403 on both the Mac and Windows.
 The retained-source batch packages the three original files in `FinnNk/esci-s`
 release assets and prefetches them before the unchanged importer runs. Original
