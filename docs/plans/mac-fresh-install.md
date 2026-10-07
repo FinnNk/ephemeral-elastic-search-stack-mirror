@@ -26,6 +26,11 @@ search lab, native Mac execution, whole-lab restoration or real cleanup testing.
 
 ## Next detailed plan: complete the application setup
 
+The registry correction now selects pinned Docker Hub sources for both ECK and
+Elasticsearch and reconciles these on resume, including completed stages. Its
+target acceptance is a resumed Mac install after the observed HTTP 403 failure;
+the original Windows workloads remain untouched.
+
 1. Review and merge the foundation batch, then run it on the disposable Mac.
    Record image-pull, node restart, HTTPS and native resolver results. Retain the
    original Windows lab for recovery. Test cleanup on that disposable target.

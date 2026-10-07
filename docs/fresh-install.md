@@ -72,6 +72,11 @@ Gitea defaults to its official Docker Hub repository, using the same immutable
 28.0.0 image digest as `docker.gitea.com`. If that source is required locally,
 select `--gitea-registry docker.gitea.com/gitea` on the first run.
 
+ECK 3.5.0 and Elasticsearch 9.5.4 also use Elastic's official Docker Hub images,
+with pinned multi-architecture digests. This avoids `docker.elastic.co`, which
+returned HTTP 403 on the corporate network. Downloading manifests successfully
+does not establish access to the container registry they name.
+
 Expect named stages, streamed Helm/kubectl output, a progress message every
 20 seconds during quiet commands, and elapsed timings after each stage. Initial
 image downloads can take several minutes. Gitea has a ten-minute readiness
@@ -81,6 +86,12 @@ Rerun **the same command and options** after fixing the failure. Completed
 stages are retained in `.lab/fresh-install.json`; the current cluster identity
 and node readiness are checked again. The failed stage reconciles its partial
 resources. New credentials are generated once and retained locally.
+
+When resuming an earlier foundation installation, the installer also reconciles
+the ECK and Elasticsearch image sources in completed stages. It preserves their
+release versions and Elasticsearch storage settings; the image-source change
+can restart those workloads. There is no need to reset a cluster just to correct
+a blocked registry.
 
 To stop at a boundary, add `--through cluster`, `--through platform` or
 `--through storage`. The default is `--through access`. Later rerun with

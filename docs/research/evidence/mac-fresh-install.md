@@ -25,6 +25,23 @@ commands and temporary filesystem fixtures.
   `sha256:c168e7ccb767164793a67e1e874639488260795567337452b06292d1515bea12`.
   Its manifest includes `linux/amd64` and `linux/arm64` images.
 
+## Registry correction verification
+
+The Mac retry reported HTTP 403 while pulling Elastic images. Both official
+Docker Hub releases were inspected without deploying: ECK 3.5.0 has index digest
+`sha256:b6f261372d9d9af7b00aab03efea25263314d16063c4d440ac322e52c2fdf314`;
+Elasticsearch 9.5.4 has index digest
+`sha256:82ac14f43fe701992e601f4cc81e1c0d7dbc5a2576d8cd736006452925df4026`.
+Both contain amd64 and arm64 images. The updated installer selects these
+sources and reconciles them when resuming completed stages. Elasticsearch
+readiness waits for the current observed generation, Ready phase and green
+health so a previous healthy status alone cannot complete the check.
+
+All 21 installer fixture checks passed, including the new source overrides,
+preserved Elasticsearch version/storage, completed-stage reconciliation and
+image-only patch. These do not establish registry access from the corporate Mac;
+that remains the target retry. The original lab was not changed.
+
 ## Limits and next acceptance
 
 These checks do not establish native Mac installation, corporate network access

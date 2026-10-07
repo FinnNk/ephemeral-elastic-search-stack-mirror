@@ -22,6 +22,8 @@ CLUSTER = 'relevance-lab'
 NODES = ('k3d-relevance-lab-server-0', 'k3d-relevance-lab-agent-0')
 PHASES = ('cluster', 'platform', 'storage', 'access')
 GITEA_DIGEST = 'sha256:c168e7ccb767164793a67e1e874639488260795567337452b06292d1515bea12'
+ECK_IMAGE = 'docker.io/elastic/eck-operator:3.5.0@sha256:b6f261372d9d9af7b00aab03efea25263314d16063c4d440ac322e52c2fdf314'
+ELASTICSEARCH_IMAGE = 'docker.io/elastic/elasticsearch:9.5.4@sha256:82ac14f43fe701992e601f4cc81e1c0d7dbc5a2576d8cd736006452925df4026'
 DOWNLOADS = {
     'argocd': 'https://api.github.com/repos/argoproj/argo-cd/contents/manifests/install.yaml?ref=v3.5.3',
     'eck-crds': 'https://download.elastic.co/downloads/eck/3.5.0/crds.yaml',
@@ -123,6 +125,32 @@ def node_volumes():
         if mounts:
             volumes.update(mount['Name'] for mount in json.loads(mounts) if mount['Type'] == 'volume')
     return sorted(volumes)
+
+
+def operator_manifest(content):
+    """Use the official Docker Hub image without changing the upstream operator configuration."""
+    documents = list(yaml.safe_load_all(content))
+    changed = 0
+    for document in documents:
+        if document.get('kind') == 'StatefulSet' and document['metadata']['name'] == 'elastic-operator':
+            for container in document['spec']['template']['spec']['containers']:
+                if container['name'] == 'manager':
+                    if container['image'] != 'docker.elastic.co/eck/eck-operator:3.5.0':
+                        raise ValueError('Unexpected upstream ECK operator image; review the pinned manifest.')
+                    container['image'] = ECK_IMAGE
+                    changed += 1
+    if changed != 1:
+        raise ValueError('Expected exactly one ECK operator manager in the downloaded manifest.')
+    return yaml.safe_dump_all(documents)
+
+
+def elasticsearch_manifest(content):
+    """Select the pinned official Elasticsearch image while preserving its data configuration."""
+    document = yaml.safe_load(content)
+    if document.get('kind') != 'Elasticsearch' or document['spec']['version'] != '9.5.4':
+        raise ValueError('Expected the retained Elasticsearch 9.5.4 foundation resource.')
+    document['spec']['image'] = ELASTICSEARCH_IMAGE
+    return yaml.safe_dump(document)
 
 
 class Installer:
@@ -263,8 +291,12 @@ class Installer:
                                 ('eck-operator', 'elastic-system')):
             self.namespace(namespace)
             print('Installing ' + name, flush=True)
-            self.kubectl('apply', '--server-side', '-n', namespace, '-f',
-                         str(self.state / 'installer-downloads' / (name + '.yaml')), live=True)
+            source = self.state / 'installer-downloads' / (name + '.yaml')
+            if name == 'eck-operator':
+                source = self.state / 'eck-operator-configured.yaml'
+                source.write_text(operator_manifest((self.state / 'installer-downloads/eck-operator.yaml')
+                                                    .read_text(encoding='utf-8')), encoding='utf-8')
+            self.kubectl('apply', '--server-side', '-n', namespace, '-f', str(source), live=True)
         self.kubectl('rollout', 'status', 'statefulset/elastic-operator', '-n', 'elastic-system',
                      '--timeout=180s', live=True)
         for name in ('argocd-server', 'argocd-repo-server', 'argocd-redis'):
@@ -276,11 +308,43 @@ class Installer:
     def storage(self):
         """Create empty Elasticsearch and Floci stores; do not import catalogue data."""
         for name in ('elasticsearch', 'floci'):
-            self.kubectl('apply', '-f', str(ROOT / 'research/platform-spike' / (name + '.yaml')), live=True)
+            source = ROOT / 'research/platform-spike' / (name + '.yaml')
+            if name == 'elasticsearch':
+                configured = self.state / 'elasticsearch-configured.yaml'
+                configured.write_text(elasticsearch_manifest(source.read_text(encoding='utf-8')),
+                                      encoding='utf-8')
+                source = configured
+            self.kubectl('apply', '-f', str(source), live=True)
         self.kubectl('rollout', 'status', 'deployment/floci', '-n', 'platform',
                      '--timeout=300s', live=True)
-        self.kubectl('wait', '--for=jsonpath={.status.health}=green', 'elasticsearch/shared',
-                     '-n', 'platform', '--timeout=600s', live=True)
+        self.wait_for_elasticsearch()
+
+    def wait_for_elasticsearch(self):
+        """Wait for the operator to process the current specification and finish its rollout."""
+        current = json.loads(self.kubectl('get', 'elasticsearch/shared', '-n', 'platform', '-o', 'json'))
+        generation = current['metadata']['generation']
+        for condition in (f'jsonpath={{.status.observedGeneration}}={generation}',
+                          'jsonpath={.status.phase}=Ready', 'jsonpath={.status.health}=green'):
+            self.kubectl('wait', '--for=' + condition, 'elasticsearch/shared',
+                         '-n', 'platform', '--timeout=600s', live=True)
+
+    def reconcile_operator_image(self):
+        """Repair an earlier completed platform stage without reinstalling its services."""
+        print('Checking the retained ECK image source.', flush=True)
+        self.kubectl('set', 'image', 'statefulset/elastic-operator', '-n', 'elastic-system',
+                     'manager=' + ECK_IMAGE, live=True)
+        self.kubectl('rollout', 'status', 'statefulset/elastic-operator', '-n', 'elastic-system',
+                     '--timeout=300s', live=True)
+
+    def reconcile_elasticsearch_image(self):
+        """Repair a retained Elasticsearch source without changing version, indices or PVCs."""
+        current = json.loads(self.kubectl('get', 'elasticsearch/shared', '-n', 'platform', '-o', 'json'))
+        if current['spec']['version'] != '9.5.4':
+            raise ValueError('Retained Elasticsearch version changed; image reconciliation refused.')
+        if current['spec'].get('image') != ELASTICSEARCH_IMAGE:
+            self.kubectl('patch', 'elasticsearch/shared', '-n', 'platform', '--type=merge',
+                         '-p', json.dumps({'spec': {'image': ELASTICSEARCH_IMAGE}}), live=True)
+        self.wait_for_elasticsearch()
 
     def access(self):
         """Install HTTPS, wildcard DNS and Headlamp after their backend prerequisites."""
@@ -326,6 +390,14 @@ class Installer:
             # Cluster identity/readiness is always checked. Other completed phases are retained.
             if phase in self.record['completed'] and phase != 'cluster':
                 print('Retained completed stage: ' + phase, flush=True)
+                try:
+                    if phase == 'platform':
+                        self.reconcile_operator_image()
+                    elif phase == 'storage':
+                        self.reconcile_elasticsearch_image()
+                except Exception:
+                    self.diagnostics()
+                    raise
                 continue
             print('\nStarting stage: ' + phase, flush=True)
             start = time.monotonic()

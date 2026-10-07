@@ -73,10 +73,12 @@ class FreshInstallTests(unittest.TestCase):
         installer.record['completed'] = ['cluster', 'platform']
         with patch.object(installer, 'preflight'), patch.object(installer, 'cluster') as cluster, \
              patch.object(installer, 'platform') as platform, patch.object(installer, 'storage'), \
+             patch.object(installer, 'reconcile_operator_image') as reconcile, \
              patch.object(installer, 'access'), contextlib.redirect_stdout(io.StringIO()):
             installer.install()
         cluster.assert_called_once()
         platform.assert_not_called()
+        reconcile.assert_called_once()
         self.assertEqual(installer.record['completed'], list(setup.PHASES))
 
     def test_second_installer_does_not_remove_first_lock(self):
@@ -191,6 +193,58 @@ class FreshInstallTests(unittest.TestCase):
         with self.assertRaises(ssl.SSLError):
             setup.ca_bundle(self.state / 'bundle.pem', certificate)
         self.assertFalse((self.state / 'bundle.pem').exists())
+
+    def test_operator_override_preserves_manager_settings(self):
+        import yaml
+        manifest = {'apiVersion': 'apps/v1', 'kind': 'StatefulSet',
+                    'metadata': {'name': 'elastic-operator'}, 'spec': {'template': {'spec': {
+                        'containers': [{'name': 'manager', 'image': 'docker.elastic.co/eck/eck-operator:3.5.0',
+                                        'args': ['manager', '--config=/conf/eck.yaml']}]
+                    }}}}
+        result = yaml.safe_load(setup.operator_manifest(yaml.safe_dump(manifest)))
+        manager = result['spec']['template']['spec']['containers'][0]
+        self.assertEqual(manager['image'], setup.ECK_IMAGE)
+        self.assertEqual(manager['args'], ['manager', '--config=/conf/eck.yaml'])
+
+    def test_operator_override_refuses_unexpected_release(self):
+        import yaml
+        manifest = {'kind': 'StatefulSet', 'metadata': {'name': 'elastic-operator'},
+                    'spec': {'template': {'spec': {'containers': [
+                        {'name': 'manager', 'image': 'docker.elastic.co/eck/eck-operator:4.0.0'}]}}}}
+        with self.assertRaisesRegex(ValueError, 'Unexpected upstream'):
+            setup.operator_manifest(yaml.safe_dump(manifest))
+
+    def test_elasticsearch_override_preserves_storage_and_version(self):
+        import yaml
+        original = yaml.safe_load((Path(__file__).resolve().parents[1] /
+                                  'research/platform-spike/elasticsearch.yaml').read_text())
+        result = yaml.safe_load(setup.elasticsearch_manifest(yaml.safe_dump(original)))
+        self.assertEqual(result['spec'].pop('image'), setup.ELASTICSEARCH_IMAGE)
+        self.assertEqual(result, original)
+
+    def test_completed_storage_reconciles_image_without_reapplying_storage(self):
+        installer = setup.Installer(self.args)
+        installer.record = self.record()
+        installer.record['completed'] = ['cluster', 'platform', 'storage']
+        with patch.object(installer, 'preflight'), patch.object(installer, 'cluster'), \
+             patch.object(installer, 'platform'), patch.object(installer, 'storage') as storage, \
+             patch.object(installer, 'reconcile_operator_image'), \
+             patch.object(installer, 'reconcile_elasticsearch_image') as reconcile, \
+             patch.object(installer, 'access'), contextlib.redirect_stdout(io.StringIO()):
+            installer.install()
+        storage.assert_not_called()
+        reconcile.assert_called_once()
+
+    def test_retained_elasticsearch_image_patch_changes_only_image(self):
+        installer = setup.Installer(self.args)
+        with patch.object(installer, 'kubectl', return_value=json.dumps(
+                {'spec': {'version': '9.5.4'}, 'metadata': {'generation': 2}})) as command:
+            installer.reconcile_elasticsearch_image()
+        patches = [call.args for call in command.call_args_list if call.args[0] == 'patch']
+        self.assertEqual(len(patches), 1)
+        self.assertEqual(json.loads(patches[0][-1]), {'spec': {'image': setup.ELASTICSEARCH_IMAGE}})
+        waits = [call.args for call in command.call_args_list if call.args[0] == 'wait']
+        self.assertTrue(any('observedGeneration' in call[1] and call[1].endswith('=2') for call in waits))
 
 
 if __name__ == '__main__':
