@@ -276,7 +276,7 @@ def catalogue():
     for name, payload in snapshot_payloads(ROOT / 'data/fresh-judgements'):
         upload(account, settings()[1], name, payload, hashlib.sha256(payload).hexdigest(), len(payload))
     for release in ('esci-gb-v1', 'esci-gb-demo-v1'):
-        print('Importing ' + release + '; full source download is approximately 4.8 GB.', flush=True)
+        print('Importing ' + release + ' from the retained ESCI source release.', flush=True)
         run_script('lab/import_catalogue.py', '--download', '--release', release)
     run_script('lab/publish_default_inputs.py')
     for release in ('esci-gb-v1', 'esci-gb-demo-v1'):

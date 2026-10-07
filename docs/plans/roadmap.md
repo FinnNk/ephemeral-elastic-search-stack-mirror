@@ -9,8 +9,10 @@ step” is not an instruction to repeat completed work.
 The [fresh Mac installation](mac-fresh-install.md) batch automates the empty
 platform foundation and adds scoped cleanup after the manual Mac walkthrough
 exposed missing bootstrap dependencies and corporate certificate/registry
-constraints. Full catalogue and delivery setup remains the next detailed batch;
-native Mac execution and cleanup acceptance remain outstanding.
+constraints. Full CPU catalogue and delivery setup is implemented. The next
+batch replaces unavailable upstream source downloads with verified retained
+release assets in `FinnNk/esci-s`; native Mac execution and cleanup acceptance
+remain outstanding.
 
 The [lab experience and Mac transfer](lab-experience-and-mac.md) batches are
 merged: shared design system, promotion controls in the release tree,

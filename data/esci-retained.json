@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "repository": "FinnNk/esci-s",
+  "release": "lab-sources-v1",
+  "files": [
+    {
+      "file": "products.parquet",
+      "url": "https://media.githubusercontent.com/media/amazon-science/esci-data/7916cdf6ab75a462e77f20ab40428a10923998d5/shopping_queries_dataset/shopping_queries_dataset_products.parquet",
+      "sha256": "25124442d064d64b26f74082d6fa09438d679efc0c183cf28d19064a2b65a265",
+      "bytes": 1108857465,
+      "encoding": "zstd",
+      "assets": [
+        {
+          "name": "products.parquet.zst",
+          "bytes": 919638615,
+          "sha256": "19f29fe28c969c1a81d61d8d1d6fb036e01b77039beb1d2e3f833871be7f839c"
+        }
+      ]
+    },
+    {
+      "file": "examples.parquet",
+      "url": "https://media.githubusercontent.com/media/amazon-science/esci-data/7916cdf6ab75a462e77f20ab40428a10923998d5/shopping_queries_dataset/shopping_queries_dataset_examples.parquet",
+      "sha256": "4a735b693b4a424a6fc67f5be6e4c811495c488bbf66d02a602d308b2744263a",
+      "bytes": 51286808,
+      "encoding": "zstd",
+      "assets": [
+        {
+          "name": "examples.parquet.zst",
+          "bytes": 20931574,
+          "sha256": "2ee2465087043d42b72e9f58559c8ebad73ad2ae94e20cde8e3f8be5ab812472"
+        }
+      ]
+    },
+    {
+      "file": "esci-s.json.zst",
+      "url": "https://esci-s.s3.amazonaws.com/esci.json.zst",
+      "sha256": "14bca728ebd02862bf7b47a8ae8e54b3febcd4817a1c9f4b387e11845edb62bb",
+      "bytes": 3620467456,
+      "encoding": "identity",
+      "assets": [
+        {
+          "name": "esci-s.json.zst.part01",
+          "bytes": 1073741824,
+          "sha256": "9b50a8f850d1da5514c5cd0a4a7442c5074404c7d49c50086cae145ddab0c78c"
+        },
+        {
+          "name": "esci-s.json.zst.part02",
+          "bytes": 1073741824,
+          "sha256": "11a90dbcd5f80b484e46880a7de70d5549ba80ff2bc15d5d1779b69995308219"
+        },
+        {
+          "name": "esci-s.json.zst.part03",
+          "bytes": 1073741824,
+          "sha256": "95d81eb3b6e40dd032611da6b8d9ace41d57810b535d339ca10d925d8381086b"
+        },
+        {
+          "name": "esci-s.json.zst.part04",
+          "bytes": 399241984,
+          "sha256": "dfafa2d658e4ec9b7300755c486c7dd0310ed5710f1c5a6913935a2319aaa796"
+        }
+      ]
+    }
+  ]
+}

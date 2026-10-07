@@ -88,6 +88,27 @@ stages are retained in `.lab/fresh-install.json`; the current cluster identity
 and node readiness are checked again. The failed stage reconciles its partial
 resources. New credentials are generated once and retained locally.
 
+### Catalogue source downloads
+
+The catalogue stage downloads retained datasets from the public
+[FinnNk/esci-s release](https://github.com/FinnNk/esci-s/releases/tag/lab-sources-v1).
+GitHub authentication is not required. Products and query/label Parquet files
+have additional Zstandard compression; ESCI-S metadata is split into four chunks
+and keeps its original compression. The total download is approximately 4.56 GB.
+
+The installer checks each asset, reconstructs the original source files and
+checks their original hashes before import. The frozen source identity, catalogue
+and judgement manifests do not change. Verified originals in `.lab/esci-upstream`
+are reused; completed chunks survive a failed download. A partial chunk is
+downloaded again. Downloads show progress approximately every ten seconds.
+
+For offline installation, copy all three original files (`products.parquet`,
+`examples.parquet`, `esci-s.json.zst`) into `.lab/esci-upstream` and rerun the same
+installation command. The originals occupy approximately 4.78 GB; downloaded
+asset copies require up to another 4.56 GB. Do not reset the installation for an
+upstream or GitHub access failure. Access to GitHub release downloads is still
+required when originals have not been supplied locally.
+
 When resuming an earlier foundation installation, the installer also reconciles
 the ECK and Elasticsearch image sources in completed stages. It preserves their
 release versions and Elasticsearch storage settings; the image-source change

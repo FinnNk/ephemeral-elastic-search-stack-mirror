@@ -43,6 +43,12 @@ ownership and data identity behaviour, not a completed native Mac deployment.
 
 ## Next detailed plan: native acceptance
 
+The ESCI-S upstream bucket returned HTTP 403 on both the Mac and Windows.
+The retained-source batch packages the three original files in `FinnNk/esci-s`
+release assets and prefetches them before the unchanged importer runs. Original
+source hashes and frozen catalogue identity are preserved. Native acceptance
+must verify access to the public GitHub release assets on the corporate network.
+
 1. Pull the mirror, install `lab/fresh-requirements.txt` with the existing host CA
    bundle and resume with the original corporate PEM and setup options.
 2. Record the first failing stage, if any; inspect its saved logs and Actions

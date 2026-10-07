@@ -13,6 +13,9 @@ if __name__ == '__main__':
     parser.add_argument('--release',choices=RELEASES,default=DEFAULT_RELEASE)
     parser.add_argument('--download',action='store_true')
     args=parser.parse_args()
+    if args.download:
+        from esci_sources import restore
+        restore(STATE/'esci-upstream')
     profile=PROFILES['releases'][args.release]
     print(json.dumps(build(STATE/'esci-upstream',STATE/'releases'/args.release,args.release,
                            profile['queries'],profile['products'],args.download),indent=2))
