@@ -22,6 +22,16 @@ the original lab available until the new installation passes its acceptance chec
    brew install python@3.12 git k3d kubectl helm
    ```
 
+   Check that Docker Desktop's CLI tools include Buildx:
+
+   ```sh
+   docker buildx version
+   ```
+
+   Expect a Buildx version. If it is unavailable, enable Docker Desktop's CLI
+   tools, or install `docker-buildx` with Homebrew and follow its plugin-directory
+   instructions. Confirm the command works before starting installation.
+
 2. Clone the accepted GitHub mirror and change to its repository root. Create
    a Python environment:
 
@@ -101,6 +111,13 @@ resume. The installer does not kill other processes. Its Unix port check permits
 recently closed sockets to be reused between stages; an active listener still
 blocks installation. If no listener is listed, rerun the same command with the
 current installer. The completed catalogue stage is retained.
+
+The image stage uses an isolated Docker login configuration. It retains CLI
+plugin search paths and the selected local Docker daemon, without copying your
+stored registry credentials or credential helpers. Buildx availability is
+checked before login or image builds. An explicit `DOCKER_HOST` is retained;
+a selected Docker Desktop context is resolved to its local socket. A selected
+remote context is refused instead of silently building against another engine.
 
 ### Catalogue source downloads
 

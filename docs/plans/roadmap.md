@@ -9,12 +9,12 @@ step” is not an instruction to repeat completed work.
 The [fresh Mac installation](mac-fresh-install.md) batch automates the empty
 platform foundation and adds scoped cleanup after the manual Mac walkthrough
 exposed missing bootstrap dependencies and corporate certificate/registry
-constraints. Full CPU catalogue and delivery setup is implemented. The next
-batch has prepared the installer to replace unavailable upstream source downloads
-with verified, published release assets in `FinnNk/esci-s`. Review and native Mac
-download acceptance succeeded through catalogue import. The next review batch
-repairs Unix port-forward hand-off before native image builds; cleanup acceptance
-remains outstanding.
+constraints. Full CPU catalogue and delivery setup is implemented. Retained
+source downloads and Unix port-forward hand-off repairs are merged; the Mac has
+completed catalogue import and reached native ARM64 image builds. The current
+review batch preserves Buildx plugin discovery and the selected local Docker
+daemon when image builds use an isolated login configuration. Native image-build
+and cleanup acceptance remain outstanding.
 
 The [lab experience and Mac transfer](lab-experience-and-mac.md) batches are
 merged: shared design system, promotion controls in the release tree,

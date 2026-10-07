@@ -19,6 +19,44 @@ import cleanup_fresh_install as cleanup
 
 
 class FreshApplications(unittest.TestCase):
+    def test_isolated_build_config_keeps_plugins_and_selected_local_daemon(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, target = root / 'desktop-config', root / 'isolated'
+            source.mkdir(); target.mkdir()
+            (source / 'config.json').write_text(json.dumps({'cliPluginsExtraDirs': [str(root / 'bundled-plugins')],
+                'currentContext': 'desktop-linux', 'auths': {'registry': {'auth': 'private'}},
+                'credsStore': 'desktop', 'proxies': {'default': {'httpProxy': 'private'}}}), encoding='utf-8')
+            with patch.dict(images.os.environ, {'DOCKER_CONFIG': str(source), 'DOCKER_CONTEXT': 'desktop-linux'}, clear=True), \
+                 patch.object(images, 'execute', return_value=json.dumps({'Host': 'unix:///desktop/docker.sock'})):
+                environment = images.build_environment(target)
+            config = json.loads((target / 'config.json').read_text(encoding='utf-8'))
+            self.assertEqual(set(config), {'cliPluginsExtraDirs'})
+            self.assertEqual(config['cliPluginsExtraDirs'], [str(root / 'bundled-plugins'), str(source / 'cli-plugins')])
+            self.assertEqual(environment['DOCKER_HOST'], 'unix:///desktop/docker.sock')
+            self.assertNotIn('DOCKER_CONTEXT', environment)
+            self.assertIn('private', (source / 'config.json').read_text(encoding='utf-8'))
+
+    def test_explicit_docker_host_and_user_plugin_directory_are_retained(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, target = root / 'desktop-config', root / 'isolated'
+            source.mkdir(); target.mkdir()
+            with patch.dict(images.os.environ, {'DOCKER_CONFIG': str(source), 'DOCKER_HOST': 'npipe:////./pipe/docker_engine'}, clear=True), \
+                 patch.object(images, 'execute') as command:
+                environment = images.build_environment(target)
+            command.assert_not_called()
+            self.assertEqual(environment['DOCKER_HOST'], 'npipe:////./pipe/docker_engine')
+            self.assertEqual(json.loads((target / 'config.json').read_text())['cliPluginsExtraDirs'], [str(source / 'cli-plugins')])
+
+    def test_selected_remote_context_is_not_silently_replaced_by_local_engine(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with patch.dict(images.os.environ, {'DOCKER_CONFIG': str(root)}, clear=True), \
+                 patch.object(images, 'execute', return_value=json.dumps({'Host': 'tcp://remote.example:2376'})):
+                with self.assertRaisesRegex(ValueError, 'local Docker Desktop context'):
+                    images.build_environment(root)
+
     def test_unix_forward_probe_enables_reuse_before_binding(self):
         with patch.object(app.sys, 'platform', 'darwin'), patch.object(app.socket, 'socket') as factory:
             probe = factory.return_value.__enter__.return_value

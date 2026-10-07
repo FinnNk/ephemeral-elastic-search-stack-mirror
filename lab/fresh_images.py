@@ -41,19 +41,50 @@ def gatling_dockerfile():
         "rm -rf /tmp/fresh-java-ca\n")
 
 
+def build_environment(config):
+    """Keep local Docker/plugin selection without copying stored registry credentials."""
+    source = Path(os.environ.get('DOCKER_CONFIG') or Path.home() / '.docker').expanduser().resolve()
+    original = json.loads((source / 'config.json').read_text(encoding='utf-8')) if (source / 'config.json').exists() else {}
+    directories = original.get('cliPluginsExtraDirs', [])
+    if not isinstance(directories, list) or any(not isinstance(value, str) for value in directories):
+        raise ValueError('Docker cliPluginsExtraDirs must be a list of paths.')
+    # Changing DOCKER_CONFIG hides its cli-plugins directory as well as the
+    # configured extra directories. Keep those executable locations explicitly.
+    directories = [str(Path(value).expanduser().resolve()) for value in directories]
+    directories.append(str(source / 'cli-plugins'))
+    private_json(config / 'config.json', {'cliPluginsExtraDirs': list(dict.fromkeys(directories))})
+    environment = {**os.environ, 'DOCKER_CONFIG': str(config.resolve())}
+    if not os.environ.get('DOCKER_HOST') or os.environ.get('DOCKER_CONTEXT'):
+        # The isolated config also lacks the user's context metadata. Resolve
+        # the selected local daemon before switching configs, without copying
+        # context certificates or silently using a different Docker engine.
+        endpoint = json.loads(execute(['docker', 'context', 'inspect', '--format', '{{json .Endpoints.docker}}']))
+        host = endpoint.get('Host', '')
+        if not host.startswith(('unix://', 'npipe://')):
+            raise ValueError('Fresh image builds require the local Docker Desktop context; select it before resuming.')
+        environment['DOCKER_HOST'] = host
+        environment.pop('DOCKER_CONTEXT', None)
+    return environment
+
+
 def main():
     credentials = json.loads((STATE / 'nexus.json').read_text(encoding='utf-8'))['publisher']
     config = STATE / 'fresh-docker-config'
     config.mkdir(mode=0o700, exist_ok=True)
     if os.name != 'nt':
         config.chmod(0o700)
-    environment = {**os.environ, 'DOCKER_CONFIG': str(config.resolve())}
     architecture = {'arm64': 'arm64', 'aarch64': 'arm64', 'x86_64': 'amd64', 'amd64': 'amd64'}.get(platform.machine().lower())
     if not architecture:
         raise ValueError('Unsupported host architecture: ' + platform.machine())
     receipts_path = STATE / 'fresh-images.json'
     receipts = json.loads(receipts_path.read_text(encoding='utf-8')) if receipts_path.exists() else {}
     try:
+        environment = build_environment(config)
+        try:
+            execute(['docker', 'buildx', 'version'], env=environment, live=True)
+        except RuntimeError as error:
+            raise RuntimeError('Docker Buildx is unavailable. Check `docker buildx version` in this shell; '
+                               'enable Docker Desktop CLI tools or install docker-buildx, then resume.') from error
         execute(['docker', 'login', '127.0.0.1:18185', '--username', credentials['username'],
                  '--password-stdin'], env=environment, body=credentials['password'] + '\n')
         with tempfile.TemporaryDirectory(prefix='fresh-image-', dir=STATE) as temporary:

@@ -50,6 +50,15 @@ The next repair aligns Unix socket-probe reuse with kubectl's listener behaviour
 and preserves rejection of active listeners. The exact Mac listener state was
 not captured; a surviving forward remains an alternative explanation.
 
+The port-forward repair was accepted and the Mac reached ARM64 image builds.
+Docker then reported `unknown flag: --platform` while Buildx was invoked with an
+isolated `DOCKER_CONFIG`. The next batch preserves user plugin search paths in
+that isolated configuration and resolves the selected local Docker context,
+without copying registry credentials or context certificates. A Buildx version
+check precedes login/build. 43 affected fixtures passed; a read-only Windows
+check found Buildx and reached the same Linux Docker daemon with a disposable
+isolated config. Mac execution remains the next acceptance check.
+
 The ESCI-S upstream bucket returned HTTP 403 on both the Mac and Windows.
 The retained-source batch packages the three original files in `FinnNk/esci-s`
 release assets and prefetches them before the unchanged importer runs. Original
