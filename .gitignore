@@ -5,6 +5,9 @@ docs/diagrams/interactive/*.visual-check.*
 
 # Local research tools, cluster credentials and runtime data
 .lab/
+.lab-archived-*/
+.lab-before-fresh-install-*/
+.venv/
 __pycache__/
 *.pyc
 lab/gatling/target/

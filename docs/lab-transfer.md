@@ -1,5 +1,9 @@
 # Transfer the existing lab to another host
 
+For a new installation with fresh credentials and certificates, use
+[fresh installation](fresh-install.md). This runbook preserves existing service
+identity; omitting its credentials and keys is not a supported restore method.
+
 Transfer the Git checkout, persistent service data and protected configuration
 as one consistent set. Keep the Windows lab available for recovery until the
 Mac has passed acceptance. Start with [Mac prerequisites](mac-setup.md).

@@ -6,11 +6,16 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [fresh Mac installation](mac-fresh-install.md) batch automates the empty
+platform foundation and adds scoped cleanup after the manual Mac walkthrough
+exposed missing bootstrap dependencies and corporate certificate/registry
+constraints. Full catalogue and delivery setup remains the next detailed batch;
+native Mac execution and cleanup acceptance remain outstanding.
+
 The [lab experience and Mac transfer](lab-experience-and-mac.md) batches are
-prepared for review: shared design system, promotion controls in the release
-tree, reconciled operator guides and Mac setup/transfer instructions. The
-installed release dashboard remains read-only until these accepted batches
-are activated. Native Mac execution and whole-lab restore remain outstanding.
+merged: shared design system, promotion controls in the release tree,
+reconciled operator guides and Mac setup/transfer instructions. Native Mac
+execution and whole-lab restore remain outstanding acceptance work.
 
 ## Completed delivery capabilities
 

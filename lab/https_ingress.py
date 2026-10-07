@@ -119,7 +119,8 @@ def route(cert_path, key_path, browser_names=None):
         namespace, service, port = ENDPOINTS[name]
         if name == 'control' and k('get', 'service/lab-control-oidc', '-n', namespace, check=False).returncode == 0:
             service, port = 'lab-control-oidc', 4180
-        if name in ('headlamp', 'identity') and k('get', 'service', service, '-n', namespace, check=False).returncode:
+        if k('get', 'service', service, '-n', namespace, check=False).returncode:
+            print(name, 'route deferred: backend is not installed')
             continue
         host = name + '.localhost'
         apply({'apiVersion': 'v1', 'kind': 'Secret', 'type': 'kubernetes.io/tls',
@@ -198,7 +199,10 @@ def verify(ca_path, names=None):
     import ssl
     context = ssl.create_default_context(cafile=str(ca_path))
     for name in (names or ENDPOINTS):
-        if name in ('headlamp', 'identity') and k('get', 'service/' + ENDPOINTS[name][1], '-n', ENDPOINTS[name][0], check=False).returncode:
+        if k('get', 'service/' + ENDPOINTS[name][1], '-n', ENDPOINTS[name][0], check=False).returncode:
+            if names is not None:
+                raise RuntimeError(name + ' backend is not installed.')
+            print(name, 'verification deferred: backend is not installed')
             continue
         host = name + '.localhost'
         # Some host DNS resolvers do not implement the browser's .localhost rule.

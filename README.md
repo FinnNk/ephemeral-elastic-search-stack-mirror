@@ -14,6 +14,7 @@ Use it to compare ranking changes, check that a change preserves results, or mea
 | Compare variants and interpret the decision | [Variant evaluation](docs/variant-evaluation.md) |
 | Build, promote or roll back a release | [Delivery](docs/delivery.md) |
 | Install or operate the control services | [Control runtime](docs/control-runtime.md) |
+| Create a fresh CPU platform foundation | [Fresh installation](docs/fresh-install.md) |
 | Prepare a Mac and transfer the lab | [Mac setup](docs/mac-setup.md) and [transfer runbook](docs/lab-transfer.md) |
 | Build consistent lab pages | [Design system](docs/design-system.md) |
 | Contribute to this repository | [Contributors guide](CONTRIBUTING.md) |

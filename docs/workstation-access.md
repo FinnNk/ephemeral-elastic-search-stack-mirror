@@ -14,6 +14,8 @@ The lab's CoreDNS service resolves the fixed platform names and any
 `*.preview.relevance.test` name to `127.0.0.1`. Configure your workstation to send
 only those domains to it. No hosts-file changes are needed when previews change.
 Ask the operator to [install preview access](preview-access.md#install-on-the-lab-host) first.
+For a fresh Mac, complete the `access` stage of [fresh installation](fresh-install.md)
+before creating resolver files. Creating a base k3d cluster does not install DNS.
 
 **Windows:** open PowerShell as Administrator, change to this lab repository's
 root, then run:

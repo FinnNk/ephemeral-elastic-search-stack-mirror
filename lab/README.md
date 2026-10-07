@@ -6,7 +6,13 @@ This page supports exploratory comparisons of deployed delivery targets and
 ephemeral environments. Search API contributors normally use [Actions-based delivery](../docs/delivery.md), with automatic PR
 comparisons and no kubectl commands.
 
-This guide assumes an **installed lab**. Operators should start with [control runtime](../docs/control-runtime.md); first-time platform experiments have a separate [bootstrap guide](../research/platform-spike/README.md). Search API development and the disconnected mock demo are in the [source README](delivery/bootstrap/README.md).
+This guide assumes an **installed lab**. New Mac operators should start with
+[fresh installation](../docs/fresh-install.md), which automates the platform
+foundation and identifies remaining configuration. Operators of an existing
+lab should use [control runtime](../docs/control-runtime.md). First-time platform
+experiments have a separate [bootstrap guide](../research/platform-spike/README.md).
+Search API development and the disconnected mock demo are in the
+[source README](delivery/bootstrap/README.md).
 
 To inspect Pods, deployments, events and logs, use [Headlamp](../docs/headlamp.md).
 

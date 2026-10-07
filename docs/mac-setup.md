@@ -1,8 +1,12 @@
 # Prepare a Mac for the lab
 
-Use this guide to prepare an Apple silicon or Intel Mac, then transfer the
-existing lab using [the transfer runbook](lab-transfer.md). Installing the tools
-and cloning Git do not restore the lab's databases or stored artefacts.
+For a new installation with fresh credentials and certificates, start with
+[fresh installation](fresh-install.md). Its resumable installer automates the
+platform foundation; remaining search and delivery setup is listed there.
+
+Use this guide to prepare an Apple silicon or Intel Mac for restoring an existing
+lab using [the transfer runbook](lab-transfer.md). Installing the tools and
+cloning Git do not restore the lab's databases or stored artefacts.
 
 The host commands below use macOS Terminal and Python 3.12 or later. Native Mac
 startup and restoration have not been tested. Complete the acceptance checks
@@ -66,6 +70,7 @@ For an **empty rehearsal cluster**, the retained base configuration can be used:
 ```sh
 k3d cluster create --config research/platform-spike/k3d.yaml \
   --servers-memory 6g --agents-memory 4g
+mkdir -p "$LAB_STATE_DIR"
 k3d kubeconfig get relevance-lab > "$LAB_STATE_DIR/kubeconfig.yaml"
 kubectl --kubeconfig "$LAB_STATE_DIR/kubeconfig.yaml" get nodes
 ```
