@@ -139,3 +139,16 @@ tests. See [verification](../research/evidence/esci-retained-sources.md).
    inventory; exercise a complete owned reset only on that disposable target.
 
 No original-lab deletion, deployment, inference or load test is part of this batch.
+
+### SigNoz init command repair
+
+The Mac CPU installation completed verification. Optional SigNoz startup reached
+ClickHouse's native init image, but its init container failed with an argument
+list too long error. The generated shell argument contained a base64 CA bundle.
+Use the public/corporate CA file already installed by `fresh_images` in that
+same digest-pinned native image. Preserve download checksum verification,
+resource settings and existing volumes.
+
+Next: review this repair, pull it on the Mac and rerun the demo installer.
+Confirm ClickHouse, migrations, collector and UI readiness before organisation
+setup and the previously planned ingestion/resource measurements.

@@ -1,5 +1,4 @@
 """Small SigNoz demo settings; preserve the pinned backend and full metric stream."""
-import base64
 import copy
 import json
 from pathlib import Path
@@ -60,14 +59,15 @@ def values(here, state):
     match = re.fullmatch(r'nexus.localhost:18185/lab-control@sha256:([a-f0-9]{64})', image)
     if not match:
         raise ValueError('Demo setup requires the retained native control image digest.')
-    ca = (state / 'host-ca-bundle.pem').read_bytes()
-    encoded = base64.b64encode(ca).decode('ascii')
     udf = clickhouse['initContainers']['udf']
     udf['image'] = {'registry': 'nexus.localhost:18185', 'repository': 'lab-control',
                     'tag': 'latest@sha256:' + match[1]}
-    script = udf['command'][2].replace('wget -O histogram-quantile.tar.gz',
-                                      'curl --cacert /tmp/host-ca.pem -fsSL -o histogram-quantile.tar.gz')
-    udf['command'][2] = "printf '%s' '" + encoded + "' | base64 -d > /tmp/host-ca.pem\n" + script
+    # fresh_images.trusted_dockerfile installs this bundle in the native image.
+    # Embedding the bundle in bash -c exceeds Linux's per-argument size limit.
+    udf['command'][2] = udf['command'][2].replace(
+        'wget -O histogram-quantile.tar.gz',
+        'curl --cacert /usr/local/share/ca-certificates/fresh-lab.crt '
+        '-fsSL -o histogram-quantile.tar.gz')
     clickhouse['imagePullSecrets'] = ['nexus-read']
     return result
 

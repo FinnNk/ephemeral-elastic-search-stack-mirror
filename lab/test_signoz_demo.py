@@ -20,7 +20,8 @@ class DemoProfile(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             state = Path(temporary)
             (state / 'control-image.json').write_text(json.dumps({'image': 'nexus.localhost:18185/lab-control@sha256:' + 'a' * 64}))
-            (state / 'host-ca-bundle.pem').write_text('public corporate CA')
+            # A normal public/corporate bundle can exceed Linux's argument limit.
+            (state / 'host-ca-bundle.pem').write_text('public corporate CA\n' * 20000)
             defaults = {'otelCollector': {'config': {'service': {'pipelines': {
                 'traces': {'processors': ['spanmetrics', 'batch']},
                 'metrics': {'processors': ['batch']}, 'logs': {'processors': ['batch']}}}}}}
@@ -35,6 +36,10 @@ class DemoProfile(unittest.TestCase):
         self.assertEqual(values['signoz']['persistence']['size'], '1Gi')
         self.assertIn('sha256:', values['signoz']['image']['tag'])
         self.assertIn('curl --cacert', values['clickhouse']['initContainers']['udf']['command'][2])
+        command = values['clickhouse']['initContainers']['udf']['command'][2]
+        self.assertIn('/usr/local/share/ca-certificates/fresh-lab.crt', command)
+        self.assertNotIn('base64', command)
+        self.assertLess(len(command.encode('utf-8')), 4096)
         self.assertEqual(values['clickhouse']['imagePullSecrets'], ['nexus-read'])
         self.assertEqual(values['otelCollector']['config']['service']['pipelines']['traces']['processors'],
                          ['memory_limiter', 'spanmetrics', 'batch'])

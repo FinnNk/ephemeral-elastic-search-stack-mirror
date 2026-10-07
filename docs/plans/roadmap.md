@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The Mac CPU installation has completed verification. Optional SigNoz startup
+is blocked by an oversized CA bundle embedded in its init command. The current
+repair uses the trusted file already installed in the native image. Next:
+review, rerun the demo installer on the Mac and verify readiness/ingestion before
+measuring resource use. Historical Mac setup batches below retain their context.
+
 The [fresh Mac installation](mac-fresh-install.md) batch automates the empty
 platform foundation and adds scoped cleanup after the manual Mac walkthrough
 exposed missing bootstrap dependencies and corporate certificate/registry

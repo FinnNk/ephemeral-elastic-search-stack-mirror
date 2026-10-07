@@ -330,6 +330,22 @@ Before choosing a smaller permanent disk budget, measure idle storage growth
 and one bounded Gatling run. Keep spare space for database merges. Native Mac
 readiness and ingestion still need verification on the target.
 
+If installation times out, inspect the pods before retrying:
+
+```sh
+export KUBECONFIG="$PWD/.lab/kubeconfig.yaml"
+kubectl -n lab-observability get pods
+kubectl -n lab-observability logs chi-signoz-clickhouse-cluster-0-0-0 \
+  -c signoz-clickhouse-udf-init --previous --tail=80
+```
+
+An `argument list too long` error in the ClickHouse init container indicates an
+older installer embedded the CA bundle in its shell command. Pull the latest
+code and rerun `python lab/observability/install.py --profile demo`. The current
+installer reads the trusted CA file already present in the native image.
+Keep the existing installation and volumes; a reset or image rebuild is not
+required for this repair.
+
 ## Diagnose a failed stage
 
 | Symptom | Next action |
