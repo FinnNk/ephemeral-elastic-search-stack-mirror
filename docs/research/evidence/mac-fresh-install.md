@@ -49,3 +49,16 @@ on the target, browser login, real cleanup or whole-lab readiness. Run the
 foundation installer on the disposable Mac, check native DNS/HTTPS and node
 restart, and exercise cleanup there. Catalogue, CI, OIDC and delivery runtime
 automation remains the next [detailed plan](../../plans/mac-fresh-install.md).
+# Fresh DNS before the control runtime
+
+The Mac walkthrough reached access setup and failed when the preview DNS installer
+looked up `lab-control-namespace-manager`. The foundation does not install the
+control runtime. The installer now uses a lookup that returns empty output for
+an absent role, logs that the optional update was skipped and continues installing
+DNS. Other API failures still stop installation. An existing role retains its
+permissions and gains only the preview route binding permission.
+
+Three fixture tests passed for absence, repeatable updates and API errors.
+No installation was run against the retained Windows cluster. The resumed Mac
+installation remains the runtime verification.
+

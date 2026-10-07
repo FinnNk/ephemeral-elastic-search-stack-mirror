@@ -36,6 +36,20 @@ def corefile():
 '''
 
 
+def configure_control_role():
+    """Extend an installed control role; DNS can be installed before the control runtime."""
+    result = k('get', 'clusterrole/lab-control-namespace-manager', '-o', 'json',
+               '--ignore-not-found')
+    if not result.stdout.strip():
+        print('Control runtime is not installed; retaining DNS and preview routing without its role.')
+        return
+    base = json.loads(result.stdout)
+    for rule in base['rules']:
+        if rule.get('resources') == ['clusterroles'] and 'bind' in rule['verbs']:
+            rule['resourceNames'] = sorted(set(rule['resourceNames']) | {'lab-preview-route-writer'})
+    apply(base)
+
+
 def install():
     guard()
     k('get', 'deployment/lab-traefik', '-n', NAMESPACE)
@@ -72,11 +86,7 @@ def install():
     for namespace in json.loads(k('get', 'namespaces', '-l', 'lab=search-spike', '-o', 'json').stdout)['items']:
         bind(namespace['metadata']['name'])
     # The existing control namespace manager may grant this specific role to new previews.
-    base = json.loads(k('get', 'clusterrole/lab-control-namespace-manager', '-o', 'json').stdout)
-    for rule in base['rules']:
-        if rule.get('resources') == ['clusterroles'] and 'bind' in rule['verbs']:
-            rule['resourceNames'] = sorted(set(rule['resourceNames']) | {'lab-preview-route-writer'})
-    apply(base)
+    configure_control_role()
     for name, image, command in (
             ('lab-dns', DNS_IMAGE, ['/coredns', '-conf', '/config/Corefile']),
             ('lab-preview-routes', PYTHON_IMAGE, ['python', '/config/preview_routes.py'])):

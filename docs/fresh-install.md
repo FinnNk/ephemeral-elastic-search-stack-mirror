@@ -178,6 +178,7 @@ use this reset procedure on the original retained Windows lab.
 | Python certificate verification fails | Read the printed download hostname. Obtain the required CA chain for that hostname; do not disable verification. |
 | Gitea readiness timeout | Inspect printed pod status/events for image pulls, PVC binding or restarts, then rerun. |
 | DNS query times out | Complete the `access` stage and check `lab-dns` readiness and loopback UDP/TCP port 53 mappings. |
+| `lab-control-namespace-manager` not found | Pull the current installer and rerun. DNS supports installation before the control runtime; its optional permission update is skipped until the role exists. |
 | Installer ownership differs | Do not adopt another cluster or overwrite its credentials. Inspect the cleanup inventory and resolve the identity mismatch first. |
 
 For an existing lab restoration, follow the separate [transfer runbook](lab-transfer.md).
