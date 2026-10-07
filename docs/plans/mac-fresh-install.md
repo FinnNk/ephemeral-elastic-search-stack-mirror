@@ -48,6 +48,9 @@ The retained-source batch packages the three original files in `FinnNk/esci-s`
 release assets and prefetches them before the unchanged importer runs. Original
 source hashes and frozen catalogue identity are preserved. Native acceptance
 must verify access to the public GitHub release assets on the corporate network.
+The release is published and all seven asset hashes match; public manifest and
+query/label downloads passed on Windows. The affected fixture suite passed 37
+tests. See [verification](../research/evidence/esci-retained-sources.md).
 
 1. Pull the mirror, install `lab/fresh-requirements.txt` with the existing host CA
    bundle and resume with the original corporate PEM and setup options.
