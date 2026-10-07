@@ -228,6 +228,11 @@ builds and allows one exact-commit build retry after repairing that route.
 47 affected fixtures passed; native baseline/control/delivery verification is
 the next acceptance step. See the [Mac plan](mac-fresh-install.md).
 
+The Mac registry repair and both source builds now pass. The current batch fixes
+the repository import path for child scripts after delivery bootstrap reported
+a missing `evaluation` package. 49 affected fixtures, including a real delivery
+CLI import check, passed; native bootstrap and the remaining stages are next.
+
 The fresh installer now continues through the catalogue, scoped CI repositories,
 OIDC, CPU judgement stack and delivery/control applications. It derives native
 image digests, model artefact hashes and source build IDs on the target. The

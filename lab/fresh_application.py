@@ -27,7 +27,15 @@ SERVICES_RECORD = STATE / 'fresh-services.json'
 
 def run_script(name, *arguments):
     """Stream safe stage output while retaining the installer's trust settings."""
-    return execute([sys.executable, '-u', str(ROOT / name), *map(str, arguments)], live=True)
+    env = os.environ.copy()
+    # Direct script execution puts lab/, rather than the repository root, on
+    # sys.path. Child scripts also import shared packages such as evaluation/.
+    paths = [str(ROOT)]
+    if env.get('PYTHONPATH'):
+        paths.append(env['PYTHONPATH'])
+    env['PYTHONPATH'] = os.pathsep.join(paths)
+    return execute([sys.executable, '-u', str(ROOT / name), *map(str, arguments)],
+                   env=env, live=True)
 
 
 def assert_fresh():

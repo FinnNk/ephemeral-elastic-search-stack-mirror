@@ -107,6 +107,10 @@ def execute(command, *, env=None, body=None, live=False, check=True):
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait()
+        reader.join()
+        process.stdout.close()
+        if process.stdin is not None and not process.stdin.closed:
+            process.stdin.close()
     return ''
 
 

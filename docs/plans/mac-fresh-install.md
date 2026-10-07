@@ -70,6 +70,15 @@ Gitea API schema confirms the run-ID rerun endpoint and attempt field. All 47
 affected fixtures passed. Native Mac registry login and the remaining stages
 still require acceptance; the original Windows cluster was not changed.
 
+Native Mac registry recovery subsequently passed: search build 2 succeeded on
+attempt 2 and delivery build 1 was already successful. Delivery bootstrap then
+failed while importing the shared `evaluation` package. The installer now passes
+the repository root to child scripts through `PYTHONPATH`, preserving existing
+paths and certificate settings. Verification includes launching the actual
+delivery CLI with `--help` in a child process, which imports its bootstrap
+dependencies without calling the cluster. The 49 affected fixtures passed.
+Resume baseline, then verify control, delivery and browser flows on the Mac.
+
 The ESCI-S upstream bucket returned HTTP 403 on both the Mac and Windows.
 The retained-source batch packages the three original files in `FinnNk/esci-s`
 release assets and prefetches them before the unchanged importer runs. Original

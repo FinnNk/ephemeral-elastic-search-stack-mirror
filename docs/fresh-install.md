@@ -163,6 +163,7 @@ python lab/https_ingress.py trust
 ```
 
 macOS may ask for permission to trust the newly generated **public** lab CA.
+Approve the prompt, then restart your browser before opening the lab pages.
 Then configure the two resolver files using [workstation DNS](workstation-access.md#set-up-lab-dns-once).
 DNS configuration comes after installation of the DNS service.
 
@@ -292,6 +293,7 @@ use this reset procedure on the original retained Windows lab.
 | Python certificate verification fails | Read the printed download hostname. Obtain the required CA chain for that hostname; do not disable verification. |
 | Gitea readiness timeout | Inspect printed pod status/events for image pulls, PVC binding or restarts, then rerun. |
 | Registry login to `gitea.localhost:31800` resolves to `127.0.0.1` and is refused | Pull the current installer and resume. The baseline stage restores the in-cluster Gitea DNS rewrite, preserving other rules. After changing that route it retries the failed push build once for the same source commit. A second failure stops for inspection in Actions. |
+| Delivery bootstrap reports `No module named 'evaluation'` | Pull the current installer and resume with the same options. Child scripts receive the repository import path; completed builds and installation stages are retained. |
 | DNS query times out | Complete the `access` stage and check `lab-dns` readiness and loopback UDP/TCP port 53 mappings. |
 | `lab-control-namespace-manager` not found | Pull the current installer and rerun. DNS supports installation before the control runtime; its optional permission update is skipped until the role exists. |
 | Installer ownership differs | Do not adopt another cluster or overwrite its credentials. Inspect the cleanup inventory and resolve the identity mismatch first. |

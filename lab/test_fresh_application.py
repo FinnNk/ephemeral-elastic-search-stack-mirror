@@ -5,6 +5,7 @@ import gzip
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import tarfile
@@ -19,6 +20,21 @@ import cleanup_fresh_install as cleanup
 
 
 class FreshApplications(unittest.TestCase):
+    def test_child_script_preserves_environment_and_adds_repository_imports(self):
+        with patch.dict(os.environ, {'PYTHONPATH': 'existing-path', 'SSL_CERT_FILE': 'corporate.pem'}), \
+             patch.object(app, 'execute') as execute:
+            app.run_script('lab/delivery_cli.py', '--help')
+        env = execute.call_args.kwargs['env']
+        self.assertEqual(env['PYTHONPATH'], str(app.ROOT) + os.pathsep + 'existing-path')
+        self.assertEqual(env['SSL_CERT_FILE'], 'corporate.pem')
+
+    def test_delivery_cli_imports_shared_evaluation_package_in_real_child(self):
+        # --help imports the actual bootstrap dependency chain without making
+        # API requests or changing the cluster or retained installer state.
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            app.run_script('lab/delivery_cli.py', '--help')
+        self.assertIn('bootstrap', output.getvalue())
+
     def test_registry_dns_repair_preserves_other_rules_and_waits_for_dns(self):
         current = argparse.Namespace(stdout=json.dumps({'data': {'nexus.override': 'keep nexus', 'other.server': 'keep custom'}}))
         with patch.object(app, 'k', return_value=current) as command:
