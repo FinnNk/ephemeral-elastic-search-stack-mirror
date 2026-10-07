@@ -244,9 +244,13 @@ def verify(name, deployment, revision=None):
     started = time.monotonic()
     k('annotate', 'application/' + name, '-n', 'argocd', 'argocd.argoproj.io/refresh=hard', '--overwrite')
     deadline = time.monotonic() + 180
+    last_reason = None
     while time.monotonic() < deadline:
         app = json.loads(k('get', 'application/' + name, '-n', 'argocd', '-o', 'json').stdout)
         status = app.get('status', {})
+        reason = ('Argo sync=' + status.get('sync', {}).get('status', 'pending') +
+                  ', health=' + status.get('health', {}).get('status', 'pending') +
+                  ', revision=' + status.get('sync', {}).get('revision', 'pending'))
         if (status.get('sync', {}).get('status') == 'Synced' and status.get('health', {}).get('status') == 'Healthy' and
                 (revision is None or status['sync'].get('revision') == revision)):
             try:
@@ -272,10 +276,13 @@ def verify(name, deployment, revision=None):
                         'git_revision': status['sync']['revision'], 'environment': name,
                         'verified_at': datetime.now(timezone.utc).isoformat(),
                         'seconds': round(time.monotonic() - started, 3), 'sample_ids': answer['ids'][:10]}
-            except (AssertionError, ValueError, TimeoutError):
-                pass
+            except (AssertionError, ValueError, TimeoutError) as error:
+                reason = 'Serving verification: ' + (str(error) or type(error).__name__)
+        if reason != last_reason:
+            print('Waiting for ' + name + ': ' + reason, flush=True)
+            last_reason = reason
         time.sleep(2)
-    raise TimeoutError('Argo/API verification did not complete for ' + name)
+    raise TimeoutError('Argo/API verification did not complete for ' + name + '; ' + str(last_reason))
 
 
 def preview(deployment):

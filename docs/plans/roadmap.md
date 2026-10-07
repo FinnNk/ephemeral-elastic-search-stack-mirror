@@ -233,6 +233,11 @@ the repository import path for child scripts after delivery bootstrap reported
 a missing `evaluation` package. 49 affected fixtures, including a real delivery
 CLI import check, passed; native bootstrap and the remaining stages are next.
 
+Native delivery bootstrap now reaches a ready integration workload. The next
+repair supplies the missing host-side search verification probe from the native
+control image and exposes verification wait reasons. Resume baseline before
+control/delivery activation; the original Windows deployment remains untouched.
+
 The fresh installer now continues through the catalogue, scoped CI repositories,
 OIDC, CPU judgement stack and delivery/control applications. It derives native
 image digests, model artefact hashes and source build IDs on the target. The

@@ -442,11 +442,36 @@ def wait_build(repo, sha, retry_failed=False):
     raise TimeoutError('Exact baseline build did not complete within 30 minutes: ' + repo)
 
 
+def search_probe():
+    """Provide host bootstrap checks with a native, unprivileged in-cluster client."""
+    image = json.loads((STATE / 'control-image.json').read_text(encoding='utf-8'))['image']
+    current = k('get', 'pod/search-probe', '-n', 'platform', '-o', 'json', check=False)
+    if current.returncode == 0:
+        pod = json.loads(current.stdout)
+        if (pod['metadata'].get('labels', {}).get('lab/fresh-install') != 'search-probe' or
+                pod['spec']['containers'][0]['image'] != image):
+            raise ValueError('Existing search-probe differs from this fresh installer; inspect it before resuming.')
+    else:
+        print('Creating the in-cluster search verification probe from the retained native image.', flush=True)
+        apply({'apiVersion': 'v1', 'kind': 'Pod',
+            'metadata': {'name': 'search-probe', 'namespace': 'platform',
+                         'labels': {'lab/fresh-install': 'search-probe'}},
+            'spec': {'automountServiceAccountToken': False,
+                'imagePullSecrets': [{'name': 'nexus-read'}],
+                'containers': [{'name': 'probe', 'image': image,
+                    'command': ['python', '-c', 'import time; time.sleep(86400)'],
+                    'resources': {'requests': {'cpu': '10m', 'memory': '24Mi'},
+                                  'limits': {'cpu': '250m', 'memory': '96Mi'}}}]}})
+    k('wait', '--for=condition=Ready', 'pod/search-probe', '-n', 'platform', '--timeout=180s')
+    print('Search verification probe is ready.', flush=True)
+
+
 def baseline():
     """Seed the search baseline and identify the native delivery build created by Gitea."""
     from environments import git
     from gitea import api
     dns_repaired = registry_dns()
+    search_probe()
     source = STATE / 'search-source'
     if not api('/repos/elastic-agent/search-spike')['empty']:
         if not (source / '.git').exists():

@@ -79,6 +79,15 @@ delivery CLI with `--help` in a child process, which imports its bootstrap
 dependencies without calling the cluster. The 49 affected fixtures passed.
 Resume baseline, then verify control, delivery and browser flows on the Mac.
 
+The next Mac run imported the delivery CLI and deployed a ready integration
+search pod, but API verification timed out. The host verification path executes
+requests through `platform/search-probe`; that pod was absent from the fresh
+installer and the supplied pod inventory. The repair creates an installer-owned
+probe from the already-built native control image, waits for readiness and
+preserves a matching probe on resume. It refuses an unexpected existing probe.
+Verification now reports changing Argo/serving states and retains the last
+reason in a timeout. Native API verification remains the next acceptance check.
+
 The ESCI-S upstream bucket returned HTTP 403 on both the Mac and Windows.
 The retained-source batch packages the three original files in `FinnNk/esci-s`
 release assets and prefetches them before the unchanged importer runs. Original

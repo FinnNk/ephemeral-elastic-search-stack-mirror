@@ -20,6 +20,49 @@ import cleanup_fresh_install as cleanup
 
 
 class FreshApplications(unittest.TestCase):
+    def test_delivery_verification_timeout_reports_argo_wait_state(self):
+        import delivery_runtime as runtime
+        resource = argparse.Namespace(stdout=json.dumps({'status': {
+            'sync': {'status': 'OutOfSync', 'revision': 'old'},
+            'health': {'status': 'Progressing'}}}))
+        with patch.object(runtime, 'k', return_value=resource), \
+             patch.object(runtime.time, 'monotonic', side_effect=[0, 0, 1, 181]), \
+             patch.object(runtime.time, 'sleep'), contextlib.redirect_stdout(io.StringIO()) as output:
+            with self.assertRaisesRegex(TimeoutError, 'sync=OutOfSync, health=Progressing, revision=old'):
+                runtime.verify('lab-delivery-integration', {}, 'wanted')
+        self.assertIn('Waiting for lab-delivery-integration', output.getvalue())
+
+    def test_missing_search_probe_reuses_native_image_without_api_credentials(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            state = Path(temporary)
+            (state / 'control-image.json').write_text(json.dumps({'image': 'nexus.localhost:18185/control@sha256:fixture'}))
+            with patch.object(app, 'STATE', state), \
+                 patch.object(app, 'k', return_value=argparse.Namespace(returncode=1)) as command, \
+                 patch.object(app, 'apply') as apply:
+                app.search_probe()
+        pod = apply.call_args.args[0]
+        self.assertEqual(pod['spec']['containers'][0]['image'], 'nexus.localhost:18185/control@sha256:fixture')
+        self.assertFalse(pod['spec']['automountServiceAccountToken'])
+        self.assertEqual(pod['spec']['imagePullSecrets'], [{'name': 'nexus-read'}])
+        self.assertTrue(any(call.args[0] == 'wait' for call in command.call_args_list))
+
+    def test_search_probe_resume_preserves_matching_pod_and_refuses_foreign_pod(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            state = Path(temporary)
+            (state / 'control-image.json').write_text(json.dumps({'image': 'native-image'}))
+            pod = {'metadata': {'labels': {'lab/fresh-install': 'search-probe'}},
+                   'spec': {'containers': [{'image': 'native-image'}]}}
+            with patch.object(app, 'STATE', state), patch.object(app, 'apply') as apply, \
+                 patch.object(app, 'k', return_value=argparse.Namespace(returncode=0, stdout=json.dumps(pod))):
+                app.search_probe()
+                apply.assert_not_called()
+            pod['metadata']['labels'] = {}
+            with patch.object(app, 'STATE', state), patch.object(app, 'apply') as apply, \
+                 patch.object(app, 'k', return_value=argparse.Namespace(returncode=0, stdout=json.dumps(pod))):
+                with self.assertRaisesRegex(ValueError, 'Existing search-probe differs'):
+                    app.search_probe()
+                apply.assert_not_called()
+
     def test_child_script_preserves_environment_and_adds_repository_imports(self):
         with patch.dict(os.environ, {'PYTHONPATH': 'existing-path', 'SSL_CERT_FILE': 'corporate.pem'}), \
              patch.object(app, 'execute') as execute:
