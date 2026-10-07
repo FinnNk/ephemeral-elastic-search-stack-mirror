@@ -92,12 +92,33 @@ The maintained resume guide now uses `$HOME/certs/Corporate Root CA.pem` as an
 explicitly illustrative path instead of a personal home directory and employer
 certificate name. The next step remains native baseline acceptance.
 
-An optional smaller SigNoz profile is under discussion, not implemented.
-For infrequent demonstrations, consider seven days of traces/logs and 30 days
+The initial smaller SigNoz proposal used seven days of traces/logs and 30 days
 of metrics, with scoped collection. Measure idle storage growth and one Gatling
 run before committing to the proposed 10 GiB ClickHouse data volume; leave room
 for database merges and bursts. Low interactive usage does not stop periodic
 metrics and infrastructure logs from accumulating.
+
+The authorised demo profile is now prepared for review. It uses the pinned chart
+on existing CPU nodes, 12 GiB PVC requests and approximately 4 GiB steady-state
+memory headroom; migration/startup needs additional room. It reuses the retained
+native control image and CA bundle for the checksum-verified histogram binary
+download. Collector queues and memory are bounded; the gateway samples 20% of
+traces while application metrics and selected structured logs remain complete.
+The first organisation and seven-day traces/logs plus 30-day metric retention
+are explicit UI setup steps. Standard installation settings are preserved.
+
+Verification: 56 affected fixtures passed. The pinned Helm chart rendered 32
+resources; the final render preserved the native init image digest and correct
+registry secret name, with no dedicated-worker selectors. Both generated agent
+configurations passed validation in disposable, network-disabled containers
+using the pinned Collector Contrib image. No native Mac runtime claim follows
+from these checks.
+
+Next: install on the Mac after acceptance, complete organisation/retention setup,
+then measure idle ClickHouse storage growth and a bounded Gatling run. Compare
+written bytes and peak memory with the trial budgets, check accepted telemetry,
+and review whether limits or collection scope need adjustment. The Windows lab
+has not been redeployed, and Mac measurements have not yet been taken.
 
 The ESCI-S upstream bucket returned HTTP 403 on both the Mac and Windows.
 The retained-source batch packages the three original files in `FinnNk/esci-s`

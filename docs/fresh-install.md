@@ -5,8 +5,9 @@ catalogue, source CI, comparisons, notebooks and reviewed delivery promotions.
 The installer also sets up Nexus, snapshot storage, the CPU abstaining judgement
 service and OIDC sign-in for Gitea, Argo CD, Headlamp and the control UI.
 
-Large research models, GPU jobs, SigNoz and the optional Headlamp development
-testbed are not installed. Windows credentials and CA keys are not transferred.
+Large research models, GPU jobs and the optional Headlamp development testbed
+are not installed. SigNoz is an optional follow-on installation using the demo
+profile below. Windows credentials and CA keys are not transferred.
 The existing frozen lab judgements are restored with their original provenance;
 model predictions remain distinguishable from published labels.
 
@@ -282,6 +283,52 @@ The archive contains secrets. Keep it private or remove it after you no longer
 need it. Leave the corporate PEM and installed host tools in place. Run the
 read-only cleanup command to inspect remaining containers and volumes. Do not
 use this reset procedure on the original retained Windows lab.
+
+## Add demo observability
+
+After completing the fresh CPU installation, run from its repository root in
+the same Python environment:
+
+```sh
+export LAB_STATE_DIR="$PWD/.lab"
+python lab/observability/install.py --profile demo
+```
+
+This uses the retained corporate CA bundle, native control image and pinned
+SigNoz chart. It installs on existing CPU nodes without adding a worker. Allow
+approximately 4 GiB of additional steady-state memory headroom, and preferably
+6 GiB during installation for migration jobs and startup bursts. These are
+trial allocations for demonstrations, not measured minimum requirements.
+PVC requests total 12 GiB: ClickHouse 10 GiB, ZooKeeper 1 GiB and SigNoz state
+1 GiB. Images and container logs require additional host disk space. Local-path
+PVC requests do not enforce a hard host-directory disk quota.
+
+Open [SigNoz](https://signoz.localhost:34443/), create your first administrator
+account and complete organisation setup. In **Settings**, set and confirm:
+
+| Signal | Retention |
+| --- | --- |
+| Logs | 7 days |
+| Traces | 7 days |
+| Metrics | 30 days |
+
+Retention is a required UI step; the installer does not authenticate as you or
+change an existing organisation's retention. Organisation setup is required
+before the backend accepts telemetry. The demo gateway samples 20% of traces;
+application/Gatling metrics and selected structured logs are not sampled.
+Automatic span-derived metrics describe sampled traces. Use the application's
+request counters and retained Gatling reports for complete performance counts.
+
+The command preserves persistent data on repeat runs and refuses larger existing
+PVCs rather than trying to shrink them. Do not use this profile to resize the
+original retained Windows backend. The standard profile remains available for
+its dedicated observability worker. See [observability operations](observability-backend.md)
+for dashboards and diagnostic access; existing Windows dashboard IDs are not
+automatically copied to a new installation.
+
+Before choosing a smaller permanent disk budget, measure idle storage growth
+and one bounded Gatling run. Keep spare space for database merges. Native Mac
+readiness and ingestion still need verification on the target.
 
 ## Diagnose a failed stage
 

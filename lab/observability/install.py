@@ -6,6 +6,9 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import json
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'lab'))
@@ -22,6 +25,9 @@ def run(args):
     print('Running', args[0], args[1] if len(args) > 1 else '', flush=True)
     environment = os.environ.copy()
     environment['KUBECONFIG'] = str(STATE / 'kubeconfig.yaml')
+    bundle = STATE / 'host-ca-bundle.pem'
+    if bundle.exists():
+        environment.update(SSL_CERT_FILE=str(bundle), REQUESTS_CA_BUNDLE=str(bundle))
     subprocess.run(args, cwd=ROOT, env=environment, check=True)
 
 
@@ -45,7 +51,24 @@ def chart_archive():
     return chart
 
 
-def preflight():
+def preflight(profile='standard'):
+    if profile == 'demo':
+        from fresh_application import assert_fresh
+        assert_fresh()
+        if not (STATE / 'control-image.json').exists() or not (STATE / 'host-ca-bundle.pem').exists():
+            raise RuntimeError('Complete fresh CPU image setup before installing demo SigNoz.')
+        print('Demo profile uses existing CPU nodes. Allow approximately 4 GiB extra memory headroom.', flush=True)
+        # PVC shrinking is not a supported upgrade path for a retained backend.
+        existing = subprocess.run(KUBE + ['get', 'pvc', '-n', NAMESPACE, '-o', 'json'],
+                                  capture_output=True, text=True)
+        if existing.returncode == 0:
+            from demo_profile import storage_bytes
+            for claim in json.loads(existing.stdout)['items']:
+                size = claim['spec']['resources']['requests']['storage']
+                maximum = '10Gi' if 'clickhouse' in claim['metadata']['name'] else '1Gi'
+                if storage_bytes(size) > storage_bytes(maximum):
+                    raise RuntimeError('Demo profile refuses to shrink existing observability PVCs; retain the standard profile.')
+        return
     nodes = subprocess.run(KUBE + ['get', 'nodes', '-l', 'lab.relevance/role=observability',
                                     '-o', 'jsonpath={.items[*].metadata.name}'],
                            capture_output=True, text=True, check=True)
@@ -53,14 +76,23 @@ def preflight():
         raise RuntimeError('Label a worker lab.relevance/role=observability with >=8 GiB headroom.')
 
 
-def install(root_account=False):
-    preflight()
+def install(root_account=False, profile='standard'):
+    preflight(profile)
     chart = chart_archive()
     namespace = subprocess.run(KUBE + ['get', 'namespace', NAMESPACE],
                                capture_output=True, text=True)
     if namespace.returncode:
         run(KUBE + ['create', 'namespace', NAMESPACE])
     values = [str(HERE / 'signoz-values.yaml')]
+    if profile == 'demo':
+        from demo_profile import values as demo_values, agents
+        from setup_nexus import image_secret
+        image_secret(NAMESPACE)
+        folder = STATE / 'observability-demo'
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / 'values.yaml'
+        path.write_text(yaml.safe_dump(demo_values(HERE, STATE), sort_keys=False), encoding='utf-8')
+        values = [str(path)]
     if root_account:
         secret = subprocess.run(KUBE + ['get', 'secret', 'lab-signoz-root', '-n', NAMESPACE],
                                 capture_output=True, text=True)
@@ -72,15 +104,33 @@ def install(root_account=False):
     for path in values:
         command += ['-f', path]
     run(command)
-    for name in ('gateway.yaml', 'log-agent.yaml'):
-        run(KUBE + ['apply', '-f', str(HERE / name)])
+    if profile == 'demo':
+        from demo_profile import operator_patch
+        run(KUBE + ['patch', 'deployment/signoz-clickhouse-operator', '-n', NAMESPACE,
+                    '--type=strategic', '-p', json.dumps(operator_patch())])
+        run(KUBE + ['rollout', 'status', 'deployment/signoz-clickhouse-operator',
+                    '-n', NAMESPACE, '--timeout=3m'])
+        path = folder / 'agents.yaml'
+        path.write_text(yaml.safe_dump_all(agents(HERE), sort_keys=False), encoding='utf-8')
+        run(KUBE + ['apply', '-f', str(path)])
+    else:
+        for name in ('gateway.yaml', 'log-agent.yaml'):
+            run(KUBE + ['apply', '-f', str(HERE / name)])
     run(KUBE + ['rollout', 'status', f'deployment/{GATEWAY}', '-n', NAMESPACE, '--timeout=3m'])
     run(KUBE + ['rollout', 'status', 'daemonset/lab-log-agent', '-n', NAMESPACE, '--timeout=3m'])
+    if profile == 'demo':
+        from https_ingress import certificate, route
+        route(*certificate()[:2], browser_names=('signoz',))
+        print('Open https://signoz.localhost:34443 and create your first administrator account.', flush=True)
+        print('Set retention in Settings: logs 7 days, traces 7 days, metrics 30 days. '
+              'Organisation setup and retention confirmation are required before measuring ingestion.', flush=True)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--agent-root', action='store_true',
                         help='Enable the separately approved agent admin bootstrap overlay')
+    parser.add_argument('--profile', choices=('standard', 'demo'), default='standard',
+                        help='Demo: smaller resources on existing fresh-lab CPU nodes')
     args = parser.parse_args()
-    install(args.agent_root)
+    install(args.agent_root, args.profile)

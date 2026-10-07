@@ -242,6 +242,11 @@ The Mac resume guide uses an explicitly illustrative corporate certificate path.
 A smaller optional SigNoz profile remains a proposal; size retention from idle
 and Gatling storage measurements, as described in the [Mac plan](mac-fresh-install.md).
 
+The user authorised the smaller SigNoz demo installation. Its review batch adds
+an explicit profile and Mac setup procedure; organisation and retention setup
+are performed through SigNoz's UI. Next, accept/install it and measure idle and
+Gatling telemetry growth before adjusting the trial resource budget.
+
 The fresh installer now continues through the catalogue, scoped CI repositories,
 OIDC, CPU judgement stack and delivery/control applications. It derives native
 image digests, model artefact hashes and source build IDs on the target. The

@@ -89,6 +89,13 @@ Finite Gatling checks use `coverage_probe.py` during the run and `export_window.
 
 ## Install and preserve the backend
 
+For a fresh CPU lab on a laptop, use the smaller optional
+[demo profile](fresh-install.md#add-demo-observability). It uses existing nodes,
+12 GiB of PVC requests, bounded collector queues and 20% trace sampling.
+Confirm seven-day logs/traces and 30-day metrics retention in the UI after
+creating the first organisation. The instructions below describe the standard
+installation with its dedicated worker.
+
 Use an existing Kubernetes worker labelled `lab.relevance/role=observability`, retained lab state, Helm and adequate capacity. The local worker has a 12 GiB limit; this is a lab allocation, not AKS sizing. Installation from the repository root:
 
 ```powershell
