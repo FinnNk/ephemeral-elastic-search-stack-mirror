@@ -191,17 +191,17 @@ until OIDC is installed. That command prints a short-lived token.
 ## Continue an existing foundation installation
 
 From the repository root, activate the same Python environment, pull the merged
-changes and install the application dependencies. On the corporate Mac from the
-walkthrough:
+changes and install the application dependencies. On macOS, replace the
+illustrative certificate path below with your organisation's PEM bundle:
 
 ```sh
 git pull --ff-only
 PIP_CERT="$PWD/.lab/host-ca-bundle.pem" python -m pip install -r lab/fresh-requirements.txt
-python lab/fresh_install.py --corporate-ca '/Users/uk45858697/certs/Tesco Root CA.pem'
+python lab/fresh_install.py --corporate-ca "$HOME/certs/Corporate Root CA.pem"
 ```
 
-The CA bundle already exists after foundation setup. On another machine, use its
-own corporate PEM path. Resume with the same registry and initial node-memory
+The combined host CA bundle already exists after foundation setup. The corporate
+PEM path is an example, not a supplied file. Resume with the same registry and initial node-memory
 options as the first run. The installer retains completed stages and retries the
 failed stage; it does not reset the cluster.
 

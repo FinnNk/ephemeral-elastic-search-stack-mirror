@@ -88,6 +88,17 @@ preserves a matching probe on resume. It refuses an unexpected existing probe.
 Verification now reports changing Argo/serving states and retains the last
 reason in a timeout. Native API verification remains the next acceptance check.
 
+The maintained resume guide now uses `$HOME/certs/Corporate Root CA.pem` as an
+explicitly illustrative path instead of a personal home directory and employer
+certificate name. The next step remains native baseline acceptance.
+
+An optional smaller SigNoz profile is under discussion, not implemented.
+For infrequent demonstrations, consider seven days of traces/logs and 30 days
+of metrics, with scoped collection. Measure idle storage growth and one Gatling
+run before committing to the proposed 10 GiB ClickHouse data volume; leave room
+for database merges and bursts. Low interactive usage does not stop periodic
+metrics and infrastructure logs from accumulating.
+
 The ESCI-S upstream bucket returned HTTP 403 on both the Mac and Windows.
 The retained-source batch packages the three original files in `FinnNk/esci-s`
 release assets and prefetches them before the unchanged importer runs. Original

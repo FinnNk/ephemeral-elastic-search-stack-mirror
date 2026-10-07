@@ -238,6 +238,10 @@ repair supplies the missing host-side search verification probe from the native
 control image and exposes verification wait reasons. Resume baseline before
 control/delivery activation; the original Windows deployment remains untouched.
 
+The Mac resume guide uses an explicitly illustrative corporate certificate path.
+A smaller optional SigNoz profile remains a proposal; size retention from idle
+and Gatling storage measurements, as described in the [Mac plan](mac-fresh-install.md).
+
 The fresh installer now continues through the catalogue, scoped CI repositories,
 OIDC, CPU judgement stack and delivery/control applications. It derives native
 image digests, model artefact hashes and source build IDs on the target. The
