@@ -291,6 +291,7 @@ use this reset procedure on the original retained Windows lab.
 | Image download returns HTTP 403 | The selected registry may be restricted. Confirm the permitted official source; extending a readiness timeout does not fix access denial. |
 | Python certificate verification fails | Read the printed download hostname. Obtain the required CA chain for that hostname; do not disable verification. |
 | Gitea readiness timeout | Inspect printed pod status/events for image pulls, PVC binding or restarts, then rerun. |
+| Registry login to `gitea.localhost:31800` resolves to `127.0.0.1` and is refused | Pull the current installer and resume. The baseline stage restores the in-cluster Gitea DNS rewrite, preserving other rules. After changing that route it retries the failed push build once for the same source commit. A second failure stops for inspection in Actions. |
 | DNS query times out | Complete the `access` stage and check `lab-dns` readiness and loopback UDP/TCP port 53 mappings. |
 | `lab-control-namespace-manager` not found | Pull the current installer and rerun. DNS supports installation before the control runtime; its optional permission update is skipped until the role exists. |
 | Installer ownership differs | Do not adopt another cluster or overwrite its credentials. Inspect the cleanup inventory and resolve the identity mismatch first. |

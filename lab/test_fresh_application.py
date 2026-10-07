@@ -19,6 +19,44 @@ import cleanup_fresh_install as cleanup
 
 
 class FreshApplications(unittest.TestCase):
+    def test_registry_dns_repair_preserves_other_rules_and_waits_for_dns(self):
+        current = argparse.Namespace(stdout=json.dumps({'data': {'nexus.override': 'keep nexus', 'other.server': 'keep custom'}}))
+        with patch.object(app, 'k', return_value=current) as command:
+            self.assertTrue(app.registry_dns())
+        patch_call = next(call for call in command.call_args_list if call.args[0] == 'patch')
+        payload = json.loads(patch_call.args[-1])
+        self.assertEqual(set(payload['data']), {'gitea.override'})
+        self.assertIn('gitea-http.platform.svc.cluster.local', payload['data']['gitea.override'])
+        self.assertTrue(any(call.args[:2] == ('rollout', 'status') for call in command.call_args_list))
+
+    def test_registry_dns_repair_is_idempotent(self):
+        current = argparse.Namespace(stdout=json.dumps({'data': {'gitea.override':
+            'rewrite name exact gitea.localhost gitea-http.platform.svc.cluster.local\n'}}))
+        with patch.object(app, 'k', return_value=current) as command:
+            self.assertFalse(app.registry_dns())
+        self.assertEqual(command.call_count, 1)
+
+    def test_dns_recovery_retries_only_exact_push_commit_and_waits_for_new_attempt(self):
+        failed = {'id': 2, 'head_sha': 'wanted', 'event': 'push', 'status': 'completed', 'conclusion': 'failure', 'run_attempt': 1}
+        success = {**failed, 'conclusion': 'success', 'run_attempt': 2}
+        unrelated = {**success, 'id': 99, 'head_sha': 'other'}
+        from gitea import api
+        replies = [{'workflow_runs': [failed, unrelated]}, {}, {'workflow_runs': [failed]}, {'workflow_runs': [success]}]
+        with patch('gitea.api', side_effect=replies) as provider, patch.object(app.time, 'sleep'):
+            self.assertEqual(app.wait_build('search-spike', 'wanted', retry_failed=True), 2)
+        reruns = [call for call in provider.call_args_list if len(call.args) > 1 and call.args[1] == 'POST']
+        self.assertEqual(len(reruns), 1)
+        self.assertEqual(reruns[0].args[0], '/repos/elastic-agent/search-spike/actions/runs/2/rerun')
+
+    def test_dns_recovery_stops_after_one_failed_retry(self):
+        failed = {'id': 2, 'head_sha': 'wanted', 'event': 'push', 'status': 'completed', 'conclusion': 'failure', 'run_attempt': 1}
+        repeated = {**failed, 'run_attempt': 2}
+        with patch('gitea.api', side_effect=[{'workflow_runs': [failed]}, {}, {'workflow_runs': [repeated]}]) as provider, \
+             patch.object(app.time, 'sleep'):
+            with self.assertRaisesRegex(RuntimeError, 'build 2 failed'):
+                app.wait_build('search-spike', 'wanted', retry_failed=True)
+        self.assertEqual(sum(len(call.args) > 1 and call.args[1] == 'POST' for call in provider.call_args_list), 1)
+
     def test_isolated_build_config_keeps_plugins_and_selected_local_daemon(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

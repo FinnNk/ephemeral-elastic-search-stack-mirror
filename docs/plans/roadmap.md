@@ -222,6 +222,12 @@ review. Next: activate that fix, then resume the unchanged production load gate.
 
 ## Complete fresh CPU installation
 
+Native Mac catalogue, image builds and CPU judgements have now completed. The
+current repair restores missing in-cluster Gitea registry DNS before baseline
+builds and allows one exact-commit build retry after repairing that route.
+47 affected fixtures passed; native baseline/control/delivery verification is
+the next acceptance step. See the [Mac plan](mac-fresh-install.md).
+
 The fresh installer now continues through the catalogue, scoped CI repositories,
 OIDC, CPU judgement stack and delivery/control applications. It derives native
 image digests, model artefact hashes and source build IDs on the target. The

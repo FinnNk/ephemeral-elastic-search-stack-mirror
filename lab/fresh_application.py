@@ -133,6 +133,7 @@ def services():
     if k('get', 'configmap/coredns-custom', '-n', 'kube-system', check=False).returncode:
         apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {
             'name': 'coredns-custom', 'namespace': 'kube-system'}, 'data': {}})
+    registry_dns()
     def create():
         import setup_nexus as nexus
         import setup_snapshot_store as snapshot
@@ -386,22 +387,47 @@ def judgements():
           'python', '/app/smoke.py')
 
 
-def wait_build(repo, sha):
+def registry_dns():
+    """Route the frozen Gitea registry hostname to its service; preserve other DNS rules."""
+    rule = 'rewrite name exact gitea.localhost gitea-http.platform.svc.cluster.local\n'
+    current = json.loads(k('get', 'configmap/coredns-custom', '-n', 'kube-system', '-o', 'json').stdout)
+    if current.get('data', {}).get('gitea.override') == rule:
+        return False
+    print('Repairing in-cluster Gitea registry DNS; preserving existing DNS rules.', flush=True)
+    k('patch', 'configmap/coredns-custom', '-n', 'kube-system', '--type=merge', '-p',
+      json.dumps({'data': {'gitea.override': rule}}))
+    k('rollout', 'restart', 'deployment/coredns', '-n', 'kube-system')
+    k('rollout', 'status', 'deployment/coredns', '-n', 'kube-system', '--timeout=180s')
+    return True
+
+
+def wait_build(repo, sha, retry_failed=False):
     """Wait for the exact source commit, never substitute an old source-host run ID."""
     from gitea import api
     deadline = time.monotonic() + 1800
     previous = None
+    retried = None
     while time.monotonic() < deadline:
         runs = api('/repos/elastic-agent/' + repo + '/actions/runs?limit=50')['workflow_runs']
         matching = [row for row in runs if row['head_sha'] == sha and row['event'] == 'push']
         if matching:
             current = max(matching, key=lambda row: row['id'])
-            state = (current['id'], current['status'], current.get('conclusion'))
+            state = (current['id'], current.get('run_attempt', 1), current['status'], current.get('conclusion'))
             if state != previous:
                 print(repo + ' build: ' + str(state), flush=True)
                 previous = state
+            if retried == (current['id'], current.get('run_attempt', 1)):
+                # The API may briefly return the old failure after accepting a rerun.
+                time.sleep(5)
+                continue
             if current['status'] == 'completed':
                 if current.get('conclusion') != 'success':
+                    if retry_failed and retried is None and current.get('conclusion') == 'failure':
+                        print(f"Retrying exact {repo} build {current['id']} once after registry DNS repair.", flush=True)
+                        api('/repos/elastic-agent/' + repo + f"/actions/runs/{current['id']}/rerun", 'POST')
+                        retried = (current['id'], current.get('run_attempt', 1))
+                        time.sleep(5)
+                        continue
                     raise RuntimeError(f"{repo} build {current['id']} failed; inspect its Actions log.")
                 return current['id']
         time.sleep(5)
@@ -412,6 +438,7 @@ def baseline():
     """Seed the search baseline and identify the native delivery build created by Gitea."""
     from environments import git
     from gitea import api
+    dns_repaired = registry_dns()
     source = STATE / 'search-source'
     if not api('/repos/elastic-agent/search-spike')['empty']:
         if not (source / '.git').exists():
@@ -430,7 +457,7 @@ def baseline():
         git('add', '.', cwd=source)
         git('commit', '-m', 'Seed fresh lab search baseline', cwd=source)
         git('push', '-u', 'origin', 'main', cwd=source)
-    run = wait_build('search-spike', git('rev-parse', 'HEAD', cwd=source))
+    run = wait_build('search-spike', git('rev-parse', 'HEAD', cwd=source), retry_failed=dns_repaired)
     from delivery_provider import git as delivery_git
     delivery_run = wait_build('delivery-source', delivery_git('delivery-source', 'rev-parse', 'HEAD'))
     private_json(STATE / 'fresh-baselines.json', {'search_run': run, 'delivery_run': delivery_run})

@@ -59,6 +59,17 @@ check precedes login/build. 43 affected fixtures passed; a read-only Windows
 check found Buildx and reached the same Linux Docker daemon with a disposable
 isolated config. Mac execution remains the next acceptance check.
 
+The Mac subsequently completed native image builds and the CPU judgement stack.
+The baseline source checkout succeeded, but its registry login resolved
+`gitea.localhost:31800` to loopback and was refused. The fresh services stage had
+omitted the original platform installer's CoreDNS rewrite. The repair installs
+that rule on new setups and reconciles it before baseline builds on resume,
+preserving other DNS entries. A changed route permits one retry of the failed
+push build for the exact source commit; a repeated failure stops. The installed
+Gitea API schema confirms the run-ID rerun endpoint and attempt field. All 47
+affected fixtures passed. Native Mac registry login and the remaining stages
+still require acceptance; the original Windows cluster was not changed.
+
 The ESCI-S upstream bucket returned HTTP 403 on both the Mac and Windows.
 The retained-source batch packages the three original files in `FinnNk/esci-s`
 release assets and prefetches them before the unchanged importer runs. Original
