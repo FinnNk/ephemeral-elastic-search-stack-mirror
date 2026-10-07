@@ -17,3 +17,6 @@ lab/delivery/ci/lab_delivery.py text eol=lf
 
 # k3d executes this hook directly on Linux, including after Windows installation.
 lab/oidc-node-startup.sh text eol=lf
+
+# Fresh installation verifies these immutable manifest bytes before publication.
+data/fresh-judgements/*.manifest.json -text

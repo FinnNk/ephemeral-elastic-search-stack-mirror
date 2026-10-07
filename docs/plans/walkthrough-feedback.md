@@ -298,3 +298,15 @@ retained reports stay immutable.
 [Acceptance and activation plan](walkthrough-feedback-completion.md) records the
 remaining runtime checks. OpenCost assessment is included there; installation
 remains a separate proposed batch, as requested in the original feedback.
+
+
+## Fresh Mac setup feedback
+
+The fresh installer now includes the remaining catalogue, CI, judgement, OIDC and
+delivery applications. It reports stages and quiet-command progress, preserves
+completed work and derives new identities on the Mac. Corporate trust is passed
+to Python/image/runner downloads and Java/Maven. Registry selection survives the
+HTTPS configuration, and an old ECK pod with a failed registry pull is replaced
+only after its controller has the corrected image. Cleanup can explicitly include
+owned external stores. Native acceptance follows the
+[fresh installation plan](mac-fresh-install.md).

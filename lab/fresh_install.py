@@ -1,4 +1,4 @@
-"""Create and resume a fresh CPU lab foundation without importing old identities."""
+"""Create and resume a fresh CPU search lab without importing old identities."""
 
 import argparse
 import hashlib
@@ -20,7 +20,10 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 CLUSTER = 'relevance-lab'
 NODES = ('k3d-relevance-lab-server-0', 'k3d-relevance-lab-agent-0')
-PHASES = ('cluster', 'platform', 'storage', 'access')
+FOUNDATION = ('cluster', 'platform', 'storage', 'access')
+APPLICATIONS = ('services', 'repositories', 'identity', 'catalogue', 'images',
+                'judgements', 'baseline', 'control', 'delivery', 'verify')
+PHASES = FOUNDATION + APPLICATIONS
 GITEA_DIGEST = 'sha256:c168e7ccb767164793a67e1e874639488260795567337452b06292d1515bea12'
 ECK_IMAGE = 'docker.io/elastic/eck-operator:3.5.0@sha256:b6f261372d9d9af7b00aab03efea25263314d16063c4d440ac322e52c2fdf314'
 ELASTICSEARCH_IMAGE = 'docker.io/elastic/elasticsearch:9.5.4@sha256:82ac14f43fe701992e601f4cc81e1c0d7dbc5a2576d8cd736006452925df4026'
@@ -192,6 +195,8 @@ class Installer:
               or self.record.get('nodes', {}) != current):
             raise RuntimeError('Installer ownership differs from Docker. Inspect cleanup status first.')
         self.state.mkdir(parents=True, exist_ok=True)
+        if os.name != 'nt':
+            self.state.chmod(0o700)
         corporate = Path(self.args.corporate_ca).expanduser().resolve() if self.args.corporate_ca else None
         context = ca_bundle(self.state / 'host-ca-bundle.pem', corporate)
         self.env.update(SSL_CERT_FILE=str(self.state / 'host-ca-bundle.pem'),
@@ -297,6 +302,7 @@ class Installer:
                 source.write_text(operator_manifest((self.state / 'installer-downloads/eck-operator.yaml')
                                                     .read_text(encoding='utf-8')), encoding='utf-8')
             self.kubectl('apply', '--server-side', '-n', namespace, '-f', str(source), live=True)
+        self.repair_failed_operator_pod()
         self.kubectl('rollout', 'status', 'statefulset/elastic-operator', '-n', 'elastic-system',
                      '--timeout=180s', live=True)
         for name in ('argocd-server', 'argocd-repo-server', 'argocd-redis'):
@@ -333,8 +339,27 @@ class Installer:
         print('Checking the retained ECK image source.', flush=True)
         self.kubectl('set', 'image', 'statefulset/elastic-operator', '-n', 'elastic-system',
                      'manager=' + ECK_IMAGE, live=True)
+        self.repair_failed_operator_pod()
         self.kubectl('rollout', 'status', 'statefulset/elastic-operator', '-n', 'elastic-system',
                      '--timeout=300s', live=True)
+
+    def repair_failed_operator_pod(self):
+        """Replace only an old failed-pull pod after its controller has the new image."""
+        raw = self.kubectl('get', 'pod/elastic-operator-0', '-n', 'elastic-system',
+                           '-o', 'json', '--ignore-not-found')
+        if not raw.strip():
+            return
+        pod = json.loads(raw)
+        old = next((item['image'] for item in pod['spec']['containers'] if item['name'] == 'manager'), None)
+        failed = any(item.get('state', {}).get('waiting', {}).get('reason') in
+                     ('ErrImagePull', 'ImagePullBackOff') for item in pod.get('status', {}).get('containerStatuses', []))
+        if old and old != ECK_IMAGE and failed:
+            desired = json.loads(self.kubectl('get', 'statefulset/elastic-operator', '-n',
+                                  'elastic-system', '-o', 'json'))
+            if any(item['name'] == 'manager' and item['image'] == ECK_IMAGE
+                   for item in desired['spec']['template']['spec']['containers']):
+                print('Replacing the old ECK pod whose registry pull failed.', flush=True)
+                self.kubectl('delete', 'pod/elastic-operator-0', '-n', 'elastic-system', live=True)
 
     def reconcile_elasticsearch_image(self):
         """Repair a retained Elasticsearch source without changing version, indices or PVCs."""
@@ -388,7 +413,7 @@ class Installer:
         self.preflight()
         for phase in PHASES[:PHASES.index(self.args.through) + 1]:
             # Cluster identity/readiness is always checked. Other completed phases are retained.
-            if phase in self.record['completed'] and phase != 'cluster':
+            if phase in self.record['completed'] and phase not in ('cluster', 'verify'):
                 print('Retained completed stage: ' + phase, flush=True)
                 try:
                     if phase == 'platform':
@@ -402,7 +427,11 @@ class Installer:
             print('\nStarting stage: ' + phase, flush=True)
             start = time.monotonic()
             try:
-                getattr(self, phase)()
+                if phase in APPLICATIONS:
+                    self.command([sys.executable, '-u', str(ROOT / 'lab/fresh_application.py'),
+                                  phase], live=True)
+                else:
+                    getattr(self, phase)()
             except Exception:
                 self.diagnostics()
                 raise
@@ -410,8 +439,12 @@ class Installer:
                 self.record['completed'].append(phase)
             self.save()
             print(f'Completed {phase} in {time.monotonic() - start:.1f}s', flush=True)
-        print('\nFresh foundation ready through: ' + self.args.through)
-        print('Catalogue, CI repositories, judgement stack, OIDC and delivery runtime are not installed.')
+        print('\nFresh installation ready through: ' + self.args.through)
+        if self.args.through in FOUNDATION:
+            print('Catalogue, CI repositories, judgement stack, OIDC and delivery runtime are not installed.')
+        elif self.args.through == 'verify':
+            print('CPU search lab installed. Open https://control.localhost:34443/.')
+            print('Retrieve your initial sign-in: python lab/install_oidc.py credentials --user finnnk')
         print('Next: docs/fresh-install.md. Completed stages are retained when you rerun this command.')
 
 
@@ -423,7 +456,7 @@ def main():
                         default='docker.io/gitea/gitea')
     parser.add_argument('--server-memory', default='6g')
     parser.add_argument('--agent-memory', default='4g')
-    parser.add_argument('--through', choices=PHASES, default='access')
+    parser.add_argument('--through', choices=PHASES, default='verify')
     args = parser.parse_args()
     if not all(re.fullmatch(r'[1-9][0-9]*[gm]', value) for value in (args.server_memory, args.agent_memory)):
         parser.error('Memory limits must be positive whole values such as 6g.')

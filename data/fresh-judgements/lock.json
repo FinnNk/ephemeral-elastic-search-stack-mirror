@@ -1,0 +1,14 @@
+{
+  "esci-gb-v1": {
+    "manifest_sha256": "ee2c9c9cdc835604b74dd368381061f5c227689ea6ad736ed76c7b9fe25d4b8b",
+    "content_sha256": "1fdfc905cd2a58027198f40fcfa8ccf0d454f9b2229bc8bc5240cec3b0e2003d",
+    "object": "judgement-set/1fdfc905cd2a58027198f40fcfa8ccf0d454f9b2229bc8bc5240cec3b0e2003d/judgements.jsonl",
+    "record_count": 24088
+  },
+  "esci-gb-demo-v1": {
+    "manifest_sha256": "b7cc9cae682ddbcc38c2aeab196ffb52822bd2e9c2205444f3f01bf1b29172ca",
+    "content_sha256": "edfcbd06b470d21ba732b8da22d4b387596020a2cd6ac556fdb6582bf05919eb",
+    "object": "judgement-set/edfcbd06b470d21ba732b8da22d4b387596020a2cd6ac556fdb6582bf05919eb/judgements.jsonl",
+    "record_count": 981
+  }
+}

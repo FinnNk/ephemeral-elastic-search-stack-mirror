@@ -25,7 +25,7 @@ NAMESPACE = 'lab-control'
 TRANSFER = 'control-state-transfer'
 GITEA_INTERNAL = 'https://gitea-internal.lab-ingress.svc.cluster.local'
 COPIED = ('releases', 'state-source', 'delivery-state', 'delivery-source',
-          'delivery', 'evidence', 'workloads', 'delivery-operations.sqlite3')
+          'delivery', 'evidence', 'workloads', 'delivery-operations.sqlite3', 'tool-images-7j.json')
 CHECKPOINT_SCRIPT = '''import sqlite3, sys
 from pathlib import Path
 for name in ('lifecycle.sqlite3', 'delivery-operations.sqlite3'):
@@ -90,6 +90,14 @@ def prepare_config(image, baseline_run):
         data.update({'LAB_OIDC_ISSUER': ISSUER, 'LAB_OIDC_AUDIENCE': 'lab-control',
                      'LAB_OIDC_CA_FILE': '/etc/lab-ca/root.pem',
                      'LAB_CONTROL_PUBLIC_URL': 'https://control.localhost:34443'})
+    fresh_images = STATE / 'fresh-images.json'
+    if fresh_images.exists():
+        gatling = json.loads(fresh_images.read_text(encoding='utf-8')).get('lab-gatling', {})
+        if gatling.get('image'):
+            import re
+            if not re.fullmatch(r'nexus.localhost:18185/lab-gatling@sha256:[0-9a-f]{64}', gatling['image']):
+                raise ValueError('Fresh Gatling image must be digest-pinned.')
+            data['LAB_GATLING_IMAGE'] = gatling['image']
     notebook_image = STATE / 'notebook-image.json'
     if notebook_image.exists():
         data['LAB_NOTEBOOK_IMAGE'] = json.loads(notebook_image.read_text(encoding='utf-8'))['image']
@@ -147,6 +155,8 @@ def write_bundle(path):
                 continue
             if source.is_file():
                 # SQLite is copied through its backup API below, including WAL data.
+                if name == 'tool-images-7j.json':
+                    archive.add(source, arcname=name, recursive=False)
                 continue
             for member in source.rglob('*'):
                 if member.is_file() and '__pycache__' not in member.parts:
@@ -436,9 +446,12 @@ def export_bundle(path, image):
               check=False)
 
 
-def activate(image, baseline_run):
+def activate(image, baseline_run, fresh=False):
     if k('get', 'deployment/lab-control', '-n', NAMESPACE, check=False).returncode == 0:
         raise ValueError('Control deployment already exists; inspect it before cutover.')
+    if fresh:
+        from fresh_application import assert_fresh
+        assert_fresh()
     result = staged(image, baseline_run)
     pause_host()
     try:
@@ -452,13 +465,17 @@ def activate(image, baseline_run):
         k('rollout', 'status', 'deployment/lab-control', '-n', NAMESPACE, '--timeout=180s')
         k('exec', 'deployment/lab-control', '-n', NAMESPACE, '-c', 'api', '--',
           'python', 'lab/control-runtime/smoke.py')
-        browser_forward()
+        if not fresh:
+            browser_forward()
     except Exception:
         stop_browser_forward()
         k('delete', 'deployment/lab-control', '-n', NAMESPACE,
           '--ignore-not-found', '--wait=true', check=False)
         release_transfer_pod()
-        resume_host(baseline_run)
+        if fresh:
+            (STATE / 'control-drain').unlink(missing_ok=True)
+        else:
+            resume_host(baseline_run)
         raise
     result['active'] = True
     return result
@@ -471,7 +488,10 @@ def main():
     parser.add_argument('--image')
     parser.add_argument('--baseline-run', type=int)
     parser.add_argument('--bundle', type=Path)
+    parser.add_argument('--fresh', action='store_true', help='Activate an installer-owned lab without host services')
     args = parser.parse_args()
+    if args.fresh and args.command != 'activate':
+        parser.error('--fresh is only valid with activate')
     if args.command == 'migrate-git-remotes':
         result = migrate_git_remotes()
     elif args.command == 'import':
@@ -488,7 +508,7 @@ def main():
         if args.bundle:
             import_bundle(args.bundle)
         result = staged(args.image, args.baseline_run) if args.command == 'stage' else \
-            activate(args.image, args.baseline_run)
+            activate(args.image, args.baseline_run, fresh=args.fresh)
     print(json.dumps(result, indent=2))
 
 

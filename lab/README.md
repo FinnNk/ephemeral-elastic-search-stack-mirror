@@ -7,8 +7,8 @@ ephemeral environments. Search API contributors normally use [Actions-based deli
 comparisons and no kubectl commands.
 
 This guide assumes an **installed lab**. New Mac operators should start with
-[fresh installation](../docs/fresh-install.md), which automates the platform
-foundation and identifies remaining configuration. Operators of an existing
+[fresh installation](../docs/fresh-install.md), which automates the platform and
+search applications and verifies their readiness. Operators of an existing
 lab should use [control runtime](../docs/control-runtime.md). First-time platform
 experiments have a separate [bootstrap guide](../research/platform-spike/README.md).
 Search API development and the disconnected mock demo are in the

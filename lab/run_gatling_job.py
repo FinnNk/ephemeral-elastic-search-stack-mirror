@@ -117,6 +117,11 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
     run_dir = STATE / 'gatling-jobs' / short
     run_dir.mkdir(parents=True, exist_ok=False)
     apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NAMESPACE}})
+    pulls = []
+    if IMAGE.startswith('nexus.localhost:18185/'):
+        from setup_nexus import image_secret
+        image_secret(NAMESPACE)
+        pulls = [{'name': 'nexus-read'}]
     project = ROOT / 'lab/gatling'
     data = {'pom.xml': (project / 'pom.xml').read_text(encoding='utf-8'),
             'Simulation.java': (project / 'src/test/java/lab/relevance/SyntheticSearchSimulation.java').read_text(encoding='utf-8'),
@@ -130,7 +135,7 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
         'labels': {**owned_label, 'lab': 'gatling', 'profile': profile, 'target': target}},
         'spec': {'backoffLimit': 0, 'activeDeadlineSeconds': workload['duration_seconds'] + 480,
             'template': {'metadata': {'labels': {'lab': 'gatling'}},
-                'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never',
+                'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never', 'imagePullSecrets': pulls,
                 'initContainers': [{'name': 'prepare', 'image': IMAGE,
                     'command': ['sh', '-ec', 'mkdir -p /workspace/src/test/java/lab/relevance && cp /source/pom.xml /workspace/pom.xml && cp /source/Simulation.java /workspace/src/test/java/lab/relevance/SyntheticSearchSimulation.java && ' + restore],
                     'volumeMounts': [{'name': 'project', 'mountPath': '/workspace'},
@@ -177,7 +182,7 @@ def run(profile, target, environment=None, release_id=DEFAULT_RELEASE, owner='co
         reader = name + '-reader'
         apply({'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': reader, 'namespace': NAMESPACE,
                'labels': owned_label},
-               'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never',
+               'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never', 'imagePullSecrets': pulls,
                    'containers': [{'name': 'reader', 'image': IMAGE, 'command': ['sleep', '600'],
                                    'volumeMounts': [{'name': 'results', 'mountPath': '/results'}]}],
                    'volumes': [{'name': 'results', 'persistentVolumeClaim': {'claimName': claim}}]}})

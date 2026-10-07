@@ -62,3 +62,29 @@ Three fixture tests passed for absence, repeatable updates and API errors.
 No installation was run against the retained Windows cluster. The resumed Mac
 installation remains the runtime verification.
 
+
+
+## Complete application installation batch
+
+The installer now has ten application stages after the foundation. Validation on
+Windows ran 41 focused fixture checks successfully, covering installation
+recovery, external store ownership and cleanup refusal, exact CI commit selection,
+frozen snapshot corruption/provenance, CPU manifest adaptation, CA trust, image
+receipt transfer and failed activation without starting legacy host writers.
+The first sandboxed test attempt could not create temporary directories; a scoped
+run outside that sandbox passed. One snapshot-order assertion was corrected to
+match the retained lock order before the final successful run.
+
+The two frozen judgement snapshots were read from the existing Blob service
+through a temporary read-only operator forward, checked against the selected
+manifest hashes and compressed into repository seed inputs. There are 24,088
+full-catalogue rows and 981 demo rows; original manifests, source metadata and
+content hashes are retained. No old credentials, CA keys or model weights were
+exported. The forward was closed after export.
+
+Python compilation, CLI help and Git whitespace checks passed. Documentation
+entry points were reviewed against the installer stage order and resume behaviour.
+No actual installer, cleanup deletion, model call, load test or deployment was
+run against the original Windows lab. Native Mac image builds, corporate registry
+access, browser sign-in and end-to-end comparison/promotion remain target
+acceptance checks; this batch does not claim they have already passed.

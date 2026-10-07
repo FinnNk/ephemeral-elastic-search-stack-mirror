@@ -214,3 +214,17 @@ were checked; the merged definitions and coordinator are now installed.
 A fresh comparison confirmed matching frozen and stored coverage: 0% for 40
 cached abstentions, with no new inference. An optional-gate display fix awaits
 review. Next: activate that fix, then resume the unchanged production load gate.
+
+
+## Complete fresh CPU installation
+
+The fresh installer now continues through the catalogue, scoped CI repositories,
+OIDC, CPU judgement stack and delivery/control applications. It derives native
+image digests, model artefact hashes and source build IDs on the target. The
+small frozen judgement snapshot retains source provenance. The user authorised
+this batch's merge and automatic mirror verification.
+
+Next: [native Mac acceptance](mac-fresh-install.md#next-detailed-plan-native-acceptance),
+including corporate downloads, browser sign-in, comparison/notebook and a reviewed
+promotion. Fixture verification is recorded in the
+[fresh-install evidence](../research/evidence/mac-fresh-install.md).

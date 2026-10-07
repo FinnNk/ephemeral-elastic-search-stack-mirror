@@ -79,7 +79,7 @@ class FreshInstallTests(unittest.TestCase):
         cluster.assert_called_once()
         platform.assert_not_called()
         reconcile.assert_called_once()
-        self.assertEqual(installer.record['completed'], list(setup.PHASES))
+        self.assertEqual(installer.record['completed'], list(setup.FOUNDATION))
 
     def test_second_installer_does_not_remove_first_lock(self):
         lock = self.state / 'fresh-install.lock'
@@ -234,6 +234,20 @@ class FreshInstallTests(unittest.TestCase):
             installer.install()
         storage.assert_not_called()
         reconcile.assert_called_once()
+
+    def test_old_operator_pull_failure_recovery_does_not_delete_healthy_or_current_pods(self):
+        installer = setup.Installer(self.args)
+        for image, reason, expected in [('old-image', 'ImagePullBackOff', True),
+                                        ('old-image', None, False),
+                                        (setup.ECK_IMAGE, 'ImagePullBackOff', False)]:
+            pod = {'spec': {'containers': [{'name': 'manager', 'image': image}]},
+                   'status': {'containerStatuses': [{'state': {'waiting': {'reason': reason}}}]}}
+            controller = {'spec': {'template': {'spec': {'containers': [
+                {'name': 'manager', 'image': setup.ECK_IMAGE}]}}}}
+            with patch.object(installer, 'kubectl', side_effect=[json.dumps(pod), json.dumps(controller), '']) as command:
+                installer.repair_failed_operator_pod()
+            deletes = [call.args for call in command.call_args_list if call.args[0] == 'delete']
+            self.assertEqual(bool(deletes), expected)
 
     def test_retained_elasticsearch_image_patch_changes_only_image(self):
         installer = setup.Installer(self.args)

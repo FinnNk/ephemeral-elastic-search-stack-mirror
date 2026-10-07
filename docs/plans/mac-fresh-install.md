@@ -24,31 +24,32 @@ installation. Keep the original Windows lab untouched.
 This batch installs an empty platform foundation. It does not claim a complete
 search lab, native Mac execution, whole-lab restoration or real cleanup testing.
 
-## Next detailed plan: complete the application setup
+## Complete CPU application batch
 
-The registry correction now selects pinned Docker Hub sources for both ECK and
-Elasticsearch and reconciles these on resume, including completed stages. Its
-target acceptance is a resumed Mac install after the observed HTTP 403 failure;
-the original Windows workloads remain untouched.
+The user authorised completion, merging and verification of the GitHub mirror.
+The installer now continues from the accepted foundation through owned Nexus and
+snapshot services, private CI repositories/runners, OIDC, catalogue restoration,
+native image builds, the CPU judgement stack, fresh baseline builds, control and
+delivery activation, and readiness verification.
 
-1. Review and merge the foundation batch, then run it on the disposable Mac.
-   Record image-pull, node restart, HTTPS and native resolver results. Retain the
-   original Windows lab for recovery. Test cleanup on that disposable target.
-2. Extend installer ownership records to external Nexus/PostgreSQL and snapshot
-   stores before automating their creation and deletion. Add fresh ESO/Key Vault
-   setup and named OIDC sign-in without transferring old credentials or keys.
-3. Add deterministic catalogue import and publication, with the full English
-   ESCI release by default and a configurable small demo release. Reuse existing
-   immutable data contracts and include only the CPU abstaining judge. Do not
-   install or transfer historical gap-filling models or GPU jobs.
-4. Seed source/state repositories once, configure scoped runners, await a
-   successful native baseline build, publish the control/evaluator/notebook
-   images and activate the control PVC once. Existing baseline-run and state
-   prerequisites must be supplied or derived explicitly, not guessed from old
-   Windows run numbers.
-5. Reconcile delivery Actions, demonstrate one comparison/notebook and reviewed
-   promotion in the UI. Add restart and selective cleanup acceptance for this
-   complete topology before describing the installer as a full lab setup.
+Corporate trust reaches host downloads, runners, image package installs and
+Java/Maven. Registry choices survive HTTPS setup. Resume retains source commits,
+image receipts and model registration artefacts; no Windows run IDs, model hashes
+or credentials are assumed. An explicit cleanup option validates external store
+identities before deleting the owned disposable installation.
 
-Acceptance is required before main merges. No original-lab deletion, deployment,
-inference or load test is part of this implementation batch.
+The original Windows lab remains untouched. Automated fixtures establish recovery,
+ownership and data identity behaviour, not a completed native Mac deployment.
+
+## Next detailed plan: native acceptance
+
+1. Pull the mirror, install `lab/fresh-requirements.txt` with the existing host CA
+   bundle and resume with the original corporate PEM and setup options.
+2. Record the first failing stage, if any; inspect its saved logs and Actions
+   results. Preserve completed stages and repair the specific cause before retrying.
+3. Confirm local DNS/HTTPS and named OIDC sign-in. Create one small comparison,
+   open the notebook and follow a reviewed promotion through the UI/Actions.
+4. Restart the disposable cluster and rerun final verification. Inspect cleanup
+   inventory; exercise a complete owned reset only on that disposable target.
+
+No original-lab deletion, deployment, inference or load test is part of this batch.

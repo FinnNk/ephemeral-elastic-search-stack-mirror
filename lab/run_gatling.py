@@ -4,6 +4,8 @@ import argparse
 import hashlib
 import io
 import json
+import os
+import re
 import subprocess
 import time
 import uuid
@@ -16,7 +18,10 @@ from gatling_report import summarise
 from traffic import compile_profile
 from input_selection import DEFAULTS, fetch_manifest
 
-IMAGE = 'maven:3.9.11-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237'
+DEFAULT_IMAGE = 'maven:3.9.11-eclipse-temurin-21@sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237'
+IMAGE = os.environ.get('LAB_GATLING_IMAGE', DEFAULT_IMAGE)
+if IMAGE != DEFAULT_IMAGE and not re.fullmatch(r'nexus.localhost:18185/lab-gatling@sha256:[0-9a-f]{64}', IMAGE):
+    raise ValueError('Custom Gatling image must be a digest-pinned lab image.')
 TARGETS = {'baseline': ('retail-baseline', 18080), 'candidate': ('retail-candidate', 18081)}
 REPORTS = ROOT / 'lab/gatling/target/gatling'
 SIMULATION = ROOT / 'lab/gatling/src/test/java/lab/relevance/SyntheticSearchSimulation.java'

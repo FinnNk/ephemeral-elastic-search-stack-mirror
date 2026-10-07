@@ -2,7 +2,7 @@
 
 For a new installation with fresh credentials and certificates, start with
 [fresh installation](fresh-install.md). Its resumable installer automates the
-platform foundation; remaining search and delivery setup is listed there.
+CPU search lab with fresh identities, repositories and frozen ESCI data.
 
 Use this guide to prepare an Apple silicon or Intel Mac for restoring an existing
 lab using [the transfer runbook](lab-transfer.md). Installing the tools and

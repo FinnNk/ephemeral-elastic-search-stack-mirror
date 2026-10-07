@@ -187,6 +187,11 @@ def expose():
 
 def configure_gitea():
     values = ROOT / 'research' / 'platform-spike' / 'gitea-values.yaml'
+    if (STATE / 'fresh-install.json').exists():
+        # Retain the permitted registry selected by the fresh installer.
+        values = STATE / 'fresh-gitea-values.yaml'
+        if not values.exists():
+            raise RuntimeError('Fresh Gitea values are missing; rerun the platform stage.')
     run([HELM, 'upgrade', 'gitea', 'gitea', '--reuse-values', '--repo', 'https://dl.gitea.com/charts/',
          '--version', '12.7.0',
          '--namespace', 'platform', '--values', str(values), '--set-string',
