@@ -131,7 +131,7 @@ def project(run, rows, receipts, environments, reviews, builds, notices):
     deployments = [r['deployment'] for r in receipts if r.get('state') == 'verified']
     deployments += [candidate(p) for p in proposals.values() if candidate(p)]
     choices = {d['build_run']: {'run': d['build_run'], 'source_sha': d['fields']['source_sha'],
-        'release_id': d['fields']['software_release_id']} for d in deployments}
+        'release_id': d['fields']['software_release_id'], 'version': d['fields'].get('software_version')} for d in deployments}
     for build in builds:
         choices.setdefault(build['id'], {'run': build['id'], 'source_sha': build['head_sha'], 'release_id': None})
     choices = sorted(choices.values(), key=lambda r: r['run'], reverse=True)

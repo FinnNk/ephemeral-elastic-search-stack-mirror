@@ -336,6 +336,8 @@ def demonstrate_merge(number):
 def watch_once():
     checkout()
     results = []
+    from delivery_versions import sync_tags
+    results.extend(sync_tags())
     from relevance_decisions import watch_decisions
     results.extend(watch_decisions())
     for pr in api(endpoint(DESIRED, '/pulls?state=open&limit=100')):

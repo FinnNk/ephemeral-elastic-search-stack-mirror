@@ -6,6 +6,7 @@ import subprocess
 from common import STATE
 from delivery_provider import SOURCE, DESIRED, api, endpoint
 from release_dashboard import operation_rows, review
+from delivery.ci.versioning import compare as compare_versions
 
 
 def next_target(row):
@@ -87,10 +88,22 @@ def project(row, targets, operations, reviews, main_sha, statuses, order=source_
     if statuses.get(number) != 'success':
         return {**result, 'state': 'closed', 'tone': 'bad', 'message': 'Current PR validation is not passing.'}
     relation = order(row.get('source_sha'), active.get('source_sha'))
+    result['source_order'] = relation
+    left, right = row.get('software_version'), active.get('software_version')
+    result['ordering_basis'] = 'Git ancestry'
+    if left and right:
+        try:
+            precedence = compare_versions(left, right)
+            relation = 'newer' if precedence > 0 else 'older' if precedence < 0 else 'same'
+            result['ordering_basis'] = 'SemVer'
+        except ValueError:
+            relation = 'unknown'
+            result['ordering_basis'] = 'Invalid version metadata'
     return {**result, 'state': 'promotable', 'order': relation,
             'tone': 'good' if relation == 'newer' else 'warn' if relation == 'older' else '',
             'message': 'Promotable · ' + {'newer': 'newer than target', 'older': 'older than target',
-                'same': 'same source commit', 'unknown': 'source order unknown'}[relation]}
+                'same': 'same version' if result['ordering_basis'] == 'SemVer' else 'same source commit',
+                'unknown': 'release order unknown'}[relation]}
 
 
 def decorate(rows, identity):

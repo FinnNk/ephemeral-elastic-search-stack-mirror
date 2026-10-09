@@ -134,8 +134,10 @@
       if(row.index_materialisation)details.append(text('div','Index path '+row.index_materialisation+' · '+Number(row.index_seconds||0).toFixed(3)+' s','meta'));
       if(row.index_recovery_errors)for(const error of JSON.parse(row.index_recovery_errors))details.append(text('div','Recovery: '+error,'meta'));
       card.append(details);if(row.error)card.append(text('div','Error: '+row.error,'meta'));
+      if(row.software_version)card.append(text('div','Version '+row.software_version,'meta'));
       const promotion=row.promotion||{message:'No promotion evidence for this environment.'};
       card.append(text('div',(promotion.target?'To '+promotion.target+' · ':'')+promotion.message,'badge '+(promotion.tone||'')));
+      if(promotion.ordering_basis)card.append(text('div','Order: '+promotion.ordering_basis+' · Git source '+(promotion.source_order||'unknown'),'meta'));
       if(promotion.operation_url){const link=text('a','Review promotion checks','report-link');link.href=promotion.operation_url;card.append(link)}
       if(row.state==='ready'&&row.managed_by!=='delivery'){
         if(row.browser_url){const link=text('a','Open search page','report-link');link.href=row.browser_url;link.target='_blank';link.rel='noopener';card.append(link)}

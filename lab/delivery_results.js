@@ -116,7 +116,7 @@ function report(value,operationRecord){
  }
  else if(value.state==='verified'){
   const s=section('Verified release'),deployment=value.deployment||{},fields=deployment.fields||{};
-  table(s,['Field','Value'],[['Environment',fmt(value.environment)],['Build run',fmt(deployment.build_run)],['Image',fmt(fields.image)],['Index',fmt(fields.index)],['Source commit',fmt(fields.source_sha)],['Verified at',fmt(value.verified_at)],['Verification duration',fmt(value.seconds)+' s'],...(value.merge_to_verified_seconds==null?[]:[['Merge to verified',fmt(value.merge_to_verified_seconds)+' s']]),['Products checked',fmt(value.sample_ids?.length)]]);
+  table(s,['Field','Value'],[['Environment',fmt(value.environment)],['Version',fmt(fields.software_version)],['Build run',fmt(deployment.build_run)],['Image',fmt(fields.image)],['Index',fmt(fields.index)],['Source commit',fmt(fields.source_sha)],['Verified at',fmt(value.verified_at)],['Verification duration',fmt(value.seconds)+' s'],...(value.merge_to_verified_seconds==null?[]:[['Merge to verified',fmt(value.merge_to_verified_seconds)+' s']]),['Products checked',fmt(value.sample_ids?.length)]]);
   $('explanation').textContent='This records deployment verification, not a new relevance or load test.';
  }
  else if(value.reports){

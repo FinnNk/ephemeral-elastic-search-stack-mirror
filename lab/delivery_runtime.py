@@ -92,6 +92,8 @@ def resolve(run_id, dataset=DEFAULT_RELEASE, recipe_sha=None, merged=True,
               'query_manifest_sha256': selected['query_manifest_sha256'],
               'judgement_manifest_sha256': selected['judgement_manifest_sha256'],
               'dataset_release': dataset, 'request_context': {'country': 'GB', 'currency': 'GBP'}}
+    if release.get('version'):
+        fields['software_version'] = release['version']
     if variant_config is not None:
         if not isinstance(variant_config, dict) or \
                 variant_config.get('default_variant') not in variant_config.get('variants', {}):
@@ -120,6 +122,8 @@ def validate_deployment(deployment, *, merged=True):
             release != built or release['image'] != fields['image'] or
             release['source_sha'] != fields['source_sha'] or release['bundle_sha256'] != fields['bundle_sha256']):
         raise ValueError('Deployment differs from its verified source release.')
+    if fields.get('software_version') != release.get('version'):
+        raise ValueError('Deployment version differs from its verified source release.')
     recipe = load_recipe(fields['index_recipe_sha256'])
     if recipe['format'] == 2:
         verify_catalogue_manifest(recipe)

@@ -2,7 +2,7 @@
 // Browser verification: navigation, responsive tree and GET-only requests.
 const fs=require('fs'),path=require('path'),http=require('http'),assert=require('assert');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const fields={source_sha:'a'.repeat(40),software_release_id:'b'.repeat(64),dataset_release:'esci-gb-v1',index:'catalogue',image:'search@sha256:'+'c'.repeat(64)};
+const fields={software_version:'1.0.0+build.158.1',source_sha:'a'.repeat(40),software_release_id:'b'.repeat(64),dataset_release:'esci-gb-v1',index:'catalogue',image:'search@sha256:'+'c'.repeat(64)};
 const envs=['integration','staging','production-blue','production-green'].map(name=>({name,definition:fields,ready:true,active:name==='production-blue',slot:name.startsWith('production-')?name.split('-')[1]:null,replicas:1,ready_replicas:1,sync:'Synced',health:'Healthy'}));
 const operation={id:'123',kind:'promotion',target:'staging',state:'complete',progress:'Complete',intent:'ranking-change',updated_at:'2026-10-06T15:00:00Z',duration_seconds:123,url:'/api/delivery/operations/123',report_url:'/api/delivery/operations/123/report',pr:{number:24,state:'merged',url:'https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/24'}};
 const fixture={updated_at:'2026-10-06T16:00:00Z',releases:Array.from({length:12},(_,i)=>({run:158-i,source_sha:'a'.repeat(40),state:i===0?'candidate ready':'built',environments:i===0?['staging']:[],created_at:'2026-10-06T13:00:00Z'})),selected:{run:158,source_sha:fields.source_sha,release_id:fields.software_release_id},build:{state:'success',url:'https://gitea.localhost:34443/elastic-agent/delivery-source/actions/runs/158',duration_seconds:45},source:{state:'merged',number:31,title:'<img src=x onerror=alert(1)>',message:'Recorded source gate before merge.',gate:{state:'pass',variants:[{variant:'ranker-a',state:'pass'}]},gate_url:'/api/delivery/operations/source'},release:fields,stages:['integration','staging','candidate','production'].map((name,i)=>({name,title:['Integration','Staging','Production candidate','Active production'][i],state:['verified','verified','prepared','pending'][i],message:'Recorded release progress.',environment:i===3?null:envs[i],operation:i===1?operation:null,checks:i===1?[{name:'performance',verdict:'within-budget',url:'/report/performance'}]:[],verification:i<2?{verified_at:'2026-10-06T15:00:00Z',seconds:2,git_revision:'d'.repeat(40)}:null})),active_production:envs[2],environments:envs,activity:[operation],unbound_operations:[],notices:[],limits:'Bounded recorded history.'};
@@ -37,6 +37,7 @@ async function main(){
     await page.goto(base+'/release-dashboard?run=158');await page.locator('.tree-node').first().waitFor();
     assert.equal(await page.locator('.tree-node').count(),5);assert.ok(await page.locator('svg .edge').count()>=8);
     assert.equal(await page.locator('.tree-detail img').count(),0);
+    if(!live)assert.ok((await page.locator('body').innerText()).includes('1.0.0+build.158.1'));
     await page.getByRole('tab',{name:'Inputs & policy'}).click();assert.ok(await page.locator('#view-inputs').isVisible());
     await page.getByRole('tab',{name:'Inputs & policy'}).press('ArrowRight');assert.ok(await page.locator('#view-activity').isVisible());
     await page.getByRole('tab',{name:'Overview',exact:true}).click();

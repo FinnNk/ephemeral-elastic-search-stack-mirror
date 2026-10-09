@@ -35,6 +35,18 @@ class PromotionTests(unittest.TestCase):
         self.reviews = {}
         self.assertEqual(self.result()['tone'], '')
 
+    def test_semver_takes_precedence_but_git_order_remains_visible(self):
+        self.row['software_version'] = '1.2.0+build.158.1'
+        self.target['software_version'] = '1.1.0+build.999.1'
+        result = self.result('older')
+        self.assertEqual(result['tone'], 'good')
+        self.assertEqual(result['ordering_basis'], 'SemVer')
+        self.assertEqual(result['source_order'], 'older')
+        self.target['software_version'] = '1.2.0+build.999.1'
+        self.assertEqual(self.result()['tone'], '')
+        self.row['software_version'] = '1.0.0'
+        self.assertEqual(self.result()['tone'], 'warn')
+
     def test_closed_gates_cannot_be_promotable(self):
         for change in ('failed', 'review', 'target', 'main', 'head', 'fingerprint', 'fields', 'preparation'):
             with self.subTest(change=change):

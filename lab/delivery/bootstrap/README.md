@@ -127,3 +127,22 @@ The API accepts a JSON `filters` query parameter and echoes it in the response.
 Unknown fields or invalid bounds return HTTP 400. Captures and load workloads
 retain the same filters for every variant. See the
 [filter contract](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/search-request.md).
+
+## Version a release
+
+Edit `VERSION` in the same PR as the change. Use `MAJOR.MINOR.PATCH`: major for
+breaking public API changes, minor for compatible features or deliberate ranking
+changes, and patch for compatible fixes. The initial version is `1.0.0`.
+
+CI adds `-pr.<PR>.<run>.<attempt>` to preview builds and
+`+build.<run>.<attempt>` to merged builds. After verified main publication,
+the coordinator creates the immutable `v<version>` source tag. Build metadata
+does not affect promotion ordering; exact release hashes still bind all gates.
+
+A published version cannot be reused for different source contents, including
+configuration, tests or documentation. Empty commits and rebuilds of the same
+source tree may keep their version. A changed tree must bump `VERSION` before
+merging; both PR checks and main publication refuse a conflicting version.
+
+See the [version contract](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/delivery-versioning.md)
+for ordering, retained releases and tag recovery.

@@ -33,6 +33,7 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           RUN_ATTEMPT: ${{ github.run_attempt }}
           EVENT_KIND: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           REGISTRY: ${{ vars.RELEASE_REGISTRY }}
           ARTIFACT_URL: ${{ vars.RELEASE_ARTIFACT_URL }}
           NEXUS_USER: ${{ secrets.NEXUS_USER }}

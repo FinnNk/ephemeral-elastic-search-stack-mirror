@@ -15,7 +15,7 @@ const $=id=>document.getElementById(id);
 async function request(path,body){const response=await fetch(path,{method:body?'POST':'GET',headers:{Accept:'application/json','Content-Type':'application/json','X-Lab-Intent':'1',...(body?{'Idempotency-Key':crypto.randomUUID()}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok){$('signin').hidden=response.status!==401;throw new Error(value.error||'Request failed')}return value}
 function text(tag,value,parent){const el=document.createElement(tag);el.textContent=value;parent.append(el);return el}
 function releaseDetails(value){
- const fields=[['Build run','build_run'],['Source commit','source_sha'],['Release','software_release_id'],['Image','image'],['Catalogue','dataset_release'],['Index','index'],['Elasticsearch','engine']];
+ const fields=[['Version','software_version'],['Build run','build_run'],['Source commit','source_sha'],['Release','software_release_id'],['Image','image'],['Catalogue','dataset_release'],['Index','index'],['Elasticsearch','engine']];
  $('release-details').replaceChildren();
  for(const [label,key] of fields){const row=text('tr',null,$('release-details'));text('th',label,row);
   for(const release of [value.production,value.candidate]){const cell=text('td',null,row),v=release?.[key];

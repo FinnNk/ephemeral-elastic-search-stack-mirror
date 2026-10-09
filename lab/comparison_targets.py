@@ -69,6 +69,7 @@ def available():
         row = {'id': identifier, 'name': name, 'owner': 'lab', 'shared': True,
                'managed_by': 'delivery', 'state': 'ready', 'label': title + (' — build ' + str(build) if build else ''),
                'build_run': build, 'source_sha': value['source_sha'], 'image': value['image'],
+               'software_version': value.get('software_version'),
                'dataset_sha256': value['dataset_sha256'], 'fingerprint': value['fingerprint'],
                'release_id': value['dataset_release'], 'index_name': value['index'], 'index_kind': 'shared',
                'index_recipe_sha256': value['index_recipe_sha256'], 'created_at': now,

@@ -26,6 +26,8 @@ def validate_bundle(release, content):
         raise ValueError('Index contract differs from the descriptor.')
     if digest(result['contracts/indexer.py']) != release['index_contract']['indexer_source_sha256']:
         raise ValueError('Indexer source differs from the contract.')
+    if release.get('version') and result.get('VERSION') != (release['declared_version'] + '\n').encode():
+        raise ValueError('Version file differs from the release descriptor.')
     return result
 
 
@@ -62,4 +64,10 @@ def from_run_bytes(run_id):
             release['source_repository'] != receipt['source_repository'] or receipt['image'] != release['image'] or
             str(receipt['run_id']) != str(run['id']) or str(receipt['run_attempt']) != str(run['run_attempt'])):
         raise ValueError('Build receipt does not match the exact successful source run.')
+    if release.get('version'):
+        from delivery.ci.versioning import build_version
+        expected = build_version(release['declared_version'], run['event'], run['id'], run['run_attempt'],
+                                 receipt.get('pr_number'))
+        if receipt.get('version') != release['version'] or expected != release['version']:
+            raise ValueError('Version differs from the exact successful build.')
     return receipt, release, files, payload

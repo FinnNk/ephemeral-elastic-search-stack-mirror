@@ -11,6 +11,11 @@ import tarfile
 import urllib.error
 import urllib.request
 
+try:
+    from .versioning import parse, declared, build_version
+except ImportError:  # The source workflow invokes this file directly.
+    from versioning import parse, declared, build_version
+
 
 def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
@@ -41,12 +46,20 @@ def validate(release):
         raise ValueError('Index compatibility contract is incomplete.')
     if files['contracts/indexer.py'] != contract['indexer_source_sha256']:
         raise ValueError('Indexer source hash differs from the compatibility contract.')
+    if 'version' in release:
+        parse(release['version'])
+        _, pre, metadata = parse(release.get('declared_version'))
+        if pre or metadata or not re.fullmatch('[a-f0-9]{40}', release.get('source_tree', '')) or \
+                files.get('VERSION') != digest((release['declared_version'] + '\n').encode()):
+            raise ValueError('Version metadata differs from the versioned source tree or VERSION file.')
     return release
 
 
 def bundle(root):
     files = sorted(p for folder in ('app', 'chart', 'contracts') for p in (root / folder).rglob('*')
                    if p.is_file() and '__pycache__' not in p.parts)
+    if (root / 'VERSION').exists():
+        files.append(root / 'VERSION')
     hashes = {}
     output = io.BytesIO()
     with tarfile.open(fileobj=output, mode='w') as archive:
@@ -63,7 +76,7 @@ def bundle(root):
     return gzip.compress(output.getvalue(), mtime=0), hashes
 
 
-def publish(base, path, content, username, password):
+def publish(base, path, content, username, password, check_only=False):
     auth = 'Basic ' + base64.b64encode((username + ':' + password).encode()).decode()
     url = base.rstrip('/') + '/' + path
     headers = {'Authorization': auth, 'Content-Type': 'application/octet-stream'}
@@ -75,6 +88,8 @@ def publish(base, path, content, username, password):
     except urllib.error.HTTPError as error:
         if error.code != 404:
             raise
+        if check_only:
+            return
     else:
         if existing != content:
             raise ValueError('Refusing to replace an immutable artifact: ' + path)
@@ -92,25 +107,37 @@ def publish(base, path, content, username, password):
 
 def main():
     root = Path.cwd()
+    version = declared(root)
+    if (root / 'VERSION').read_bytes() != (version + '\n').encode():
+        raise ValueError('VERSION must contain the version followed by one LF newline.')
     payload, hashes = bundle(root)
     metadata = json.loads((root / 'image-metadata.json').read_text())
     image = os.environ['REGISTRY'] + '/search-api@' + metadata['containerimage.digest']
     contract = json.loads((root / 'contracts/index.json').read_text())
     release = validate({'format': 1, 'source_repository': os.environ['SOURCE_REPOSITORY'],
         'source_sha': os.environ['SOURCE_SHA'], 'image': image, 'bundle_sha256': digest(payload),
-        'files': hashes, 'index_contract': contract})
+        'files': hashes, 'index_contract': contract, 'declared_version': version,
+        'source_tree': os.environ['SOURCE_TREE'], 'version': build_version(version, os.environ['EVENT_KIND'],
+            os.environ['RUN_ID'], os.environ['RUN_ATTEMPT'], os.environ.get('PR_NUMBER'))})
     descriptor = canonical(release)
     release_id = digest(descriptor)
-    def put(path, content):
+    def put(path, content, check_only=False):
         publish(os.environ['ARTIFACT_URL'], path, content,
-                os.environ['NEXUS_USER'], os.environ['NEXUS_PASSWORD'])
+                os.environ['NEXUS_USER'], os.environ['NEXUS_PASSWORD'], check_only)
     put('bundles/' + release['bundle_sha256'] + '.tar.gz', payload)
     put('releases/' + release_id + '.json', descriptor)
+    # PRs check existing reservations without creating them. Main publication
+    # atomically reserves the version in Nexus's ALLOW_ONCE repository.
+    put('versions/' + version + '.json', canonical({'version': version,
+        'source_repository': release['source_repository'], 'source_tree': release['source_tree']}),
+        check_only=os.environ['EVENT_KIND'] == 'pull_request')
     # This receipt is written last. A failed job cannot leave a complete release receipt.
     receipt = {'format': 1, 'release_id': release_id, 'source_sha': release['source_sha'],
                'source_repository': release['source_repository'], 'image': image,
                'event_kind': os.environ['EVENT_KIND'], 'run_id': os.environ['RUN_ID'],
-               'run_attempt': os.environ['RUN_ATTEMPT']}
+               'run_attempt': os.environ['RUN_ATTEMPT'], 'version': release['version']}
+    if os.environ['EVENT_KIND'] == 'pull_request':
+        receipt['pr_number'] = int(os.environ['PR_NUMBER'])
     put('builds/' + release['source_sha'] + '/' + receipt['run_id'] + '-' + receipt['run_attempt'] + '.json',
         canonical(receipt))
     print('RELEASE_ID=' + release_id)

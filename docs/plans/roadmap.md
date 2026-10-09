@@ -6,12 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-The missing source selection repair is merged. The Mac comparison completed
-and its gate is green. The [next batch](environment-promotion-status.md) adds
-next-target promotion evidence to environment cards and early expiry for
-previews/ephemeral environments. Integration, Staging and Production stay
-protected. Next: review, update the Mac runtime and verify with a disposable
-preview and a reviewed promotion.
+PR #169 is merged: environment cards show next-target promotion evidence and
+allow early preview/ephemeral expiry. The Mac source comparison passed.
+The [current batch](delivery-semantic-versions.md) introduces reviewed SemVer
+versions, immutable publication and coordinator-owned source tags. Next: review
+the lab and delivery-source PRs, update the runtime, then publish the first
+versioned merged build and verify its mirrored tag and promotion status.
 
 The Mac SigNoz installer succeeded on retry. Its ingestion and clean-install
 acceptance still need checking. The source PR comparison then failed before

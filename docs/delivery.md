@@ -127,12 +127,13 @@ the promotion badge describes the evidence and review for that next move.
 | --- | --- |
 | Grey | No matching evidence, unavailable evidence, an already deployed release, or unknown source order |
 | Red | Recorded promotion checks are incomplete, approval is pending, or the proposal or target changed |
-| Orange | The reviewed release is promotable, but its source commit predates the target |
-| Green | The reviewed release is promotable and its source commit follows the target |
+| Orange | The reviewed release is promotable, but its semantic version precedes the target |
+| Green | The reviewed release is promotable and its semantic version follows the target |
 
-Version order uses Git ancestry from retained source history. Release IDs and
-build numbers identify exact builds; tags do not define their order. Rebuilds
-of the same commit and unrelated or unavailable history stay neutral. This
+Version order uses SemVer when both releases have a recorded version. Build
+metadata does not affect precedence. Git ancestry remains visible and provides
+the fallback for retained unversioned releases. Equal versions and unavailable
+ordering stay neutral. See [version a release](delivery-versioning.md). This
 read-only status does not replace the coordinator's deployment checks. A
 passing source gate alone does not satisfy a subsequent promotion gate.
 Production preparation alone does not satisfy the final release gate.

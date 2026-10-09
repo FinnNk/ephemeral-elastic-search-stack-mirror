@@ -20,3 +20,6 @@ lab/oidc-node-startup.sh text eol=lf
 
 # Fresh installation verifies these immutable manifest bytes before publication.
 data/fresh-judgements/*.manifest.json -text
+
+# The release contract requires a canonical version-file newline.
+lab/delivery/bootstrap/VERSION text eol=lf

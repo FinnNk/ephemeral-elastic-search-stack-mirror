@@ -15,6 +15,8 @@ class DeliverySeedTests(unittest.TestCase):
                 patch.object(setup_delivery, 'git'):
             root = Path(directory)
             setup_delivery.seed_source(root)
+            self.assertEqual((root / 'VERSION').read_text().strip(), '1.0.0')
+            self.assertTrue((root / 'ci/versioning.py').exists())
             selection = json.loads((root / 'gate/selection.json').read_text())
             layout = json.loads((root / 'gate/evaluation.json').read_text())
             self.assertEqual(selection['kind'], 'variant-gate-selection')
