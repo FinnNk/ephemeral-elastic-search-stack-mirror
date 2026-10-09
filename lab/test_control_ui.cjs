@@ -101,7 +101,31 @@ assert.equal(await page.locator('#baseline').inputValue(),'environment-52');asse
 await page.locator('#environment-paging').getByText('13–22 of 22',{exact:true}).waitFor();
 await page.locator('#environment-search').fill('no-such-environment');await page.locator('#environment-paging').getByText('No matches',{exact:true}).waitFor();
 assert.equal(await page.locator('#environments .card').count(),0);
+// Promotion evidence and lease controls remain distinct from environment readiness.
+delivery[0].promotion={target:'staging',message:'Promotable · newer than target',tone:'good'};
+delivery.push({id:'delivery:preview',name:'lab-delivery-run-158-1234abcd',label:'Preview — build 158',owner:'lab',managed_by:'delivery',state:'ready',release_id:'esci-gb-v1',build_run:158,created_at:'2026-10-09T00:00:00Z',expires_at:'2027-01-01T00:00:00+00:00',fingerprint:'a'.repeat(64),promotion:{target:'integration',message:'Promotable · older than target',tone:'warn'}});
+delivery.push({id:'delivery:staging',name:'lab-delivery-staging',label:'Staging',owner:'lab',managed_by:'delivery',state:'ready',created_at:'2026-10-09T00:00:00Z',promotion:{target:'production',message:'Promotion is awaiting review or approval.',tone:'bad'}});
+await page.goto('http://control.test/');await page.locator('#environment-search').fill('lab-delivery');
+await page.locator('#environments .badge.good').waitFor();
+assert.equal(await page.locator('#environments .badge.warn').count(),1);
+assert.equal(await page.locator('#environments .badge.bad').count(),1);
+assert.equal(await page.locator('#environments').getByRole('button',{name:'Expire now',exact:true}).count(),1);
+let expiryRequest,expiryKey;
+await page.route('http://control.test/api/delivery/operations',route=>{expiryRequest=route.request().postDataJSON();expiryKey=route.request().headers()['idempotency-key'];return route.fulfill({status:202,contentType:'application/json',body:JSON.stringify({url:'/api/delivery/operations/expiry-fixture'})})});
+page.once('dialog',dialog=>dialog.accept());
+await page.locator('#environments').getByRole('button',{name:'Expire now',exact:true}).click();
+await page.locator('#environments').getByText('Expiry queued.',{exact:false}).waitFor();
+assert.equal(expiryRequest.kind,'expire-preview');assert.equal(expiryRequest.expires_at,delivery[2].expires_at);
+assert.ok(expiryKey.startsWith('expire-'));assert.equal(await page.locator('#environments').getByRole('link',{name:'Follow expiry progress'}).getAttribute('href'),'/api/delivery/operations/expiry-fixture');
+assert.ok(await page.locator('#environments').getByRole('button',{name:'Expire now',exact:true}).isDisabled());
+await page.locator('#environments').screenshot({path:path.join(output,'environment-promotion-fixture.png')});
+await page.setViewportSize({width:390,height:844});
+assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+await page.setViewportSize({width:1440,height:1100});
+reader=true;await page.goto('http://control.test/');await page.locator('#environment-search').fill('lab-delivery');
+await page.locator('#environments .badge.warn').waitFor();
+assert.equal(await page.locator('#environments').getByRole('button',{name:'Expire now',exact:true}).count(),0);
 assert.deepEqual(errors,[]);
-const receipt={browser:browser.version(),fixture:{environments:55,comparisons:100,queries:1000},paging:'passed',filters:'passed',refresh_selection:'passed',empty_results:'passed',reader:'passed',unicode:'passed',mobile_overflow:'none',page_errors:errors};fs.writeFileSync(path.join(output,'control-lists-verification.json'),JSON.stringify(receipt,null,2));console.log(JSON.stringify(receipt));
+const receipt={browser:browser.version(),fixture:{environments:55,comparisons:100,queries:1000},paging:'passed',filters:'passed',refresh_selection:'passed',empty_results:'passed',reader:'passed',unicode:'passed',promotion_badges:'passed',early_preview_expiry:'passed',protected_targets:'passed',mobile_overflow:'none',page_errors:errors};fs.writeFileSync(path.join(output,'control-lists-verification.json'),JSON.stringify(receipt,null,2));console.log(JSON.stringify(receipt));
 }finally{await browser.close()}
 })().catch(error=>{console.error(error.message);process.exitCode=1});

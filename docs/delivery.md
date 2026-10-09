@@ -118,6 +118,37 @@ appear separately. A missing gate record does not imply a passing gate.
 
 ## Preview or compare manually
 
+The **Environments** view shows each delivery environment's next promotion:
+previews to Integration, Integration to Staging, and Staging or the inactive
+production slot to active Production. **Ready** describes a serving API;
+the promotion badge describes the evidence and review for that next move.
+
+| Badge | Meaning |
+| --- | --- |
+| Grey | No matching evidence, unavailable evidence, an already deployed release, or unknown source order |
+| Red | Recorded promotion checks are incomplete, approval is pending, or the proposal or target changed |
+| Orange | The reviewed release is promotable, but its source commit predates the target |
+| Green | The reviewed release is promotable and its source commit follows the target |
+
+Version order uses Git ancestry from retained source history. Release IDs and
+build numbers identify exact builds; tags do not define their order. Rebuilds
+of the same commit and unrelated or unavailable history stay neutral. This
+read-only status does not replace the coordinator's deployment checks. A
+passing source gate alone does not satisfy a subsequent promotion gate.
+Production preparation alone does not satisfy the final release gate.
+
+To end a preview or ephemeral environment before its lease expires, choose
+**Expire now** on its card and confirm. Ephemeral environments use the normal
+deletion path. Delivery preview expiry requires a human lab administrator,
+is queued through the coordinator and shows **Follow expiry progress** beside
+the button. The expiry operation ends the lease; the normal cleanup loop then
+removes the deployment. A running comparison blocks early expiry, and a
+changed preview lease requires you to refresh before trying again.
+
+Reports and the shared catalogue are retained. Integration, Staging and both
+Production slots have no expiry control and are rejected by the preview expiry
+API. Use the reviewed deployment or rollback workflow to change them.
+
 In `delivery-source` → **Actions**, choose **Create preview** or **Compare builds**,
 then **Run workflow** on **main**. Supply the successful build run ID
 from its `/actions/runs/<id>` URL; compare also needs a baseline run.

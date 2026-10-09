@@ -244,7 +244,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(200, available())
         if parts == ['api', 'comparison-targets']:
             from comparison_targets import available
-            return self.send_json(200, available())
+            from environment_promotion import decorate
+            return self.send_json(200, decorate(available(), identity))
         if parts == ['api', 'environments']:
             return self.send_json(200, [environment_view(row) for row in self.controller.store.all() if self.visible(row, identity)])
         if parts == ['api', 'comparisons']:

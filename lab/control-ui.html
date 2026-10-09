@@ -134,13 +134,26 @@
       if(row.index_materialisation)details.append(text('div','Index path '+row.index_materialisation+' · '+Number(row.index_seconds||0).toFixed(3)+' s','meta'));
       if(row.index_recovery_errors)for(const error of JSON.parse(row.index_recovery_errors))details.append(text('div','Recovery: '+error,'meta'));
       card.append(details);if(row.error)card.append(text('div','Error: '+row.error,'meta'));
+      const promotion=row.promotion||{message:'No promotion evidence for this environment.'};
+      card.append(text('div',(promotion.target?'To '+promotion.target+' · ':'')+promotion.message,'badge '+(promotion.tone||'')));
+      if(promotion.operation_url){const link=text('a','Review promotion checks','report-link');link.href=promotion.operation_url;card.append(link)}
       if(row.state==='ready'&&row.managed_by!=='delivery'){
         if(row.browser_url){const link=text('a','Open search page','report-link');link.href=row.browser_url;link.target='_blank';link.rel='noopener';card.append(link)}
         card.append(action('Search','secondary',async()=>{const query=prompt('Search this environment','running shoes');if(query){const answer=await request('/api/environments/'+row.id+'/search?q='+encodeURIComponent(query));results.textContent=JSON.stringify(answer,null,2)}}));
         if(!currentIdentity?.is_reader)card.append(action('Extend lease','secondary',()=>request('/api/environments/'+row.id+'/activity','POST',{})));
       }
       if(!currentIdentity?.is_reader&&['failed','deleting'].includes(row.state))card.append(action('Retry','secondary',()=>request('/api/environments/'+row.id+'/reconcile','POST',{})));
-      if(!currentIdentity?.is_reader&&row.managed_by!=='delivery'&&row.state!=='deleted')card.append(action('Delete','danger',()=>request('/api/environments/'+row.id,'DELETE',{})));
+      if(!currentIdentity?.is_reader&&row.managed_by!=='delivery'&&row.state!=='deleted')card.append(action('Expire now','danger',()=>{if(confirm('End this environment now? Its deployment and private index will be removed; retained reports remain.'))return request('/api/environments/'+row.id,'DELETE',{})}));
+      if(currentIdentity?.is_admin&&row.managed_by==='delivery'&&/^lab-delivery-run-[1-9][0-9]*-[a-f0-9]{8}$/.test(row.name)&&row.expires_at){
+        const feedback=text('p','','meta');feedback.setAttribute('role','status');card.append(feedback);
+        const button=text('button','Expire now','danger');button.type='button';
+        button.addEventListener('click',async()=>{if(!confirm('End this preview lease now? Retained reports and the shared catalogue remain.'))return;button.disabled=true;feedback.textContent='Requesting early expiry…';
+          try{const response=await fetch('/api/delivery/operations',{method:'POST',headers:{'Content-Type':'application/json','X-Lab-Intent':'1','Idempotency-Key':'expire-'+row.fingerprint+'-'+row.expires_at.replace(/[^A-Za-z0-9]/g,'')},body:JSON.stringify({kind:'expire-preview',name:row.name,fingerprint:row.fingerprint,expires_at:row.expires_at})});
+            if(!(response.headers.get('Content-Type')||'').includes('application/json'))throw new Error('Refresh your sign-in and check operations before retrying.');
+            const operation=await response.json();if(!response.ok)throw new Error(operation.error||'Expiry request failed.');
+            feedback.replaceChildren(text('span','Expiry queued. '));const link=text('a','Follow expiry progress');link.href=operation.url;feedback.append(link);
+          }catch(error){feedback.textContent=error.message;button.disabled=false}});card.append(button);
+      }
       list.append(card);
     }
   }

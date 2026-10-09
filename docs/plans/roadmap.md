@@ -6,12 +6,19 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The missing source selection repair is merged. The Mac comparison completed
+and its gate is green. The [next batch](environment-promotion-status.md) adds
+next-target promotion evidence to environment cards and early expiry for
+previews/ephemeral environments. Integration, Staging and Production stay
+protected. Next: review, update the Mac runtime and verify with a disposable
+preview and a reviewed promotion.
+
 The Mac SigNoz installer succeeded on retry. Its ingestion and clean-install
 acceptance still need checking. The source PR comparison then failed before
 scoring: the fresh seed omitted `gate/selection.json`. The
 [current repair](fresh-source-gate-selection.md) supplies that selection for
-new repositories and exposes actionable missing-input errors. Next: review,
-add the file to the existing Mac PR and verify its new comparison.
+new repositories and exposes actionable missing-input errors. The user has
+confirmed the new comparison passed; clean installation acceptance remains.
 
 Mac diagnostics now confirm successful ClickHouse init, followed by background
 merge memory-limit errors and liveness-triggered restarts. The current demo
