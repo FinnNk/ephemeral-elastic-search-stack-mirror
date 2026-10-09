@@ -271,7 +271,7 @@ def execute_next():
             api(endpoint(DESIRED, '/issues/' + str(result['pr']) + '/comments'), 'POST', {'body': body})
         store.update(identifier, state='complete', progress='Complete', result=result)
     except Exception as error:
-        from delivery_source_comparison import BuildPending
+        from delivery_source_comparison import BuildPending, ComparisonInputError
         if isinstance(error, BuildPending) and (
                 datetime.now(timezone.utc) - datetime.fromisoformat(row['created_at'])).total_seconds() < 1800:
             store.update(identifier, state='queued', progress='Waiting for the exact source build')
@@ -281,8 +281,8 @@ def execute_next():
         import traceback
         traceback.print_exc()
         detail = type(error).__name__
-        if isinstance(error, ValueError) and (getattr(error, 'reference', None) or
-                request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production')):
+        if isinstance(error, ComparisonInputError) or (isinstance(error, ValueError) and (getattr(error, 'reference', None) or
+                request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production'))):
             # Decision validation errors contain public evidence/review facts,
             # never credentials or provider response bodies.
             detail += ': ' + str(error)[:240]

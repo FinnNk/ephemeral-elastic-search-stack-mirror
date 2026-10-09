@@ -80,6 +80,7 @@ def seed_source(path):
     (path / 'contracts').mkdir(exist_ok=True)
     (path / 'gate').mkdir(exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/bootstrap/gate/evaluation.json', path / 'gate/evaluation.json')
+    shutil.copyfile(ROOT / 'lab/delivery/bootstrap/gate/selection.json', path / 'gate/selection.json')
     shutil.copyfile(ROOT / 'lab/delivery/policies/variant-merge-v1.json',
                     path / 'gate/policy.json')
     worker = (ROOT / 'lab/index_job.py').read_text(encoding='utf-8').encode()

@@ -10,7 +10,7 @@ from urllib import error, request
 
 from control_api import Handler
 from delivery_operations import Operations, validate, execute_next
-from delivery_source_comparison import BuildPending
+from delivery_source_comparison import BuildPending, ComparisonInputError
 from delivery.ci.lab_delivery import Client
 
 
@@ -24,6 +24,23 @@ class DeliveryOperationTests(unittest.TestCase):
 
     def tearDown(self):
         self.directory.cleanup()
+
+    def test_public_input_error_is_visible_but_provider_error_stays_private(self):
+        for index, failure in enumerate((ComparisonInputError('Required file gate/selection.json is unavailable.'),
+                                         RuntimeError('private provider response'))):
+            operation = self.store.submit({'kind': 'compare', 'pr': 1,
+                'source_sha': 'a'*40, 'baseline_sha': 'b'*40}, self.identity, 'input-error-' + str(index))
+            self.store.update(operation['id'], state='queued', progress='Waiting')
+            with patch('delivery_operations.Operations', return_value=self.store), \
+                    patch('delivery_source_comparison.compare', side_effect=failure), \
+                    patch('delivery_source_comparison.status'), patch('traceback.print_exc'):
+                result = execute_next()
+            self.assertEqual(result['id'], operation['id'])
+            self.assertEqual(result['state'], 'failed')
+            if index == 0:
+                self.assertIn('gate/selection.json', result['error'])
+            else:
+                self.assertEqual(result['error'], 'RuntimeError')
 
     def test_retry_and_changed_payload(self):
         first = self.store.submit(self.payload, self.identity, 'fixture')

@@ -9,6 +9,10 @@ Application tests and builds run separately. If a PR changes only `README.md`, `
 
 ## Prepare your PR
 
+Fresh repositories include a selection of `ranker-a` with `preserve-results`.
+For an intentional rewrite or ranking change, change its intent to
+`ranking-change` before pushing.
+
 1. **Choose what to evaluate.** Edit [selection.json](selection.json) to name the candidate variants and their intent. Use names from your evaluation, excluding its baseline.
 
    | Intent | Use it when |
@@ -34,6 +38,11 @@ Application tests and builds run separately. If a PR changes only `README.md`, `
 `gate/evaluation.json` names the default and baseline. Files in `configurations/`
 define their ranking settings. The coordinator reads baseline settings from its
 revision and candidate settings from the PR head. Both use the same frozen inputs.
+
+If a comparison reports a missing `gate/selection.json`, add the example above
+as that file on your PR branch, choose the appropriate intent, commit it and
+push. An empty commit cannot supply a missing file. The installer preserves
+existing repositories rather than overwriting their selections.
 
 ## Select one or more variants
 

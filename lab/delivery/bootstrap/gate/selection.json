@@ -1,0 +1,10 @@
+{
+  "kind": "variant-gate-selection",
+  "schema_version": 1,
+  "selected": [
+    {
+      "variant": "ranker-a",
+      "intent": "preserve-results"
+    }
+  ]
+}

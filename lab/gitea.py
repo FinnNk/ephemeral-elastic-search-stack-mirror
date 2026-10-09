@@ -12,6 +12,14 @@ from gitea_tls import open_url
 BASE = os.environ.get('LAB_GITEA_API_URL', 'http://127.0.0.1:31800/api/v1').rstrip('/')
 
 
+class GiteaHTTPError(RuntimeError):
+    """Retain the HTTP status for callers without copying provider response bodies."""
+
+    def __init__(self, method, path, status_code):
+        self.status_code = status_code
+        super().__init__(f'Gitea {method} {path}: {status_code}')
+
+
 def api(path, method='GET', body=None, identity='agent'):
     credentials = json.loads((STATE / 'credentials.json').read_text(encoding='utf-8'))
     account = credentials['agent'] if identity == 'agent' else credentials
@@ -26,4 +34,4 @@ def api(path, method='GET', body=None, identity='agent'):
             payload = response.read()
             return json.loads(payload) if payload else None
     except urllib.error.HTTPError as error:
-        raise RuntimeError(f'Gitea {method} {path}: {error.code}') from None
+        raise GiteaHTTPError(method, path, error.code) from None

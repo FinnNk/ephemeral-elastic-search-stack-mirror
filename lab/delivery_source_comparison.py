@@ -9,6 +9,7 @@ import urllib.error
 from urllib.parse import quote
 
 from common import ROOT
+from gitea import GiteaHTTPError
 from delivery_provider import SOURCE, api, endpoint, git, ensure_checkout
 from delivery_release import from_run_bytes
 from delivery_runtime import resolve, preview
@@ -32,6 +33,10 @@ class BuildPending(RuntimeError):
     """A source build is still queued or running; release the coordinator slot."""
 
 
+class ComparisonInputError(ValueError):
+    """An actionable, public error for a missing required comparison input."""
+
+
 def approvals_for(revision, selection_bytes):
     """Read immutable receipts for the exact selected variants; no mutable index."""
     approvals = []
@@ -50,7 +55,14 @@ def approvals_for(revision, selection_bytes):
 
 def source_bytes(path, revision):
     """Read exact repository bytes, preserving their original encoding and newlines."""
-    value = api(endpoint(SOURCE, '/contents/' + quote(path, safe='/') + '?ref=' + revision))
+    try:
+        value = api(endpoint(SOURCE, '/contents/' + quote(path, safe='/') + '?ref=' + revision))
+    except GiteaHTTPError as error:
+        if error.status_code == 404 and path in ('gate/selection.json', 'gate/evaluation.json'):
+            raise ComparisonInputError(
+                f'Required file {path} is unavailable at this PR commit. '
+                'Check the file is committed on the PR branch, then push a new commit.') from None
+        raise
     if value.get('type') != 'file' or value.get('encoding') != 'base64':
         raise ValueError('Source input is not a bounded file.')
     payload = base64.b64decode(value['content'], validate=False)

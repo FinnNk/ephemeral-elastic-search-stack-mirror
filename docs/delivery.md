@@ -34,6 +34,10 @@ merged commit, promoted unchanged through three reviewed targets.
    for intentional changes, or `preserve-results` for a release expected to
    return the same products in the same order. `gate/evaluation.json` names the
    baseline and default; `configurations/` contains their settings.
+   Fresh repositories select `ranker-a` with `preserve-results`. If the selection
+   file is absent in an older repository, create it using the example in the
+   [source gate guide](../lab/delivery/bootstrap/gate/README.md#prepare-your-pr)
+   and commit it on your PR branch before pushing.
 3. Push and open a PR. **Reference release CI** builds its exact commit and stores
    the image, bundle and receipt in Nexus. **Offline relevance gate** submits
    a comparison; its completion alone is not a relevance verdict.

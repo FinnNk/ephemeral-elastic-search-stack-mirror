@@ -6,6 +6,13 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The Mac SigNoz installer succeeded on retry. Its ingestion and clean-install
+acceptance still need checking. The source PR comparison then failed before
+scoring: the fresh seed omitted `gate/selection.json`. The
+[current repair](fresh-source-gate-selection.md) supplies that selection for
+new repositories and exposes actionable missing-input errors. Next: review,
+add the file to the existing Mac PR and verify its new comparison.
+
 Mac diagnostics now confirm successful ClickHouse init, followed by background
 merge memory-limit errors and liveness-triggered restarts. The current demo
 batch increases bounded ClickHouse memory and health-check tolerance. Next:

@@ -12,6 +12,21 @@ import test_offline
 
 
 class SourceComparisonTests(unittest.TestCase):
+    def test_missing_required_file_explains_recovery_without_hiding_other_errors(self):
+        for path in ('gate/selection.json', 'gate/evaluation.json'):
+            failure = comparison.GiteaHTTPError('GET', '/private-provider-path', 404)
+            with self.subTest(path=path), patch.object(comparison, 'api', side_effect=failure):
+                with self.assertRaises(comparison.ComparisonInputError) as raised:
+                    comparison.source_bytes(path, 'a'*40)
+                self.assertIn(path, str(raised.exception))
+                self.assertIn('push a new commit', str(raised.exception))
+                self.assertNotIn('private-provider-path', str(raised.exception))
+        for path, status in (('gate/selection.json', 403), ('configurations/ranker-a.json', 404)):
+            failure = comparison.GiteaHTTPError('GET', '/provider-path', status)
+            with self.subTest(path=path, status=status), patch.object(comparison, 'api', side_effect=failure):
+                with self.assertRaises(comparison.GiteaHTTPError):
+                    comparison.source_bytes(path, 'a'*40)
+
     def test_checkout_preparation_does_not_change_remote_settings(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(provider, 'STATE', Path(directory)), \
                 patch.object(provider, 'git') as git, patch.object(provider, 'api') as api:
