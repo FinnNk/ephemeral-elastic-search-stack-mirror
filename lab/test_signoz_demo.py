@@ -75,7 +75,7 @@ class DemoProfile(unittest.TestCase):
     def test_retry_preserves_logs_and_recreates_only_owned_migration_job(self):
         job = {'metadata': {'labels': {'app.kubernetes.io/name': 'signoz',
                'app.kubernetes.io/instance': 'signoz',
-               'app.kubernetes.io/component': 'telemetrystore-migrator'}}}
+               'app.kubernetes.io/component': 'signoz-telemetrystore-migrator'}}}
         folder = MagicMock()
         with patch.object(installer.subprocess, 'run', side_effect=[
                 Mock(stdout=json.dumps(job)), Mock(stdout=''),
@@ -101,7 +101,7 @@ class DemoProfile(unittest.TestCase):
 
     def test_retry_recreates_old_hook_account_but_preserves_normal_account(self):
         labels = {'app.kubernetes.io/name': 'signoz', 'app.kubernetes.io/instance': 'signoz',
-                  'app.kubernetes.io/component': 'telemetrystore-migrator'}
+                  'app.kubernetes.io/component': 'signoz-telemetrystore-migrator'}
         for hook in (False, True):
             metadata = {'labels': labels, 'annotations': {'helm.sh/hook': 'pre-upgrade'} if hook else {}}
             with patch.object(installer.subprocess, 'run', side_effect=[Mock(stdout=''),

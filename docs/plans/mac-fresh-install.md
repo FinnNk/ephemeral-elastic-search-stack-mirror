@@ -172,3 +172,14 @@ resources, retained logs and conversion of the old hook service account. The
 pinned Helm chart rendered both fresh installation and upgrade with a normal
 Job and all migration phases preserved. No live cluster was changed; Mac
 readiness remains outstanding.
+
+The first native retry exposed a mismatch in the ownership check: the pinned
+chart sets the component label to `signoz-telemetrystore-migrator`. Correct the
+expected label and report actual labels if a resource is rejected. Verify both
+Job and service-account labels against the pinned chart render before the next
+Mac retry. Foreign resources remain protected.
+
+Verification: the ownership check accepted actual Job and service-account
+objects from all four pinned chart renders (install/upgrade, normal/old-hook).
+Seven local tests passed, including foreign-resource rejection. No live
+cluster changes were made. Next: merge, pull and rerun the demo installer.

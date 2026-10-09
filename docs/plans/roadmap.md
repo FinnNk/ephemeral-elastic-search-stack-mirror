@@ -10,7 +10,9 @@ The Mac CPU installation has completed verification. Optional SigNoz startup
 was blocked by an oversized CA bundle embedded in its init command. That repair
 is merged, but the pinned pre-upgrade migrator prevents its rollout while
 ClickHouse is unavailable. The current demo retry repair applies dependencies
-before migrations and requires Job completion. Next:
+before migrations and requires Job completion. Its first Mac retry exposed an
+incorrect expected component label; the current batch aligns that ownership
+check with the pinned chart and reports actual labels on rejection. Next:
 review, rerun the demo installer on the Mac and verify readiness/ingestion before
 measuring resource use. Historical Mac setup batches below retain their context.
 

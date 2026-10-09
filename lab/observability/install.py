@@ -81,7 +81,7 @@ def reset_demo_migrator(folder):
     name = 'signoz-telemetrystore-migrator'
     expected = {'app.kubernetes.io/name': 'signoz',
                 'app.kubernetes.io/instance': 'signoz',
-                'app.kubernetes.io/component': 'telemetrystore-migrator'}
+                'app.kubernetes.io/component': name}
     retained = []
     for kind in ('job', 'serviceaccount'):
         previous = subprocess.run(KUBE + ['get', kind, name, '-n', NAMESPACE,
@@ -92,10 +92,12 @@ def reset_demo_migrator(folder):
         resource = json.loads(previous.stdout)
         metadata = resource['metadata']
         if any(metadata.get('labels', {}).get(key) != value for key, value in expected.items()):
-            raise RuntimeError('Refusing to recreate a migration resource with unexpected ownership labels.')
+            raise RuntimeError('Refusing to recreate ' + kind + '/' + name +
+                               ' with unexpected ownership labels: ' +
+                               json.dumps(metadata.get('labels', {}), sort_keys=True))
         # The old hook account may lack normal Helm ownership annotations.
         # Keep an ordinary account; recreate only the abandoned hook account.
-        if kind == 'job' or metadata.get('annotations', {}).get('helm.sh/hook') == 'pre-upgrade':
+        if kind == 'job' or (metadata.get('annotations') or {}).get('helm.sh/hook') == 'pre-upgrade':
             retained.append(kind)
     for kind in retained:
         if kind == 'job':
