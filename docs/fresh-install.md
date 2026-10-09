@@ -296,9 +296,14 @@ python lab/observability/install.py --profile demo
 
 This uses the retained corporate CA bundle, native control image and pinned
 SigNoz chart. It installs on existing CPU nodes without adding a worker. Allow
-approximately 4 GiB of additional steady-state memory headroom, and preferably
-6 GiB during installation for migration jobs and startup bursts. These are
+approximately 6 GiB of additional steady-state memory headroom, and preferably
+8 GiB during installation for migration jobs and startup bursts. These are
 trial allocations for demonstrations, not measured minimum requirements.
+ClickHouse requests 1 GiB and 0.5 CPU, with limits of 4 GiB and 2 CPUs. Its
+internal server memory ceiling is 3 GiB. Health checks allow five seconds per
+response; sustained liveness failure for approximately two minutes still
+restarts the container. This avoids repeatedly restarting it during brief
+background merge stalls while keeping readiness checks active.
 PVC requests total 12 GiB: ClickHouse 10 GiB, ZooKeeper 1 GiB and SigNoz state
 1 GiB. Images and container logs require additional host disk space. Local-path
 PVC requests do not enforce a hard host-directory disk quota.

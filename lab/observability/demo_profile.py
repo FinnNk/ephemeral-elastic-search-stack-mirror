@@ -28,9 +28,18 @@ def values(here, state):
                  result['signoz'], result['otelCollector'], result['telemetryStoreMigrator']):
         item.pop('nodeSelector', None)
     clickhouse['persistence']['size'] = '10Gi'
-    clickhouse['resources'] = resources('512Mi', '2Gi', '2')
+    clickhouse['resources'] = resources('1Gi', '4Gi', '2')
+    clickhouse['resources']['requests']['cpu'] = '500m'
     clickhouse['profiles'] = {'default/max_memory_usage': '1073741824'}
-    clickhouse.setdefault('settings', {})['max_server_memory_usage'] = '1610612736'
+    # Retain space below the container limit for allocations outside tracking.
+    # The Mac's background merges exceeded the former 1.5 GiB server ceiling.
+    clickhouse.setdefault('settings', {})['max_server_memory_usage'] = '3221225472'
+    clickhouse['livenessProbe'] = {'enabled': True, 'port': 'http', 'path': '/ping',
+        'initialDelaySeconds': 60, 'periodSeconds': 10, 'timeoutSeconds': 5,
+        'failureThreshold': 12, 'successThreshold': 1}
+    clickhouse['readinessProbe'] = {'enabled': True, 'port': 'http', 'path': '/ping',
+        'initialDelaySeconds': 10, 'periodSeconds': 10, 'timeoutSeconds': 5,
+        'failureThreshold': 3, 'successThreshold': 1}
     zk = clickhouse['zookeeper']
     zk.update(replicaCount=1, resources=resources('128Mi', '384Mi'),
               heapSize=128, persistence={'enabled': True, 'size': '1Gi'})

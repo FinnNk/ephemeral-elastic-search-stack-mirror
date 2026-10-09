@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+Mac diagnostics now confirm successful ClickHouse init, followed by background
+merge memory-limit errors and liveness-triggered restarts. The current demo
+batch increases bounded ClickHouse memory and health-check tolerance. Next:
+verify native readiness and ingestion, then repeat from an empty owned lab.
+
 The Mac CPU installation has completed verification. Optional SigNoz startup
 was blocked by an oversized CA bundle embedded in its init command. That repair
 is merged, but the pinned pre-upgrade migrator prevents its rollout while

@@ -183,3 +183,26 @@ Verification: the ownership check accepted actual Job and service-account
 objects from all four pinned chart renders (install/upgrade, normal/old-hook).
 Seven local tests passed, including foreign-resource rejection. No live
 cluster changes were made. Next: merge, pull and rerun the demo installer.
+
+### ClickHouse memory and liveness on the Mac
+
+The supplied pod diagnostics confirm the UDF init completed with exit code 0.
+ClickHouse reached ready-for-connections, then background merges exceeded its
+1.5 GiB internal server limit. Kubernetes events show one-second liveness
+timeouts and explicit restarts; exit code 137 is not sufficient evidence of
+a kernel OOM kill. Increase the demo container memory limit from 2 to 4 GiB
+and its internal limit from 1.5 to 3 GiB. Request 1 GiB and 0.5 CPU, preserve
+the 2 CPU limit and 1 GiB per-query limit. Give health checks five seconds,
+with approximately two minutes of sustained failure before a liveness restart.
+
+Next: review and retry through the installer. Confirm ready pods and successful
+migrations, then complete organisation setup and measure ingestion, idle growth
+and bounded demo load. The new 6 GiB steady/8 GiB startup headroom figures are
+trial budgets, not measured requirements. Keep the authorised clean-install
+rehearsal as the final acceptance step.
+
+Verification: seven local configuration/retry tests passed. The pinned upgrade
+render contains the 4 GiB container limit, 1 GiB request, 3 GiB internal ceiling
+and both active health probes with the reviewed timings. No live cluster was
+changed; this does not establish native readiness or a sufficient permanent
+resource budget.

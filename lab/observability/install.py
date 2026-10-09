@@ -57,7 +57,8 @@ def preflight(profile='standard'):
         assert_fresh()
         if not (STATE / 'control-image.json').exists() or not (STATE / 'host-ca-bundle.pem').exists():
             raise RuntimeError('Complete fresh CPU image setup before installing demo SigNoz.')
-        print('Demo profile uses existing CPU nodes. Allow approximately 4 GiB extra memory headroom.', flush=True)
+        print('Demo profile uses existing CPU nodes. Allow approximately 6 GiB extra memory '
+              'headroom, preferably 8 GiB during startup.', flush=True)
         # PVC shrinking is not a supported upgrade path for a retained backend.
         existing = subprocess.run(KUBE + ['get', 'pvc', '-n', NAMESPACE, '-o', 'json'],
                                   capture_output=True, text=True)
