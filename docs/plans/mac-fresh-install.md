@@ -152,3 +152,23 @@ resource settings and existing volumes.
 Next: review this repair, pull it on the Mac and rerun the demo installer.
 Confirm ClickHouse, migrations, collector and UI readiness before organisation
 setup and the previously planned ingestion/resource measurements.
+
+### Demo migration retry ordering
+
+The Mac checkout contains the CA repair, but its pod still has the old inline
+command. The pinned chart uses a pre-upgrade migration hook; that migration
+waits for the unavailable ClickHouse before Helm applies the corrected settings.
+The demo values now use a normal migration Job, and Helm waits for Jobs as well
+as backend readiness. Before upgrading, recreate only the release's labelled
+migration Job and retain its available logs. Database volumes are preserved.
+
+Next: accept this installer repair, pull it and rerun the demo command. Verify
+the pod receives the short CA-file command, migrations complete and telemetry
+arrives. Then exercise the authorised full cleanup and fresh installation loop;
+manual cluster patches are not part of the acceptance procedure.
+
+Verification: seven local tests passed, including absent/foreign migration
+resources, retained logs and conversion of the old hook service account. The
+pinned Helm chart rendered both fresh installation and upgrade with a normal
+Job and all migration phases preserved. No live cluster was changed; Mac
+readiness remains outstanding.

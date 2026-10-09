@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, Mock, patch
 
 import yaml
 
@@ -13,6 +13,9 @@ HERE = Path(__file__).resolve().parent / 'observability'
 spec = importlib.util.spec_from_file_location('demo_profile', HERE / 'demo_profile.py')
 demo = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(demo)
+install_spec = importlib.util.spec_from_file_location('signoz_install', HERE / 'install.py')
+installer = importlib.util.module_from_spec(install_spec)
+install_spec.loader.exec_module(installer)
 
 
 class DemoProfile(unittest.TestCase):
@@ -41,6 +44,7 @@ class DemoProfile(unittest.TestCase):
         self.assertNotIn('base64', command)
         self.assertLess(len(command.encode('utf-8')), 4096)
         self.assertEqual(values['clickhouse']['imagePullSecrets'], ['nexus-read'])
+        self.assertFalse(values['telemetryStoreMigrator']['upgradeHelmHooks'])
         self.assertEqual(values['otelCollector']['config']['service']['pipelines']['traces']['processors'],
                          ['memory_limiter', 'spanmetrics', 'batch'])
 
@@ -67,6 +71,47 @@ class DemoProfile(unittest.TestCase):
         containers = demo.operator_patch()['spec']['template']['spec']['containers']
         self.assertEqual([item['name'] for item in containers], ['operator', 'metrics-exporter'])
         self.assertEqual([item['resources']['limits']['memory'] for item in containers], ['128Mi', '64Mi'])
+
+    def test_retry_preserves_logs_and_recreates_only_owned_migration_job(self):
+        job = {'metadata': {'labels': {'app.kubernetes.io/name': 'signoz',
+               'app.kubernetes.io/instance': 'signoz',
+               'app.kubernetes.io/component': 'telemetrystore-migrator'}}}
+        folder = MagicMock()
+        with patch.object(installer.subprocess, 'run', side_effect=[
+                Mock(stdout=json.dumps(job)), Mock(stdout=''),
+                Mock(stdout='waiting for ClickHouse', stderr='')]), \
+                patch.object(installer, 'run') as run:
+            installer.reset_demo_migrator(folder)
+        (folder / 'previous-migrator.log').write_text.assert_called_once_with(
+            'waiting for ClickHouse', encoding='utf-8')
+        self.assertIn('delete', run.call_args.args[0])
+        self.assertIn('signoz-telemetrystore-migrator', run.call_args.args[0])
+
+    def test_retry_rejects_foreign_job_and_handles_no_existing_job(self):
+        with patch.object(installer.subprocess, 'run', return_value=Mock(stdout='')), \
+                patch.object(installer, 'run') as run:
+            installer.reset_demo_migrator(Mock())
+            run.assert_not_called()
+        with patch.object(installer.subprocess, 'run', return_value=Mock(
+                stdout=json.dumps({'metadata': {'labels': {}}}))), \
+                patch.object(installer, 'run') as run:
+            with self.assertRaisesRegex(RuntimeError, 'ownership'):
+                installer.reset_demo_migrator(Mock())
+            run.assert_not_called()
+
+    def test_retry_recreates_old_hook_account_but_preserves_normal_account(self):
+        labels = {'app.kubernetes.io/name': 'signoz', 'app.kubernetes.io/instance': 'signoz',
+                  'app.kubernetes.io/component': 'telemetrystore-migrator'}
+        for hook in (False, True):
+            metadata = {'labels': labels, 'annotations': {'helm.sh/hook': 'pre-upgrade'} if hook else {}}
+            with patch.object(installer.subprocess, 'run', side_effect=[Mock(stdout=''),
+                    Mock(stdout=json.dumps({'metadata': metadata}))]), \
+                    patch.object(installer, 'run') as run:
+                installer.reset_demo_migrator(Mock())
+                if hook:
+                    self.assertIn('serviceaccount', run.call_args.args[0])
+                else:
+                    run.assert_not_called()
 
 
 if __name__ == '__main__':

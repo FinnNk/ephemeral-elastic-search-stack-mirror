@@ -37,6 +37,9 @@ def values(here, state):
     result['signoz'].update(replicaCount=1, resources=resources('128Mi', '384Mi'))
     result['otelCollector'].update(replicaCount=1, resources=resources('128Mi', '512Mi'))
     result['telemetryStoreMigrator']['resources'] = resources('128Mi', '512Mi')
+    # A pre-upgrade migration blocks repairs to an unavailable ClickHouse.
+    # Run it as a normal Job so Helm applies dependencies before waiting.
+    result['telemetryStoreMigrator']['upgradeHelmHooks'] = False
     collector = result['otelCollector'].setdefault('config', {})
     collector['processors'] = {
         'memory_limiter': {'check_interval': '1s', 'limit_mib': 384, 'spike_limit_mib': 96},

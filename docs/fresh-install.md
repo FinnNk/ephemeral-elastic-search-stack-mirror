@@ -346,6 +346,12 @@ installer reads the trusted CA file already present in the native image.
 Keep the existing installation and volumes; a reset or image rebuild is not
 required for this repair.
 
+On demo retries, the installer saves the previous migration Job's available
+logs in `.lab/observability-demo/previous-migrator.log` and recreates that Job.
+It applies ClickHouse settings before waiting for migrations, so an unavailable
+database cannot block its own repair through a pre-upgrade hook. Installation
+still requires successful migration completion and ready backend workloads.
+
 ## Diagnose a failed stage
 
 | Symptom | Next action |

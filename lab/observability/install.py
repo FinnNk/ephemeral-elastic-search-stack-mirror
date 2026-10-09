@@ -76,6 +76,37 @@ def preflight(profile='standard'):
         raise RuntimeError('Label a worker lab.relevance/role=observability with >=8 GiB headroom.')
 
 
+def reset_demo_migrator(folder):
+    """Retain diagnostics and recreate only this release's immutable migration Job."""
+    name = 'signoz-telemetrystore-migrator'
+    expected = {'app.kubernetes.io/name': 'signoz',
+                'app.kubernetes.io/instance': 'signoz',
+                'app.kubernetes.io/component': 'telemetrystore-migrator'}
+    retained = []
+    for kind in ('job', 'serviceaccount'):
+        previous = subprocess.run(KUBE + ['get', kind, name, '-n', NAMESPACE,
+                                         '--ignore-not-found', '-o', 'json'],
+                                  capture_output=True, text=True, check=True)
+        if not previous.stdout.strip():
+            continue
+        resource = json.loads(previous.stdout)
+        metadata = resource['metadata']
+        if any(metadata.get('labels', {}).get(key) != value for key, value in expected.items()):
+            raise RuntimeError('Refusing to recreate a migration resource with unexpected ownership labels.')
+        # The old hook account may lack normal Helm ownership annotations.
+        # Keep an ordinary account; recreate only the abandoned hook account.
+        if kind == 'job' or metadata.get('annotations', {}).get('helm.sh/hook') == 'pre-upgrade':
+            retained.append(kind)
+    for kind in retained:
+        if kind == 'job':
+            logs = subprocess.run(KUBE + ['logs', 'job/' + name, '-n', NAMESPACE,
+                                          '--all-containers=true', '--tail=100', '--pod-running-timeout=5s'],
+                                  capture_output=True, text=True)
+            (folder / 'previous-migrator.log').write_text(logs.stdout + logs.stderr, encoding='utf-8')
+            print('Recreating the retained SigNoz migration Job; previous logs saved in ' + str(folder), flush=True)
+        run(KUBE + ['delete', kind, name, '-n', NAMESPACE, '--wait=true', '--timeout=60s'])
+
+
 def install(root_account=False, profile='standard'):
     preflight(profile)
     chart = chart_archive()
@@ -103,6 +134,10 @@ def install(root_account=False, profile='standard'):
                '--namespace', NAMESPACE, '--wait', '--timeout', '10m']
     for path in values:
         command += ['-f', path]
+    if profile == 'demo':
+        reset_demo_migrator(folder)
+        command.append('--wait-for-jobs')
+        print('Applying backend resources, then waiting for ClickHouse and completed migrations.', flush=True)
     run(command)
     if profile == 'demo':
         from demo_profile import operator_patch

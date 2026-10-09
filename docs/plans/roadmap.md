@@ -7,8 +7,10 @@ step” is not an instruction to repeat completed work.
 ## Current work
 
 The Mac CPU installation has completed verification. Optional SigNoz startup
-is blocked by an oversized CA bundle embedded in its init command. The current
-repair uses the trusted file already installed in the native image. Next:
+was blocked by an oversized CA bundle embedded in its init command. That repair
+is merged, but the pinned pre-upgrade migrator prevents its rollout while
+ClickHouse is unavailable. The current demo retry repair applies dependencies
+before migrations and requires Job completion. Next:
 review, rerun the demo installer on the Mac and verify readiness/ingestion before
 measuring resource use. Historical Mac setup batches below retain their context.
 
