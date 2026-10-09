@@ -98,6 +98,7 @@ class LifecycleContract(unittest.TestCase):
              patch('lifecycle.STATE', Path(empty_state)), \
              patch('lifecycle.fetch_manifest', return_value=catalogue), \
              patch('lifecycle.verify_catalogue_manifest', return_value=catalogue), \
+             patch('data_versions.verified_binding', return_value={'rewrite_dataset_sha256': 'd'*64, 'rewrite_redis_key': 'rewrite:'+'d'*64}), \
              patch('lifecycle.elastic', return_value={'version': {'number': '9.5.4'}}), \
              patch('lifecycle.publish_index_recipe', return_value='b' * 64) as published:
             pinned = LabBackend().pin_index_recipe('esci-gb-v1', 'shared')
@@ -211,7 +212,9 @@ class LifecycleContract(unittest.TestCase):
     def test_deleted_environment_recipe_can_be_selected_again(self):
         old = self.service.create('lab-old-schema', 3, index_kind=INDEX_KIND)
         self.service.delete(old['id'])
-        with self.assertRaisesRegex(ValueError, 'not pinned'):
+        from azure.core.exceptions import ResourceNotFoundError
+        with patch('lifecycle.load_index_recipe', side_effect=ResourceNotFoundError('test missing recipe')), \
+                self.assertRaisesRegex(ValueError, 'not pinned'):
             self.service.create('lab-forged', 3, index_kind=INDEX_KIND,
                                 index_recipe_sha256='f' * 64)
         recreated = self.service.create('lab-recreated-schema', 3, index_kind=INDEX_KIND,

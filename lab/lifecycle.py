@@ -77,7 +77,8 @@ class Store:
                                      ('catalogue_manifest_sha256', 'TEXT'),
                                      ('index_materialisation', 'TEXT'),
                                      ('index_seconds', 'REAL'),
-                                     ('index_recovery_errors', 'TEXT')]:
+                                     ('index_recovery_errors', 'TEXT'), ('expiry_mode', 'TEXT'),
+                                     ('rewrite_dataset_sha256', 'TEXT'), ('rewrite_redis_key', 'TEXT')]:
                 if name not in columns:
                     db.execute(f'ALTER TABLE environments ADD COLUMN {name} {field_type}')
             comparison_columns = {row['name'] for row in db.execute('PRAGMA table_info(comparisons)')}
@@ -227,7 +228,9 @@ class LabBackend:
         if recipe['index_kind'] != index_kind:
             raise ValueError('Frozen index recipe has a different index kind.')
         pinned_sha = recipe_sha256 or publish_index_recipe(recipe)
-        return {'sha256': pinned_sha, 'mapping_sha256': recipe_digest(recipe['index_definition']),
+        from data_versions import verified_binding
+        rewrites = verified_binding(release_id, recipe['product_sha256'])
+        return {**rewrites,'sha256': pinned_sha, 'mapping_sha256': recipe_digest(recipe['index_definition']),
                 'product_sha256': recipe['product_sha256'],
                 'catalogue_manifest_sha256': recipe.get('catalogue_manifest_sha256'),
                 'shared_index': shared_index_name(recipe, pinned_sha) if index_kind == 'shared' else None}
@@ -250,8 +253,11 @@ class LabBackend:
             if built['index'] != index or built['mapping_sha256'] != mapping_sha:
                 raise ValueError('Candidate index differs from the pinned environment request.')
         provision_access(row['name'], index)
+        from data_versions import verify_materialised
+        verify_materialised(row)
         definition = define(row['name'], row['image'], index, row['dataset_sha256'], mapping_sha,
-                            row.get('index_recipe_sha256'))
+                            row.get('index_recipe_sha256'), rewrite_binding={key: row[key] for key in
+                                ('rewrite_dataset_sha256', 'rewrite_redis_key') if row.get(key)})
         if git('status', '--porcelain'):
             publish('Provision ' + row['name'])
         wait_healthy(row['name'])
@@ -276,9 +282,12 @@ class LabBackend:
                 key = (row['release_id'], row['dataset_sha256'], row['index_recipe_sha256'])
                 if index_results[key]['index'] != row['index_name']:
                     raise ValueError('Shared index differs from the pinned environment request.')
+                from data_versions import verify_materialised
+                verify_materialised(row)
                 provision_access(row['name'], row['index_name'])
                 prepared[row['name']] = define(row['name'], row['image'], row['index_name'],
-                    row['dataset_sha256'], row['mapping_sha256'], row.get('index_recipe_sha256'))['fingerprint']
+                    row['dataset_sha256'], row['mapping_sha256'], row.get('index_recipe_sha256'), rewrite_binding={key: row[key] for key in
+                        ('rewrite_dataset_sha256', 'rewrite_redis_key') if row.get(key)})['fingerprint']
             except Exception as error:
                 results[row['name']] = {'error': type(error).__name__ + ': ' + str(error)}
         if git('status', '--porcelain'):
@@ -383,6 +392,8 @@ class Lifecycle:
             raise ValueError('A valid owner identity is required.')
         if index_kind != 'shared' and index_kind not in available_kinds(release_id) and not index_recipe_sha256:
             raise ValueError('Choose a shared index or a versioned index kind available for this release.')
+        from data_versions import resolve_name
+        release_id = resolve_name(release_id)
         if release_id not in RELEASES:
             raise ValueError('Choose a frozen release supported by this lab.')
         if index_recipe_sha256 and not self.store.recipe_record(index_recipe_sha256):
@@ -419,6 +430,7 @@ class Lifecycle:
                    'index_kind': index_kind, 'index_name': target_index, 'mapping_sha256': mapping_sha,
                    'index_recipe_sha256': pinned['sha256'],
                    'catalogue_manifest_sha256': pinned['catalogue_manifest_sha256'],
+                   **{key: pinned[key] for key in ('rewrite_dataset_sha256', 'rewrite_redis_key') if key in pinned},
                    'state': 'requested', 'created_at': stamp(now), 'last_activity_at': stamp(now),
                    'expires_at': stamp(now + LEASE), 'updated_at': stamp(now),
                    'error': None, 'deleted_at': None}
@@ -436,6 +448,8 @@ class Lifecycle:
             raise ValueError('A successful numeric Gitea build run is required.')
         if not isinstance(owner, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,64}', owner):
             raise ValueError('A valid owner identity is required.')
+        from data_versions import resolve_name
+        release_id = resolve_name(release_id)
         if release_id not in RELEASES:
             raise ValueError('Choose a frozen release supported by this lab.')
         with self.lock:
@@ -453,6 +467,7 @@ class Lifecycle:
                        'mapping_sha256': pinned['mapping_sha256'],
                        'index_recipe_sha256': pinned['sha256'],
                        'catalogue_manifest_sha256': pinned['catalogue_manifest_sha256'],
+                   **{key: pinned[key] for key in ('rewrite_dataset_sha256', 'rewrite_redis_key') if key in pinned},
                        'state': 'requested', 'created_at': stamp(now),
                        'last_activity_at': stamp(now), 'expires_at': stamp(now + LEASE),
                        'updated_at': stamp(now), 'error': None, 'deleted_at': None}
@@ -506,7 +521,20 @@ class Lifecycle:
                               index_recovery_errors=json.dumps(built.get('recovery_errors', [])))
             return self.store.update(instance_id, **fields)
 
-    def activity(self, instance_id):
+    def set_expiry(self, instance_id, expires_at, expected_expiry):
+        """Set a fixed deadline only when the displayed lease is still current."""
+        from lease_expiry import deadline
+        with self.lock:
+            row = self.store.get(instance_id)
+            now = self.clock()
+            if row is None or row['state'] != 'ready' or now >= parse_stamp(row['expires_at']):
+                raise ValueError('Only a ready environment with an active lease can change expiry.')
+            if row['expires_at'] != expected_expiry:
+                raise ValueError('Lease changed. Refresh before setting its expiry.')
+            return self.store.update(instance_id, expires_at=deadline(expires_at, now),
+                                     expiry_mode='fixed', updated_at=stamp(now))
+
+    def activity(self, instance_id, explicit=False):
         with self.lock:
             row = self.store.get(instance_id)
             if row is None or row['state'] != 'ready':
@@ -514,8 +542,10 @@ class Lifecycle:
             now = self.clock()
             if now >= parse_stamp(row['expires_at']):
                 raise ValueError('The environment lease has expired.')
+            if row.get('expiry_mode') == 'fixed' and not explicit:
+                return self.store.update(instance_id, last_activity_at=stamp(now), updated_at=stamp(now))
             return self.store.update(instance_id, last_activity_at=stamp(now), expires_at=stamp(now + LEASE),
-                                     updated_at=stamp(now))
+                                     expiry_mode='activity', updated_at=stamp(now))
 
     @operation('environment.delete', deadline_seconds=300)
     def delete(self, instance_id):

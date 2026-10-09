@@ -34,16 +34,22 @@ def validated_query(path):
     return query, country, currency, parse_filters(selected[0])
 
 
-def understand(query):
+def local_understand(query):
     """Return the Elasticsearch query and a named rewrite decision."""
     # 'none' records that no rewrite was applied. A demo rewrite should return
     # the new query text and a name such as 'trainers-to-running-shoes'.
     return query, 'none'
 
 
-def query_body(query, country, currency, variant=None, filters=None):
+def understand(query):
+    """Prefer the pinned Redis rules, falling back to the existing local rewrite."""
+    from rewrite_lookup import lookup
+    return lookup(query) or local_understand(query)
+
+
+def query_body(query, country, currency, variant=None, filters=None, understood=None):
     """Build a deterministic retail query from understood text and ranking boosts."""
-    understood_query, _decision = understand(query)
+    understood_query, _decision = understood or understand(query)
     boosts = (variant or {'field_boosts': BASE})['field_boosts']
     return {
         'size': 20,
@@ -69,9 +75,9 @@ def diagnostic_options(path):
     return correlation_id
 
 
-def diagnostic_record(raw_query, query, body, result, correlation_id, api_ms, es_ms):
+def diagnostic_record(raw_query, query, body, result, correlation_id, api_ms, es_ms, understood=None):
     """Describe query processing and retrieval without exposing index credentials."""
-    understood_query, decision = understand(query)
+    understood_query, decision = understood or understand(query)
     canonical_request = json.dumps(body, sort_keys=True, separators=(',', ':')).encode()
     return {
         'schema_version': DIAGNOSTIC_SCHEMA,
@@ -156,7 +162,8 @@ class Handler(BaseHTTPRequestHandler):
             params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             raw_query = params.get('q', [''])[0]
             with telemetry.span('search.query_understanding'):
-                body = query_body(query, country, currency, variant, filters)
+                understood = understand(query)
+                body = query_body(query, country, currency, variant, filters, understood)
             try:
                 result, es_ms = self.search_index(body)
             except Exception as error:
@@ -175,7 +182,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(502, {'error': 'Search response is temporarily unavailable.'})
             if correlation_id is not None:
                 payload['diagnostics'] = diagnostic_record(raw_query, query, body, result,
-                                                           correlation_id, api_ms, es_ms)
+                                                           correlation_id, api_ms, es_ms, understood)
             telemetry.record(200, api_ms, self.headers.get('X-Lab-Traffic-Class'),
                              request_id=correlation_id)
             return self.send_json(200, payload)

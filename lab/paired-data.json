@@ -1,0 +1,215 @@
+{
+  "esci-gb-v1": {
+    "name": "esci-gb-v1",
+    "effective_date": null,
+    "inputs": {
+      "catalogue": "f227ec73d131c087dc5ec4dc0fe8419200c3ccb84203254b36b0d516a12647d7",
+      "query-suite": "e3da6abc3081137cf9e3c01d33d74e278a3abb2844c68a39088f6c4c49bfe0ce",
+      "judgement-set": "ee2c9c9cdc835604b74dd368381061f5c227689ea6ad736ed76c7b9fe25d4b8b"
+    },
+    "rewrite": {
+      "format": 1,
+      "catalogue_sha256": "dfe6cecbc7d745a728fbed59679be10af0532be69583f65dc078c8108c25ff50",
+      "rules": {
+        "trainers": [
+          "running shoes",
+          "trainers-to-running-shoes"
+        ],
+        "sneakers": [
+          "running shoes",
+          "sneakers-to-running-shoes"
+        ],
+        "earbuds": [
+          "wireless headphones",
+          "earbuds-to-wireless-headphones"
+        ],
+        "couch": [
+          "sofa",
+          "couch-to-sofa"
+        ],
+        "tee": [
+          "t shirt",
+          "tee-to-t-shirt"
+        ],
+        "cell phone": [
+          "mobile phone",
+          "cell-phone-to-mobile-phone"
+        ]
+      }
+    },
+    "rewrite_dataset_sha256": "6893a8d5c147acc0f9ec46f67a696e6092c4f07b7e7bce72aa9ca0b194099f44",
+    "rewrite_redis_key": "rewrite:6893a8d5c147acc0f9ec46f67a696e6092c4f07b7e7bce72aa9ca0b194099f44"
+  },
+  "esci-gb-demo-v1": {
+    "name": "esci-gb-demo-v1",
+    "effective_date": null,
+    "inputs": {
+      "catalogue": "3c5d12a14c9bbd0821cd3b7f5cdf800261439b998ce61692f8fd9081b618ae59",
+      "query-suite": "ffb4814a08ba8d95eb24cfae091512fcc610b42f5fbb16c5b3da3c9739ad3fe3",
+      "judgement-set": "b7cc9cae682ddbcc38c2aeab196ffb52822bd2e9c2205444f3f01bf1b29172ca"
+    },
+    "rewrite": {
+      "format": 1,
+      "catalogue_sha256": "fe91dc4627951f159432b484c941e3562993a8496f91cda5c4806c7ea1764063",
+      "rules": {
+        "trainers": [
+          "running shoes",
+          "trainers-to-running-shoes"
+        ],
+        "sneakers": [
+          "running shoes",
+          "sneakers-to-running-shoes"
+        ],
+        "earbuds": [
+          "wireless headphones",
+          "earbuds-to-wireless-headphones"
+        ],
+        "couch": [
+          "sofa",
+          "couch-to-sofa"
+        ],
+        "tee": [
+          "t shirt",
+          "tee-to-t-shirt"
+        ],
+        "cell phone": [
+          "mobile phone",
+          "cell-phone-to-mobile-phone"
+        ]
+      }
+    },
+    "rewrite_dataset_sha256": "dbde655385bd8a74458eb6f436b2373507d894d1bc65c94a838e95da7227dd89",
+    "rewrite_redis_key": "rewrite:dbde655385bd8a74458eb6f436b2373507d894d1bc65c94a838e95da7227dd89"
+  },
+  "esci-gb-demo-2026-01": {
+    "name": "esci-gb-demo-2026-01",
+    "effective_date": "2026-01-01",
+    "inputs": {
+      "catalogue": "406a8cb816bbfa3e6a699d6341bf7ff423cacb68aaba46e5ce3b13f7e9156f7b",
+      "query-suite": "5b035ab059e8ab41af3d518fd94a49a21580fc69b314eb72d4a5f9b6ed42e6bb",
+      "judgement-set": "162a8731461e145a3a77c185a392431486aecccf0ca51c376036b79a4495aa55"
+    },
+    "rewrite": {
+      "format": 1,
+      "catalogue_sha256": "4dc676999ddfb10ea36b884b0628c9924d2ba4a7fb116e653aabbf0d3618f2d2",
+      "rules": {
+        "trainers": [
+          "running shoes",
+          "trainers-to-running-shoes"
+        ],
+        "sneakers": [
+          "running shoes",
+          "sneakers-to-running-shoes"
+        ],
+        "earbuds": [
+          "wireless headphones",
+          "earbuds-to-wireless-headphones"
+        ],
+        "couch": [
+          "sofa",
+          "couch-to-sofa"
+        ],
+        "tee": [
+          "t shirt",
+          "tee-to-t-shirt"
+        ],
+        "cell phone": [
+          "mobile phone",
+          "cell-phone-to-mobile-phone"
+        ]
+      }
+    },
+    "rewrite_dataset_sha256": "048641ad3722bc78efe528709a0258378b0f7746e9e508015920d5e6ec34401c",
+    "rewrite_redis_key": "rewrite:048641ad3722bc78efe528709a0258378b0f7746e9e508015920d5e6ec34401c"
+  },
+  "esci-gb-demo-2026-02": {
+    "name": "esci-gb-demo-2026-02",
+    "effective_date": "2026-02-01",
+    "inputs": {
+      "catalogue": "d1baaa56c1b829044504c5057549422c51f08f27b35b6484eee2669cebc961bc",
+      "query-suite": "99b52bfc814db1c592ec0dd6413959b88c9c5f8e354282c4c54632a319b08b6a",
+      "judgement-set": "b5f4b17f4327677604dc71ad5c07e9e1ff002254393ffc7fc5de6728c02e1395"
+    },
+    "rewrite": {
+      "format": 1,
+      "catalogue_sha256": "f970d3243637aef768ced761911c9e9cb7b86870b6609f517e4dd32933743049",
+      "rules": {
+        "trainers": [
+          "running shoes",
+          "trainers-to-running-shoes"
+        ],
+        "sneakers": [
+          "running shoes",
+          "sneakers-to-running-shoes"
+        ],
+        "earbuds": [
+          "wireless headphones",
+          "earbuds-to-wireless-headphones"
+        ],
+        "couch": [
+          "sofa",
+          "couch-to-sofa"
+        ],
+        "tee": [
+          "t shirt",
+          "tee-to-t-shirt"
+        ],
+        "cell phone": [
+          "mobile phone",
+          "cell-phone-to-mobile-phone"
+        ],
+        "gym shoes": [
+          "running shoes",
+          "gym-shoes-to-running-shoes"
+        ]
+      }
+    },
+    "rewrite_dataset_sha256": "4ae5734a761db273ca67d50872188f775fc581f4df1741991c5c7c4a6a0c1502",
+    "rewrite_redis_key": "rewrite:4ae5734a761db273ca67d50872188f775fc581f4df1741991c5c7c4a6a0c1502"
+  },
+  "esci-gb-demo-2026-03": {
+    "name": "esci-gb-demo-2026-03",
+    "effective_date": "2026-03-01",
+    "inputs": {
+      "catalogue": "2f37002f5011618f62420a30b28e9d355bf56ac9b3863bca0cf30cfd81c1e375",
+      "query-suite": "512a3d2095c9f6a036eb3af8aacdf72282d1116562fa975585c8b5a721a188bc",
+      "judgement-set": "ef5cc747bd2e411b905ffc67b2a7d93b73bd781a0e8a9be628ace059bebdf36e"
+    },
+    "rewrite": {
+      "format": 1,
+      "catalogue_sha256": "5195295a9596859d9e8e74492b48fbca41d88a3b434708f0d99b19bd33a9c8f4",
+      "rules": {
+        "trainers": [
+          "running shoes",
+          "trainers-to-running-shoes"
+        ],
+        "sneakers": [
+          "running shoes",
+          "sneakers-to-running-shoes"
+        ],
+        "earbuds": [
+          "wireless headphones",
+          "earbuds-to-wireless-headphones"
+        ],
+        "couch": [
+          "sofa",
+          "couch-to-sofa"
+        ],
+        "cell phone": [
+          "mobile phone",
+          "cell-phone-to-mobile-phone"
+        ],
+        "gym shoes": [
+          "running shoes",
+          "gym-shoes-to-running-shoes"
+        ],
+        "hoodie": [
+          "hooded sweatshirt",
+          "hoodie-to-hooded-sweatshirt"
+        ]
+      }
+    },
+    "rewrite_dataset_sha256": "d7f72a5b15882f75f72b8b51a6685c5143f1e653290dfeaa7d6494313b5e9495",
+    "rewrite_redis_key": "rewrite:d7f72a5b15882f75f72b8b51a6685c5143f1e653290dfeaa7d6494313b5e9495"
+  }
+}

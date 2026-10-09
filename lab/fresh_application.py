@@ -298,6 +298,8 @@ def catalogue():
         print('Importing ' + release + ' from the retained ESCI source release.', flush=True)
         run_script('lab/import_catalogue.py', '--download', '--release', release)
     run_script('lab/publish_default_inputs.py')
+    run_script('lab/prepare_data_versions.py', '--publish')
+    run_script('lab/install_redis.py')
     for release in ('esci-gb-v1', 'esci-gb-demo-v1'):
         run_script('lab/load_release.py', '--release', release)
 

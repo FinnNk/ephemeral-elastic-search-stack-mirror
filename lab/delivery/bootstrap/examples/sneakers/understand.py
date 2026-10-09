@@ -1,6 +1,6 @@
-# Copy this function into app/app.py, replacing understand().
+# Copy this function into app/app.py, replacing local_understand().
 # Keep the existing trainers rewrite and add sneakers for this demo.
-def understand(query):
+def local_understand(query):
     """Return the Elasticsearch query and a named rewrite decision."""
     rewrites = {
         'trainers': ('running shoes', 'trainers-to-running-shoes'),

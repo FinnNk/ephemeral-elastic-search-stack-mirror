@@ -6,7 +6,7 @@ change. The rewrite keeps `trainers` → `running shoes` and adds
 
 | Snippet | Where to paste it |
 | --- | --- |
-| [understand.py](understand.py) | Replace only `understand()` in `app/app.py` |
+| [understand.py](understand.py) | Replace only `local_understand()` in `app/app.py` |
 | [test_method.py](test_method.py) | Add the method inside `SearchContract` in `app/test_app.py`, alongside its existing methods |
 | [queries.jsonl](queries.jsonl) | Create `evaluation/queries/sneakers.jsonl` with these contents |
 | [selection.json](selection.json) | Replace `gate/selection.json` for this demo |

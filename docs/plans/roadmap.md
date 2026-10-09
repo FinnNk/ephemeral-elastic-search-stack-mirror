@@ -6,12 +6,14 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-PR #169 is merged: environment cards show next-target promotion evidence and
-allow early preview/ephemeral expiry. The Mac source comparison passed.
-The [current batch](delivery-semantic-versions.md) introduces reviewed SemVer
-versions, immutable publication and coordinator-owned source tags. Next: review
-the lab and delivery-source PRs, update the runtime, then publish the first
-versioned merged build and verify its mirrored tag and promotion status.
+PRs #169 and #170 and delivery-source #34 are merged. SemVer publication is
+active in the Windows control runtime; the Mac needs its own runtime update.
+
+The [current batch](paired-data-and-lease-editor.md) adds manual fixed expiry,
+shared read-only Redis rewrites with local fallback, and three small simulated
+dated catalogues. Lab, source API and environment-state chart changes are prepared
+for review. Activation follows acceptance; existing frozen deployments retain
+their original bindings. See [paired data restores](../paired-data-restores.md).
 
 The Mac SigNoz installer succeeded on retry. Its ingestion and clean-install
 acceptance still need checking. The source PR comparison then failed before

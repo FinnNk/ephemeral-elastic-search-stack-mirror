@@ -34,6 +34,14 @@ spec:
               value: https://shared-es-http.platform.svc:9200
             - name: ES_INDEX
               value: {{ .Values.index | quote }}
+            {{- if .Values.rewrite_redis_key }}
+            - name: REWRITE_REDIS_HOST
+              value: lab-redis.platform.svc.cluster.local
+            - name: REWRITE_REDIS_KEY
+              value: {{ .Values.rewrite_redis_key | quote }}
+            - name: REWRITE_CATALOGUE_SHA256
+              value: {{ .Values.dataset_sha256 | quote }}
+            {{- end }}
             {{- if .Values.variant_config_json }}
             - name: SEARCH_VARIANTS_JSON
               value: {{ .Values.variant_config_json | quote }}
@@ -115,6 +123,15 @@ spec:
       ports:
         - port: 8080
   egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: platform
+          podSelector:
+            matchLabels:
+              app: lab-redis
+      ports:
+        - port: 6379
     - to:
         - namespaceSelector:
             matchLabels:

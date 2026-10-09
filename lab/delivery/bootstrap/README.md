@@ -66,7 +66,7 @@ the results for request timing. Try `running shoes`. The page calls `GET /search
 
 For a small query-understanding demo, copy the function from
 [`examples/trainers_rewrite.py`](examples/trainers_rewrite.py) into
-[`app/app.py`](app/app.py), replacing `understand()`. It rewrites `trainers` to
+[`app/app.py`](app/app.py), replacing `local_understand()`. It rewrites `trainers` to
 `running shoes`, ignoring case, and records the decision name in diagnostics.
 Copy the method from
 [`examples/trainers_rewrite_test.py`](examples/trainers_rewrite_test.py) into the
@@ -146,3 +146,12 @@ merging; both PR checks and main publication refuse a conflicting version.
 
 See the [version contract](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/delivery-versioning.md)
 for ordering, retained releases and tag recovery.
+
+## Pinned external rewrite data
+
+The lab binds each catalogue to a small immutable Redis rewrite hash.
+`understand()` consults Redis first; `local_understand()` retains the existing
+local rules for misses or unavailable/mismatched external data. A successful
+external lookup is marked `redis:` in request diagnostics. Edit local fallback
+rules in `local_understand()`; changing them does not override an existing Redis
+rule. Keep Redis dataset changes in a newly named, reviewed data release.

@@ -10,6 +10,7 @@ import sqlite3
 from common import STATE
 
 FIELDS = {
+    'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'},
     'expire-preview': {'name', 'fingerprint', 'expires_at'},
     'prepare-production': set(),
     'release-production': {'intent'},
@@ -37,7 +38,7 @@ def validate(payload):
     kind = payload['kind']
     if set(payload) - (FIELDS[kind] | {'kind'}):
         raise ValueError('Unknown delivery operation field.')
-    required = {'expire-preview': {'name', 'fingerprint', 'expires_at'}, 'prepare-production': set(), 'release-production': {'intent'}, 'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
+    required = {'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'}, 'expire-preview': {'name', 'fingerprint', 'expires_at'}, 'prepare-production': set(), 'release-production': {'intent'}, 'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
                 else {'baseline_run', 'candidate_run'},
                 'promotion': {'target', 'run', 'intent'}, 'gate-check': {'pr', 'source_sha'},
                 'request-exception': {'pr', 'source_sha', 'variant', 'reason'},
@@ -46,9 +47,9 @@ def validate(payload):
                 'rollback': {'target', 'fingerprint', 'intent'}}[kind]
     if not required <= set(payload):
         raise ValueError('Required delivery operation fields are missing.')
-    if kind == 'expire-preview' and not re.fullmatch(r'lab-delivery-run-[1-9][0-9]*-[a-f0-9]{8}', str(payload['name'])):
+    if kind in ('expire-preview', 'set-preview-expiry') and not re.fullmatch(r'lab-delivery-run-[1-9][0-9]*-[a-f0-9]{8}', str(payload['name'])):
         raise ValueError('Only delivery preview environments can expire early.')
-    if kind == 'expire-preview':
+    if kind in ('expire-preview', 'set-preview-expiry'):
         if not isinstance(payload['expires_at'], str) or len(payload['expires_at']) > 40 or \
                 datetime.fromisoformat(payload['expires_at'].replace('Z', '+00:00')).tzinfo is None:
             raise ValueError('Preview expiry must identify its current lease.')
@@ -59,7 +60,10 @@ def validate(payload):
         raise ValueError('Delivery target is invalid.')
     if 'intent' in payload and payload['intent'] not in ('ranking-change', 'preserve-results'):
         raise ValueError('Promotion target or intent is invalid.')
-    if 'dataset' in payload and not re.fullmatch(r'[a-z][a-z0-9-]{0,63}', str(payload['dataset'])):
+    if kind == 'set-preview-expiry':
+        from lease_expiry import deadline
+        deadline(payload['new_expiry'])
+    if 'dataset' in payload and not re.fullmatch(r'(?:[a-z][a-z0-9-]{0,63}|[0-9]{4}-[0-9]{2}-[0-9]{2})', str(payload['dataset'])):
         raise ValueError('Dataset name is invalid.')
     for field, size in (('query_manifest', 64), ('judgement_manifest', 64), ('recipe', 64), ('fingerprint', 64), ('source_sha', 40), ('baseline_sha', 40)):
         if field in payload and not re.fullmatch('[0-9a-f]{' + str(size) + '}', str(payload[field])):
@@ -112,7 +116,7 @@ class Operations:
         if payload['kind'] == 'request-exception' and (
                 not identity.get('is_admin') or identity.get('is_delivery_service')):
             raise ValueError('A human lab administrator must request an exception.')
-        if payload['kind'] == 'expire-preview' and (
+        if payload['kind'] in ('expire-preview', 'set-preview-expiry') and (
                 not identity.get('is_admin') or identity.get('is_delivery_service')):
             raise ValueError('A human lab administrator must expire a delivery preview.')
         if not re.fullmatch(r'[A-Za-z0-9._-]{1,128}', key or ''):
@@ -232,10 +236,10 @@ def execute_next():
         elif kind == 'gate-check':
             from delivery_source_comparison import recheck
             result = recheck(request, progress, identifier)
-        elif kind == 'expire-preview':
+        elif kind in ('expire-preview', 'set-preview-expiry'):
             from preview_expiry import expire
-            progress('Checking the preview identity and ending its lease')
-            result = expire(request['name'], request['fingerprint'], request['expires_at'])
+            progress('Checking the preview identity and updating its lease')
+            result = expire(request['name'], request['fingerprint'], request['expires_at'], request.get('new_expiry'))
         elif kind == 'compare':
             from delivery_source_comparison import compare
             result = compare(request, progress, identifier)
@@ -296,7 +300,7 @@ def execute_next():
         traceback.print_exc()
         detail = type(error).__name__
         if isinstance(error, ComparisonInputError) or (isinstance(error, ValueError) and (getattr(error, 'reference', None) or
-                request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production', 'expire-preview'))):
+                request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production', 'expire-preview', 'set-preview-expiry'))):
             # Decision validation errors contain public evidence/review facts,
             # never credentials or provider response bodies.
             detail += ': ' + str(error)[:240]

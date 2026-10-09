@@ -234,6 +234,19 @@ class Handler(BaseHTTPRequestHandler):
                 if path.exists():
                     releases.append({'release': release_id,
                                      'manifest': json.loads(path.read_text(encoding='utf-8'))})
+            from catalogue import PROFILES
+            from input_selection import fetch_manifest
+            from azure.core.exceptions import ResourceNotFoundError
+            for release_id in RELEASES:
+                if not PROFILES['releases'][release_id].get('effective_date') or any(row['release']==release_id for row in releases):
+                    continue
+                try:
+                    manifest = fetch_manifest('catalogue', DEFAULTS[release_id]['catalogue'])
+                except ResourceNotFoundError:
+                    continue  # Optional dated presets are advertised only after publication.
+                releases.append({'release': release_id, 'manifest': {'count': manifest['record_count'],
+                    'query_count': 50, 'effective_date': PROFILES['releases'][release_id]['effective_date'],
+                    'simulated': True}})
             return self.send_json(200, releases)
         if parts == ['api', 'index-kinds']:
             return self.send_json(200, {release_id: available_kinds(release_id) for release_id in RELEASES})
@@ -419,7 +432,10 @@ class Handler(BaseHTTPRequestHandler):
                 if not self.visible(self.controller.store.get(parts[2]), identity):
                     return self.send_json(403, {'error': 'Environment belongs to another owner.'})
                 if parts[3] == 'activity':
-                    return self.send_json(200, self.controller.activity(parts[2]))
+                    return self.send_json(200, self.controller.activity(parts[2], explicit=True))
+                if parts[3] == 'expiry':
+                    return self.send_json(200, self.controller.set_expiry(parts[2],
+                        payload['expires_at'], payload['expected_expiry']))
                 if parts[3] == 'reconcile':
                     return self.send_json(200, self.controller.reconcile(parts[2]))
         except KeyError:

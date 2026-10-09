@@ -3,7 +3,8 @@
 Create a new lab with fresh credentials and certificates, the full English ESCI
 catalogue, source CI, comparisons, notebooks and reviewed delivery promotions.
 The installer also sets up Nexus, snapshot storage, the CPU abstaining judgement
-service and OIDC sign-in for Gitea, Argo CD, Headlamp and the control UI.
+service, shared Redis rewrite datasets, three small simulated dated catalogues
+and OIDC sign-in for Gitea, Argo CD, Headlamp and the control UI.
 
 Large research models, GPU jobs and the optional Headlamp development testbed
 are not installed. SigNoz is an optional follow-on installation using the demo

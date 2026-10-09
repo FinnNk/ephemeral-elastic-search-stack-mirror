@@ -19,6 +19,8 @@ def main():
     args = parser.parse_args()
     result = {}
     for release, expected in DEFAULTS.items():
+        if release.startswith('esci-gb-demo-2026-'):
+            continue  # The deterministic timeline producer publishes and verifies these separately.
         published = publish(args.source_root / release, args.output_root / release,
                             'esci-import-v1', release, blob_url=settings()[0],
                             container=settings()[1], blob_service=service(),

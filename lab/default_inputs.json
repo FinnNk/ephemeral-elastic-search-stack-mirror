@@ -8,5 +8,20 @@
     "catalogue": "3c5d12a14c9bbd0821cd3b7f5cdf800261439b998ce61692f8fd9081b618ae59",
     "query-suite": "ffb4814a08ba8d95eb24cfae091512fcc610b42f5fbb16c5b3da3c9739ad3fe3",
     "judgement-set": "b7cc9cae682ddbcc38c2aeab196ffb52822bd2e9c2205444f3f01bf1b29172ca"
+  },
+  "esci-gb-demo-2026-01": {
+    "catalogue": "406a8cb816bbfa3e6a699d6341bf7ff423cacb68aaba46e5ce3b13f7e9156f7b",
+    "query-suite": "5b035ab059e8ab41af3d518fd94a49a21580fc69b314eb72d4a5f9b6ed42e6bb",
+    "judgement-set": "162a8731461e145a3a77c185a392431486aecccf0ca51c376036b79a4495aa55"
+  },
+  "esci-gb-demo-2026-02": {
+    "catalogue": "d1baaa56c1b829044504c5057549422c51f08f27b35b6484eee2669cebc961bc",
+    "query-suite": "99b52bfc814db1c592ec0dd6413959b88c9c5f8e354282c4c54632a319b08b6a",
+    "judgement-set": "b5f4b17f4327677604dc71ad5c07e9e1ff002254393ffc7fc5de6728c02e1395"
+  },
+  "esci-gb-demo-2026-03": {
+    "catalogue": "2f37002f5011618f62420a30b28e9d355bf56ac9b3863bca0cf30cfd81c1e375",
+    "query-suite": "512a3d2095c9f6a036eb3af8aacdf72282d1116562fa975585c8b5a721a188bc",
+    "judgement-set": "ef5cc747bd2e411b905ffc67b2a7d93b73bd781a0e8a9be628ace059bebdf36e"
   }
 }

@@ -17,5 +17,11 @@ if __name__ == '__main__':
         from esci_sources import restore
         restore(STATE/'esci-upstream')
     profile=PROFILES['releases'][args.release]
+    if profile.get('simulated'):
+        from demo_timeline import build as build_timeline
+        result = build_timeline(STATE/'releases/esci-gb-demo-v1', STATE/'releases'/args.release,
+                                int(profile['effective_date'][5:7]))
+        print(json.dumps(result, indent=2))
+        sys.exit(0)
     print(json.dumps(build(STATE/'esci-upstream',STATE/'releases'/args.release,args.release,
                            profile['queries'],profile['products'],args.download),indent=2))

@@ -64,6 +64,8 @@ def compatible(release, recipe):
 
 def resolve(run_id, dataset=DEFAULT_RELEASE, recipe_sha=None, merged=True,
             query_manifest_sha=None, judgement_manifest_sha=None, variant_config=None):
+    from data_versions import resolve_name, verified_binding
+    dataset = resolve_name(dataset)
     receipt, release, _files = from_run(run_id)
     if merged and receipt['event_kind'] != 'push':
         raise ValueError('Promotion requires a successful merged-source push build.')
@@ -92,6 +94,8 @@ def resolve(run_id, dataset=DEFAULT_RELEASE, recipe_sha=None, merged=True,
               'query_manifest_sha256': selected['query_manifest_sha256'],
               'judgement_manifest_sha256': selected['judgement_manifest_sha256'],
               'dataset_release': dataset, 'request_context': {'country': 'GB', 'currency': 'GBP'}}
+    if 'app/rewrite_lookup.py' in _files:
+        fields.update(verified_binding(dataset, recipe['product_sha256']))
     if release.get('version'):
         fields['software_version'] = release['version']
     if variant_config is not None:
@@ -142,6 +146,13 @@ def validate_deployment(deployment, *, merged=True):
                       relevance=True)
         if not fields.get('query_manifest_sha256') or not fields.get('judgement_manifest_sha256'):
             raise ValueError('Deployment has no selected functional input manifests.')
+    if 'app/rewrite_lookup.py' in files:
+        from data_versions import verified_binding
+        expected = verified_binding(fields['dataset_release'], recipe['product_sha256'])
+        if any(fields.get(key) != value for key, value in expected.items()):
+            raise ValueError('Deployment Redis dataset differs from the frozen catalogue.')
+    elif fields.get('rewrite_dataset_sha256'):
+        raise ValueError('Legacy source release cannot claim a Redis data binding.')
     compatible(release, recipe)
     if (fields['dataset_sha256'] != recipe['product_sha256'] or fields['engine'] != recipe['engine_version'] or
             fields['mapping_sha256'] != recipe_digest(recipe['index_definition']) or
@@ -157,6 +168,8 @@ def validate_deployment(deployment, *, merged=True):
 def materialise(deployment, *, merged=True):
     recipe, _ = validate_deployment(deployment, merged=merged)
     fields = deployment['fields']
+    from data_versions import verify_materialised
+    verify_materialised(fields)
     if recipe['index_kind'] == 'shared':
         return ensure_shared_index(fields['dataset_release'], fields['dataset_sha256'], fields['index_recipe_sha256'])
     return ensure_candidate_index('lab-release-' + fields['index_recipe_sha256'][:24],

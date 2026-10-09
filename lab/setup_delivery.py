@@ -56,7 +56,7 @@ def seed_source(path):
     if not api(endpoint(SOURCE))['empty']:
         print('Source already seeded; publish further changes through a branch and PR.')
         return
-    for name in ('app.py', 'telemetry.py', 'variants.py', 'search_filters.py', 'requirements.lock',
+    for name in ('app.py', 'rewrite_lookup.py', 'test_rewrite_lookup.py', 'telemetry.py', 'variants.py', 'search_filters.py', 'requirements.lock',
                  'index.html', 'demo.py', 'test_app.py', 'test_demo.py', 'test_filters.py', 'test_pool.py', 'Dockerfile'):
         target = path / 'app' / name
         target.parent.mkdir(exist_ok=True)

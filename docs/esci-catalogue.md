@@ -54,3 +54,11 @@ Published labels cover a subset of possible results. Read coverage with relevanc
 ## Attribution
 
 [ESCI](https://github.com/amazon-science/esci-data) and [ESCI-S](https://github.com/shuttie/esci-s) are supplied under Apache 2.0. Source revisions and file SHA-256 checksums are pinned; the unversioned ESCI-S download must match its checksum. [Licences and notices](../data/notices/) are retained in the repository. Raw source files and catalogue objects stay in retained state and Blob Storage, outside Git.
+
+## Simulated dated catalogues and Redis
+
+The lab also supplies three small named releases with simulated effective dates
+and corresponding Redis rewrite data. Restore by name or date in the control UI;
+each restore pins both data dependencies. See [paired data restores](paired-data-restores.md)
+for counts, provenance, installation and fixed expiry controls. These are simulated
+membership changes, not inferred historical product introduction dates.

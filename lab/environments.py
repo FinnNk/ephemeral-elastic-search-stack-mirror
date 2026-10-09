@@ -54,11 +54,13 @@ def provision_access(name,index,read_indices=None,registry=True):
         docker={'auths':{'gitea.localhost:31800':{'auth':base64.b64encode(('elastic-agent:'+c['read_token']).encode()).decode()}}}
         apply({'apiVersion':'v1','kind':'Secret','type':'kubernetes.io/dockerconfigjson','metadata':{'name':'registry-read','namespace':name},'stringData':{'.dockerconfigjson':json.dumps(docker)}})
 def define(name,image,index='spike-frozen-v1',dataset_sha256=None,mapping_sha256=None,
-           index_recipe_sha256=None,variant_config=None,image_pull_secret=None):
+           index_recipe_sha256=None,variant_config=None,image_pull_secret=None,rewrite_binding=None):
     if dataset_sha256 is None:
         dataset=json.loads((EVIDENCE/'dataset.json').read_text())
         dataset_sha256=dataset['sha256']
     definition={'image':image,'index':index,'dataset_sha256':dataset_sha256,'engine':'9.5.4'}
+    if rewrite_binding:
+        definition.update(rewrite_binding)
     if mapping_sha256 is not None:definition['mapping_sha256']=mapping_sha256
     if index_recipe_sha256 is not None:definition['index_recipe_sha256']=index_recipe_sha256
     if image_pull_secret is not None:

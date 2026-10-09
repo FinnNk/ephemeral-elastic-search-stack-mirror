@@ -67,9 +67,12 @@ The control workers already run in Kubernetes. Do not launch host control, lease
 | `esci-gb-v1` | Default: 1,215,854 English ESCI products, GBP lab prices and 1,000 test queries |
 | `esci-gb-demo-v1` | Optional demo subset: 10,000 products and 50 test queries |
 
+For three small dated versions, paired Redis data and date-based selection, see
+[paired data restores](../docs/paired-data-restores.md).
+
 See [catalogue setup](../docs/esci-catalogue.md) to configure the demo size. Normal workflows reuse the full frozen catalogue.
 
-A new environment retains its source commit, image digest, index recipe and fingerprint. The 72-hour lease extends with genuine activity; status polling does not extend it. **Search** runs a query and **Extend lease** renews it explicitly.
+A new environment retains its source commit, image digest, index recipe and fingerprint. The default 72-hour lease extends with genuine activity; status polling does not extend it. **Search** runs a query and **Extend lease** renews it explicitly. **Set expiry** chooses a fixed deadline that activity will not extend; **Extend lease** returns to the rolling lease. Stable delivery targets have no expiry editor.
 
 After [preview access](../docs/preview-access.md) is installed, choose **Open search
 page** on a ready card. Its URL is

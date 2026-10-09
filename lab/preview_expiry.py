@@ -7,8 +7,8 @@ from common import STATE, k
 from lifecycle import Store
 
 
-def expire(name, fingerprint, expected_expiry):
-    """Mark a preview due for cleanup; repeated requests cannot extend its lease."""
+def expire(name, fingerprint, expected_expiry, new_expiry=None):
+    """End or set an exact preview lease; stale requests cannot change another lease."""
     if not re.fullmatch(r'lab-delivery-run-[1-9][0-9]*-[a-f0-9]{8}', name) or \
             not re.fullmatch('[a-f0-9]{64}', fingerprint):
         raise ValueError('Only an exact delivery preview can expire early.')
@@ -24,11 +24,16 @@ def expire(name, fingerprint, expected_expiry):
         raise ValueError('Application is not an owned delivery preview.')
     if metadata['annotations']['lab/preview-expires-at'] != expected_expiry:
         raise ValueError('Preview lease changed. Refresh before expiring it.')
+    if new_expiry:
+        from lease_expiry import deadline
+        if datetime.fromisoformat(expected_expiry.replace('Z', '+00:00')) <= datetime.now(timezone.utc):
+            raise ValueError('An expired preview cannot be revived. Create a new preview.')
+        expiry = deadline(new_expiry)
     definition = k('get', 'configmap/frozen-definition', '-n', name, '-o', 'json')
     value = json.loads(json.loads(definition.stdout)['data']['definition.json'])
     if value.get('fingerprint') != fingerprint:
         raise ValueError('Preview release changed. Refresh before expiring it.')
-    expiry = datetime.now(timezone.utc).isoformat()
+    expiry = expiry if new_expiry else datetime.now(timezone.utc).isoformat()
     k('annotate', 'application/' + name, '-n', 'argocd',
       'lab/preview-expires-at=' + expiry, '--overwrite')
-    return {'name': name, 'state': 'expiring', 'expires_at': expiry}
+    return {'name': name, 'state': 'lease-updated' if new_expiry else 'expiring', 'expires_at': expiry}

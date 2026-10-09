@@ -1,3 +1,5 @@
 -r control-runtime/requirements.lock
 -r ../data/esci-requirements.txt
 psutil==7.0.0
+
+redis==6.4.0
