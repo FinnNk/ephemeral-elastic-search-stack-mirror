@@ -5,7 +5,7 @@ import hashlib
 import json
 import secrets
 
-from common import apply, k
+from common import apply, k, guard
 from data_versions import PAIRS, canonical, verified_binding
 from input_selection import DEFAULTS, fetch_manifest
 
@@ -36,6 +36,7 @@ def seed():
 
 def install():
     """Reconcile the owned Redis server; no PVC or per-environment process is needed."""
+    guard()
     payload = seed()
     existing = k('get', 'secret/lab-redis-loader', '-n', 'platform', '-o', 'json', '--ignore-not-found')
     password = (base64.b64decode(json.loads(existing.stdout)['data']['password']).decode()

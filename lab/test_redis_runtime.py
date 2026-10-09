@@ -27,6 +27,7 @@ class RedisRuntime(unittest.TestCase):
             return {'content': {'sha256': pair['rewrite']['catalogue_sha256']}}
         with patch('input_selection.fetch_manifest', side_effect=manifest), \
                 patch.object(install_redis, 'fetch_manifest', side_effect=manifest), \
+                patch.object(install_redis, 'guard'), \
                 patch.object(install_redis, 'apply', side_effect=resources.append), \
                 patch.object(install_redis, 'k', return_value=SimpleNamespace(stdout='')):
             install_redis.install()
@@ -42,7 +43,7 @@ class RedisRuntime(unittest.TestCase):
             root = Path(folder)
             (root/'users.acl').write_text(secret['users.acl'])
             (root/'data.resp').write_bytes(base64.b64decode(seed))
-            docker('create', '--name', name, '--memory', '96m', '-p', '127.0.0.1::6379',
+            docker('create', '--name', name, '--memory', '96m', '--user', '999:999', '-p', '127.0.0.1::6379',
                    '-e', 'REDISCLI_AUTH=' + secret['password'], '--entrypoint', 'sh',
                    install_redis.IMAGE, '-ec', container['command'][2].replace('/auth/users.acl', '/tmp/users.acl').replace('/seed/data.resp', '/tmp/data.resp'))
             try:

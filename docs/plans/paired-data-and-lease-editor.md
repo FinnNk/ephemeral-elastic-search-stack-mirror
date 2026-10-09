@@ -42,3 +42,14 @@ on the Mac before claiming native installation verification.
 - Full dated fixture regeneration matched committed pins. Linux Python 3.12.15
   and 3.13.16 reproduced the exact January manifest and compressed data bytes. Shared lab deployment
   and native Mac acceptance remain after review.
+
+## Review batch
+
+- [Lab #171](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/pulls/171): UI, paired data, runtime and fresh installation.
+- [Environment-state #1](https://gitea.localhost:34443/elastic-agent/environment-state/pulls/1): render Redis bindings for standalone previews.
+- [Delivery-source #35](https://gitea.localhost:34443/elastic-agent/delivery-source/pulls/35): API 1.1.0, chart and copy/paste examples.
+- [Search-spike #7](https://gitea.localhost:34443/elastic-agent/search-spike/pulls/7): Redis support in the standalone UI build path.
+
+Accept the lab and environment chart changes first. Publish paired data and
+activate Redis/control, then accept and build the APIs. A fresh source comparison
+under the new runtime is required before promoting a Redis-bound API release.
