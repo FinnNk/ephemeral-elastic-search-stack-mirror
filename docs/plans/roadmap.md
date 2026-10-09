@@ -10,8 +10,8 @@ PRs #169 and #170 and delivery-source #34 are merged. SemVer publication is
 active in the Windows control runtime; the Mac needs its own runtime update.
 
 The [current batch](paired-data-and-lease-editor.md) adds manual fixed expiry,
-shared read-only Redis rewrites with local fallback, and three small simulated
-dated catalogues. Lab, source API and environment-state chart changes are prepared
+shared read-only Redis rewrites with local fallback, and small simulated
+monthly and Halloween/Christmas catalogues. Lab, source API and environment-state chart changes are prepared
 for review. Activation follows acceptance; existing frozen deployments retain
 their original bindings. See [paired data restores](../paired-data-restores.md).
 

@@ -211,5 +211,119 @@
     },
     "rewrite_dataset_sha256": "d7f72a5b15882f75f72b8b51a6685c5143f1e653290dfeaa7d6494313b5e9495",
     "rewrite_redis_key": "rewrite:d7f72a5b15882f75f72b8b51a6685c5143f1e653290dfeaa7d6494313b5e9495"
+  },
+  "esci-gb-demo-halloween-2026": {
+    "name": "esci-gb-demo-halloween-2026",
+    "effective_date": "2026-10-01",
+    "inputs": {
+      "catalogue": "5b616aae7e1c0d67b8144f59809aa33616321d5f1f7627fbc15a1d45db549a19",
+      "query-suite": "cac2f5af2c29e1202b2e5b3f3e74415286a857a18613beb80fd2ccc060312a3a",
+      "judgement-set": "7d752dce346a5fbc73fb0f20044272094844b6bf9be03fd9fd9da89748841bc2"
+    },
+    "rewrite": {
+      "format": 1,
+      "catalogue_sha256": "f9e6a9b96bf81a1ce95fa41d9c2107b103cbbfbd17062ccb98b4bbed46abc35e",
+      "rules": {
+        "trainers": [
+          "running shoes",
+          "trainers-to-running-shoes"
+        ],
+        "sneakers": [
+          "running shoes",
+          "sneakers-to-running-shoes"
+        ],
+        "earbuds": [
+          "wireless headphones",
+          "earbuds-to-wireless-headphones"
+        ],
+        "couch": [
+          "sofa",
+          "couch-to-sofa"
+        ],
+        "cell phone": [
+          "mobile phone",
+          "cell-phone-to-mobile-phone"
+        ],
+        "gym shoes": [
+          "running shoes",
+          "gym-shoes-to-running-shoes"
+        ],
+        "hoodie": [
+          "hooded sweatshirt",
+          "hoodie-to-hooded-sweatshirt"
+        ],
+        "seasonal decorations": [
+          "halloween decorations",
+          "halloween-decorations"
+        ],
+        "party decorations": [
+          "halloween decorations",
+          "halloween-decorations"
+        ],
+        "spooky decorations": [
+          "halloween decorations",
+          "halloween-decorations"
+        ]
+      }
+    },
+    "rewrite_dataset_sha256": "f7aebb153f49de8756fbab42f944bbd7930901df5e2cc4ce40e7585f3b7805e6",
+    "rewrite_redis_key": "rewrite:f7aebb153f49de8756fbab42f944bbd7930901df5e2cc4ce40e7585f3b7805e6"
+  },
+  "esci-gb-demo-christmas-2026": {
+    "name": "esci-gb-demo-christmas-2026",
+    "effective_date": "2026-12-01",
+    "inputs": {
+      "catalogue": "db1cdf1e6bc9cf44bc44913cc4078ea022e7a982ecd9b612a65b78e62ede57fd",
+      "query-suite": "5b61622f9b381679589d5ce651150bf20695432437dc82642e32078d365d2ecb",
+      "judgement-set": "6af22404b35b441e398fabd984e333e91cc197fa23cf6ff9cf44ba09e5df3475"
+    },
+    "rewrite": {
+      "format": 1,
+      "catalogue_sha256": "464ac50c7e66dbc25adbd09aafe2ea8d74542cf5b83d942ad4d0d01e74e04d4c",
+      "rules": {
+        "trainers": [
+          "running shoes",
+          "trainers-to-running-shoes"
+        ],
+        "sneakers": [
+          "running shoes",
+          "sneakers-to-running-shoes"
+        ],
+        "earbuds": [
+          "wireless headphones",
+          "earbuds-to-wireless-headphones"
+        ],
+        "couch": [
+          "sofa",
+          "couch-to-sofa"
+        ],
+        "cell phone": [
+          "mobile phone",
+          "cell-phone-to-mobile-phone"
+        ],
+        "gym shoes": [
+          "running shoes",
+          "gym-shoes-to-running-shoes"
+        ],
+        "hoodie": [
+          "hooded sweatshirt",
+          "hoodie-to-hooded-sweatshirt"
+        ],
+        "seasonal decorations": [
+          "christmas decorations",
+          "christmas-decorations"
+        ],
+        "party decorations": [
+          "christmas decorations",
+          "christmas-decorations"
+        ],
+        "festive decorations": [
+          "christmas decorations",
+          "christmas-decorations"
+        ]
+      }
+    },
+    "rewrite_dataset_sha256": "2e9915b96930513a9e031ef927ecdda69ed7bea45101d04093e3f0e68a23d1bd",
+    "rewrite_redis_key": "rewrite:2e9915b96930513a9e031ef927ecdda69ed7bea45101d04093e3f0e68a23d1bd"
   }
 }

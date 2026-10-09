@@ -67,7 +67,7 @@ The control workers already run in Kubernetes. Do not launch host control, lease
 | `esci-gb-v1` | Default: 1,215,854 English ESCI products, GBP lab prices and 1,000 test queries |
 | `esci-gb-demo-v1` | Optional demo subset: 10,000 products and 50 test queries |
 
-For three small dated versions, paired Redis data and date-based selection, see
+For small monthly and Halloween/Christmas versions, paired Redis data and date-based selection, see
 [paired data restores](../docs/paired-data-restores.md).
 
 See [catalogue setup](../docs/esci-catalogue.md) to configure the demo size. Normal workflows reuse the full frozen catalogue.

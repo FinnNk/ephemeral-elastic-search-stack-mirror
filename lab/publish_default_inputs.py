@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'data'))
 from publish import publish
 from blob_config import settings, service
 from common import STATE
+from catalogue import PROFILES
 from input_selection import DEFAULTS, fetch_manifest, fetch_rows
 
 
@@ -19,7 +20,7 @@ def main():
     args = parser.parse_args()
     result = {}
     for release, expected in DEFAULTS.items():
-        if release.startswith('esci-gb-demo-2026-'):
+        if PROFILES['releases'][release].get('simulated'):
             continue  # The deterministic timeline producer publishes and verifies these separately.
         published = publish(args.source_root / release, args.output_root / release,
                             'esci-import-v1', release, blob_url=settings()[0],

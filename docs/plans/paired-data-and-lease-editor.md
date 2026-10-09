@@ -53,3 +53,23 @@ on the Mac before claiming native installation verification.
 Accept the lab and environment chart changes first. Publish paired data and
 activate Redis/control, then accept and build the APIs. A fresh source comparison
 under the new runtime is required before promoting a Redis-bound API release.
+
+## Seasonal extension
+
+Add Halloween and Christmas datasets to the same review batch. Each contains
+1,000 identical ordinary controls and 250 distinct themed products, selected
+unchanged from full ESCI. Keep selection bounded in memory and scan the full
+catalogue once for both events; reruns verify retained bytes. Add simulated
+October/December dates, paired event rewrites and four unlabelled demo queries.
+Preserve the previously pinned full, demo and monthly releases byte for byte.
+
+Acceptance: restore both events, check the same seasonal query produces visibly
+different products and Redis decisions, and check ordinary controls retain their
+identity. Do not describe cross-catalogue metric differences as a ranking regression.
+
+Seasonal verification: four selection/pairing tests and the real non-root Redis
+seed test passed. Actual catalogues contain 1,250 products each, exactly 1,000
+shared IDs, 54 queries and 968 unchanged labels each. The four curated seasonal
+queries have no fabricated labels. Compressed product files total 1,440,852 bytes.
+All five earlier input pins and Redis pairings remain unchanged. Repeated producer
+execution verifies and reuses the frozen seasonal outputs.

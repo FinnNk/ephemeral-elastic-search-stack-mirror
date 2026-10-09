@@ -18,6 +18,12 @@ if __name__ == '__main__':
         restore(STATE/'esci-upstream')
     profile=PROFILES['releases'][args.release]
     if profile.get('simulated'):
+        if profile.get('theme'):
+            from demo_seasons import build_pair
+            result = build_pair(STATE/'releases/esci-gb-v1', STATE/'releases/esci-gb-demo-v1',
+                                STATE/'releases')[profile['theme']]
+            print(json.dumps(result, indent=2))
+            sys.exit(0)
         from demo_timeline import build as build_timeline
         result = build_timeline(STATE/'releases/esci-gb-demo-v1', STATE/'releases'/args.release,
                                 int(profile['effective_date'][5:7]))

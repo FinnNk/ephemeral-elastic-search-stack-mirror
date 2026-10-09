@@ -3,7 +3,7 @@
 Create a new lab with fresh credentials and certificates, the full English ESCI
 catalogue, source CI, comparisons, notebooks and reviewed delivery promotions.
 The installer also sets up Nexus, snapshot storage, the CPU abstaining judgement
-service, shared Redis rewrite datasets, three small simulated dated catalogues
+service, shared Redis rewrite datasets, small simulated monthly and event catalogues
 and OIDC sign-in for Gitea, Argo CD, Headlamp and the control UI.
 
 Large research models, GPU jobs and the optional Headlamp development testbed

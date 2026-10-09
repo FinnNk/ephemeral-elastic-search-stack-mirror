@@ -12,6 +12,8 @@ are retained; subsequent changes to the selection do not alter an existing envir
 | `esci-gb-demo-2026-01` | 1 January 2026 | 8,000 | 50 | 6 |
 | `esci-gb-demo-2026-02` | 1 February 2026 | 9,000 | 50 | 7 |
 | `esci-gb-demo-2026-03` | 1 March 2026 | 8,500 | 50 | 7 |
+| `esci-gb-demo-halloween-2026` | 1 October 2026 | 1,250 | 54 | 10 |
+| `esci-gb-demo-christmas-2026` | 1 December 2026 | 1,250 | 54 | 10 |
 
 February adds products. March removes some earlier products and adds others.
 Product records and retained judgements are unchanged subsets of the original
@@ -20,6 +22,30 @@ demo release. The original full and demo catalogues remain available.
 These dates describe a lab simulation. The published [ESCI product schema](https://github.com/amazon-science/esci-data/blob/main/README.md)
 does not supply product introduction dates. Do not interpret these releases as
 historical snapshots of Amazon's catalogue or as new independent relevance labels.
+
+## Demonstrate a seasonal change
+
+The event pair shares 1,000 ordinary products and replaces 250 event products:
+Halloween costumes/decorations versus Christmas products. Event products are
+unchanged records selected from the full ESCI catalogue by explicit title terms
+and a deterministic product-ID ordering. B-prefixed IDs avoid the demo subset's
+heavy concentration of ISBN books; they do not guarantee an event category.
+Products whose titles match both events are excluded. The season and effective
+date are simulated; title matches do not prove historical availability.
+
+Create an environment with each named event release, or use **31 October 2026**
+and **24 December 2026** in the date selector. Search for **seasonal decorations**
+in both. Each pinned Redis dataset rewrites that query to its own event's
+**halloween decorations** or **christmas decorations**. **Party decorations**
+also changes with the event. Only Halloween has **spooky decorations**;
+only Christmas has **festive decorations**.
+
+The pair adds four identical exploratory queries to the 50-query base suite.
+These curated queries have no invented relevance labels. Reports may therefore
+show judgement gaps or unavailable nDCG until the resolver supplies eligible
+judgements. Retained published labels keep their original values and provenance.
+Use searches or separate notebook reports to explore the data difference;
+release gates still require matching catalogues on both sides.
 
 ## Redis and Elasticsearch identity
 
@@ -73,7 +99,9 @@ python lab/prepare_data_versions.py --publish
 python lab/install_redis.py
 ```
 
-Expect three preparation messages and a final shared Redis readiness message.
+Expect three monthly preparation messages, a seasonal-pair preparation message
+and a final shared Redis readiness message. The first seasonal preparation scans
+the retained full catalogue once; repeats verify and reuse the small outputs.
 The commands use the lab's configured blob store and kubeconfig. They retain
 immutable objects and do not rewrite an existing release's data.
 

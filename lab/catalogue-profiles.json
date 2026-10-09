@@ -26,6 +26,20 @@
       "products": 10000,
       "effective_date": "2026-03-01",
       "simulated": true
+    },
+    "esci-gb-demo-halloween-2026": {
+      "queries": 54,
+      "products": 1250,
+      "effective_date": "2026-10-01",
+      "simulated": true,
+      "theme": "halloween"
+    },
+    "esci-gb-demo-christmas-2026": {
+      "queries": 54,
+      "products": 1250,
+      "effective_date": "2026-12-01",
+      "simulated": true,
+      "theme": "christmas"
     }
   }
 }

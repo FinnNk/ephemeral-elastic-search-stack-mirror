@@ -1,4 +1,4 @@
-"""Build, verify and optionally publish the three small dated catalogue fixtures."""
+"""Build, verify and optionally publish the small dated and seasonal catalogue fixtures."""
 import argparse
 import json
 from pathlib import Path
@@ -25,6 +25,14 @@ def prepare(publish_blobs=False):
         refs = publish(folder, STATE / 'artifacts-reference' / release,
                        'esci-demo-timeline-v1', release, provenance=manifest['producer'], **options)
         result[release] = {kind: ref['manifest_sha256'] for kind, ref in refs.items()}
+    from demo_seasons import build_pair
+    print('Preparing Halloween and Christmas demo data', flush=True)
+    seasons = build_pair(STATE/'releases/esci-gb-v1', STATE/'releases/esci-gb-demo-v1', STATE/'releases')
+    for manifest in seasons.values():
+        release = manifest['release']
+        refs = publish(STATE/'releases'/release, STATE/'artifacts-reference'/release,
+                       'esci-demo-seasons-v1', release, provenance=manifest['producer'], **options)
+        result[release] = {kind: ref['manifest_sha256'] for kind, ref in refs.items()}
     return result
 
 
@@ -40,14 +48,16 @@ if __name__ == '__main__':
         defaults = {**defaults, **values}
         path.write_text(json.dumps(defaults, indent=2) + '\n', encoding='utf-8')
         from data_versions import rewrite_data, binding, month_for
+        from catalogue import PROFILES
         pairs = {}
         for name, refs in defaults.items():
             manifest = json.loads((STATE/'releases'/name/'manifest.json').read_text(encoding='utf-8'))
             product_name = 'products.jsonl.gz' if manifest.get('compression') == 'gzip' else 'products.jsonl'
             sha = manifest['sha256'][product_name]
+            theme = PROFILES['releases'][name].get('theme')
             pairs[name] = {'name': name, 'effective_date': manifest.get('effective_date'),
-                           'inputs': refs, 'rewrite': rewrite_data(sha, month_for(name)),
-                           **binding(sha, month_for(name))}
+                           'inputs': refs, 'rewrite': rewrite_data(sha, month_for(name), theme),
+                           **binding(sha, month_for(name), theme)}
         (ROOT/'lab/paired-data.json').write_text(json.dumps(pairs, indent=2)+'\n', encoding='utf-8')
     elif any(defaults.get(name) != refs for name, refs in values.items()):
         raise ValueError('Generated dated catalogue differs from its committed input pins.')

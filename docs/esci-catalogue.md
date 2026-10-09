@@ -57,7 +57,7 @@ Published labels cover a subset of possible results. Read coverage with relevanc
 
 ## Simulated dated catalogues and Redis
 
-The lab also supplies three small named releases with simulated effective dates
+The lab also supplies small monthly and Halloween/Christmas releases with simulated effective dates
 and corresponding Redis rewrite data. Restore by name or date in the control UI;
 each restore pins both data dependencies. See [paired data restores](paired-data-restores.md)
 for counts, provenance, installation and fixed expiry controls. These are simulated

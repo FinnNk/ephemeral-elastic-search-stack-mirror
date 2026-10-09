@@ -23,5 +23,15 @@
     "catalogue": "2f37002f5011618f62420a30b28e9d355bf56ac9b3863bca0cf30cfd81c1e375",
     "query-suite": "512a3d2095c9f6a036eb3af8aacdf72282d1116562fa975585c8b5a721a188bc",
     "judgement-set": "ef5cc747bd2e411b905ffc67b2a7d93b73bd781a0e8a9be628ace059bebdf36e"
+  },
+  "esci-gb-demo-halloween-2026": {
+    "catalogue": "5b616aae7e1c0d67b8144f59809aa33616321d5f1f7627fbc15a1d45db549a19",
+    "query-suite": "cac2f5af2c29e1202b2e5b3f3e74415286a857a18613beb80fd2ccc060312a3a",
+    "judgement-set": "7d752dce346a5fbc73fb0f20044272094844b6bf9be03fd9fd9da89748841bc2"
+  },
+  "esci-gb-demo-christmas-2026": {
+    "catalogue": "db1cdf1e6bc9cf44bc44913cc4078ea022e7a982ecd9b612a65b78e62ede57fd",
+    "query-suite": "5b61622f9b381679589d5ce651150bf20695432437dc82642e32078d365d2ecb",
+    "judgement-set": "6af22404b35b441e398fabd984e333e91cc197fa23cf6ff9cf44ba09e5df3475"
   }
 }

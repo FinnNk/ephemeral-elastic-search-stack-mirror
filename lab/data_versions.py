@@ -17,7 +17,7 @@ def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
 
 
-def rewrite_data(product_sha, month=0):
+def rewrite_data(product_sha, month=0, theme=None):
     """Bind every lookup value to the exact catalogue it accompanies."""
     rules = dict(RULES)
     if month >= 2:
@@ -25,12 +25,18 @@ def rewrite_data(product_sha, month=0):
     if month >= 3:
         rules.pop('tee')
         rules['hoodie'] = ['hooded sweatshirt', 'hoodie-to-hooded-sweatshirt']
+    if theme is not None:
+        if theme not in ('halloween', 'christmas'): raise ValueError('Unknown simulated event.')
+        target = theme + ' decorations'
+        for query in ('seasonal decorations', 'party decorations',
+                      'spooky decorations' if theme == 'halloween' else 'festive decorations'):
+            rules[query] = [target, theme + '-decorations']
     return {'format': 1, 'catalogue_sha256': product_sha, 'rules': rules}
 
 
-def binding(product_sha, month=0):
+def binding(product_sha, month=0, theme=None):
     """Return the shared host and content-addressed key for one paired dataset."""
-    digest = hashlib.sha256(canonical(rewrite_data(product_sha, month))).hexdigest()
+    digest = hashlib.sha256(canonical(rewrite_data(product_sha, month, theme))).hexdigest()
     return {'rewrite_dataset_sha256': digest, 'rewrite_redis_key': 'rewrite:' + digest}
 
 
