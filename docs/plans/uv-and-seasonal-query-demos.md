@@ -77,3 +77,13 @@ Then compare two environments on each event catalogue using the 80-query suite
 and view the resulting notebook. Separately select the source-controlled sets
 in a demo PR and inspect separate/combined metrics and coverage. Record actual
 abstentions or unavailable nDCG rather than expecting invented grades.
+
+## Published review batch
+
+- [Lab #172](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/pulls/172): uv host/container setup, corporate trust and seasonal-query publication.
+- [Delivery-source #36](https://gitea.localhost:34443/elastic-agent/delivery-source/pulls/36): locked API environment and reusable query sets.
+- [Search-spike #8](https://gitea.localhost:34443/elastic-agent/search-spike/pulls/8): standalone uv/Redis lock and CI CA secret.
+
+Merge the respective prerequisite first (#171, #35 and #7), then review these
+successor PRs. The lab PR is mergeable at publication. Hosted API checks are
+still separate from the local verification recorded above.
