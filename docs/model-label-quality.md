@@ -83,7 +83,8 @@ repository root, install the CPU client/assessor dependencies in your virtual
 environment:
 
 ```powershell
-python -m pip install -r evaluation/model-quality-requirements.txt
+uv venv .lab/model-quality-venv --python 3.12.12
+uv pip install --python .lab/model-quality-venv -r evaluation/model-quality-requirements.txt
 ```
 
 Set `$cohortDir` to the producer's frozen directory. Forward the candidate
@@ -95,7 +96,7 @@ client spans.
 1. Run the fixed candidate:
 
    ```powershell
-   python evaluation/infer_label_quality.py --inputs "$cohortDir/inputs.jsonl" --manifest "$cohortDir/manifest.json" --audit "$cohortDir/audit.json" --policy "$cohortDir/quality-policy.json" --reservation "$cohortDir/reservation.json" --endpoint http://127.0.0.1:18087/v1/models/judgement-model:predict --output "$cohortDir/inference-01"
+   uv run --no-project --python .lab/model-quality-venv python evaluation/infer_label_quality.py --inputs "$cohortDir/inputs.jsonl" --manifest "$cohortDir/manifest.json" --audit "$cohortDir/audit.json" --policy "$cohortDir/quality-policy.json" --reservation "$cohortDir/reservation.json" --endpoint http://127.0.0.1:18087/v1/models/judgement-model:predict --output "$cohortDir/inference-01"
    ```
 
    The command checks frozen hashes and reservations before sending requests.
@@ -107,7 +108,7 @@ client spans.
 2. Score the completed predictions against the reference labels:
 
    ```powershell
-   python evaluation/label_quality.py --inputs "$cohortDir/inputs.jsonl" --references "$cohortDir/references.jsonl" --predictions "$cohortDir/inference-01/predictions.jsonl" --manifest "$cohortDir/manifest.json" --audit "$cohortDir/audit.json" --policy "$cohortDir/quality-policy.json" --reservation "$cohortDir/reservation.json" --output "$cohortDir/quality-report-01.json"
+   uv run --no-project --python .lab/model-quality-venv python evaluation/label_quality.py --inputs "$cohortDir/inputs.jsonl" --references "$cohortDir/references.jsonl" --predictions "$cohortDir/inference-01/predictions.jsonl" --manifest "$cohortDir/manifest.json" --audit "$cohortDir/audit.json" --policy "$cohortDir/quality-policy.json" --reservation "$cohortDir/reservation.json" --output "$cohortDir/quality-report-01.json"
    ```
 
    The command rejects missing or duplicate pairs, changed inputs/model pins,
@@ -138,7 +139,7 @@ unchanged. These roles describe the current assessment contract.
    ```powershell
    $developmentDir = Read-Host 'Absolute frozen development cohort directory'
    $confirmationDir = Read-Host 'Absolute frozen confirmation cohort directory'
-   python evaluation/calibrate_labels.py --inputs "$developmentDir/inputs.jsonl" --references "$developmentDir/references.jsonl" --predictions "$developmentDir/inference-01/predictions.jsonl" --manifest "$developmentDir/manifest.json" --audit "$developmentDir/audit.json" --policy "$developmentDir/quality-policy.json" --reservation "$developmentDir/reservation.json" --output "$developmentDir/threshold-selection.json"
+   uv run --no-project --python .lab/model-quality-venv python evaluation/calibrate_labels.py --inputs "$developmentDir/inputs.jsonl" --references "$developmentDir/references.jsonl" --predictions "$developmentDir/inference-01/predictions.jsonl" --manifest "$developmentDir/manifest.json" --audit "$developmentDir/audit.json" --policy "$developmentDir/quality-policy.json" --reservation "$developmentDir/reservation.json" --output "$developmentDir/threshold-selection.json"
    ```
 
    The command searches its fixed threshold grid. `development-selected` means
@@ -154,7 +155,7 @@ unchanged. These roles describe the current assessment contract.
 3. Assess the fixed selection on the untouched published cohort:
 
    ```powershell
-   python evaluation/calibrate_labels.py --inputs "$confirmationDir/inputs.jsonl" --references "$confirmationDir/references.jsonl" --predictions "$confirmationDir/inference-01/predictions.jsonl" --manifest "$confirmationDir/class-confirmation-manifest.json" --audit "$confirmationDir/audit.json" --policy "$confirmationDir/quality-policy.json" --reservation "$confirmationDir/reservation.json" --confirmation-selection "$developmentDir/threshold-selection.json" --output "$confirmationDir/class-threshold-report.json"
+   uv run --no-project --python .lab/model-quality-venv python evaluation/calibrate_labels.py --inputs "$confirmationDir/inputs.jsonl" --references "$confirmationDir/references.jsonl" --predictions "$confirmationDir/inference-01/predictions.jsonl" --manifest "$confirmationDir/class-confirmation-manifest.json" --audit "$confirmationDir/audit.json" --policy "$confirmationDir/quality-policy.json" --reservation "$confirmationDir/reservation.json" --confirmation-selection "$developmentDir/threshold-selection.json" --output "$confirmationDir/class-threshold-report.json"
    ```
 
    The command verifies the selection hash, exact reserved membership,

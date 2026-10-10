@@ -1,7 +1,9 @@
 FROM python:3.12-slim@sha256:78387bc3881b8273120a12ebe6c1ab22b018ccc2c9adf565ae1ac9b536e184ea
+COPY --from=ghcr.io/astral-sh/uv:0.11.21@sha256:ff07b86af50d4d9391d9daf4ff89ce427bc544f9aae87057e69a1cc0aa369946 /uv /usr/local/bin/uv
+ENV UV_PYTHON_DOWNLOADS=never UV_NO_CACHE=1 UV_SYSTEM_CERTS=true
 WORKDIR /app
 COPY judgements/esci/requirements.lock /app/esci-requirements.txt
-RUN pip install --no-cache-dir -r /app/esci-requirements.txt
+RUN uv pip install --system --no-cache -r /app/esci-requirements.txt
 RUN apt-get update && apt-get install -y --no-install-recommends gcc libc6-dev \
     && rm -rf /var/lib/apt/lists/*
 # Triton links a host helper against this SDK stub. The NVIDIA runtime supplies

@@ -7,3 +7,6 @@ __pycache__
 *.pyc
 research/evidence
 research/platform-spike/floci-source
+
+.venv
+**/.venv

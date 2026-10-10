@@ -30,7 +30,7 @@ PowerShell:
 
 ```powershell
 $env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
-python lab/install_headlamp_testbed.py --verify-only
+uv run --locked python lab/install_headlamp_testbed.py --verify-only
 ```
 
 The command checks controller rollouts, the 13 LLM presets, internal Kourier
@@ -72,7 +72,7 @@ and chart-managed Inference Extension CRDs. LLM presets come from KServe's
 Run from the stack checkout with `LAB_STATE_DIR` set as above:
 
 ```powershell
-python lab/install_headlamp_gateway.py --verify-only
+uv run --locked python lab/install_headlamp_gateway.py --verify-only
 ```
 
 Omit `--verify-only` to install. The separate installer requires the testbed

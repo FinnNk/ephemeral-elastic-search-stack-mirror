@@ -29,8 +29,8 @@ Use PowerShell from the repository root. Python needs the dependencies in `lab/r
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 $pack = Join-Path $env:LAB_STATE_DIR releases/retail-gb-independent-example-v3
 $manifests = Join-Path $env:LAB_STATE_DIR artifacts/retail-gb-independent-example-v3
-python data/generate_example.py --output $pack
-python data/publish.py --input-dir $pack --output $manifests --producer independent-example-v3 --source-release retail-gb-independent-example-v3
+uv run --locked python data/generate_example.py --output $pack
+uv run --locked python data/publish.py --input-dir $pack --output $manifests --producer independent-example-v3 --source-release retail-gb-independent-example-v3
 ```
 
 The example writes 12 products, three queries and rules-based labels. Publication validates IDs, markets and references and prints content/manifest hashes. This first command pair creates local manifests only.
@@ -40,7 +40,7 @@ For Blob publication, ask the operator for the local Blob Storage emulator conne
 ```powershell
 $blobConnection = Read-Host 'Local Blob Storage emulator connection string' -AsSecureString
 $env:DATA_BLOB_CONNECTION_STRING = [System.Net.NetworkCredential]::new('', $blobConnection).Password
-python data/publish.py --input-dir $pack --output $manifests --producer independent-example-v3 --source-release retail-gb-independent-example-v3 --blob-url http://127.0.0.1:14577/devstoreaccount1
+uv run --locked python data/publish.py --input-dir $pack --output $manifests --producer independent-example-v3 --source-release retail-gb-independent-example-v3 --blob-url http://127.0.0.1:14577/devstoreaccount1
 ```
 
 Keep the operator's Blob Storage emulator port-forward on port `14577` running. Existing objects must match; a conflict fails rather than replacing them. Clear `DATA_BLOB_CONNECTION_STRING` when finished. Azure publication uses an HTTPS account URL and workload identity instead of the emulator credential.
@@ -64,7 +64,7 @@ with standalone ephemeral environments. Select the packaged notebook in the [lab
 
 Papermill runs the selected `lab/notebooks/` file as a finite Kubernetes Job. It receives a read-only report URL, no Kubernetes API token or write credential, a five-minute deadline and Blob-only egress. Its output is retained by hash. **View notebook** reads and verifies those same saved bytes, then displays a read-only HTML page; it does not start a kernel or another Job. The view uses the same comparison authorisation as the download. Markdown, text and PNG/JPEG outputs are supported; interactive widgets and HTML-only output are not rendered. Notebook failure is separate from the comparison verdict and cannot change a gate decision.
 
-To install support, publish with `python lab/notebook/publish.py`, then run `python lab/install_notebooks.py` and update the [control image](control-runtime.md#update-an-existing-runtime). The publisher writes `notebook-image.json` in retained state. Adding a notebook requires code review, a Papermill `parameters` cell and a rebuilt control image; arbitrary filenames outside the packaged set are rejected.
+To install support, publish with `uv run --locked python lab/notebook/publish.py`, then run `uv run --locked python lab/install_notebooks.py` and update the [control image](control-runtime.md#update-an-existing-runtime). The publisher writes `notebook-image.json` in retained state. Adding a notebook requires code review, a Papermill `parameters` cell and a rebuilt control image; arbitrary filenames outside the packaged set are rejected.
 
 ## Retention and finite Jobs
 

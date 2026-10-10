@@ -47,6 +47,8 @@ judgements. Retained published labels keep their original values and provenance.
 Use searches or separate notebook reports to explore the data difference;
 release gates still require matching catalogues on both sides.
 
+For larger sets and copy/paste gate selections, follow [seasonal query demos](seasonal-query-demos.md).
+
 ## Redis and Elasticsearch identity
 
 Each release pairs its pinned catalogue, query suite and judgement set with an
@@ -95,8 +97,8 @@ catalogue stage. For an existing lab, after accepting the code and chart changes
 run these operator commands from the repository root on either Windows or macOS:
 
 ```sh
-python lab/prepare_data_versions.py --publish
-python lab/install_redis.py
+uv run --locked python lab/prepare_data_versions.py --publish
+uv run --locked python lab/install_redis.py
 ```
 
 Expect three monthly preparation messages, a seasonal-pair preparation message
@@ -117,7 +119,7 @@ subset labels and rejection of mismatched catalogue/Redis identities. The option
 real Redis test creates its own disposable Docker container and removes it:
 
 ```sh
-LAB_VERIFY_REDIS=1 PYTHONPATH=lab python -m unittest lab.test_redis_runtime
+LAB_VERIFY_REDIS=1 PYTHONPATH=lab uv run --locked python -m unittest lab.test_redis_runtime
 ```
 
 On PowerShell, set those environment variables with `$env:LAB_VERIFY_REDIS='1'`

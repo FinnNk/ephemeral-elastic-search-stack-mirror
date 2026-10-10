@@ -25,8 +25,8 @@ Operator prerequisites: bootstrapped service namespaces, Docker, kubectl, k3d, t
 
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-python -m pip install -r lab/requirements-https.txt
-python lab/https_ingress.py install
+uv sync --locked
+uv run --locked python lab/https_ingress.py install
 ```
 
 Installation prints TLS/HTTP verification results for the configured routes. It installs pinned Traefik, creates or reuses the CA and 90-day server certificate, applies namespaced routes and TLS Secrets, exposes the host port and updates Gitea's public URL. A current valid certificate is retained on repeat runs.
@@ -36,7 +36,7 @@ Keep CA and server private keys in ignored `$env:LAB_STATE_DIR/https-ingress/`. 
 ## Verify and recover
 
 ```powershell
-python lab/https_ingress.py verify
+uv run --locked python lab/https_ingress.py verify
 ```
 
 Expect a native name-resolution line and a TLS/HTTP line per configured service.

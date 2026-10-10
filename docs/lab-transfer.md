@@ -18,7 +18,7 @@ From the source repository root, using its Python environment and retained state
 
 ```powershell
 $env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
-python lab/mac_preflight.py --target arm64 --cluster --images --output "$env:LAB_STATE_DIR/mac-transfer-inventory.json"
+uv run --locked python lab/mac_preflight.py --target arm64 --cluster --images --output "$env:LAB_STATE_DIR/mac-transfer-inventory.json"
 ```
 
 Use `--server https://127.0.0.1:<port>` if the retained kubeconfig's endpoint does
@@ -70,7 +70,7 @@ keys into the Git mirror. Exclude unrelated Docker applications from this transf
    ```powershell
    $controlImage = (Get-Content "$env:LAB_STATE_DIR/control-image.json" -Raw | ConvertFrom-Json).image
    $bundle = Join-Path $env:LAB_STATE_DIR 'control-transfer.tar.gz'
-   python lab/control-runtime/install.py export --image $controlImage --bundle $bundle
+   uv run --locked python lab/control-runtime/install.py export --image $controlImage --bundle $bundle
    ```
 
    Choose a new filename if it exists. Export drains and briefly stops the
@@ -124,7 +124,7 @@ or cold backup taken by the documentation batch.
 3. Restore Nexus, its database and the snapshot-store volumes before application
    Pods need them. Recreate their Docker network attachment and Service endpoints
    for the new host; the old IP addresses are not portable. Once the restored Nexus containers
-   and cluster are running, `python lab/setup_nexus.py --repair-network` refreshes
+   and cluster are running, `uv run --locked python lab/setup_nexus.py --repair-network` refreshes
    its route from the current Docker address without resetting accounts or
    storage. Preserve the public
    registry name so existing immutable image references remain meaningful.
@@ -155,11 +155,11 @@ Run these checks in macOS Terminal from the accepted repository checkout:
 
 ```sh
 export LAB_STATE_DIR="$PWD/.lab"
-python lab/mac_preflight.py --target arm64 --cluster --images --output "$PWD/mac-lab-check.json"
+uv run --locked python lab/mac_preflight.py --target arm64 --cluster --images --output "$PWD/mac-lab-check.json"
 kubectl --kubeconfig "$LAB_STATE_DIR/kubeconfig.yaml" get nodes
 kubectl --kubeconfig "$LAB_STATE_DIR/kubeconfig.yaml" -n lab-control \
-  exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
-python lab/https_ingress.py verify
+  exec deployment/lab-control -c api -- uv run --locked python lab/control-runtime/smoke.py
+uv run --locked python lab/https_ingress.py verify
 ```
 
 On Intel, use `--target amd64`. Resolve any core image reported unsupported or

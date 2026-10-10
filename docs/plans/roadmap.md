@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [uv and seasonal-query batch](uv-and-seasonal-query-demos.md) follows the
+paired-data batch. It pins host Python and dependencies, preserves corporate
+certificate trust including Redis image/package paths, and adds three reusable
+report-only query sets plus immutable control-UI/notebook suites. Review and
+activation are pending; native Mac clean-install acceptance remains the next check.
+
 PRs #169 and #170 and delivery-source #34 are merged. SemVer publication is
 active in the Windows control runtime; the Mac needs its own runtime update.
 

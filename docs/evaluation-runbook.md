@@ -37,8 +37,8 @@ Prepare configurations in the environment-state definition and let Argo reconcil
 ## Capture and score
 
 ```powershell
-python evaluation/capture.py --variant-set $variantSet --queries "$inputDir/queries.jsonl" --query-manifest "$manifestDir/query-suite.json" --catalogue-manifest "$manifestDir/catalogue.json" --output "$runDir/observations.json"
-python evaluation/offline.py --observations "$runDir/observations.json" --judgements "$inputDir/judgements.jsonl" --specification evaluation/specs/proxy-v2.json --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --judgement-manifest "$manifestDir/judgement-set.json" --output "$runDir/evaluation.json"
+uv run --locked python evaluation/capture.py --variant-set $variantSet --queries "$inputDir/queries.jsonl" --query-manifest "$manifestDir/query-suite.json" --catalogue-manifest "$manifestDir/catalogue.json" --output "$runDir/observations.json"
+uv run --locked python evaluation/offline.py --observations "$runDir/observations.json" --judgements "$inputDir/judgements.jsonl" --specification evaluation/specs/proxy-v2.json --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --judgement-manifest "$manifestDir/judgement-set.json" --output "$runDir/evaluation.json"
 ```
 
 Capture makes fresh API requests with eight query workers. Each worker visits
@@ -67,7 +67,7 @@ If responses or identities mismatch, fix the deployed definition before recaptur
 With installed notebook support:
 
 ```powershell
-python lab/run_notebook.py --report "$runDir/evaluation.json" --notebook comparison-explorer.ipynb
+uv run --locked python lab/run_notebook.py --report "$runDir/evaluation.json" --notebook comparison-explorer.ipynb
 ```
 
 The command prints the retained executed-notebook reference. This saved analysis is independent of the verdict. [The lab guide](../lab/README.md#download-exploratory-analysis) shows the selector and output. If the notebook fails, retain that failure separately and continue to assess the normal report.
@@ -79,7 +79,7 @@ The command prints the retained executed-notebook reference. This saved analysis
 
    ```powershell
    $sourceSha = Read-Host 'Exact evaluated PR head SHA'
-   python lab/variant_gate_issue.py attest --report "$runDir/evaluation.json" --source-sha $sourceSha --build-receipt "$runDir/build-receipt.json" --output "$runDir/attestation.json"
+   uv run --locked python lab/variant_gate_issue.py attest --report "$runDir/evaluation.json" --source-sha $sourceSha --build-receipt "$runDir/build-receipt.json" --output "$runDir/attestation.json"
    ```
 
 3. Load only the scoped Nexus publisher into this process and publish the immutable evidence:
@@ -89,7 +89,7 @@ The command prints the retained executed-notebook reference. This saved analysis
    $env:ARTIFACT_URL = 'http://127.0.0.1:18183/repository/lab-releases'
    $env:NEXUS_USER = $nexus.publisher.username
    $env:NEXUS_PASSWORD = $nexus.publisher.password
-   python lab/delivery/ci/variant_gate_store.py publish-evidence --source-sha $sourceSha --report "$runDir/evaluation.json" --attestation "$runDir/attestation.json"
+   uv run --locked python lab/delivery/ci/variant_gate_store.py publish-evidence --source-sha $sourceSha --report "$runDir/evaluation.json" --attestation "$runDir/attestation.json"
    Remove-Item Env:NEXUS_PASSWORD
    ```
 
@@ -135,9 +135,9 @@ authorise deployment.
 For installed producer/evaluator images and a local Blob Storage emulator connection string in `DATA_BLOB_CONNECTION_STRING`, retain the captured observations and specification:
 
 ```powershell
-python evaluation/retain.py --file "$runDir/observations.json" --kind observation-set --output "$runDir/observations.ref.json"
-python evaluation/retain.py --file evaluation/specs/proxy-v2.json --kind evaluation-specification --output "$runDir/spec.ref.json"
-python evaluation/run_job.py --observation-reference "$runDir/observations.ref.json" --specification-reference "$runDir/spec.ref.json" --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --judgement-manifest "$manifestDir/judgement-set.json"
+uv run --locked python evaluation/retain.py --file "$runDir/observations.json" --kind observation-set --output "$runDir/observations.ref.json"
+uv run --locked python evaluation/retain.py --file evaluation/specs/proxy-v2.json --kind evaluation-specification --output "$runDir/spec.ref.json"
+uv run --locked python evaluation/run_job.py --observation-reference "$runDir/observations.ref.json" --specification-reference "$runDir/spec.ref.json" --catalogue-manifest "$manifestDir/catalogue.json" --query-manifest "$manifestDir/query-suite.json" --judgement-manifest "$manifestDir/judgement-set.json"
 ```
 
-Publish tool images first with `python lab/publish_tool_images.py` if the retained state lacks their digest file. The reference's outer `kind: observation-set` identifies a retained file; its payload must still use the current variant-observation schema. The Job prints its retained report reference and removes temporary resources. It does not contact Search APIs. The observation/specification reference files are produced here, rather than assumed to exist in an ignored historical directory.
+Publish tool images first with `uv run --locked python lab/publish_tool_images.py` if the retained state lacks their digest file. The reference's outer `kind: observation-set` identifies a retained file; its payload must still use the current variant-observation schema. The Job prints its retained report reference and removes temporary resources. It does not contact Search APIs. The observation/specification reference files are produced here, rather than assumed to exist in an ignored historical directory.

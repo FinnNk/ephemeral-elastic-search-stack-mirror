@@ -1,0 +1,27 @@
+{
+  "kind": "variant-gate-selection",
+  "schema_version": 1,
+  "selected": [
+    {
+      "intent": "ranking-change",
+      "variant": "ranker-a"
+    }
+  ],
+  "additional_query_sets": [
+    {
+      "name": "halloween",
+      "path": "evaluation/queries/halloween.jsonl",
+      "required": false
+    },
+    {
+      "name": "christmas",
+      "path": "evaluation/queries/christmas.jsonl",
+      "required": false
+    },
+    {
+      "name": "seasonal-controls",
+      "path": "evaluation/queries/seasonal-controls.jsonl",
+      "required": false
+    }
+  ]
+}

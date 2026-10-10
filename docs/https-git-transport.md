@@ -18,11 +18,11 @@ Prerequisites: installed service Deployments and repositories, the [HTTPS ingres
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 $kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
-python lab/control-runtime/install.py migrate-git-remotes
-python lab/https_git.py migrate
+uv run --locked python lab/control-runtime/install.py migrate-git-remotes
+uv run --locked python lab/https_git.py migrate
 kubectl --kubeconfig $kubeconfig apply -f research/platform-spike/runner.yaml
 kubectl --kubeconfig $kubeconfig apply -f lab/delivery/bootstrap/runner.yaml
-python lab/runner_https.py migrate
+uv run --locked python lab/runner_https.py migrate
 ```
 
 | Step | Expected result |
@@ -43,7 +43,7 @@ If a step fails, inspect its error and service readiness before continuing. Use 
    kubectl --kubeconfig $kubeconfig -n lab-control rollout status deployment/lab-control --timeout=180s
    ```
 
-3. Rerun `python lab/https_git.py migrate` to refresh Argo CD trust and reconcile runner configuration as above.
+3. Rerun `uv run --locked python lab/https_git.py migrate` to refresh Argo CD trust and reconcile runner configuration as above.
 4. Repeat the control smoke check, inspect Applications and run a source CI build when authorised.
 
 Renewing a server certificate under the same CA does not require new URLs. Replacing the CA requires consumer trust updates.

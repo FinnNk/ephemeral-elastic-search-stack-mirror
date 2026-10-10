@@ -31,7 +31,7 @@ Requires the running lab, Helm, kubectl, Python dependencies from
 `LAB_STATE_DIR` to the retained `.lab` directory, then run from the repository:
 
 ```powershell
-python lab/install_headlamp.py install
+uv run --locked python lab/install_headlamp.py install
 ```
 
 Expect a verified HTTPS response and the Headlamp URL. Installation pins the
@@ -43,7 +43,7 @@ configuration when installed. On Linux or macOS, use `python3`.
 If OIDC is unavailable, request a one-hour lab administrator token:
 
 ```powershell
-python lab/install_headlamp.py token
+uv run --locked python lab/install_headlamp.py token
 ```
 
 Copy it into Headlamp's token login field. Its identity is

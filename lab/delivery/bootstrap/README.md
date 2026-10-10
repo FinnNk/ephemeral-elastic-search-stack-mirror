@@ -22,12 +22,15 @@ docker build -t search-api-dev ./app
 
 The image build installs the Python dependencies and runs the application tests. A successful build means those tests passed. They use mocked Elasticsearch responses and local HTTP fixtures, so you do not need a running search environment for this check.
 
-To run tests directly with Python 3.13, install the dependencies in a virtual environment, then run these commands from the repository root:
+To run tests directly with Python 3.13, prepare the locked uv environment, then run these commands from the repository root:
 
 ```sh
-python -m pip install -r app/requirements.lock
-python -m unittest discover -s app -p 'test_*.py' -v
+uv sync --locked
+uv run --locked python -m unittest discover -s app -p 'test_*.py' -v
 ```
+
+Install uv using [the lab Python guide](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/python-environments.md), including corporate trust before the first download.
+When changing dependencies, run `uv lock`, then `uv export --locked --no-dev --no-emit-project --output-file app/requirements.lock` so the image uses the same packages and hashes.
 
 ## Run without the lab
 
@@ -155,3 +158,9 @@ local rules for misses or unavailable/mismatched external data. A successful
 external lookup is marked `redis:` in request diagnostics. Edit local fallback
 rules in `local_understand()`; changing them does not override an existing Redis
 rule. Keep Redis dataset changes in a newly named, reviewed data release.
+
+## Seasonal query demos
+
+Use [the seasonal selection example](examples/seasonal/README.md) to include
+Halloween, Christmas and shared control queries in a PR comparison. The sets
+are report-only by default and are already tracked in `evaluation/queries/`.

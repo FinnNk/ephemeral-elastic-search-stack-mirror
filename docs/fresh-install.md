@@ -1,5 +1,7 @@
 # Install a fresh CPU search lab
 
+Use the [locked uv environment](python-environments.md) for host Python commands.
+
 Create a new lab with fresh credentials and certificates, the full English ESCI
 catalogue, source CI, comparisons, notebooks and reviewed delivery promotions.
 The installer also sets up Nexus, snapshot storage, the CPU abstaining judgement
@@ -21,7 +23,7 @@ the original lab available until the new installation passes its acceptance chec
 1. Install Docker Desktop, start it, and install the host tools:
 
    ```sh
-   brew install python@3.12 git k3d kubectl helm
+   brew install uv git k3d kubectl helm
    ```
 
    Check that Docker Desktop's CLI tools include Buildx:
@@ -35,16 +37,15 @@ the original lab available until the new installation passes its acceptance chec
    instructions. Confirm the command works before starting installation.
 
 2. Clone the accepted GitHub mirror and change to its repository root. Create
-   a Python environment:
+   the locked Python environment:
 
    ```sh
-   python3.12 -m venv .venv
-   . .venv/bin/activate
-   python -m pip install -r lab/fresh-requirements.txt
+   uv sync --locked
    ```
 
-   On a corporate network, pip and Docker Desktop must already trust the
-   organisation's CA. The installer configures its own Python downloads and
+   On a corporate network, configure [uv certificate trust](python-environments.md#corporate-certificates)
+   before the first sync. Docker Desktop must also trust the organisation's CA. The installer configures
+   its own Python downloads and
    the k3d nodes; it does not change macOS Keychain or Docker Desktop trust.
    See [Docker's corporate CA instructions](https://docs.docker.com/engine/network/ca-certs/).
 
@@ -62,16 +63,16 @@ lab topology, which includes optional services.
 
 ## Start or resume installation
 
-From the repository root in macOS Terminal, with the venv active:
+From the repository root in macOS Terminal, after `uv sync --locked`:
 
 ```sh
-python lab/fresh_install.py
+uv run --locked python lab/fresh_install.py
 ```
 
 On a corporate network, supply your PEM bundle (replace the example path):
 
 ```sh
-python lab/fresh_install.py \
+uv run --locked python lab/fresh_install.py \
   --corporate-ca "$HOME/certs/corporate-ca.pem"
 ```
 
@@ -161,7 +162,7 @@ After the `access` stage completes:
 
 ```sh
 export LAB_STATE_DIR="$PWD/.lab"
-python lab/https_ingress.py trust
+uv run --locked python lab/https_ingress.py trust
 ```
 
 macOS may ask for permission to trust the newly generated **public** lab CA.
@@ -179,7 +180,7 @@ Expect an answer of `127.0.0.1`. After full installation, retrieve the named
 account's initial credentials:
 
 ```sh
-python lab/install_oidc.py credentials --user finnnk
+uv run --locked python lab/install_oidc.py credentials --user finnnk
 ```
 
 This command deliberately prints credentials. Keep them out of shared logs.
@@ -187,19 +188,19 @@ Open [Gitea](https://gitea.localhost:34443/),
 [Argo CD](https://argocd.localhost:34443/),
 [Headlamp](https://headlamp.localhost:34443/) and
 [Search lab](https://control.localhost:34443/), then use OIDC sign-in.
-A foundation-only installation can use `python lab/install_headlamp.py token`
+A foundation-only installation can use `uv run --locked python lab/install_headlamp.py token`
 until OIDC is installed. That command prints a short-lived token.
 
 ## Continue an existing foundation installation
 
-From the repository root, activate the same Python environment, pull the merged
+From the repository root, pull the merged
 changes and install the application dependencies. On macOS, replace the
 illustrative certificate path below with your organisation's PEM bundle:
 
 ```sh
 git pull --ff-only
-PIP_CERT="$PWD/.lab/host-ca-bundle.pem" python -m pip install -r lab/fresh-requirements.txt
-python lab/fresh_install.py --corporate-ca "$HOME/certs/Corporate Root CA.pem"
+SSL_CERT_FILE="$PWD/.lab/host-ca-bundle.pem" uv sync --locked
+uv run --locked python lab/fresh_install.py --corporate-ca "$HOME/certs/Corporate Root CA.pem"
 ```
 
 The combined host CA bundle already exists after foundation setup. The corporate
@@ -241,7 +242,7 @@ relevance gate or claim those gaps have been independently labelled.
 For installations created by the new installer, inspect first:
 
 ```sh
-python lab/cleanup_fresh_install.py
+uv run --locked python lab/cleanup_fresh_install.py
 ```
 
 This is read-only. It lists the named cluster, possible leftover volumes,
@@ -249,14 +250,14 @@ external lab stores and resolver files. To delete the recorded fresh cluster
 and its recorded named/anonymous node volumes, then archive its generated host state:
 
 ```sh
-python lab/cleanup_fresh_install.py --delete --confirm relevance-lab
+uv run --locked python lab/cleanup_fresh_install.py --delete --confirm relevance-lab
 ```
 
 Add `--include-stores` for a complete reset of the external Nexus/PostgreSQL and
 snapshot containers and volumes created by this installer:
 
 ```sh
-python lab/cleanup_fresh_install.py --delete --confirm relevance-lab --include-stores
+uv run --locked python lab/cleanup_fresh_install.py --delete --confirm relevance-lab --include-stores
 ```
 
 Every store container identity is checked before any deletion starts. Foreign or
@@ -292,7 +293,7 @@ the same Python environment:
 
 ```sh
 export LAB_STATE_DIR="$PWD/.lab"
-python lab/observability/install.py --profile demo
+uv run --locked python lab/observability/install.py --profile demo
 ```
 
 This uses the retained corporate CA bundle, native control image and pinned
@@ -347,7 +348,7 @@ kubectl -n lab-observability logs chi-signoz-clickhouse-cluster-0-0-0 \
 
 An `argument list too long` error in the ClickHouse init container indicates an
 older installer embedded the CA bundle in its shell command. Pull the latest
-code and rerun `python lab/observability/install.py --profile demo`. The current
+code and rerun `uv run --locked python lab/observability/install.py --profile demo`. The current
 installer reads the trusted CA file already present in the native image.
 Keep the existing installation and volumes; a reset or image rebuild is not
 required for this repair.

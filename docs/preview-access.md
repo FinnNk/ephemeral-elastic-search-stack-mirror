@@ -34,8 +34,8 @@ in PowerShell, select the existing state folder:
 
 ```powershell
 $env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
-python -m pip install -r lab/requirements-https.txt
-python lab/install_preview_urls.py
+uv sync --locked
+uv run --locked python lab/install_preview_urls.py
 ```
 
 Expect deployment readiness, then DNS and preview HTTPS addresses. The installer

@@ -25,7 +25,7 @@ Operator prerequisites: Docker, the bootstrapped k3d lab, retained bootstrap cre
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 $kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
-python lab/setup_snapshot_store.py
+uv run --locked python lab/setup_snapshot_store.py
 ```
 
 The command creates or reuses SeaweedFS and its named Docker volume, configures the ECK S3 client, waits for Elasticsearch readiness and registers `lab-s3`. It prints JSON with the repository name, verified-node count, 100 analysis blobs and no detected issues. Repository verification failure must be resolved before relying on snapshot restores.

@@ -1,5 +1,7 @@
 # Prepare a Mac for the lab
 
+Use the [locked uv environment](python-environments.md) for host Python commands.
+
 For a new installation with fresh credentials and certificates, start with
 [fresh installation](fresh-install.md). Its resumable installer automates the
 CPU search lab with fresh identities, repositories and frozen ESCI data.
@@ -20,7 +22,7 @@ before treating the transferred lab as ready for a demonstration.
 2. With [Homebrew](https://brew.sh/) available, install the host tools:
 
    ```sh
-   brew install python@3.12 git k3d kubectl helm
+   brew install uv git k3d kubectl helm
    ```
 
    The source host uses k3d 5.9.0 and K3s 1.35.8. Keep the K3s version during
@@ -28,16 +30,12 @@ before treating the transferred lab as ready for a demonstration.
    tool is not evidence that the retained lab has been tested with it.
 3. Clone the accepted lab repository from its GitHub mirror, or transfer a clean
    checkout over a trusted connection. This avoids depending on local Gitea
-   before it is restored. Change to the repository root and create a host venv:
+   before it is restored. Change to the repository root and prepare the locked host environment:
 
    ```sh
-   python3.12 -m venv .venv
-   . .venv/bin/activate
-   python -m pip install -r lab/requirements-https.txt
-   python -m pip install PyYAML==6.0.2
-   python -m pip install -r lab/requirements-azure.txt
+   uv sync --locked
    export LAB_STATE_DIR="$PWD/.lab"
-   python lab/mac_preflight.py --target arm64 --output "$PWD/mac-host-check.json"
+   uv run --locked python lab/mac_preflight.py --target arm64 --output "$PWD/mac-host-check.json"
    ```
 
    On an Intel Mac, use `--target amd64`. Expect all five host tools to be
@@ -92,7 +90,7 @@ After restoring ingress, identity and registry services:
 1. Trust the transferred public CA in your login keychain:
 
    ```sh
-   python lab/https_ingress.py trust
+   uv run --locked python lab/https_ingress.py trust
    ```
 
    macOS may request permission. Retain the existing CA to keep the restored
@@ -105,7 +103,7 @@ After restoring ingress, identity and registry services:
 3. Verify native resolution and HTTPS:
 
    ```sh
-   python lab/https_ingress.py verify
+   uv run --locked python lab/https_ingress.py verify
    git ls-remote https://gitea.localhost:34443/elastic-agent/delivery-source.git HEAD
    ```
 

@@ -30,7 +30,7 @@ Descriptions explain reconciliation errors without requiring you to print Secret
 Prerequisites: Gitea, Nexus, control runtime, delivery and snapshot storage have created their initial credentials; the local Azure service emulator (Floci) is running; the selected state directory contains kubeconfig and bootstrap records.
 
 ```powershell
-python lab/keyvault.py migrate
+uv run --locked python lab/keyvault.py migrate
 kubectl --kubeconfig $kubeconfig get externalsecrets -A
 ```
 

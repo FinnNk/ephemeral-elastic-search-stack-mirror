@@ -54,15 +54,15 @@ Older retained Search API images or NetworkPolicies may lack OTLP instrumentatio
 Dashboard definitions are source-controlled: [search](../lab/observability/dashboards/search-slo-v1.json) and [model](../lab/observability/dashboards/model-health-v1.json). An operator can regenerate them from the repository root:
 
 ```powershell
-python lab/observability/dashboard.py --write-json
-python lab/observability/model_dashboard.py --write-json
+uv run --locked python lab/observability/dashboard.py --write-json
+uv run --locked python lab/observability/model_dashboard.py --write-json
 ```
 
 To update the installed dashboards, supply a short-lived administrator session token in `SIGNOZ_ACCESS_TOKEN` outside Git, start the diagnostic forward above, then run:
 
 ```powershell
-python lab/observability/dashboard.py --apply
-python lab/observability/model_dashboard.py --apply
+uv run --locked python lab/observability/dashboard.py --apply
+uv run --locked python lab/observability/model_dashboard.py --apply
 Remove-Item Env:SIGNOZ_ACCESS_TOKEN
 ```
 
@@ -76,7 +76,7 @@ Prepare a JSON file with `window_start`, `window_end`, `interval_seconds`, `sour
 
 ```powershell
 $buckets = Read-Host 'Absolute path to the verified seven-day bucket JSON'
-python lab/observability/window.py --buckets $buckets
+uv run --locked python lab/observability/window.py --buckets $buckets
 ```
 
 | Result | Meaning |
@@ -100,7 +100,7 @@ Use an existing Kubernetes worker labelled `lab.relevance/role=observability`, r
 
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-python lab/observability/install.py
+uv run --locked python lab/observability/install.py
 ```
 
 The installer checks the labelled worker and chart hash, then installs/upgrades the backend, gateway and log agent. Organisation bootstrap uses `--agent-root` only after the bootstrap Secret exists; subsequent credentials follow the [Key Vault boundary](keyvault-secrets.md). Do not create another bootstrap account for routine access.

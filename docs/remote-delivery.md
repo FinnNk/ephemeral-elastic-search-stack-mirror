@@ -125,8 +125,8 @@ is installed, run these from the lab repository root:
 
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-python lab/setup_delivery_actions.py
-python lab/setup_relevance_gate.py
+uv run --locked python lab/setup_delivery_actions.py
+uv run --locked python lab/setup_relevance_gate.py
 ```
 
 Configure the control OIDC proxy with its accepted installer so it verifies

@@ -16,7 +16,7 @@ $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 $labState = $env:LAB_STATE_DIR
 $kubeconfig = Join-Path $labState kubeconfig.yaml
 kubectl --kubeconfig $kubeconfig -n lab-control get deploy,pod,pvc,svc
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
+kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- uv run --locked python lab/control-runtime/smoke.py
 ```
 
 Expect ready `lab-control` and `lab-control-oidc` Deployments, four ready control containers and a Bound PVC. The smoke check prints JSON containing `cluster: matched`, the Gitea runtime identity, Elasticsearch version, record counts and `nexus: reachable`. It checks connectivity; it does not run a comparison.
@@ -56,9 +56,9 @@ Wait for active comparisons and delivery work to finish. The Deployment uses `Re
 2. Publish the image and reconcile configuration:
 
    ```powershell
-   python lab/control-runtime/publish.py
+   uv run --locked python lab/control-runtime/publish.py
    $controlImage = (Get-Content (Join-Path $labState control-image.json) -Raw | ConvertFrom-Json).image
-   python lab/control-runtime/install.py stage --image $controlImage --baseline-run $baselineRun
+   uv run --locked python lab/control-runtime/install.py stage --image $controlImage --baseline-run $baselineRun
    ```
 
    Publishing requires Docker buildx and the retained Nexus publisher credential. It prints the immutable Nexus image reference and writes `control-image.json`. The manifest contains amd64 and arm64 images; native Apple silicon operation remains unverified. `stage` reconciles installer-owned resources and leaves ESO-owned Secret values intact.
@@ -66,9 +66,9 @@ Wait for active comparisons and delivery work to finish. The Deployment uses `Re
 3. Apply that image, wait for readiness and repeat the smoke check:
 
    ```powershell
-   python lab/install_control_oidc.py --image $controlImage
+   uv run --locked python lab/install_control_oidc.py --image $controlImage
    kubectl --kubeconfig $kubeconfig -n lab-control rollout status deployment/lab-control --timeout=180s
-   kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
+   kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- uv run --locked python lab/control-runtime/smoke.py
    ```
 
 If rollout fails, inspect Pod events and logs. Keep the previous digest for rollback; do not invoke `activate` on an existing Deployment.
@@ -79,10 +79,10 @@ This is an operator procedure for a bootstrapped cluster **without** an active c
 
 ```powershell
 $baselineRun = Read-Host 'Successful search-spike Actions run ID'
-python lab/control-runtime/publish.py
+uv run --locked python lab/control-runtime/publish.py
 $controlImage = (Get-Content (Join-Path $labState control-image.json) -Raw | ConvertFrom-Json).image
-python lab/control-runtime/install.py stage --image $controlImage --baseline-run $baselineRun
-python lab/control-runtime/install.py activate --image $controlImage --baseline-run $baselineRun
+uv run --locked python lab/control-runtime/install.py stage --image $controlImage --baseline-run $baselineRun
+uv run --locked python lab/control-runtime/install.py activate --image $controlImage --baseline-run $baselineRun
 ```
 
 `activate` drains legacy host writers, copies consistent retained state to the PVC, rewrites known Git remotes, starts the Pod and runs the smoke check. It refuses an existing control Deployment. A failed initial activation attempts to restore host writers; inspect the failure before retrying. After activation, the PVC is authoritative and the old host SQLite file is stale.
@@ -96,7 +96,7 @@ Choose a new archive path before replacing the cluster or control PVC:
 ```powershell
 $controlImage = (Get-Content (Join-Path $labState control-image.json) -Raw | ConvertFrom-Json).image
 $backupPath = Join-Path $labState ('control-backup-' + (Get-Date -Format yyyyMMdd-HHmmss) + '.tar.gz')
-python lab/control-runtime/install.py export --image $controlImage --bundle $backupPath
+uv run --locked python lab/control-runtime/install.py export --image $controlImage --bundle $backupPath
 ```
 
 Export rejects an existing path, drains work, stops the sole writer, checkpoints
@@ -113,7 +113,7 @@ To restore, stop the old writer and use a fresh checkout with a new empty `LAB_S
 
 ```powershell
 $backupPath = Read-Host 'Absolute path to the retained control archive'
-python lab/control-runtime/install.py import --bundle $backupPath
+uv run --locked python lab/control-runtime/install.py import --bundle $backupPath
 ```
 
 Import validates the archive and refuses to overwrite existing state. Then follow first activation against a cluster without an active control Deployment. A local-path PVC is not a cross-host backup. The [whole-lab transfer runbook](lab-transfer.md) lists the other databases, volumes and credentials required for a Mac migration. See the [dated runtime checks](research/evidence/kubernetes-control-services.md) and [state-transfer checks](research/evidence/runtime-consolidation-delivery.md) for tested scope.

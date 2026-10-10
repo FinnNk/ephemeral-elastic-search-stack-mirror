@@ -42,9 +42,9 @@ pointing to retained lab state. Developers do not need to perform this setup.
 
    ```powershell
    $env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
-   python lab/github-mirror/publish.py
+   uv run --locked python lab/github-mirror/publish.py
    $image = (Get-Content "$env:LAB_STATE_DIR/github-mirror/image.json" | ConvertFrom-Json).image
-   python lab/github_mirror.py install --image $image --private-key 'D:\codex\.secrets\ephemeral-elastic-agent.2026-09-26.private-key.pem'
+   uv run --locked python lab/github_mirror.py install --image $image --private-key 'D:\codex\.secrets\ephemeral-elastic-agent.2026-09-26.private-key.pem'
    ```
 
    The image contains AMD64 and ARM64 builds. Installation preserves the existing
@@ -52,8 +52,8 @@ pointing to retained lab state. Developers do not need to perform this setup.
 3. Add the destination. Replace `OWNER/REPOSITORY` with the empty GitHub repository.
 
    ```powershell
-   python lab/github_mirror.py add --source ephemeral-elastic-search-stack --target https://github.com/OWNER/REPOSITORY.git --app 5088896 --installation 165239445
-   python lab/github_mirror.py status --source ephemeral-elastic-search-stack
+   uv run --locked python lab/github_mirror.py add --source ephemeral-elastic-search-stack --target https://github.com/OWNER/REPOSITORY.git --app 5088896 --installation 165239445
+   uv run --locked python lab/github_mirror.py status --source ephemeral-elastic-search-stack
    ```
 
    Setup refuses a populated destination. Repeat it with the other source names

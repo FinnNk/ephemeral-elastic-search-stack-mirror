@@ -67,6 +67,8 @@ def seed_source(path):
     shutil.copytree(ROOT / 'lab/delivery/ci', path / 'ci', ignore=shutil.ignore_patterns('__pycache__'), dirs_exist_ok=True)
     shutil.copyfile(ROOT / 'lab/variant_gate.py', path / 'ci/variant_gate.py')
     shutil.copyfile(ROOT / 'lab/delivery/bootstrap/VERSION', path / 'VERSION')
+    for name in ('pyproject.toml', 'uv.lock', '.python-version'):
+        shutil.copyfile(ROOT / 'lab/delivery/bootstrap' / name, path / name)
     (path / '.gitattributes').write_text('VERSION text eol=lf\n', encoding='utf-8')
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/chart', path / 'chart', dirs_exist_ok=True)
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/evaluation', path / 'evaluation', dirs_exist_ok=True)
@@ -90,7 +92,7 @@ def seed_source(path):
                 'indexer_image': INDEXER_IMAGE, 'indexer_source_sha256': digest(worker)}
     (path / 'contracts/index.json').write_bytes(canonical(contract))
     (path / 'contracts/indexer.py').write_bytes(worker)
-    (path / '.gitignore').write_text('__pycache__/\n.docker-ci/\nimage-metadata.json\n', encoding='utf-8')
+    (path / '.gitignore').write_text('__pycache__/\n.venv/\n.docker-ci/\nimage-metadata.json\n', encoding='utf-8')
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/examples', path / 'examples',
                     ignore=shutil.ignore_patterns('__pycache__'), dirs_exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/bootstrap/README.md', path / 'README.md')

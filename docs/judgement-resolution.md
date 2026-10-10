@@ -147,10 +147,10 @@ Operator prerequisites: bootstrapped lab, Nexus/storage/ESO, Python and the reta
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 $kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
-python lab/setup_judgement_stack.py --verify-only --million
+uv run --locked python lab/setup_judgement_stack.py --verify-only --million
 ```
 
-On a new installation, first publish the source-matching image with `python lab/publish_judgement_image.py --platforms amd64`, then run `python lab/setup_judgement_stack.py --million`. Setup validates its image pin and configures cert-manager, KServe, MLflow, Secrets and the 10k source service. Add `--million` only when the 1M source is required; it shares the registry and predictor. Native arm64 requires its own verified image. Bootstrap refuses to reset an installed replacement model to the original abstaining version.
+On a new installation, first publish the source-matching image with `uv run --locked python lab/publish_judgement_image.py --platforms amd64`, then run `uv run --locked python lab/setup_judgement_stack.py --million`. Setup validates its image pin and configures cert-manager, KServe, MLflow, Secrets and the 10k source service. Add `--million` only when the 1M source is required; it shares the registry and predictor. Native arm64 requires its own verified image. Bootstrap refuses to reset an installed replacement model to the original abstaining version.
 
 ## Capture, resolve and score
 

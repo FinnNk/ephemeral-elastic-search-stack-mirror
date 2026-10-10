@@ -53,6 +53,10 @@ def ca_bundle(destination, corporate):
     finally:
         if stale is not None:
             os.environ['SSL_CERT_FILE'] = stale
+    # uv-managed Python may have no OpenSSL default CA file on macOS.
+    # certifi is locked in the operator environment and supplies public roots.
+    import certifi
+    context.load_verify_locations(cafile=certifi.where())
     roots = context.get_ca_certs(binary_form=True)
     if not roots:
         raise RuntimeError('Python has no public CA roots; repair Python certificate trust first.')
@@ -448,7 +452,7 @@ class Installer:
             print('Catalogue, CI repositories, judgement stack, OIDC and delivery runtime are not installed.')
         elif self.args.through == 'verify':
             print('CPU search lab installed. Open https://control.localhost:34443/.')
-            print('Retrieve your initial sign-in: python lab/install_oidc.py credentials --user finnnk')
+            print('Retrieve your initial sign-in: uv run --locked python lab/install_oidc.py credentials --user finnnk')
         print('Next: docs/fresh-install.md. Completed stages are retained when you rerun this command.')
 
 

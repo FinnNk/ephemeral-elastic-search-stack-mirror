@@ -25,11 +25,11 @@ Use Python from the repository root. The commands below work in PowerShell, bash
 Prerequisites: a running lab, retained operator state and the Azure/evaluation dependencies from lab setup. Keep port forwards to `platform/svc/floci` on **14577** and `platform/svc/shared-es-http` on **19200** open while publishing and loading. These are operator endpoints; developer preview URLs remain automatic.
 
 ```text
-python -m pip install -r data/esci-requirements.txt
-python lab/import_catalogue.py --download
-python lab/import_catalogue.py --release esci-gb-demo-v1
-python lab/publish_default_inputs.py
-python lab/load_release.py
+uv sync --locked
+uv run --locked python lab/import_catalogue.py --download
+uv run --locked python lab/import_catalogue.py --release esci-gb-demo-v1
+uv run --locked python lab/publish_default_inputs.py
+uv run --locked python lab/load_release.py
 ```
 
 The full-catalogue default also needs the retained, hash-checked demo judgement snapshot in Blob storage. Published ESCI files alone cannot reproduce the model predictions. See [recover selected inputs](data-evaluation-contracts.md#retain-the-esci-demo-snapshot).

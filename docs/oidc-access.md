@@ -61,8 +61,8 @@ with `LAB_STATE_DIR` set:
 
 ```powershell
 $env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
-python lab/install_oidc.py install
-python lab/verify_oidc.py
+uv run --locked python lab/install_oidc.py install
+uv run --locked python lab/verify_oidc.py
 ```
 
 The installer prints the service URLs and whether it restarted the Kubernetes
@@ -112,7 +112,7 @@ An operator can reconcile this integration from the lab repository, with
 `LAB_STATE_DIR` set to the retained state directory:
 
 ```powershell
-python lab/install_gitea_oidc.py
+uv run --locked python lab/install_gitea_oidc.py
 ```
 
 On Linux or macOS, use `python3`. Requires the existing identity service, ESO,
@@ -135,8 +135,8 @@ control image. With `LAB_STATE_DIR` set to retained state:
 
 ```powershell
 $controlImage = (Get-Content (Join-Path $env:LAB_STATE_DIR control-image.json) -Raw | ConvertFrom-Json).image
-python lab/install_control_oidc.py --image $controlImage
-python lab/verify_control_oidc.py
+uv run --locked python lab/install_control_oidc.py --image $controlImage
+uv run --locked python lab/verify_control_oidc.py
 ```
 
 On Linux or macOS, use `python3`; obtain the image reference from the same JSON
@@ -156,7 +156,7 @@ the accounts afterwards.
 | Login remains on “Redirecting to main page…” | Close the callback tab and start again from Headlamp’s **Sign In** button. Keep the original window open; the login popup signals completion to it. Try a private window if old browser state persists. |
 | Identity service unavailable | Check `keycloak` and `keycloak-database` in `lab-identity`. Preserve the database PVC. |
 | Need cluster access while repairing sign-in | Use the retained operator kubeconfig, or [Headlamp token recovery](headlamp.md#recovery-token). |
-| Need identity administration | Run `python lab/install_oidc.py credentials --user bootstrap-admin`, then open [Keycloak administration](https://identity.localhost:34443/admin/). Keep this recovery account separate from everyday access. |
+| Need identity administration | Run `uv run --locked python lab/install_oidc.py credentials --user bootstrap-admin`, then open [Keycloak administration](https://identity.localhost:34443/admin/). Keep this recovery account separate from everyday access. |
 | Need Gitea recovery | Use its existing local password sign-in; OAuth client linking does not replace it. |
 | Need Argo CD recovery | Use its retained local administrator account; automation credentials are unchanged. |
 
@@ -172,7 +172,7 @@ For an existing cluster, run from the **lab repository**, not `delivery-source`:
 ```powershell
 Set-Location 'D:\codex\Ephemeral Elasticsearch'
 $env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
-python lab/install_oidc.py repair-server-resolution
+uv run --locked python lab/install_oidc.py repair-server-resolution
 ```
 
 On Linux or macOS, change to your lab checkout, set `LAB_STATE_DIR` to its retained

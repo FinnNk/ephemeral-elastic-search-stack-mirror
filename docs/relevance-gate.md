@@ -45,7 +45,7 @@ Use PowerShell from the reference repository root with the existing retained sta
 
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-python lab/setup_relevance_gate.py
+uv run --locked python lab/setup_relevance_gate.py
 ```
 
 Protection requires the release check, submission workflow, coordinator verdict

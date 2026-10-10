@@ -8,7 +8,7 @@ From the lab repository, with `LAB_STATE_DIR` set to the retained `.lab`
 directory, run in PowerShell:
 
 ```powershell
-python lab/setup_kserve.py
+uv run --locked python lab/setup_kserve.py
 ```
 
 On Linux or macOS, use `python3`. Requires the running lab, kubectl, Helm and

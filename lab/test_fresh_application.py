@@ -259,8 +259,8 @@ class FreshApplications(unittest.TestCase):
         self.assertIn('keytool -importcert -cacerts', dockerfile)
         self.assertNotIn('trustAll', dockerfile)
         self.assertNotIn('--insecure', dockerfile)
-        python = images.trusted_dockerfile('FROM python:3.13-slim\nRUN pip install x\n')
-        self.assertLess(python.index('ENV SSL_CERT_FILE='), python.index('RUN pip install'))
+        python = images.trusted_dockerfile('FROM python:3.13-slim\nRUN uv pip install --system x\n')
+        self.assertLess(python.index('ENV SSL_CERT_FILE='), python.index('RUN uv pip install'))
         self.assertIn('CURL_CA_BUNDLE=/usr/local/share/ca-certificates/fresh-lab.crt', python)
 
     def test_changed_store_blocks_cleanup_before_cluster_deletion(self):

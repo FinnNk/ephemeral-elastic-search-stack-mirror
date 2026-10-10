@@ -16,9 +16,9 @@ From the repository root, in PowerShell, with the existing lab running:
 
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
-python lab/gpu_worker.py build
-python lab/gpu_worker.py create
-python lab/gpu_worker.py status
+uv run --locked python lab/gpu_worker.py build
+uv run --locked python lab/gpu_worker.py create
+uv run --locked python lab/gpu_worker.py status
 ```
 
 In a separate checkout, set `LAB_STATE_DIR` to the existing lab's `.lab` directory.
@@ -35,7 +35,7 @@ kubectl --kubeconfig "$env:LAB_STATE_DIR/kubeconfig.yaml" -n kube-system get pod
 ```
 
 The default worker RAM limit is 28 GB; choose another limit with
-`python lab/gpu_worker.py create --memory 28g` before creation. An existing worker
+`uv run --locked python lab/gpu_worker.py create --memory 28g` before creation. An existing worker
 is reused; that option does not resize it. Its NVIDIA runtime is the default only
 on this worker. A node label and scheduling restriction keep ordinary lab Pods
 off it; generated ESCI candidate manifests explicitly select and tolerate it.
@@ -53,7 +53,7 @@ The worker uses separate Docker volumes and existing lab registry mirrors.
 Stop GPU model clients and remove their InferenceService first. Then run:
 
 ```powershell
-python lab/gpu_worker.py remove
+uv run --locked python lab/gpu_worker.py remove
 ```
 
 The command drains and removes this worker and its device plugin. It retains

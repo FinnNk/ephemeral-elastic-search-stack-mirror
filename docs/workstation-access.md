@@ -4,7 +4,7 @@ The lab uses its own certificate authority (CA). Trust its public certificate to
 
 ## Get the certificate
 
-Ask the lab operator for **`root.pem`**, or copy it from `.lab/https-ingress/root.pem` on the machine hosting the lab. On the current Windows host that is `D:\codex\Ephemeral Elasticsearch\.lab\https-ingress\root.pem`. The CA is created by `python lab/https_ingress.py install`. Only the public `root.pem` is needed; the private key stays on the host.
+Ask the lab operator for **`root.pem`**, or copy it from `.lab/https-ingress/root.pem` on the machine hosting the lab. On the current Windows host that is `D:\codex\Ephemeral Elasticsearch\.lab\https-ingress\root.pem`. The CA is created by `uv run --locked python lab/https_ingress.py install`. Only the public `root.pem` is needed; the private key stays on the host.
 
 The examples use a lab on your own machine. A remote workstation needs a reachable hostname, DNS and a certificate issued for that hostname; copying the certificate alone does not expose the lab over the LAN.
 
@@ -83,7 +83,7 @@ With this lab repository available, run from its root in PowerShell. Replace the
 example path if you copied `root.pem` elsewhere:
 
 ```powershell
-python lab/git_ca.py --root "D:/codex/Ephemeral Elasticsearch/.lab/https-ingress/root.pem"
+uv run --locked python lab/git_ca.py --root "D:/codex/Ephemeral Elasticsearch/.lab/https-ingress/root.pem"
 ```
 
 The helper uses Python's standard library and Git; it needs no Kubernetes access
@@ -187,4 +187,4 @@ sudo update-ca-certificates
 
 The Linux commands follow [Ubuntu's CA installation guide](https://ubuntu.com/server/docs/how-to/security/install-a-root-ca-certificate-in-the-trust-store/). A browser using its own certificate store, such as some Firefox configurations, may also need the certificate imported under its certificate-authority settings.
 
-Restart the browser if necessary and open `https://gitea.localhost:34443/`. Expect the Gitea sign-in page without a certificate warning. On the host with the reference checkout, `python lab/https_ingress.py trust` automates the Windows or macOS import; Linux import remains manual. [HTTPS ingress](https-ingress.md) documents service addresses and installation.
+Restart the browser if necessary and open `https://gitea.localhost:34443/`. Expect the Gitea sign-in page without a certificate warning. On the host with the reference checkout, `uv run --locked python lab/https_ingress.py trust` automates the Windows or macOS import; Linux import remains manual. [HTTPS ingress](https-ingress.md) documents service addresses and installation.

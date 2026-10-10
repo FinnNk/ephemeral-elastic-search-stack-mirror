@@ -21,7 +21,7 @@ The following PowerShell example uses an operator-supplied directory containing
 ```powershell
 $gapDir = Read-Host 'Absolute frozen gap-input directory'
 $packetDir = Read-Host 'New absolute review-packet directory'
-python evaluation/prepare_gap_review.py `
+uv run --locked python evaluation/prepare_gap_review.py `
   --inputs "$gapDir/inputs.json" --exclusions "$gapDir/exclusions.json" `
   --queries 100 --seed gap-review-fixed-01 --output "$packetDir"
 ```

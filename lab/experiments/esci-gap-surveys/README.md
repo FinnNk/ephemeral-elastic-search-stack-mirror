@@ -26,10 +26,10 @@ surveys used those versions on Windows. From the lab repository, set
 artefacts. For example, in this lab's PowerShell session:
 
 ```powershell
-python -m venv .lab/surveys-venv
+uv venv .lab/surveys-venv --python 3.12.12
 .\.lab\surveys-venv\Scripts\Activate.ps1
 $env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
-python -m pip install -r lab/experiments/esci-gap-surveys/requirements-cpu.txt
+uv pip install --python .lab/surveys-venv -r lab/experiments/esci-gap-surveys/requirements-cpu.txt
 ```
 
 On Linux and macOS, create the environment with `python3 -m venv` and activate
