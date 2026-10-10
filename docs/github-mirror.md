@@ -4,7 +4,7 @@ Gitea owns branches, reviews and merges. Its native push mirrors copy Git histor
 to private GitHub repositories after a push, with an hourly retry as a fallback.
 Developers work in Gitea; they do not create a second backup PR.
 
-All three mirrors are enabled. Initial branch and tag hashes match Gitea, and
+All five mirrors are enabled. Initial branch and tag hashes match Gitea, and
 ordinary Git pushes reach GitHub automatically.
 
 ## What is backed up
@@ -14,6 +14,8 @@ ordinary Git pushes reach GitHub automatically.
 | `ephemeral-elastic-search-stack` | [Lab mirror](https://github.com/FinnNk/ephemeral-elastic-search-stack-mirror) | Lab code, configuration and documentation |
 | `delivery-source` | [Source mirror](https://github.com/FinnNk/delivery-source-mirror) | Search API code and CI workflows |
 | `delivery-state` | [State mirror](https://github.com/FinnNk/delivery-state-mirror) | Reviewed deployments and recorded relevance decisions |
+| `search-spike` | [Standalone Search API mirror](https://github.com/FinnNk/search-spike-mirror) | Standalone Search API, browser page, tests and build workflow |
+| `environment-state` | [Environment state mirror](https://github.com/FinnNk/environment-state-mirror) | GitOps configuration for lab environments |
 
 Mirrors copy branches, tags and commits. They do not copy Gitea PR discussions,
 reviews, accounts, Actions logs, Blob data, Nexus artefacts or the control volume.
