@@ -49,6 +49,20 @@ class SourceComparisonTests(unittest.TestCase):
             with self.assertRaises(comparison.BuildPending):
                 comparison.build_for('a'*40, 'push')
 
+    def test_failed_exact_build_identifies_role_revision_and_public_run(self):
+        for event, role in (('push', 'Baseline'), ('pull_request', 'Candidate')):
+            run = {'id': 181, 'path': 'release.yaml@refs/heads/main',
+                   'head_sha': 'a'*40, 'event': event, 'status': 'completed',
+                   'conclusion': 'failure'}
+            with self.subTest(event=event), patch.object(comparison, 'api', return_value={'workflow_runs': [run]}):
+                with self.assertRaises(comparison.ComparisonInputError) as raised:
+                    comparison.build_for('a'*40, event)
+                detail = str(raised.exception)
+                self.assertIn(role + ' release build 181', detail)
+                self.assertIn('aaaaaaaaaaaa', detail)
+                self.assertIn('Fix the release build before retrying', detail)
+                self.assertIn('https://gitea.localhost:34443/elastic-agent/delivery-source/actions/runs/181', detail)
+
     def test_comment_offers_decision_only_when_required(self):
         preview = {'name': 'lab-example', 'expires_at': '2026-10-08'}
         for state in ('pass', 'approved_exception', 'blocked', 'decision_required'):

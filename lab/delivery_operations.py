@@ -303,14 +303,16 @@ def execute_next():
                 request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production', 'expire-preview', 'set-preview-expiry'))):
             # Decision validation errors contain public evidence/review facts,
             # never credentials or provider response bodies.
-            detail += ': ' + str(error)[:240]
+            detail += ': ' + str(error)[:600 if isinstance(error, ComparisonInputError) else 240]
         failed_reference = getattr(error, 'reference', None)
         store.log(identifier, detail)
         store.update(identifier, state='failed', progress='Operation failed', error=detail,
                      result={'report': failed_reference} if failed_reference else None)
         if request.get('source_sha') and request['kind'] in ('compare', 'gate-check'):
             from delivery_source_comparison import status
-            status(request['source_sha'], 'failure', 'Comparison failed: ' + type(error).__name__, identifier)
+            status(request['source_sha'], 'failure',
+                   str(error) if isinstance(error, ComparisonInputError) else 'Comparison failed: ' + type(error).__name__,
+                   identifier)
     finally:
         event_sink.reset(token)
     return store.get(identifier)

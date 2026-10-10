@@ -81,7 +81,13 @@ def build_for(revision, event):
     if newest['status'] != 'completed':
         raise BuildPending('Waiting for the exact source build')
     if newest['conclusion'] != 'success':
-        raise ValueError('The exact source release build failed.')
+        role = 'Baseline' if event == 'push' else 'Candidate'
+        raise ComparisonInputError(
+            f'{role} release build {newest["id"]} for commit {revision[:12]} '
+            f'finished with {newest["conclusion"]}. '
+            'The comparison requires a successful build of this exact commit. '
+            'Fix the release build before retrying. '
+            f'https://gitea.localhost:34443/elastic-agent/delivery-source/actions/runs/{newest["id"]}')
     return newest['id']
 
 
