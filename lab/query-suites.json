@@ -1,0 +1,16 @@
+[
+  {
+    "id": "esci-gb-demo-halloween-2026-expanded",
+    "release": "esci-gb-demo-halloween-2026",
+    "label": "Seasonal exploration \u00b7 80 queries",
+    "query_manifest_sha256": "bfdfc43fe4b796fe5fc48c2c8df32d3e476b9c6e0b2f3d48c56cdffde6b2ab0e",
+    "judgement_manifest_sha256": "222042022e35b3eea5dcd04154662058e0f704dc8e07c221ea271a0a9e09c971"
+  },
+  {
+    "id": "esci-gb-demo-christmas-2026-expanded",
+    "release": "esci-gb-demo-christmas-2026",
+    "label": "Seasonal exploration \u00b7 80 queries",
+    "query_manifest_sha256": "e303dbe0b6e978a3fe94cb6e39d94d15c0df3fc8e151f09c0f0e1a7d6bae1888",
+    "judgement_manifest_sha256": "f637ce5df18d0ce7a6d35cf2eeca1f4830dc30436003481fd626511a70d2e311"
+  }
+]

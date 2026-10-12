@@ -2,7 +2,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const output=path.join(process.env.LAB_STATE_DIR||path.join(process.cwd(),'.lab'),'ui-qa');fs.mkdirSync(output,{recursive:true});
 (async()=>{
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true,...(process.env.LAB_BROWSER_EXECUTABLE?{executablePath:process.env.LAB_BROWSER_EXECUTABLE}:{})});
 try{
 const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));
@@ -27,7 +27,7 @@ await page.route('http://control.test/**',route=>{
  const data=pathname==='/api/auth'?{oidc:true}:pathname==='/api/me'?{username:reader?'demo-reader':'demo-admin',is_reader:reader,is_admin:!reader}:
  pathname==='/api/environments'?environments:pathname==='/api/comparison-targets'?delivery:pathname==='/api/comparisons'?comparisons:pathname.endsWith('/report')?report:
  pathname==='/api/datasets'?[{release:'esci-gb-v1',manifest:{count:1215854,query_count:1000}}]:
- pathname==='/api/index-kinds'?{'esci-gb-v1':[]}:pathname==='/api/notebooks'?['comparison-explorer.ipynb']:{};
+ pathname==='/api/query-suites'?[{id:'standard',release:'esci-gb-v1',label:'Standard suite · esci-gb-v1',query_manifest_sha256:'c'.repeat(64),judgement_manifest_sha256:'d'.repeat(64)},{id:'expanded',release:'esci-gb-v1',label:'Exploratory fixture · 80 queries',query_manifest_sha256:'e'.repeat(64),judgement_manifest_sha256:'f'.repeat(64)}]:pathname==='/api/index-kinds'?{'esci-gb-v1':[]}:pathname==='/api/notebooks'?['comparison-explorer.ipynb']:{};
  return route.fulfill({contentType:'application/json; charset=utf-8',body:JSON.stringify(data)});
 });
 await page.goto('http://control.test/');await page.locator('#environment-paging').getByText('1–12 of 46',{exact:true}).waitFor();
@@ -47,7 +47,7 @@ await page.locator('#query-paging').getByText('1–25 of 500',{exact:true}).wait
 await page.locator('#query-paging').getByRole('button',{name:'Next',exact:true}).click();await page.locator('#query-paging').getByText('26–50 of 500',{exact:true}).waitFor();
 await page.locator('#query-search').fill('café');await page.locator('#query-paging').getByText('1–1 of 1',{exact:true}).waitFor();
 assert.ok((await page.locator('#query-list').innerText()).includes('café chair · changed · ΔnDCG 0'));
-assert.equal(await page.locator('#release option').first().textContent(),'esci-gb-v1 · 1,215,854 products · 1,000 queries');
+assert.equal(await page.locator('#release option').first().textContent(),'esci-gb-v1 · 1,215,854 products');
 await page.evaluate(()=>window.scrollTo(0,0));
 const section=await page.locator('section').filter({has:page.getByRole('heading',{name:'Environments',exact:true})}).boundingBox();
 const firstCard=await page.locator('#environments .card').first().boundingBox();
@@ -64,11 +64,24 @@ await page.locator('#baseline').selectOption('delivery:blue');
 assert.equal(await page.locator('#baseline option:checked').textContent(),'Production blue — active — build 108');
 await page.locator('#baseline').selectOption('environment-52');await page.locator('#candidate').selectOption('environment-54');
 await page.locator('#notebook').selectOption('comparison-explorer.ipynb');
+await page.locator('#mode').selectOption('relevance');
+await page.locator('#query-suite').selectOption('custom');
+assert.ok(await page.locator('#custom-inputs').isVisible());
+assert.equal(await page.locator('#query-manifest').getAttribute('required'),'');
+await page.locator('#query-manifest').fill('invalid');
+await page.locator('#query-suite').selectOption('expanded');
+assert.ok(await page.locator('#query-manifest').isDisabled());
+assert.ok(await page.locator('#custom-inputs').isHidden());
+assert.ok(await page.locator('#compare').evaluate(form=>form.checkValidity()));
+await page.locator('#mode').selectOption('performance');
+assert.ok(await page.locator('#query-suite').isDisabled());
+await page.locator('#mode').selectOption('relevance');
+assert.ok(await page.locator('#query-suite').isEnabled());
 let releaseComparison,submitCount=0;
 const pendingComparison=new Promise(resolve=>releaseComparison=resolve);
 await page.route('http://control.test/api/comparisons',async route=>{
  if(route.request().method()!=='POST')return route.fallback();
- submitCount++;await pendingComparison;
+ submitCount++;const body=route.request().postDataJSON();assert.equal(body.query_manifest_sha256,'e'.repeat(64));assert.equal(body.judgement_manifest_sha256,'f'.repeat(64));await pendingComparison;
  return route.fulfill({contentType:'application/json',body:JSON.stringify({id:'new-comparison',state:'complete',verdict:'measured',report_blob:'report.json',summary:{notebook:{state:'complete'}}})});
 });
 await page.locator('#compare').getByRole('button',{name:'Run comparison',exact:true}).click();

@@ -23,15 +23,24 @@ immutable inputs; it does not change the standard frozen suites or their pins.
 
 1. Create two ready environments on the Halloween dataset to compare API changes.
 2. In **Compare frozen environments**, choose the baseline and candidate.
-3. Copy Halloween's `query_manifest_sha256` into **Query-suite manifest SHA-256**.
+3. Choose **Seasonal exploration · 80 queries** in **Query suite**.
    The combined suite contains the original 54 queries and all 26 extra queries.
-4. For **Relevance**, also copy the matching `judgement_manifest_sha256` into
-   **Judgement-set manifest SHA-256**. Its original 968 labels are unchanged;
+4. For **Relevance**, the selection also supplies the matching judgement set.
+   Its original 968 labels are unchanged;
    the new queries have no invented grades. The resolver may infer labels or
    abstain. Read judgement coverage and the reasons for any unavailable metrics.
 5. Select an exploratory notebook if desired and run the comparison. Open its
    report and **View notebook** link when complete.
-6. Repeat with two Christmas environments and the Christmas manifest hashes.
+6. Repeat with two Christmas environments and their seasonal exploration suite.
+
+Environment creation selects **Catalogue and rewrite data**. Query suites belong
+to comparisons and can be changed without recreating an environment. The selector
+shows suites for the baseline catalogue. The server verifies catalogue and query
+compatibility when relevance judgements are selected.
+
+For other immutable inputs, choose **Custom manifest hashes…** and supply the
+query manifest hash and matching judgement hash for relevance. Gatling uses its
+profile queries and does not use this functional query-suite selection.
 
 Use the same API release on both sides for a data demonstration, or a candidate
 API change on one side for a ranking demonstration. Each comparison requires a

@@ -250,6 +250,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(200, releases)
         if parts == ['api', 'index-kinds']:
             return self.send_json(200, {release_id: available_kinds(release_id) for release_id in RELEASES})
+        if parts == ['api', 'query-suites']:
+            from query_suites import choices
+            return self.send_json(200, choices())
         if parts == ['api', 'input-sets']:
             return self.send_json(200, DEFAULTS)
         if parts == ['api', 'notebooks']:

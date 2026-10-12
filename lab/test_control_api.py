@@ -122,7 +122,8 @@ class LocalControlApi(unittest.TestCase):
                 body = response.read().decode('utf-8')
                 self.assertNotIn('\u00c2\u00b7', body)
                 if path == '/':
-                    self.assertIn('products \u00b7 ', body)
+                    self.assertIn('Quick \u00b7 first 50', body)
+                    self.assertIn('Catalogue and rewrite data', body)
                     self.assertIn(' \u00b7 \u0394nDCG ', body)
 
     def test_loopback_reads(self):
