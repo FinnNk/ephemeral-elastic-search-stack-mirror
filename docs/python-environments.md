@@ -30,6 +30,68 @@ or virtual environment is active, uv still uses the project's `.venv`; do not
 pass `--active`. Keep external `.lab/python-libs` out of `PYTHONPATH` when
 verifying this environment, otherwise those packages can shadow locked packages.
 
+## Run unit tests
+
+Run tests from the checkout containing the change. Use `uv run --locked` so the
+interpreter and packages come from that checkout's `.venv`. A bare `python` or
+the desktop app's bundled interpreter can select a different environment after
+a restart. These unit checks use fixtures; Docker and a running lab are not
+prerequisites.
+
+For delivery and promotion changes, use PowerShell from the repository root:
+
+```powershell
+uv sync --locked
+$env:PYTHONPATH = @('lab', 'evaluation', 'judgements') -join [IO.Path]::PathSeparator
+$testTemp = Join-Path (Get-Location).Path '.lab/unit-test-temp'
+New-Item -ItemType Directory -Force -Path $testTemp | Out-Null
+$env:TEMP = $testTemp
+$env:TMP = $testTemp
+uv run --locked python -m unittest test_delivery_gates test_delivery_operations test_production_release test_release_control test_delivery_feedback test_production_load_gate -q
+```
+
+The repository import paths let tests import lab modules directly. They do not
+add external dependency folders. The temporary directory keeps fixture files
+inside the writable checkout. Expect a final `OK` and exit status zero; tests
+of rejected requests can print expected errors before that summary.
+
+On macOS or Linux, run the same checks from the repository root:
+
+```sh
+uv sync --locked
+PYTHONPATH=lab:evaluation:judgements uv run --locked python -m unittest test_delivery_gates test_delivery_operations test_production_release test_release_control test_delivery_feedback test_production_load_gate -q
+```
+
+Choose other test modules for other changes. For the complete lab unit suite,
+use `python -m unittest discover -s lab -p 'test_*.py' -q` through the same uv
+environment and import paths. Live verification is separate; leave opt-in
+settings such as `LAB_VERIFY_REDIS` unset for unit runs.
+
+If imports fail, check the actual interpreter and dependency locations:
+
+```sh
+uv run --locked python -c "import sys, azure.storage.blob, yaml; print(sys.executable); print(azure.storage.blob.__file__); print(yaml.__file__)"
+```
+
+The paths should point into this checkout's `.venv`. Clear external
+`.lab/python-libs` entries from `PYTHONPATH`, then repeat `uv sync --locked`.
+Those retained packages can have native extensions for a particular Python
+version and may not contain every locked dependency.
+
+If a restricted Windows shell cannot write uv's normal cache, set a writable
+cache before syncing:
+
+```powershell
+$env:UV_CACHE_DIR = Join-Path (Get-Location).Path '.lab/uv-cache'
+uv sync --locked
+```
+
+Some unit tests start an isolated HTTP server on loopback. `WinError 10013`
+from those fixtures can mean the execution sandbox denied local sockets.
+Run that same bounded test command with the required execution permission;
+changing package dependencies will not fix a socket denial. Report a blocked
+fixture separately from an assertion failure.
+
 ## Corporate certificates
 
 Configure trust **before** the first Python or package download. On a Mac whose

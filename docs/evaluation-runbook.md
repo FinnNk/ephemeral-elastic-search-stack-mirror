@@ -7,12 +7,14 @@ credentials. Both paths retain exact images, frozen inputs and signed evidence.
 
 ## Prepare inputs
 
-Prerequisites: running lab/control services, ready Argo-managed search environments, compatible published inputs, Python and the Azure/evaluation dependency files under `lab/`. Use PowerShell from the repository root. Select the retained state directory when working in another checkout.
+Prerequisites: running lab/control services, ready Argo-managed search environments,
+compatible published inputs and the [locked uv environment](python-environments.md).
+Use PowerShell from the repository root. Select the retained state directory when
+working in another checkout.
 
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 $kubeconfig = Join-Path $env:LAB_STATE_DIR kubeconfig.yaml
-$env:PYTHONPATH = Join-Path $env:LAB_STATE_DIR python-libs
 $inputDir = Read-Host 'Absolute directory containing the selected frozen input pack'
 $manifestDir = Read-Host 'Absolute directory containing its published manifests'
 $variantSet = Read-Host 'Absolute path to the frozen variant-set JSON'

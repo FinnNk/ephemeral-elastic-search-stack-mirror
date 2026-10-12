@@ -6,5 +6,6 @@
 - Use the `technical-documentation` skill when available. The repository guide supplies the requirements when that skill is unavailable.
 - Code reviews must check documentation clarity and structure, as well as technical accuracy. Inspect affected existing pages, not just changed lines. Request changes when a reader cannot identify the purpose, follow the instructions or interpret the results, even if automated checks pass.
 - Describe validation honestly: distinguish observed behaviour, illustrative examples and checks that were not run. Do not claim that links, lint or word counts establish clear writing.
+- Run unit tests with the project's locked uv environment, following [Run unit tests](docs/python-environments.md#run-unit-tests). Check `.venv` and `uv run --locked` before declaring dependencies unavailable. The desktop app's bundled Python and Windows Store aliases are not the project's test environment.
 - Preserve historical evidence and imported notices. Keep implementation history out of current task guides unless it explains a present limitation.
 - Update the high-level plan and next detailed plan after completing a batch. Keep source-repository documentation templates in sync with their published copies.

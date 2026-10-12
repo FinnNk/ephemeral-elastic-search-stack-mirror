@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [test-runtime recovery batch](test-runtime-recovery.md) records the locked
+uv unit-test setup and agent instructions. All 64 selected delivery and promotion
+fixtures pass on Windows. It also rejects direct production promotion requests
+before queueing and updates the baseline-deployment assertions. Next: review this
+batch, then resume the promotion walkthrough; native Mac checks remain separate.
+
 The [uv and seasonal-query batch](uv-and-seasonal-query-demos.md) follows the
 paired-data batch. It pins host Python and dependencies, preserves corporate
 certificate trust including Redis image/package paths, and adds three reusable

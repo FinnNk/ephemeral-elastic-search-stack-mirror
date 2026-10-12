@@ -58,6 +58,8 @@ def validate(payload):
             raise ValueError('Build and PR numbers must be positive integers.')
     if 'target' in payload and payload['target'] not in ('integration', 'staging', 'production'):
         raise ValueError('Delivery target is invalid.')
+    if kind == 'promotion' and payload['target'] == 'production':
+        raise ValueError('Use Prepare production candidate, then Check and release production.')
     if kind == 'set-preview-expiry':
         from lease_expiry import deadline
         deadline(payload['new_expiry'])

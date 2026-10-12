@@ -85,7 +85,9 @@ class ProductionLoadTests(unittest.TestCase):
              patch('delivery_promote.materialise') as materialise:
             with self.assertRaisesRegex(ValueError, 'blocked'):
                 propose('production', {'fingerprint': 'C'}, {}, 'ranking-change')
-        self.assertEqual(gate.call_args.kwargs, {'target': 'production'})
+        self.assertEqual(gate.call_args.kwargs, {'target': 'production',
+            'baseline_deployment': {'fingerprint': 'B'},
+            'candidate_deployment': {'fingerprint': 'C'}})
         materialise.assert_not_called()
 
     def test_pr_validation_rechecks_production_policy(self):
@@ -119,7 +121,8 @@ class ProductionLoadTests(unittest.TestCase):
              patch('delivery_promote.validate_evidence', side_effect=ValueError('load rejected')) as gate:
             with self.assertRaisesRegex(ValueError, 'load rejected'):
                 inspect_pr(15)
-        self.assertEqual(gate.call_args.kwargs, {'target': 'production'})
+        self.assertEqual(gate.call_args.kwargs, {'target': 'production',
+            'baseline_deployment': previous, 'candidate_deployment': deployment})
 
     def test_large_unicode_workload_preserves_bytes_in_bounded_maps(self):
         payload = ('query,£\n' * 200000).encode()
