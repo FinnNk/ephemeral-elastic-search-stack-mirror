@@ -247,7 +247,17 @@ class Handler(BaseHTTPRequestHandler):
                 releases.append({'release': release_id, 'manifest': {'count': manifest['record_count'],
                     'query_count': 50, 'effective_date': PROFILES['releases'][release_id]['effective_date'],
                     'simulated': True}})
+            from data_timestamps import catalogue_metadata
+            for row in releases:
+                row['metadata'] = catalogue_metadata(row['release'])
             return self.send_json(200, releases)
+        if parts == ['api', 'index-metadata']:
+            from data_timestamps import existing_indices
+            query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
+            release = query.get('release', [''])[0]
+            if release not in RELEASES:
+                return self.send_json(400, {'error': 'Choose a configured catalogue.'})
+            return self.send_json(200, existing_indices(release))
         if parts == ['api', 'index-kinds']:
             return self.send_json(200, {release_id: available_kinds(release_id) for release_id in RELEASES})
         if parts == ['api', 'query-suites']:

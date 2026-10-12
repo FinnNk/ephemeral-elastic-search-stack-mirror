@@ -49,6 +49,30 @@ release gates still require matching catalogues on both sides.
 
 For larger sets and copy/paste gate selections, follow [seasonal query demos](seasonal-query-demos.md).
 
+## Catalogue and index timestamps
+
+Every catalogue has a reviewed UTC timestamp in the lab's catalogue metadata.
+Monthly and seasonal dates use their scenario effective date at midnight UTC.
+The original ESCI catalogues and protected legacy recipes use the synthetic
+baseline timestamp **1 January 2026, 00:00 UTC**. These are lab scenario dates,
+not source publication dates or product introduction dates. The UI marks them
+**synthetic**. This metadata does not rewrite immutable source manifests.
+
+In **Create an environment**, **Catalogue and rewrite data** shows its timestamp
+beside the product count. **Existing frozen index to restore** lists physical
+indices for that catalogue, with their creation times. Choosing one fills its
+pinned recipe and index kind; a dedicated environment still gets its own index.
+Use **Current index definition** to build or reuse the current recipe instead.
+Legacy indices without a recipe marker show their dates but cannot be selected
+as a historical recipe. A custom recipe hash remains available.
+
+Index creation times come from Elasticsearch's `index.creation_date`, expressed
+in UTC. If a legacy index lacks that setting, its fallback timestamp is explicitly
+marked synthetic. Creation, reuse and recovery attach dates alongside the recipe
+marker in mapping metadata. The immutable recipe and product identities remain
+unchanged. Snapshot restoration can retain an original index creation date;
+this is not the restore completion time.
+
 ## Redis and Elasticsearch identity
 
 Each release pairs its pinned catalogue, query suite and judgement set with an

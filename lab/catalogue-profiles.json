@@ -3,43 +3,57 @@
   "releases": {
     "esci-gb-v1": {
       "queries": 1000,
-      "products": null
+      "products": null,
+      "catalogue_timestamp": "2026-01-01T00:00:00Z",
+      "catalogue_timestamp_kind": "synthetic"
     },
     "esci-gb-demo-v1": {
       "queries": 50,
-      "products": 10000
+      "products": 10000,
+      "catalogue_timestamp": "2026-01-01T00:00:00Z",
+      "catalogue_timestamp_kind": "synthetic"
     },
     "esci-gb-demo-2026-01": {
       "queries": 50,
       "products": 10000,
       "effective_date": "2026-01-01",
-      "simulated": true
+      "simulated": true,
+      "catalogue_timestamp": "2026-01-01T00:00:00Z",
+      "catalogue_timestamp_kind": "synthetic"
     },
     "esci-gb-demo-2026-02": {
       "queries": 50,
       "products": 10000,
       "effective_date": "2026-02-01",
-      "simulated": true
+      "simulated": true,
+      "catalogue_timestamp": "2026-02-01T00:00:00Z",
+      "catalogue_timestamp_kind": "synthetic"
     },
     "esci-gb-demo-2026-03": {
       "queries": 50,
       "products": 10000,
       "effective_date": "2026-03-01",
-      "simulated": true
+      "simulated": true,
+      "catalogue_timestamp": "2026-03-01T00:00:00Z",
+      "catalogue_timestamp_kind": "synthetic"
     },
     "esci-gb-demo-halloween-2026": {
       "queries": 54,
       "products": 1250,
       "effective_date": "2026-10-01",
       "simulated": true,
-      "theme": "halloween"
+      "theme": "halloween",
+      "catalogue_timestamp": "2026-10-01T00:00:00Z",
+      "catalogue_timestamp_kind": "synthetic"
     },
     "esci-gb-demo-christmas-2026": {
       "queries": 54,
       "products": 1250,
       "effective_date": "2026-12-01",
       "simulated": true,
-      "theme": "christmas"
+      "theme": "christmas",
+      "catalogue_timestamp": "2026-12-01T00:00:00Z",
+      "catalogue_timestamp_kind": "synthetic"
     }
   }
 }

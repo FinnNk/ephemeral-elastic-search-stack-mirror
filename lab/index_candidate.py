@@ -8,6 +8,7 @@ from pathlib import Path
 
 from load_release import DATA, RELEASE, index_job, publish_blobs
 from data_contract import elastic
+from data_timestamps import record_index_metadata
 from index_recipe import current_recipe, digest, load as load_recipe, validate
 from index_recovery import clone_from_live, restore_snapshot, save_snapshot, verify as verify_recovered
 from input_selection import fetch_manifest
@@ -96,6 +97,7 @@ def ensure_candidate_index(environment_name, expected_dataset_sha, release_id=RE
                     save_snapshot(index, recipe, recipe_sha256)
                 except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:
                     errors.append('snapshot save: ' + type(error).__name__ + ': ' + str(error))
+            record_index_metadata(index, release_id, client=elastic)
             return {'index': index, 'mapping_sha256': mapping_sha, 'count': count,
                     'dataset_sha256': expected_dataset_sha, 'created': False, 'build_seconds': 0,
                     'materialisation': 'reuse', 'recovery_errors': errors}
@@ -133,6 +135,7 @@ def ensure_candidate_index(environment_name, expected_dataset_sha, release_id=RE
         frozen, count = _frozen_count(index)
         if not frozen or count != recipe['document_count']:
             raise RuntimeError('Candidate index count or write block failed verification.')
+        record_index_metadata(index, release_id, client=elastic)
     except Exception:
         elastic('/' + index, 'DELETE')
         raise

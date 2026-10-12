@@ -5,6 +5,7 @@ import time
 import urllib.error
 
 from data_contract import elastic
+from data_timestamps import record_index_metadata
 
 
 SAMPLE = {'query': {'match_all': {}}, 'sort': [{'product_id': 'asc'}], 'size': 10}
@@ -85,6 +86,7 @@ def clone_from_live(target, recipe, recipe_sha):
             if health.get('timed_out'):
                 raise TimeoutError('Cloned shard did not become active.')
             verify(target, recipe, recipe_sha, ordered)
+            record_index_metadata(target, recipe['release_id'], client=elastic)
             return {'source': 'clone', 'source_index': source,
                     'seconds': round(time.monotonic() - started, 3)}
         except Exception:
@@ -125,6 +127,7 @@ def restore_snapshot(target, recipe, recipe_sha):
         if health.get('timed_out'):
             raise TimeoutError('Restored shard did not become active.')
         verify(target, recipe, recipe_sha, metadata['ordered_sample'])
+        record_index_metadata(target, recipe['release_id'], client=elastic)
         return {'source': 'snapshot', 'repository': repository, 'snapshot': name,
                 'seconds': round(time.monotonic() - started, 3)}
     except Exception:

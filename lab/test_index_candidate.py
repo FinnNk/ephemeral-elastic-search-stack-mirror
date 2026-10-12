@@ -37,7 +37,9 @@ class CandidateIndexRecovery(unittest.TestCase):
              patch('index_candidate.save_snapshot'), \
              patch('index_candidate._frozen_count', return_value=(True, 10000)), \
              patch('index_candidate.elastic', side_effect=lambda path, *args: \
-                   {'version': {'number': '9.5.4'}} if path == '/' else None):
+                   {'version': {'number': '9.5.4'}} if path == '/' else None if args else {path[1:]: {
+                       'mappings': {'_meta': {'index_recipe_sha256': digest(recipe)}},
+                       'settings': {'index': {'creation_date': '1791799200000'}}}}):
             built = ensure_candidate_index('lab-rebuilt', manifest['sha256']['products.jsonl'],
                                            release_id='retail-gb-10k-v1', recipe_sha256=digest(recipe))
         self.assertEqual(built['materialisation'], 'rebuild')
@@ -71,7 +73,9 @@ class CandidateIndexRecovery(unittest.TestCase):
              patch('index_candidate.index_job'), \
              patch('index_candidate._frozen_count', return_value=(True, 10000)), \
              patch('index_candidate.elastic', side_effect=lambda path, *args: \
-                   {'version': {'number': '9.5.4'}} if path == '/' else None) as es:
+                   {'version': {'number': '9.5.4'}} if path == '/' else None if args else {path[1:]: {
+                       'mappings': {'_meta': {'index_recipe_sha256': digest(recipe)}},
+                       'settings': {'index': {'creation_date': '1791799200000'}}}}) as es:
             built = ensure_candidate_index('lab-pinned', manifest['sha256']['products.jsonl'],
                                            release_id='retail-gb-10k-v1', recipe_sha256=recipe_sha)
         self.assertEqual(built['mapping_sha256'], digest(recipe['index_definition']))

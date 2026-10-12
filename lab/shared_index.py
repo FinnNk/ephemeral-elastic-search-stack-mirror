@@ -4,6 +4,7 @@ import time
 import urllib.error
 
 from data_contract import elastic
+from data_timestamps import record_index_metadata
 from index_recipe import load as load_recipe, shared_index_name, validate
 from load_release import DATA, RELEASE, index_job, publish_blobs
 from index_recovery import clone_from_live, restore_snapshot, save_snapshot, verify as verify_recovered
@@ -49,6 +50,7 @@ def ensure_shared_index(release_id, dataset_sha256, recipe_sha256):
             raise ValueError('Shared index is not frozen with the expected document count.')
         if marker:
             verify_recovered(index, recipe, recipe_sha256)
+        record_index_metadata(index, release_id, existing, client=elastic)
         errors = []
         try:
             save_snapshot(index, recipe, recipe_sha256)
@@ -88,6 +90,7 @@ def ensure_shared_index(release_id, dataset_sha256, recipe_sha256):
     except Exception:
         elastic('/' + index, 'DELETE')
         raise
+    record_index_metadata(index, release_id, client=elastic)
     try:
         save_snapshot(index, recipe, recipe_sha256)
     except (ValueError, RuntimeError, TimeoutError, urllib.error.HTTPError) as error:

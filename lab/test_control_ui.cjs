@@ -26,8 +26,8 @@ await page.route('http://control.test/**',route=>{
  if(pathname==='/control_lists.js')return route.fulfill({contentType:'text/javascript; charset=utf-8',body:fs.readFileSync(path.join(process.cwd(),'lab/control_lists.js'),'utf8')});
  const data=pathname==='/api/auth'?{oidc:true}:pathname==='/api/me'?{username:reader?'demo-reader':'demo-admin',is_reader:reader,is_admin:!reader}:
  pathname==='/api/environments'?environments:pathname==='/api/comparison-targets'?delivery:pathname==='/api/comparisons'?comparisons:pathname.endsWith('/report')?report:
- pathname==='/api/datasets'?[{release:'esci-gb-v1',manifest:{count:1215854,query_count:1000}}]:
- pathname==='/api/query-suites'?[{id:'standard',release:'esci-gb-v1',label:'Standard suite · esci-gb-v1',query_manifest_sha256:'c'.repeat(64),judgement_manifest_sha256:'d'.repeat(64)},{id:'expanded',release:'esci-gb-v1',label:'Exploratory fixture · 80 queries',query_manifest_sha256:'e'.repeat(64),judgement_manifest_sha256:'f'.repeat(64)}]:pathname==='/api/index-kinds'?{'esci-gb-v1':[]}:pathname==='/api/notebooks'?['comparison-explorer.ipynb']:{};
+ pathname==='/api/datasets'?[{release:'esci-gb-v1',manifest:{count:1215854,query_count:1000},metadata:{catalogue_timestamp:'2026-01-01T00:00:00Z',catalogue_timestamp_kind:'synthetic'}}]:
+ pathname==='/api/index-metadata'?[{index:'esci-test-index',recipe_sha256:'a'.repeat(64),index_kind:'shared',index_created_at:'2026-10-12T10:00:00Z',index_timestamp_kind:'observed',catalogue_timestamp:'2026-01-01T00:00:00Z',catalogue_timestamp_kind:'synthetic'}]:pathname==='/api/query-suites'?[{id:'standard',release:'esci-gb-v1',label:'Standard suite · esci-gb-v1',query_manifest_sha256:'c'.repeat(64),judgement_manifest_sha256:'d'.repeat(64)},{id:'expanded',release:'esci-gb-v1',label:'Exploratory fixture · 80 queries',query_manifest_sha256:'e'.repeat(64),judgement_manifest_sha256:'f'.repeat(64)}]:pathname==='/api/index-kinds'?{'esci-gb-v1':[]}:pathname==='/api/notebooks'?['comparison-explorer.ipynb']:{};
  return route.fulfill({contentType:'application/json; charset=utf-8',body:JSON.stringify(data)});
 });
 await page.goto('http://control.test/');await page.locator('#environment-paging').getByText('1–12 of 46',{exact:true}).waitFor();
@@ -47,7 +47,7 @@ await page.locator('#query-paging').getByText('1–25 of 500',{exact:true}).wait
 await page.locator('#query-paging').getByRole('button',{name:'Next',exact:true}).click();await page.locator('#query-paging').getByText('26–50 of 500',{exact:true}).waitFor();
 await page.locator('#query-search').fill('café');await page.locator('#query-paging').getByText('1–1 of 1',{exact:true}).waitFor();
 assert.ok((await page.locator('#query-list').innerText()).includes('café chair · changed · ΔnDCG 0'));
-assert.equal(await page.locator('#release option').first().textContent(),'esci-gb-v1 · 1,215,854 products');
+assert.equal(await page.locator('#release option').first().textContent(),'esci-gb-v1 · 1,215,854 products · 1 Jan 2026, 00:00 UTC · synthetic');
 await page.evaluate(()=>window.scrollTo(0,0));
 const section=await page.locator('section').filter({has:page.getByRole('heading',{name:'Environments',exact:true})}).boundingBox();
 const firstCard=await page.locator('#environments .card').first().boundingBox();
@@ -56,6 +56,11 @@ await page.screenshot({path:path.join(output,'control-lists-desktop.png'),fullPa
 await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,'control-lists-mobile.png'),fullPage:true});
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
 reader=false;await page.setViewportSize({width:1440,height:1100});await page.goto('http://control.test/');await page.locator('#environment-paging').getByText('1–12 of 46',{exact:true}).waitFor();
+await page.locator('#index-version option').nth(1).waitFor({state:'attached'});
+await page.locator('#index-version').selectOption('esci-test-index');
+assert.equal(await page.locator('#index-recipe').inputValue(),'a'.repeat(64));
+assert.ok((await page.locator('#index-date').innerText()).includes('12 Oct 2026, 10:00 UTC'));
+assert.ok((await page.locator('#index-date').innerText()).includes('synthetic'));
 await page.locator('#environment-search').fill('lab-delivery');
 assert.equal(await page.locator('#environments .card').count(),2);
 assert.equal(await page.locator('#environments').getByRole('button',{name:'Delete',exact:true}).count(),0);
