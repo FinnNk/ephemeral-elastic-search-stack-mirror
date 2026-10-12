@@ -8,9 +8,9 @@ newline. CI reads this file; manually created tags do not choose build versions.
 
 | Change | Bump | Example |
 | --- | --- | --- |
-| Breaking public API change | Major | 1.2.3 Ã¢â€ â€™ 2.0.0 |
-| Compatible feature or deliberate ranking behaviour change | Minor | 1.2.3 Ã¢â€ â€™ 1.3.0 |
-| Compatible fix | Patch | 1.2.3 Ã¢â€ â€™ 1.2.4 |
+| Breaking public API change | Major | 1.2.3 → 2.0.0 |
+| Compatible feature or deliberate ranking behaviour change | Minor | 1.2.3 → 1.3.0 |
+| Compatible fix | Patch | 1.2.3 → 1.2.4 |
 
 The ranking convention is specific to this reference implementation. SemVer
 describes API compatibility; a higher version does not establish better relevance.
