@@ -63,6 +63,24 @@ class SourceComparisonTests(unittest.TestCase):
                 self.assertIn('Fix the release build before retrying', detail)
                 self.assertIn('https://gitea.localhost:34443/elastic-agent/delivery-source/actions/runs/181', detail)
 
+    def test_baseline_fallback_requires_failed_push_and_exact_successful_pr(self):
+        push = {'id': 181, 'path': 'release.yaml@refs/heads/main',
+                'head_sha': 'a'*40, 'event': 'push', 'status': 'completed', 'conclusion': 'failure'}
+        preview = {**push, 'id': 175, 'event': 'pull_request', 'conclusion': 'success'}
+        for changed, expected in ((preview, 175), ({**push, 'id': 182, 'conclusion': 'success'}, 182)):
+            with patch.object(comparison, 'api', return_value={'workflow_runs': [push, changed]}):
+                self.assertEqual(comparison.comparison_baseline_build('a'*40), expected)
+        for changed in ({**preview, 'head_sha': 'b'*40},
+                        {**preview, 'conclusion': 'failure'},
+                        {**preview, 'path': 'delivery.yaml@refs/heads/main'}):
+            with patch.object(comparison, 'api', return_value={'workflow_runs': [push, changed]}):
+                with self.assertRaises(comparison.ComparisonInputError):
+                    comparison.comparison_baseline_build('a'*40)
+        with patch.object(comparison, 'api', return_value={'workflow_runs': [
+                {**push, 'status': 'running', 'conclusion': None}, preview]}):
+            with self.assertRaises(comparison.BuildPending):
+                comparison.comparison_baseline_build('a'*40)
+
     def test_comment_offers_decision_only_when_required(self):
         preview = {'name': 'lab-example', 'expires_at': '2026-10-08'}
         for state in ('pass', 'approved_exception', 'blocked', 'decision_required'):
@@ -130,7 +148,7 @@ class SourceComparisonTests(unittest.TestCase):
                 'configuration_sha256': target['configuration_sha256'], 'ids': ['p1'], 'total': 1}
                 for name, target in targets.items()}}], {'worker_count': 8}
         def receipt(run):
-            value = {'source_sha': str(run)*40}
+            value = {'source_sha': str(run)*40, 'event_kind': 'push' if run == 1 else 'pull_request'}
             return value, {}, {}, canonical(value)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

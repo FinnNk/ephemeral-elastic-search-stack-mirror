@@ -91,6 +91,23 @@ def build_for(revision, event):
     return newest['id']
 
 
+
+def comparison_baseline_build(revision):
+    """Use an exact successful preview build when main's publication failed.
+
+    This selects evidence for a comparison preview only. Promotion continues
+    to require a successful push build, and receipt validation still checks
+    the source revision, repository, event, image and immutable release.
+    """
+    try:
+        return build_for(revision, 'push')
+    except ComparisonInputError as failed_push:
+        try:
+            return build_for(revision, 'pull_request')
+        except (BuildPending, ComparisonInputError):
+            raise failed_push from None
+
+
 def status(source_sha, state, detail, operation_id):
     api(endpoint(SOURCE, '/statuses/' + source_sha), 'POST', {
         'context': STATUS, 'state': state, 'description': detail[:140],
@@ -157,12 +174,12 @@ def compare(request, progress, operation_id):
                 'changes_sha256': sha(changes), **scope}), 'documentation-exemption.json')
             status(request['source_sha'], 'success', scope['reason'], operation_id)
             return {'report': reference, 'scope': scope}
-        baseline_run = build_for(request['baseline_sha'], 'push')
+        baseline_run = comparison_baseline_build(request['baseline_sha'])
         candidate_run = build_for(request['source_sha'], 'pull_request')
     else:
         baseline_run, candidate_run = request['baseline_run'], request['candidate_run']
     receipt, _, _, receipt_bytes = from_run_bytes(candidate_run)
-    baseline_receipt, _, _, _ = from_run_bytes(baseline_run)
+    baseline_receipt, _, _, baseline_receipt_bytes = from_run_bytes(baseline_run)
     revision = receipt['source_sha']
     if number and (revision != request['source_sha'] or baseline_receipt['source_sha'] != request['baseline_sha']):
         raise ValueError('Build receipts belong to different source revisions.')
@@ -182,7 +199,11 @@ def compare(request, progress, operation_id):
         configs[name] = config['variants'][name]
     configuration = {'default_variant': layout['default_variant'], 'variants': configs}
     dataset = request.get('dataset', 'esci-gb-v1')
-    baseline = resolve(baseline_run, dataset, request.get('recipe'), variant_config=configuration)
+    baseline_is_push = baseline_receipt['event_kind'] == 'push'
+    if not baseline_is_push:
+        progress('Baseline uses verified PR build ' + str(baseline_run) + ' of the exact main commit')
+    baseline = resolve(baseline_run, dataset, request.get('recipe'), merged=baseline_is_push,
+                       variant_config=configuration)
     candidate = resolve(candidate_run, dataset, request.get('recipe'), merged=False, variant_config=configuration)
     progress('Preparing baseline and candidate previews')
     first, second = preview(baseline), preview(candidate)
@@ -234,10 +255,13 @@ def compare(request, progress, operation_id):
     report, extra = evaluate_comparison(values, extra_observations, extra, inputs['catalogue'],
         spec_bytes, inputs['queries'], selection, retain_input, progress)
     report['source_context'] = {'source_sha': revision, 'baseline_sha': baseline_receipt['source_sha'],
-                                'pr': number, 'build_run': candidate_run}
+                                'pr': number, 'build_run': candidate_run,
+                                'baseline_build_run': baseline_run,
+                                'baseline_build_event': baseline_receipt['event_kind']}
     report['frozen_inputs'] = {'selection': retain_input(selection_bytes, 'selection.json'),
         'specification': retain_input(spec_bytes, 'specification.json'),
         'build_receipt': retain_input(receipt_bytes, 'build-receipt.json'),
+        'baseline_build_receipt': retain_input(baseline_receipt_bytes, 'baseline-build-receipt.json'),
         'observations': captured, 'additional_query_sets': {item['name']: {
             'queries': retain_input(item['query_bytes'], 'queries.jsonl'),
             'judgements': retain_input(item['judgement_bytes'], 'judgements.jsonl')
