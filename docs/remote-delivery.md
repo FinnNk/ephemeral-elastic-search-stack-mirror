@@ -40,11 +40,11 @@ The commands below work in PowerShell, Bash and Zsh.
 | --- | --- |
 | Preview | `python ci/lab_delivery.py preview --run BUILD_RUN` |
 | Compare | `python ci/lab_delivery.py compare --baseline-run BASELINE_RUN --candidate-run BUILD_RUN` |
-| Propose staging | `python ci/lab_delivery.py propose-promotion --target staging --run BUILD_RUN --intent ranking-change` |
+| Propose staging | `python ci/lab_delivery.py propose-promotion --target staging --run BUILD_RUN` |
 | Merge an approved deployment | `python ci/lab_delivery.py merge-reviewed --pr PR_NUMBER` |
 | Complete a reviewed relevance decision | `python ci/lab_delivery.py merge-exception --pr DECISION_PR_NUMBER` |
 | Recheck staging | `python ci/lab_delivery.py verify --target staging` |
-| Propose rollback | `python ci/lab_delivery.py propose-rollback --target staging --fingerprint PREVIOUS_FINGERPRINT --intent ranking-change` |
+| Propose rollback | `python ci/lab_delivery.py propose-rollback --target staging --fingerprint PREVIOUS_FINGERPRINT` |
 
 Choose current builds for your change. `PREVIOUS_FINGERPRINT` comes from the
 verified deployment retained in `delivery-state/history/<target>/`. Comparisons require the source's `gate/evaluation.json` and named files
@@ -68,12 +68,15 @@ Open `delivery-source` → **Actions**. Select **main** in the workflow form.
 | --- | --- |
 | Create preview | Successful build number |
 | Compare builds | Baseline and candidate build numbers |
-| Promote to integration | Merged build number and change intent |
-| Promote to staging | Merged build number and change intent |
+| Promote to integration | Merged build number |
+| Promote to staging | Merged build number |
 | Deploy approved promotion | Approved delivery-state PR number |
-| Request rollback | Target, retained verified fingerprint and change intent |
+| Request rollback | Target and retained verified fingerprint |
 
-The form fixes the operation and, for promotions, the target. The lab catalogue
+The form fixes the operation and, for promotions, the target. The coordinator
+loads each variant and intent from the exact merged source commit. It compares
+each selected candidate separately with the target's current default build and
+configuration; the retained report records those pins. The lab catalogue
 is `esci-gb-v1`. Follow the printed progress URL; submission does not mean that
 evaluation or deployment has completed. **Advanced delivery** offers `verify`,
 `gate-check` and `merge-exception` for less common operations.

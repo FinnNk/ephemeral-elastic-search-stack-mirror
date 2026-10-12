@@ -20,35 +20,40 @@ class PromotionGateTests(unittest.TestCase):
         self.assertFalse(approved_head([{**review, 'user': {}}], 'head'))
         self.assertFalse(approved_head([{**review, 'state': 'COMMENT'}], 'head'))
 
-    def test_rollback_carries_explicit_ranking_intent(self):
-        args = parser().parse_args(['rollback', 'integration', '--fingerprint', 'a' * 64,
-                                    '--evidence', 'reference.json', '--intent', 'ranking-change'])
-        self.assertEqual(args.intent, 'ranking-change')
+    def test_rollback_does_not_accept_operator_selected_intent(self):
+        with self.assertRaises(SystemExit):
+            parser().parse_args(['rollback', 'integration', '--fingerprint', 'a' * 64,
+                                 '--evidence', 'reference.json', '--intent', 'ranking-change'])
 
     def test_target_evaluation_uses_exact_current_and_historical_definitions(self):
-        args = parser().parse_args(['evaluate-target', 'production', '--fingerprint', 'a' * 64,
-                                    '--intent', 'ranking-change'])
+        args = parser().parse_args(['evaluate-target', 'production', '--fingerprint', 'a' * 64])
         current = {'fingerprint': 'current'}
         old = {'fingerprint': 'old'}
         with patch('delivery_cli.checkout'), patch('delivery_cli.read_target', return_value=current), \
              patch('delivery_cli.historical', return_value=old) as history, \
-             patch('delivery_cli.recorded_evaluation', return_value={'ok': True}) as record:
+             patch('delivery_cli.recorded_variant_evaluation', return_value={'ok': True}) as record:
             self.assertEqual(execute(args), {'ok': True})
         history.assert_called_once_with('production', 'a' * 64)
-        record.assert_called_once_with(current, old, 'ranking-change', 'production-load')
+        record.assert_called_once_with(current, old, 'production-load', 'production')
 
     def test_target_evaluation_resolves_new_candidate_against_current_target(self):
         args = parser().parse_args(['evaluate-target', 'integration', '--run', '21',
                                     '--dataset', 'retail-gb-1m-v1', '--recipe', 'recipe'])
         current = {'fingerprint': 'current'}
         candidate = {'fingerprint': 'new'}
-        with patch('delivery_cli.checkout'), patch('delivery_cli.read_target', return_value=current), \
-             patch('delivery_cli.resolve', return_value=candidate) as resolved, \
-             patch('delivery_cli.recorded_evaluation', return_value={'ok': True}) as record:
+        with (
+            patch('delivery_cli.checkout'),
+            patch('delivery_cli.read_target', return_value=current),
+            patch('delivery_cli.resolve', return_value=candidate) as resolved,
+            patch('delivery_release.from_run', return_value=({'source_sha': 's' * 40}, None, None)),
+            patch('delivery_variant_selection.source_selection', return_value={'configuration': {'default_variant': 'ranker-a', 'variants': {}}}),
+            patch('delivery_cli.recorded_variant_evaluation', return_value={'ok': True}) as record,
+        ):
             self.assertEqual(execute(args), {'ok': True})
         resolved.assert_called_once_with(21, 'retail-gb-1m-v1', 'recipe',
+                                         variant_config={'default_variant': 'ranker-a', 'variants': {}},
                                          query_manifest_sha=None, judgement_manifest_sha=None)
-        record.assert_called_once_with(current, candidate, 'preserve-results', 'probe')
+        record.assert_called_once_with(current, candidate, 'probe', 'integration')
 
     def functional(self, mode='result-regression'):
         return {'mode': mode, 'scope': 'full', 'complete': True, 'query_count': 1000,

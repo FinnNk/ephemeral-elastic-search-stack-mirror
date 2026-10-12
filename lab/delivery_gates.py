@@ -12,6 +12,7 @@ from delivery_runtime import preview
 from promotion_policy import validate as validate_offline_policy
 from input_selection import DEFAULTS
 from delivery_load_policy import validate as validate_production_load
+from search_probe import search
 
 
 class EvidenceFailure(ValueError):
@@ -109,8 +110,13 @@ def check_report(report, mode, baseline, candidate, intent):
             raise ValueError('Frozen relevance evidence is missing.')
 
 
-def validate_evidence(reference, baseline, candidate, intent, expected_inputs=None, *, target=None):
+def validate_evidence(reference, baseline, candidate, intent, expected_inputs=None, *, target=None,
+                      baseline_deployment=None, candidate_deployment=None):
     if intent not in ('preserve-results', 'ranking-change'):
+        evidence = read(reference)
+        if evidence.get('kind') == 'delivery-variant-evidence':
+            return validate_variant_evidence(evidence, baseline, candidate, expected_inputs, target,
+                                             baseline_deployment, candidate_deployment)
         raise ValueError('Choose an explicit result-preserving or intentional ranking change.')
     evidence = read(reference)
     if (evidence.get('baseline') != baseline or evidence.get('candidate') != candidate or
@@ -144,6 +150,155 @@ def validate_evidence(reference, baseline, candidate, intent, expected_inputs=No
     return evidence
 
 
+def validate_variant_evidence(evidence, baseline, candidate, expected_inputs=None, target=None,
+                              baseline_deployment=None, candidate_deployment=None):
+    """Validate each selected runtime variant against one explicitly pinned baseline."""
+    from delivery_variant_selection import configured_baseline, source_selection, with_variant
+
+    if (evidence.get('format') != 1 or evidence.get('state') != 'pass' or
+            evidence.get('baseline') != baseline or evidence.get('candidate') != candidate):
+        raise ValueError('Per-variant delivery evidence is incomplete or belongs to another target.')
+    measured = datetime.fromisoformat(evidence['completed_at'])
+    now = datetime.now(timezone.utc)
+    if measured > now or now - measured > timedelta(days=3):
+        raise ValueError('Per-variant evidence is outside the three-day promotion window.')
+    selected = source_selection(evidence.get('source_sha', ''))
+    if (evidence.get('selection_sha256') != selected['selection_sha256'] or
+            evidence.get('evaluation_sha256') != selected['evaluation_sha256'] or
+            evidence.get('selected_inputs') != expected_inputs or
+            evidence.get('candidate_configuration_sha256') != selected['configuration_sha256']):
+        raise ValueError('Per-variant evidence differs from the exact source configuration or frozen inputs.')
+    if candidate_deployment is None or baseline_deployment is None:
+        raise ValueError('Per-variant evidence must be checked against both pinned deployments.')
+    if (candidate_deployment.get('build_run') != evidence.get('candidate_build_run') or
+            candidate_deployment['fields'].get('source_sha') != evidence.get('source_sha') or
+            candidate_deployment['fields'].get('variant_config_json') !=
+                json.dumps(selected['configuration'], sort_keys=True, separators=(',', ':'))):
+        raise ValueError('Candidate build or deployed variant configuration differs from the evidence.')
+    if not isinstance(evidence.get('checks'), list) or len(evidence['checks']) != len(selected['selection']):
+        raise ValueError('Every selected source variant must have its own delivery check.')
+    names = [item.get('variant') for item in evidence['checks']]
+    if len(names) != len(set(names)) or set(names) != {item['variant'] for item in selected['selection']}:
+        raise ValueError('Delivery checks do not cover the exact selected variant set.')
+    source_intents = {item['variant']: item['intent'] for item in selected['selection']}
+    if evidence.get('baseline_variant') != evidence.get('baseline_pin', {}).get('variant'):
+        raise ValueError('The named baseline variant is not explicitly pinned.')
+    baseline_pin = evidence['baseline_pin']
+    if (baseline_pin.get('build_run') != evidence.get('baseline_build_run') or
+            baseline_pin.get('deployment_fingerprint') != baseline or
+            not baseline_pin.get('configuration_sha256')):
+        raise ValueError('Baseline build, variant and configuration identity are incomplete.')
+    if configured_baseline(baseline_deployment) != baseline_pin:
+        raise ValueError('Baseline default variant or configuration changed after evaluation.')
+
+    for check in evidence['checks']:
+        name = check['variant']
+        if check.get('intent') != source_intents[name] or check.get('state') != 'pass':
+            raise ValueError('Variant ' + name + ' has no passing check for its declared intent.')
+        baseline_probe = check.get('baseline_probe', {})
+        candidate_probe = check.get('candidate_probe', {})
+        if (baseline_probe.get('variant') != baseline_pin['variant'] or
+                baseline_probe.get('configuration_sha256') != baseline_pin['configuration_sha256'] or
+                candidate_probe.get('variant') != name or
+                candidate_probe.get('configuration_sha256') != selected['configuration_sha256_by_variant'][name]):
+            raise ValueError('A variant check does not match its pinned baseline or candidate configuration.')
+        sub = check.get('evidence')
+        if not isinstance(sub, dict):
+            raise ValueError('A per-variant check is missing retained delivery evidence.')
+        baseline_definition = with_variant(baseline_deployment, baseline_pin['variant'], baseline_pin['settings']) \
+            if baseline_deployment else None
+        # The immutable probe fingerprints are retained with each check and are
+        # also validated against its exact report inputs below.
+        validate_evidence(sub, baseline_probe.get('fingerprint'), candidate_probe.get('fingerprint'),
+                          check['intent'], expected_inputs, target=target)
+        observed = read(sub).get('variant_runtime', {})
+        if (observed.get('baseline', {}).get('variant') != baseline_pin['variant'] or
+                observed.get('baseline', {}).get('configuration_sha256') != baseline_pin['configuration_sha256'] or
+                observed.get('candidate', {}).get('variant') != name or
+                observed.get('candidate', {}).get('configuration_sha256') !=
+                    selected['configuration_sha256_by_variant'][name]):
+            raise ValueError('Public APIs served a different baseline or candidate configuration.')
+        if baseline_definition['fingerprint'] != baseline_probe.get('fingerprint'):
+            raise ValueError('The baseline probe no longer represents the named active configuration.')
+    return evidence
+
+
+def evaluate_variants(baseline, candidate, profile='probe', target=None):
+    """Run the complete delivery gates for each selected candidate variant."""
+    from delivery_variant_selection import configured_baseline, source_selection, with_variant
+
+    source_sha = candidate['fields']['source_sha']
+    selection = source_selection(source_sha)
+    configured = json.loads(candidate['fields'].get('variant_config_json', '{}'))
+    if configured != selection['configuration']:
+        raise ValueError('Candidate deployment does not pin the exact selected source variants.')
+    selected_inputs = deployment_inputs(candidate)
+    baseline_pin = configured_baseline(baseline)
+    baseline_probe = with_variant(baseline, baseline_pin['variant'], baseline_pin['settings'])
+    checks = []
+    for item in selection['selection']:
+        name, intent = item['variant'], item['intent']
+        candidate_probe = with_variant(candidate, name, selection['configuration']['variants'][name])
+        print('Checking variant ' + name + ' (' + intent + ') against baseline ' +
+              str(baseline['build_run']) + '/' + baseline_pin['variant'] + '...', flush=True)
+        reference = None
+        try:
+            reference = evaluate(baseline_probe, candidate_probe, intent, profile)
+            validate_evidence(reference, baseline_probe['fingerprint'], candidate_probe['fingerprint'],
+                              intent, selected_inputs, target=target)
+            measured = read(reference).get('variant_runtime', {})
+            if (measured.get('baseline', {}).get('variant') != baseline_pin['variant'] or
+                    measured.get('baseline', {}).get('configuration_sha256') != baseline_pin['configuration_sha256'] or
+                    measured.get('candidate', {}).get('variant') != name or
+                    measured.get('candidate', {}).get('configuration_sha256') !=
+                        selection['configuration_sha256_by_variant'][name]):
+                raise ValueError('Public APIs served a different baseline or candidate configuration.')
+            checks.append({'variant': name, 'intent': intent, 'state': 'pass',
+                'baseline_probe': {'fingerprint': baseline_probe['fingerprint'],
+                    'variant': baseline_pin['variant'],
+                    'configuration_sha256': baseline_pin['configuration_sha256']},
+                'candidate_probe': {'fingerprint': candidate_probe['fingerprint'],
+                    'variant': name,
+                    'configuration_sha256': selection['configuration_sha256_by_variant'][name]},
+                'evidence': {'sha256': reference['sha256'], 'blob': reference['blob']}})
+        except EvidenceFailure as error:
+            checks.append({'variant': name, 'intent': intent, 'state': 'failed',
+                'baseline_probe': {'fingerprint': baseline_probe['fingerprint'],
+                    'variant': baseline_pin['variant'],
+                    'configuration_sha256': baseline_pin['configuration_sha256']},
+                'candidate_probe': {'fingerprint': candidate_probe['fingerprint'],
+                    'variant': name,
+                    'configuration_sha256': selection['configuration_sha256_by_variant'][name]},
+                'evidence': error.reference, 'error': str(error)[:240]})
+        except Exception as error:
+            checks.append({'variant': name, 'intent': intent, 'state': 'failed',
+                'baseline_probe': {'fingerprint': baseline_probe['fingerprint'],
+                    'variant': baseline_pin['variant'],
+                    'configuration_sha256': baseline_pin['configuration_sha256']},
+                'candidate_probe': {'fingerprint': candidate_probe['fingerprint'],
+                    'variant': name,
+                    'configuration_sha256': selection['configuration_sha256_by_variant'][name]},
+                'evidence': ({'sha256': reference['sha256'], 'blob': reference['blob']}
+                             if reference else None), 'error': str(error)[:240]})
+    value = {'kind': 'delivery-variant-evidence', 'format': 1,
+        'state': 'pass' if all(row['state'] == 'pass' for row in checks) else 'failed',
+        'baseline': baseline['fingerprint'], 'baseline_build_run': baseline['build_run'],
+        'baseline_variant': baseline_pin['variant'], 'baseline_pin': baseline_pin,
+        'candidate': candidate['fingerprint'], 'candidate_build_run': candidate['build_run'],
+        'source_sha': source_sha, 'selection_sha256': selection['selection_sha256'],
+        'evaluation_sha256': selection['evaluation_sha256'],
+        'candidate_configuration_sha256': selection['configuration_sha256'],
+        'selected_inputs': selected_inputs, 'checks': checks,
+        'completed_at': datetime.now(timezone.utc).isoformat()}
+    reference = retain(value, 'delivery-variant-evidence.json')
+    print('Retained per-variant evidence: ' + json.dumps(reference), flush=True)
+    if value['state'] != 'pass':
+        raise EvidenceFailure('One or more variant checks failed. Review each retained result before requesting promotion.', reference)
+    validate_variant_evidence(value, baseline['fingerprint'], candidate['fingerprint'], selected_inputs, target,
+                              baseline_deployment=baseline, candidate_deployment=candidate)
+    return reference
+
+
 def attach_offline(reference, report_reference, policy_reference, expected):
     """Retain a new evidence version; the prior delivery evidence stays unchanged."""
     evidence = read(reference)
@@ -165,6 +320,13 @@ def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):
         raise ValueError('Both environments must use the same frozen catalogue.')
     selected = deployment_inputs(candidate)
     first, second = preview(baseline), preview(candidate)
+    runtime = {'baseline': search(first['name'], 'running shoes'),
+               'candidate': search(second['name'], 'running shoes')}
+    if not runtime['baseline'] or not runtime['candidate']:
+        raise ValueError('A public API could not confirm its selected runtime configuration.')
+    runtime = {side: {'variant': answer.get('variant_id'),
+                      'configuration_sha256': answer.get('configuration_sha256')}
+               for side, answer in runtime.items()}
     reports = {}
     for mode in ('result-regression', 'relevance', 'performance'):
         print('Evaluating ' + mode + ' through both public APIs...', flush=True)
@@ -182,7 +344,7 @@ def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):
     value = {'format': 1, 'baseline': baseline['fingerprint'], 'candidate': candidate['fingerprint'],
              'intent': intent, 'completed_at': datetime.now(timezone.utc).isoformat(),
              'dataset_release': baseline['fields']['dataset_release'], 'profile': profile,
-             'selected_inputs': selected,
+             'selected_inputs': selected, 'variant_runtime': runtime,
              'reports': reports, 'previews': [first['name'], second['name']]}
     reference = retain(value, 'delivery-evidence.json')
     print('Retained evaluation reference: ' + json.dumps(reference), flush=True)

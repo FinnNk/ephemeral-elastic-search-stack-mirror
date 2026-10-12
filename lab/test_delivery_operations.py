@@ -135,8 +135,7 @@ class DeliveryOperationTests(unittest.TestCase):
     def test_deployment_commands_do_not_enter_source_status_queue(self):
         for payload in ({'kind': 'merge-reviewed', 'pr': 15},
                         {'kind': 'verify', 'target': 'staging'},
-                        {'kind': 'rollback', 'target': 'production', 'fingerprint': 'a'*64,
-                         'intent': 'ranking-change'}):
+                        {'kind': 'rollback', 'target': 'production', 'fingerprint': 'a'*64}):
             with self.subTest(payload=payload):
                 row = self.store.submit(payload, self.identity, payload['kind'])
                 self.assertEqual(row['state'], 'queued')
@@ -153,8 +152,7 @@ class DeliveryOperationTests(unittest.TestCase):
         self.assertEqual(self.store.get(row['id'])['state'], 'failed')
 
     def test_rollback_evaluates_before_proposing_and_cannot_receive_evidence_paths(self):
-        payload = {'kind': 'rollback', 'target': 'production', 'fingerprint': 'a'*64,
-                   'intent': 'ranking-change'}
+        payload = {'kind': 'rollback', 'target': 'production', 'fingerprint': 'a'*64}
         self.store.submit(payload, self.identity, 'rollback')
         with patch('delivery_operations.Operations', return_value=self.store), \
                 patch('delivery_cli.execute', side_effect=[{'reference_file': '/state/evidence.json', 'sha256': 'b'*64, 'blob': 'runs/evidence.json'},
@@ -171,8 +169,7 @@ class DeliveryOperationTests(unittest.TestCase):
             validate({**payload, 'evidence': '/arbitrary/file'})
 
     def test_promotion_exposes_retained_checks_as_a_report(self):
-        self.store.submit({'kind': 'promotion', 'target': 'integration', 'run': 108,
-                           'intent': 'ranking-change'}, self.identity, 'promotion')
+        self.store.submit({'kind': 'promotion', 'target': 'integration', 'run': 108}, self.identity, 'promotion')
         reference = {'sha256': 'b'*64, 'blob': 'runs/evidence.json',
                      'reference_file': '/state/evidence.json'}
         with patch('delivery_operations.Operations', return_value=self.store), \

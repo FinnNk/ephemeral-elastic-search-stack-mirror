@@ -47,7 +47,7 @@ class ReleaseActions(unittest.TestCase):
         self.assertFalse(next(a for a in control.choices(data,ADMIN)['actions'] if a['name']=='staging')['enabled'])
 
     def test_manifest_selection_is_forwarded(self):
-        value=control.payload(fixture(),'staging','ranking-change')
+        value=control.payload(fixture(),'staging')
         self.assertEqual(value['query_manifest'],'c'*64);self.assertEqual(value['judgement_manifest'],'d'*64)
 
     def test_context_ignores_refresh_time_and_duplicate_review_observations(self):
@@ -65,7 +65,7 @@ class ReleaseActions(unittest.TestCase):
         with patch.object(control,'snapshot',return_value=data),self.assertRaises(ValueError):control.validate_binding(binding)
 
     def test_retry_is_durable_even_after_context_changes(self):
-        data=fixture();request={'run':158,'action':'staging','intent':'ranking-change','context':control.context(data)}
+        data=fixture();request={'run':158,'action':'staging','context':control.context(data)}
         with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch.object(control,'snapshot',return_value=data):
             first=control.submit(request,ADMIN,'stable-request');again=control.submit(request,ADMIN,'stable-request')
             self.assertEqual(first['id'],again['id']);self.assertEqual(len(Operations().active()),1)
@@ -75,12 +75,12 @@ class ReleaseActions(unittest.TestCase):
 
     def test_stale_submission_creates_no_operation(self):
         with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch.object(control,'snapshot',return_value=fixture()):
-            with self.assertRaises(ValueError):control.submit({'run':158,'action':'staging','intent':'ranking-change','context':'0'*64},ADMIN,'stale')
+            with self.assertRaises(ValueError):control.submit({'run':158,'action':'staging','context':'0'*64},ADMIN,'stale')
             self.assertEqual(Operations().active(),[])
 
     def test_approved_proposal_must_belong_to_selected_release(self):
         data=fixture();data['activity']=[{'pr':{'number':24,'state':'approved','head_sha':'f'*40}}]
-        request={'run':158,'action':'deploy','intent':'ranking-change','pr':25,'context':control.context(data)}
+        request={'run':158,'action':'deploy','pr':25,'context':control.context(data)}
         with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch.object(control,'snapshot',return_value=data):
             with self.assertRaises(ValueError):control.submit(request,ADMIN,'wrong-pr')
 
@@ -96,7 +96,7 @@ class ReleaseActions(unittest.TestCase):
         import delivery_operations
         data=fixture();binding={'request':{'run':158,'action':'staging','context':control.context(data)},'identity':ADMIN}
         with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch('release_control.validate_binding',side_effect=ValueError('Target moved')),patch('delivery_cli.execute') as execute:
-            store=Operations();row=store.submit({'kind':'promotion','target':'staging','run':158,'intent':'ranking-change'},ADMIN,'worker',release_binding=binding)
+            store=Operations();row=store.submit({'kind':'promotion','target':'staging','run':158},ADMIN,'worker',release_binding=binding)
             delivery_operations.execute_next()
             self.assertEqual(store.get(row['id'])['state'],'failed')
             execute.assert_not_called()

@@ -13,16 +13,16 @@ FIELDS = {
     'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'},
     'expire-preview': {'name', 'fingerprint', 'expires_at'},
     'prepare-production': set(),
-    'release-production': {'intent'},
+    'release-production': set(),
     'preview': {'run', 'dataset', 'recipe'},
     'compare': {'baseline_run', 'candidate_run', 'dataset', 'recipe', 'pr', 'source_sha', 'baseline_sha'},
-    'promotion': {'target', 'run', 'dataset', 'recipe', 'intent', 'query_manifest', 'judgement_manifest'},
+    'promotion': {'target', 'run', 'dataset', 'recipe', 'query_manifest', 'judgement_manifest'},
     'gate-check': {'pr', 'source_sha'},
     'request-exception': {'pr', 'source_sha', 'variant', 'reason'},
     'merge-exception': {'pr'},
     'merge-reviewed': {'pr'},
     'verify': {'target'},
-    'rollback': {'target', 'fingerprint', 'intent'},
+    'rollback': {'target', 'fingerprint'},
 }
 PUBLIC = 'https://control.localhost:34443'
 
@@ -38,13 +38,13 @@ def validate(payload):
     kind = payload['kind']
     if set(payload) - (FIELDS[kind] | {'kind'}):
         raise ValueError('Unknown delivery operation field.')
-    required = {'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'}, 'expire-preview': {'name', 'fingerprint', 'expires_at'}, 'prepare-production': set(), 'release-production': {'intent'}, 'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
+    required = {'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'}, 'expire-preview': {'name', 'fingerprint', 'expires_at'}, 'prepare-production': set(), 'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
                 else {'baseline_run', 'candidate_run'},
-                'promotion': {'target', 'run', 'intent'}, 'gate-check': {'pr', 'source_sha'},
+                'promotion': {'target', 'run'}, 'release-production': set(), 'gate-check': {'pr', 'source_sha'},
                 'request-exception': {'pr', 'source_sha', 'variant', 'reason'},
                 'merge-exception': {'pr'},
                 'merge-reviewed': {'pr'}, 'verify': {'target'},
-                'rollback': {'target', 'fingerprint', 'intent'}}[kind]
+                'rollback': {'target', 'fingerprint'}}[kind]
     if not required <= set(payload):
         raise ValueError('Required delivery operation fields are missing.')
     if kind in ('expire-preview', 'set-preview-expiry') and not re.fullmatch(r'lab-delivery-run-[1-9][0-9]*-[a-f0-9]{8}', str(payload['name'])):
@@ -58,8 +58,6 @@ def validate(payload):
             raise ValueError('Build and PR numbers must be positive integers.')
     if 'target' in payload and payload['target'] not in ('integration', 'staging', 'production'):
         raise ValueError('Delivery target is invalid.')
-    if 'intent' in payload and payload['intent'] not in ('ranking-change', 'preserve-results'):
-        raise ValueError('Promotion target or intent is invalid.')
     if kind == 'set-preview-expiry':
         from lease_expiry import deadline
         deadline(payload['new_expiry'])
@@ -228,7 +226,7 @@ def execute_next():
             result = prepare()
         elif kind == 'release-production':
             from production_release import release
-            result = release(request['intent'], progress)
+            result = release(progress=progress)
         elif kind == 'preview':
             progress('Preparing the frozen preview')
             result = execute(parser().parse_args(['preview', '--run', str(request['run']), *options]))
@@ -258,11 +256,10 @@ def execute_next():
             result = execute(parser().parse_args(['verify', request['target']]))
         elif kind == 'rollback':
             progress('Evaluating the retained deployment against ' + request['target'])
-            evidence = execute(parser().parse_args(['evaluate-target', request['target'],
-                '--fingerprint', request['fingerprint'], '--intent', request['intent']]))
+            evaluation_args = ['evaluate-target', request['target'], '--fingerprint', request['fingerprint']]
+            evidence = execute(parser().parse_args(evaluation_args))
             progress('Creating the reviewed rollback proposal')
-            result = execute(parser().parse_args(['rollback', request['target'],
-                '--fingerprint', request['fingerprint'], '--intent', request['intent'],
+            result = execute(parser().parse_args(['rollback', request['target'], '--fingerprint', request['fingerprint'],
                 '--evidence', evidence['reference_file']]))
             result['url'] = 'https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/' + str(result['pr'])
             result['report'] = {key: evidence[key] for key in ('sha256', 'blob')}
@@ -271,12 +268,11 @@ def execute_next():
             if target == 'production':
                 raise ValueError('Use Prepare production candidate, then Check and release production.')
             progress('Evaluating the candidate against ' + target)
-            args = ['evaluate-target', target, '--run', str(request['run']),
-                    '--intent', request['intent'], *options]
+            args = ['evaluate-target', target, '--run', str(request['run']), *options]
             evidence = execute(parser().parse_args(args))
             progress('Creating the reviewed deployment proposal')
             result = execute(parser().parse_args(['promote', target, '--run', str(request['run']),
-                '--intent', request['intent'], '--evidence', evidence['reference_file'], *options]))
+                '--evidence', evidence['reference_file'], *options]))
             result['url'] = 'https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/' + str(result['pr'])
             result['report'] = {key: evidence[key] for key in ('sha256', 'blob')}
         if kind in ('prepare-production', 'release-production') and result.get('pr'):

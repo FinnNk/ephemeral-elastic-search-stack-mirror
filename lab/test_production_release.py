@@ -65,11 +65,29 @@ class ProductionReleaseTests(unittest.TestCase):
                 release.validate_state(other)
 
     def test_final_evidence_cannot_be_reused_after_switch(self):
+        selected = {'selection': [], 'configuration': {'default_variant': 'ranker-a', 'variants': {}},
+            'source_sha': 'a'*40, 'selection_sha256': 'b'*64, 'configuration_sha256': 'c'*64,
+            'configuration_sha256_by_variant': {}}
+        candidate = self.slots['slots']['green']
+        candidate['fields'].update(source_sha='a'*40,
+            variant_config_json=json.dumps(selected['configuration'], sort_keys=True, separators=(',', ':')))
+        candidate['fingerprint'] = fingerprint(candidate['fields'])
+        baseline_pin = {'variant': 'default', 'configuration_sha256': 'd'*64}
         report={'complete':True,'completed_at':datetime.now(timezone.utc).isoformat(),
             'production_slots_sha256':hashlib.sha256(canonical(self.slots)).hexdigest(),
             'production_baseline':self.slots['slots']['blue']['fingerprint'],
-            'production_candidate':self.slots['slots']['green']['fingerprint']}
-        with patch('delivery_gates.read',return_value=report),patch.object(release,'frozen_catalogue'):
+            'production_candidate':self.slots['slots']['green']['fingerprint'],
+            'production_baseline_build_run':self.slots['slots']['blue']['build_run'],
+            'production_baseline_variant':'default',
+            'production_baseline_configuration_sha256':'d'*64,
+            'candidate_source_sha':'a'*40,'candidate_selection_sha256':'b'*64,
+            'candidate_configuration_sha256':'c'*64,'candidate_variants':[]}
+        with (
+            patch('delivery_gates.read',return_value=report),
+            patch.object(release,'frozen_catalogue'),
+            patch('delivery_variant_selection.configured_baseline',return_value=baseline_pin),
+            patch('delivery_variant_selection.source_selection',return_value=selected),
+        ):
             release.validate_final({},self.slots)
             other=deepcopy(self.slots);other['active']='green'
             with self.assertRaisesRegex(ValueError,'stale'):
@@ -94,7 +112,7 @@ class ProductionReleaseTests(unittest.TestCase):
 
     def test_named_operations_have_bounded_fields(self):
         validate({'kind':'prepare-production'})
-        validate({'kind':'release-production','intent':'ranking-change'})
+        validate({'kind':'release-production'})
         with self.assertRaises(ValueError):
             validate({'kind':'prepare-production','command':'kubectl'})
 

@@ -14,7 +14,7 @@ const pct=value=>typeof value==='number'?(100*value).toFixed(1)+'%':'Not availab
 function node(tag,text,parent){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(parent)parent.append(n);return n}
 function link(id,value){const n=$(id);n.hidden=true;if(!value)return;const u=new URL(value,location.origin);if(!['http:','https:'].includes(u.protocol))return;if(u.hostname==='gitea-internal.lab-ingress.svc.cluster.local'){u.hostname='gitea.localhost';u.port='34443';u.protocol='https:'}n.href=u.href;n.hidden=false}
 function section(title,description){const s=node('section',null,$('content'));node('h2',title,s);if(description)node('p',description,s);return s}
-function table(parent,headers,rows){const wrap=node('div',null,parent);wrap.className='table-wrap';const t=node('table',null,wrap),head=node('tr',null,node('thead',null,t));for(const text of headers)node('th',text,head).scope='col';const body=node('tbody',null,t);for(const cells of rows){const row=node('tr',null,body);for(const value of cells)node('td',value,row)}}
+function table(parent,headers,rows){const wrap=node('div',null,parent);wrap.className='table-wrap';const t=node('table',null,wrap),head=node('tr',null,node('thead',null,t));for(const text of headers)node('th',text,head).scope='col';const body=node('tbody',null,t);for(const cells of rows){const row=node('tr',null,body);for(const value of cells){const cell=node('td',null,row);if(value instanceof Node)cell.append(value);else cell.textContent=value==null?'':String(value)}}}
 function identity(values){$('identity').replaceChildren();for(const [key,value] of Object.entries(values)){if(value==null||typeof value==='object')continue;node('dt',label(key),$('identity'));node('dd',String(value),$('identity'))}}
 function summary(report,title,required,baseline=report.baseline_variant){
  const s=section(title,(report.query_count==null?'':fmt(report.query_count)+' queries. ')+(required==null?'':required?'Required by the gate.':'Report only.'));
@@ -87,7 +87,7 @@ function timings(value,record){
  }
 }
 function report(value,operationRecord){
- $('title').textContent=value.state==='verified'?'Deployment verification':value.kind==='paired-api-performance'?'Performance comparison':value.reports?'Delivery checks':'Search comparison report';$('state').textContent=value.valid===false?'Invalid evidence':value.complete===false?'Incomplete evidence':'Report ready';$('stage').textContent='Review search quality, result changes and label coverage separately.';
+ $('title').textContent=value.state==='verified'?'Deployment verification':value.kind==='paired-api-performance'?'Performance comparison':value.kind==='delivery-variant-evidence'?'Per-variant delivery checks':value.reports?'Delivery checks':'Search comparison report';$('state').textContent=value.state==='pass'?'All variants passed':value.state==='failed'?'Variant gate failed':value.valid===false?'Invalid evidence':value.complete===false?'Incomplete evidence':'Report ready';$('stage').textContent='Review search quality, result changes and label coverage separately.';
  $('explanation').textContent='All variants in a relevance comparison use the same frozen judgement set. The report records measurements; the operation page records the gate or deployment decision.';
  const decision=operationRecord?.result?.gate;
  if(decision){
@@ -118,6 +118,20 @@ function report(value,operationRecord){
   const s=section('Verified release'),deployment=value.deployment||{},fields=deployment.fields||{};
   table(s,['Field','Value'],[['Environment',fmt(value.environment)],['Version',fmt(fields.software_version)],['Build run',fmt(deployment.build_run)],['Image',fmt(fields.image)],['Index',fmt(fields.index)],['Source commit',fmt(fields.source_sha)],['Verified at',fmt(value.verified_at)],['Verification duration',fmt(value.seconds)+' s'],...(value.merge_to_verified_seconds==null?[]:[['Merge to verified',fmt(value.merge_to_verified_seconds)+' s']]),['Products checked',fmt(value.sample_ids?.length)]]);
   $('explanation').textContent='This records deployment verification, not a new relevance or load test.';
+ }
+ else if(value.kind==='delivery-variant-evidence'){
+  $('stage').textContent='One active-target baseline was used for every selected candidate variant.';
+  const baseline=value.baseline_pin||{};
+  const s=section('Pinned comparison baseline','Build '+fmt(value.baseline_build_run)+' · '+fmt(baseline.variant)+' · configuration SHA-256 '+fmt(baseline.configuration_sha256));
+  table(s,['Target','Build','Variant','Configuration SHA-256'],[['Baseline',fmt(value.baseline_build_run),fmt(baseline.variant),fmt(baseline.configuration_sha256)],['Candidate',fmt(value.candidate_build_run),'Selected variants',fmt(value.candidate_configuration_sha256)]]);
+  const c=section('Selected variant checks','Each variant uses its intent from the exact merged source commit. Every check is compared with the same baseline build and configuration.');
+  table(c,['Variant','Intent','Outcome','Reports'],(value.checks||[]).map(row=>{
+   const cell=document.createElement('span');
+   if(row.evidence)for(const [mode,labelText] of [['result-regression','Results'],['relevance','Relevance'],['performance','Performance']]){
+    const a=document.createElement('a');a.href=path+'/variant/'+encodeURIComponent(row.variant)+'/'+mode;a.textContent=labelText;cell.append(a,document.createTextNode(' '));
+   }else cell.textContent='No complete report';
+   return[row.variant,label(row.intent),stateNames[row.state]||label(row.state),cell];
+  }));
  }
  else if(value.reports){
  if(value.production_final){const s=section('Final production comparison','Active production and the prepared candidate use the same frozen catalogue. Review relevance and coverage before approving the route switch.');const a=node('a','Open final production comparison',s);a.href=path+'/production-final';}

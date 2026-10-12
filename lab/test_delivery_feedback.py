@@ -50,8 +50,7 @@ class FeedbackTests(unittest.TestCase):
         self.assertTrue(all(x['sequence'] > logs[-1]['sequence'] for x in self.store.logs(first['id'], logs[-1]['sequence'])))
 
     def test_failed_gate_keeps_friendly_evidence_link(self):
-        self.store.submit({'kind': 'promotion', 'target': 'staging', 'run': 2,
-            'intent': 'ranking-change'}, self.identity, 'gate')
+        self.store.submit({'kind': 'promotion', 'target': 'staging', 'run': 2}, self.identity, 'gate')
         reference = {'sha256': 'a'*64, 'blob': 'runs/failed.json'}
         with patch('delivery_operations.Operations', return_value=self.store), \
              patch('delivery_cli.execute', side_effect=EvidenceFailure('candidate peak p95_ms missed', reference)), \

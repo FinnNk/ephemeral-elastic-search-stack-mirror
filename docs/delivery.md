@@ -81,8 +81,11 @@ readers see the same tree with unavailable controls and an explanation.
 
 1. Select the successful merged-source build. Choose an environment node in the
    tree, or use **Stage** in **Promotion controls**.
-2. Choose **Change intent**, then **Check and propose Integration** or
-   **Check and propose Staging**. Staging requires this exact release to be
+2. Choose **Check and propose Integration** or **Check and propose Staging**.
+   The coordinator reads each selected variant and its intent from the exact
+   merged source commit. It checks every selected variant separately against
+   the target's current default API configuration. The report pins that baseline
+   build, variant and configuration hash. Staging requires this exact release to be
    currently verified in Integration. Follow **Open progress and review links**.
 3. Review the proposal and retained check report in Gitea. Approve the exact PR
    head. Select it under **Approved proposal**, then choose **Deploy approved
@@ -108,8 +111,8 @@ available.
 
 **Customise the next comparison** links to the selected source commit’s variants,
 query-set selection and gate policy. These inputs are frozen for this release.
-Edit the source and build a new release to change them. The panel supports intent
-selection; it does not provide an arbitrary workflow or shell editor.
+Edit the source and build a new release to change them. Promotion intent is
+source-controlled; the panel does not let an operator override it.
 
 Unknown records are shown explicitly. The dashboard reads recent source runs
 and operations plus retained verification history; it is not a complete archive
@@ -183,7 +186,10 @@ The three targets share one cluster. They are separate deployment namespaces,
 not separate failure domains or performance-isolated systems.
 
 1. Run **Promote to integration** on **main**. Enter the successful merged-source
-   build number and change intent. The lab uses `esci-gb-v1`.
+   build number. The coordinator reads selected variants and each declared
+   intent from that build's exact source commit. It evaluates every selected
+   variant separately against the target's current default build/configuration.
+   The lab uses `esci-gb-v1`.
 2. Follow the operation to its `delivery-state` PR. The coordinator first
    evaluates the candidate against the target, then proposes the pinned release.
    A failed evaluation cannot create a valid promotion.
@@ -199,7 +205,10 @@ not separate failure domains or performance-isolated systems.
    for the final release, as described below.
 
 If desired-state main or the target baseline changes, create a fresh proposal.
-Evidence must match the exact inputs and intent and be no more than three days old.
+Evidence must match the exact inputs and per-variant source intents and be no more
+than three days old. A merged source PR has already passed its per-variant merge
+gate, including any individually approved bounded exception. Promotion reports
+still show each variant's fresh target comparison.
 A merge without successful deployment verification is not a completed promotion.
 Use `verify` with the target to recheck after an operator repairs a failed deployment.
 
@@ -232,9 +241,11 @@ selects one slot; preparing the other slot does not change that route.
 2. Follow the operation to its preparation PR. Approve the exact head in Gitea,
    then select it under **Deploy an approved PR**. Only open production PRs
    approved at their current commit appear; use **Refresh status** after approval.
-3. Select the change intent and **Check and release production**. The coordinator
-   runs the existing full gates, including normal/peak Gatling load. It then
-   compares the active production API with the prepared candidate.
+3. Select **Check and release production**. The coordinator reads every selected
+   variant and its intent from the candidate's merged source commit, runs the
+   existing full gates including normal/peak Gatling load, then compares each
+   candidate variant with the same active production build and default
+   configuration.
 4. Open the final production comparison from the friendly report. Check nDCG,
    its change and significance, RBO/Jaccard, coverage and judgement resolution
    outcomes. Both releases use one frozen set of labels.
@@ -267,7 +278,9 @@ The Actions steps below apply to integration and staging.
 1. Find the previous verified fingerprint under
    `delivery-state/history/<target>/`. Its retained definition pins the old
    image, configuration, inputs and index recipe.
-2. Run **Request rollback** with the target, fingerprint and intent.
+2. Run **Request rollback** with the target and fingerprint. The coordinator
+   reads the retained release's source selection and checks each selected
+   variant against the current target default configuration.
    The coordinator evaluates **current → previous** and creates a new PR.
    Reversing an old report is insufficient. Production rollback uses the full
    `production-load` profile too.

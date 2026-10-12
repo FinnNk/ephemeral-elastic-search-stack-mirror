@@ -53,7 +53,6 @@ jobs:
         BUILD_RUN: ''
         BASELINE_RUN: ''
         TARGET: ${{ inputs.target }}
-        INTENT: ''
         DATASET: esci-gb-v1
         DELIVERY_PR: ${{ inputs.pr }}
         SOURCE_COMMIT: ${{ inputs.source_sha }}
@@ -70,18 +69,18 @@ jobs:
         PYTHON_IMAGE='python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844'
         docker run --rm -v "$PWD/source:/trusted:ro" -v /etc/lab-ca:/etc/lab-ca:ro \
           --add-host "control.localhost:$LAB_OIDC_EDGE_IP" --add-host "identity.localhost:$LAB_OIDC_EDGE_IP" \
-          -e OPERATION -e BUILD_RUN -e BASELINE_RUN -e TARGET -e INTENT -e DATASET -e SUBMISSION_KEY \
+          -e OPERATION -e BUILD_RUN -e BASELINE_RUN -e TARGET -e DATASET -e SUBMISSION_KEY \
           -e DELIVERY_PR -e SOURCE_COMMIT -e FINGERPRINT \
           -e LAB_DELIVERY_URL -e LAB_OIDC_ISSUER -e LAB_DELIVERY_CLIENT_SECRET -e LAB_CA_BUNDLE=/etc/lab-ca/root.pem \
           "$PYTHON_IMAGE" sh -ec '
             case "$OPERATION" in
               preview) set -- preview --run "$BUILD_RUN" ;;
               compare) set -- compare --baseline-run "$BASELINE_RUN" --candidate-run "$BUILD_RUN" ;;
-              propose-promotion) set -- propose-promotion --target "$TARGET" --run "$BUILD_RUN" --intent "$INTENT" ;;
+              propose-promotion) set -- propose-promotion --target "$TARGET" --run "$BUILD_RUN" ;;
               merge-reviewed) set -- merge-reviewed --pr "$DELIVERY_PR" ;;
               merge-exception) set -- merge-exception --pr "$DELIVERY_PR" ;;
               verify) set -- verify --target "$TARGET" ;;
-              propose-rollback) set -- propose-rollback --target "$TARGET" --fingerprint "$FINGERPRINT" --intent "$INTENT" ;;
+              propose-rollback) set -- propose-rollback --target "$TARGET" --fingerprint "$FINGERPRINT" ;;
               gate-check) set -- gate-check --pr "$DELIVERY_PR" --source-sha "$SOURCE_COMMIT" ;;
               *) echo "Unknown operation" >&2; exit 1 ;;
             esac

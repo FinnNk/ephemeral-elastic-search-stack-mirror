@@ -44,6 +44,15 @@ need not all be merge requirements. See the
 [selection guide](../lab/delivery/bootstrap/gate/README.md#select-one-or-more-variants)
 for the rationale and common examples.
 
+Promotion uses one explicitly pinned baseline release: the target's current
+build and its ordinary default API configuration. Each selected candidate
+variant is evaluated separately against that same baseline, using the intent
+declared for that variant in the merged source commit. Reports and promotion
+proposals retain the baseline build number, variant name and configuration
+SHA-256, plus each candidate variant, intent and result. Operators cannot
+replace these source-controlled intents in the release UI or Actions form.
+Production follows the same rule with active production as the baseline.
+
 Use [Actions or remote commands](remote-delivery.md) for developer operations.
 The [evaluation runbook](evaluation-runbook.md) covers separate operator studies.
 

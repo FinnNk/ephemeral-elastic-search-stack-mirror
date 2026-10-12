@@ -111,14 +111,15 @@ def bootstrap(deployment):
     return records
 
 
-def propose(target, deployment, evidence, intent='preserve-results', rollback=False):
+def propose(target, deployment, evidence, intent=None, rollback=False):
     base = checkout()
     current = read_target(target)
     if deployment['fingerprint'] == current['fingerprint']:
         raise ValueError('Target already declares this deployment.')
     validate_deployment(deployment)
     validate_evidence(evidence, current['fingerprint'], deployment['fingerprint'], intent,
-                      deployment_inputs(deployment), target=target)
+                      deployment_inputs(deployment), target=target, baseline_deployment=current,
+                      candidate_deployment=deployment)
     source = None if target == 'integration' or rollback else TARGETS[TARGETS.index(target) - 1]
     if source:
         upstream = read_target(source)
@@ -143,7 +144,13 @@ def propose(target, deployment, evidence, intent='preserve-results', rollback=Fa
     access('lab-delivery-' + target, deployment)
     proposal = {'format': 1, 'target': target, 'kind': 'rollback' if rollback else 'promotion',
                 'base_revision': base, 'expected_target': current['fingerprint'],
-                'source_target': source, 'deployment': deployment, 'evidence': evidence, 'intent': intent}
+                'source_target': source, 'deployment': deployment, 'evidence': evidence}
+    if intent:
+        proposal['intent'] = intent
+    if evidence.get('kind') == 'delivery-variant-evidence':
+        proposal['baseline_variant'] = evidence['baseline_pin']
+        proposal['variant_checks'] = [{key: row[key] for key in ('variant', 'intent', 'state', 'evidence')}
+                                      for row in evidence['checks']]
     identifier = target + '-' + uuid.uuid4().hex[:10]
     branch = 'promote/' + identifier
     git(DESIRED, 'switch', '-c', branch)
@@ -165,12 +172,20 @@ def propose(target, deployment, evidence, intent='preserve-results', rollback=Fa
     git(DESIRED, 'add', '.')
     git(DESIRED, 'commit', '-m', proposal['kind'].capitalize() + ' to ' + target)
     git(DESIRED, 'push', 'origin', branch)
-    body = ('## ' + proposal['kind'].capitalize() + ' to ' + target + '\n\n'
-        'Release `' + deployment['fields']['software_release_id'] + '`; source `' + deployment['fields']['source_sha'] + '`.\n\n'
-        'Baseline `' + current['fingerprint'] + '` → candidate `' + deployment['fingerprint'] + '`.\n\n'
-        'Intent: **' + intent + '**. Evidence SHA-256 `' + evidence['sha256'] + '` in `' + evidence['blob'] + '`.\n\n'
-        'Review the deployment, full result check, frozen relevance coverage and Gatling report. '
-        'Synthetic relevance is a measurement, not automatic quality approval. '
+    intent_summary = ('Intent: **' + intent + '**.\n\n' if intent else
+        'Baseline: build ' + str(evidence['baseline_build_run']) + ', variant **' +
+        evidence['baseline_variant'] + '**, configuration SHA-256 `' +
+        evidence['baseline_pin']['configuration_sha256'] + '`.\n\n' +
+        'Each selected candidate variant was checked against that baseline:\n' +
+        ''.join('- **' + row['variant'] + '** (' + row['intent'] + '): ' + row['state'] + '\n'
+                for row in evidence['checks']) + '\n')
+    body = (
+        '## ' + proposal['kind'].capitalize() + ' to ' + target + '\n\n' +
+        'Release `' + deployment['fields']['software_release_id'] + '`; source `' + deployment['fields']['source_sha'] + '`.\n\n' +
+        'Baseline `' + current['fingerprint'] + '` → candidate `' + deployment['fingerprint'] + '`.\n\n' +
+        intent_summary + 'Evidence SHA-256 `' + evidence['sha256'] + '` in `' + evidence['blob'] + '`.\n\n' +
+        'Review the deployment, full result check, frozen relevance coverage and Gatling report. ' +
+        'Synthetic relevance is a measurement, not automatic quality approval. ' +
         'The production target is a local simulation. Approval and deployment verification are separate.\n')
     pr = pull_request(DESIRED, branch, proposal['kind'].capitalize() + ': ' + target + ' release ' +
                       deployment['fields']['software_release_id'][:12], body)
@@ -227,7 +242,8 @@ def inspect_pr(number):
     elif git(DESIRED, 'show', head + ':targets/' + target + '/rendered/search.yaml') != rendered(deployment, 'lab-delivery-' + target).strip():
         raise ValueError('Rendered workloads differ from the pinned release and deployment.')
     validate_evidence(proposal['evidence'], current['fingerprint'], deployment['fingerprint'],
-                      proposal['intent'], deployment_inputs(deployment), target=target)
+                      proposal.get('intent'), deployment_inputs(deployment), target=target,
+                      baseline_deployment=current, candidate_deployment=deployment)
     if proposal['kind'] == 'rollback':
         record = RECORDS / 'verified' / target / (deployment['fingerprint'] + '.json')
         if not record.exists() or json.loads(record.read_text())['deployment'] != deployment:

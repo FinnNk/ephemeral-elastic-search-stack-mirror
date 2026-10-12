@@ -153,11 +153,11 @@ Keep one shared delivery client and the existing approval and gate checks.
 | Workflow | Inputs |
 | --- | --- |
 | Create preview | Build number |
-| Promote to integration | Build number, change intent |
-| Promote to staging | Build number, change intent |
+| Promote to integration | Build number; intent comes from each selected source variant |
+| Promote to staging | Build number; intent comes from each selected source variant |
 | Deploy approved promotion | Delivery-state PR number |
 | Compare builds | Baseline build, candidate build |
-| Request rollback | Target, previously verified release fingerprint, change intent |
+| Request rollback | Target and previously verified release fingerprint; source selection supplies variant intents |
 
 **Rollback must have its own visible workflow**, rather than being tucked into
 advanced operations. It creates a reviewed rollback proposal; it does not bypass

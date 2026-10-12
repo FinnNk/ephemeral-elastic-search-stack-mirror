@@ -229,6 +229,7 @@ def final_check(progress=lambda message: None):
     """Capture active production and its prepared candidate, then freeze shared labels."""
     from delivery_gates import retain
     from input_selection import select
+    from delivery_variant_selection import configured_baseline, source_selection
     from search_probe import search
     from evaluation_job import run_variants
     from additional_judgements import resolve_extra
@@ -251,23 +252,49 @@ def final_check(progress=lambda message: None):
     item = {'name': 'recent-production', 'required': False, 'queries': queries,
         'query_bytes': payload, 'query_sha256': sha(payload), 'judgements_rows': labels,
         'judgement_bytes': label_bytes, 'judgement_sha256': sha(label_bytes)}
-    pins, targets = {}, {}
-    for name, deployment, service in (('active', first, 'search'), ('candidate', second, 'search-' + colour)):
-        answer = search(NAMESPACE, queries[0]['query'], service=service)
-        if not answer:
-            raise ValueError('Production API preflight failed.')
-        pins[name] = {'image': deployment['fields']['image'], 'environment_fingerprint': deployment['fingerprint'],
-                      'configuration_sha256': answer['configuration_sha256'], 'api_variant_id': answer['variant_id']}
-        targets[name] = {'environment': NAMESPACE, 'service': service, 'selection': 'default',
-                         'variant_id': answer['variant_id'], 'configuration_sha256': answer['configuration_sha256']}
-    progress('Comparing the active production API with the prepared candidate')
+    selected = source_selection(second['fields']['source_sha'])
+    if json.loads(second['fields'].get('variant_config_json', '{}')) != selected['configuration']:
+        raise ValueError('Prepared production candidate does not pin the exact selected variant configuration.')
+    active_answer = search(NAMESPACE, queries[0]['query'], service='search')
+    if not active_answer:
+        raise ValueError('Active production API preflight failed.')
+    active_pin = configured_baseline(first)
+    if (active_answer['variant_id'] != active_pin['variant'] or
+            active_answer['configuration_sha256'] != active_pin['configuration_sha256']):
+        raise ValueError('Active production API does not serve its declared default configuration.')
+    baseline_key = 'active'
+    while baseline_key in {item['variant'] for item in selected['selection']}:
+        baseline_key = 'baseline-' + baseline_key
+    pins = {baseline_key: {'image': first['fields']['image'],
+        'environment_fingerprint': first['fingerprint'],
+        'configuration_sha256': active_answer['configuration_sha256'],
+        'api_variant_id': active_answer['variant_id']}}
+    targets = {baseline_key: {'environment': NAMESPACE, 'service': 'search',
+        'selection': 'default', 'variant_id': active_answer['variant_id'],
+        'configuration_sha256': active_answer['configuration_sha256']}}
+    for variant in selected['selection']:
+        name = variant['variant']
+        config_sha = selected['configuration_sha256_by_variant'][name]
+        pins[name] = {'image': second['fields']['image'],
+            'environment_fingerprint': second['fingerprint'],
+            'configuration_sha256': config_sha, 'api_variant_id': name,
+            'intent': variant['intent']}
+        targets[name] = {'environment': NAMESPACE, 'service': 'search-' + colour,
+            'selection': 'explicit', 'variant_id': name,
+            'configuration_sha256': config_sha}
+    progress('Comparing each selected candidate variant with active production')
     rows, execution = run_variants(payload, targets)
     if any('error' in row for row in rows):
         raise ValueError('Final capture is incomplete; inspect coordinator logs.')
     by_id = {q['query_id']: q for q in queries}
     observations = {'kind': 'search-variant-observation-set', 'schema_version': 1,
-        'default_variant': 'active', 'baseline_variant': 'active', 'variants': pins,
-        'variant_set_sha256': sha(canonical(pins)), 'captured_depth': 10,
+        'default_variant': selected['configuration']['default_variant'],
+        'baseline_variant': baseline_key, 'variants': pins,
+        'variant_set_sha256': sha(canonical({'variants': pins,
+            'default_variant': selected['configuration']['default_variant'],
+            'baseline_variant': baseline_key,
+            'selection_sha256': selected['selection_sha256'],
+            'evaluation_sha256': selected['evaluation_sha256']})), 'captured_depth': 10,
         'catalogue_sha256': second['fields']['dataset_sha256'], 'query_suite_sha256': sha(payload),
         'captured_at': datetime.now(timezone.utc).isoformat(), 'request_adapter': 'search-api-variant-v1',
         'execution': execution, 'errors': [], 'observations': [{'query_id': r['query_id'],
@@ -281,6 +308,15 @@ def final_check(progress=lambda message: None):
         raise ValueError('Production slots changed during the final check.')
     report.update(production_slots_sha256=sha(canonical(before)),
         production_baseline=first['fingerprint'], production_candidate=second['fingerprint'],
+        production_baseline_build_run=first['build_run'],
+        production_baseline_variant=active_pin['variant'],
+        production_baseline_configuration_sha256=active_answer['configuration_sha256'],
+        candidate_source_sha=selected['source_sha'],
+        candidate_selection_sha256=selected['selection_sha256'],
+        candidate_configuration_sha256=selected['configuration_sha256'],
+        candidate_variants=[{'variant': item['variant'], 'intent': item['intent'],
+            'configuration_sha256': selected['configuration_sha256_by_variant'][item['variant']]}
+            for item in selected['selection']],
         completed_at=datetime.now(timezone.utc).isoformat(),
         recent_query_source='simulated recent traffic: pinned ESCI query fixture',
         frozen_inputs={'queries': retain_bytes(payload, 'recent-queries.jsonl'),
@@ -296,6 +332,7 @@ def final_check(progress=lambda message: None):
 
 def validate_final(reference, value):
     from delivery_gates import read
+    from delivery_variant_selection import configured_baseline, source_selection
     report = read(reference)
     active, other = value['active'], inactive(value)
     moment = datetime.fromisoformat(report['completed_at'])
@@ -306,12 +343,27 @@ def validate_final(reference, value):
             or moment > now or now - moment > timedelta(days=3)):
         raise ValueError('Final production evidence is stale or belongs to other slots.')
     frozen_catalogue(value['slots'][active])
+    candidate = value['slots'][other]
+    baseline_pin = configured_baseline(value['slots'][active])
+    selected = source_selection(candidate['fields']['source_sha'])
+    expected_variants = [{'variant': item['variant'], 'intent': item['intent'],
+        'configuration_sha256': selected['configuration_sha256_by_variant'][item['variant']]}
+        for item in selected['selection']]
+    if (report.get('production_baseline_build_run') != value['slots'][active]['build_run'] or
+            report.get('production_baseline_variant') != baseline_pin['variant'] or
+            report.get('production_baseline_configuration_sha256') != baseline_pin['configuration_sha256'] or
+            report.get('candidate_source_sha') != candidate['fields']['source_sha'] or
+            report.get('candidate_selection_sha256') != selected['selection_sha256'] or
+            report.get('candidate_configuration_sha256') != selected['configuration_sha256'] or
+            report.get('candidate_variants') != expected_variants or
+            json.loads(candidate['fields'].get('variant_config_json', '{}')) != selected['configuration']):
+        raise ValueError('Final production evidence does not check the named baseline and every selected candidate variant.')
     return report
 
 
 @operation('delivery.production_release')
-def release(intent, progress=lambda message: None):
-    from delivery_gates import evaluate, read, retain
+def release(progress=lambda message: None):
+    from delivery_gates import evaluate_variants, read, retain
     from delivery_promote import propose, verified
     checkout()
     value = live(state())
@@ -322,12 +374,16 @@ def release(intent, progress=lambda message: None):
         raise ValueError('Prepared candidate no longer matches verified staging.')
     verified('staging', candidate)
     progress('Running the required production normal and peak Gatling gate')
-    evidence = evaluate(first, candidate, intent, 'production-load')
-    final = final_check(progress)
+    evidence = evaluate_variants(first, candidate, 'production-load', 'production')
+    try:
+        final = final_check(progress)
+    except Exception as error:
+        from delivery_gates import EvidenceFailure
+        raise EvidenceFailure('Final production comparison failed: ' + str(error), evidence) from error
     updated = {**read(evidence), 'production_final': final}
     evidence = retain(updated, 'delivery-evidence.json')
     progress('Creating the reviewed production route switch')
-    result = propose('production', candidate, evidence, intent)
+    result = propose('production', candidate, evidence)
     return {**result, 'report': evidence, 'final_report': final}
 
 

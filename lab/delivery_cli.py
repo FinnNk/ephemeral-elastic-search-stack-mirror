@@ -48,7 +48,6 @@ def parser():
     cmd.add_argument('--recipe', help='Candidate pinned index recipe SHA-256 when using --run')
     cmd.add_argument('--query-manifest')
     cmd.add_argument('--judgement-manifest')
-    cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
     cmd.add_argument('--profile', choices=('probe', 'smoke', 'production-load'),
                      help='Default: production-load for production; probe for other targets')
     cmd = commands.add_parser('promote')
@@ -59,12 +58,10 @@ def parser():
     cmd.add_argument('--query-manifest')
     cmd.add_argument('--judgement-manifest')
     cmd.add_argument('--evidence', type=Path, required=True)
-    cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
     cmd = commands.add_parser('rollback')
     cmd.add_argument('target', choices=TARGETS)
     cmd.add_argument('--fingerprint', required=True)
     cmd.add_argument('--evidence', type=Path, required=True)
-    cmd.add_argument('--intent', choices=('preserve-results', 'ranking-change'), default='preserve-results')
     for name in ('validate', 'demonstrate-merge', 'merge-reviewed'):
         cmd = commands.add_parser(name)
         cmd.add_argument('pr', type=int)
@@ -92,6 +89,17 @@ def recorded_evaluation(baseline, candidate, intent, profile):
     RECORDS.mkdir(exist_ok=True)
     path = RECORDS / ('evidence-' + value['sha256'] + '.json')
     path.write_text(json.dumps(value, indent=2), encoding='utf-8')
+    return {**value, 'reference_file': str(path)}
+
+
+def recorded_variant_evaluation(baseline, candidate, profile, target=None):
+    from delivery_gates import evaluate_variants
+    value = evaluate_variants(baseline, candidate, profile, target)
+    from delivery_gates import read
+    record = read(value)
+    RECORDS.mkdir(exist_ok=True)
+    path = RECORDS / ('evidence-' + value['sha256'] + '.json')
+    path.write_text(json.dumps(record, indent=2), encoding='utf-8')
     return {**value, 'reference_file': str(path)}
 
 
@@ -123,19 +131,32 @@ def execute(args):
                 raise ValueError('A retained deployment already pins its dataset, recipe and evaluation inputs.')
             candidate = historical(args.target, args.fingerprint)
         else:
+            variant_config = None
+            if args.run:
+                from delivery_release import from_run
+                from delivery_variant_selection import source_selection
+                receipt, _, _ = from_run(args.run)
+                variant_config = source_selection(receipt['source_sha'])['configuration']
             candidate = resolve(args.run, args.dataset or DEFAULT_RELEASE, args.recipe,
+                                variant_config=variant_config,
                                 query_manifest_sha=args.query_manifest,
                                 judgement_manifest_sha=args.judgement_manifest)
-        return recorded_evaluation(baseline, candidate, args.intent, profile)
+        return recorded_variant_evaluation(baseline, candidate, profile, args.target)
     if args.command == 'promote':
+        evidence = json.loads(args.evidence.read_text())
+        from delivery_release import from_run
+        from delivery_variant_selection import source_selection
+        receipt, _, _ = from_run(args.run)
+        variant_config = source_selection(receipt['source_sha'])['configuration']
         return propose(args.target, resolve(args.run, args.dataset, args.recipe,
+                                            variant_config=variant_config,
                                             query_manifest_sha=args.query_manifest,
                                             judgement_manifest_sha=args.judgement_manifest),
-                       json.loads(args.evidence.read_text()), args.intent)
+                       evidence, None)
     if args.command == 'rollback':
         deployment = historical(args.target, args.fingerprint)
-        return propose(args.target, deployment, json.loads(args.evidence.read_text()),
-                       args.intent, rollback=True)
+        evidence = json.loads(args.evidence.read_text())
+        return propose(args.target, deployment, evidence, None, rollback=True)
     if args.command == 'validate':
         return validate_pr(args.pr)
     if args.command == 'demonstrate-merge':

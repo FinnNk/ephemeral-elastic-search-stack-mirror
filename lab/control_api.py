@@ -157,7 +157,7 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['api', 'delivery', 'operations']:
             from delivery_operations import Operations
             return self.send_json(200, {'operations': [row for row in Operations().active() if self.visible(row, identity)]})
-        if parts[:3] == ['api', 'delivery', 'operations'] and len(parts) in (4, 5, 6):
+        if parts[:3] == ['api', 'delivery', 'operations'] and len(parts) in (4, 5, 6, 8):
             from delivery_operations import Operations
             row = Operations().get(parts[3])
             if row is None:
@@ -176,6 +176,8 @@ class Handler(BaseHTTPRequestHandler):
                 except ValueError:
                     return self.send_json(400, {'error': 'Invalid log cursor.'})
                 return self.send_json(200, {'logs': Operations().logs(row['id'], after)})
+            if len(parts) == 8 and parts[5] != 'variant':
+                return self.send_json(404, {'error': 'Delivery report path is invalid.'})
             if parts[4] == 'report' and (row.get('result') or {}).get('report'):
                 reference = row['result']['report']
                 container, name = reference['blob'].split('/', 1)
@@ -192,6 +194,25 @@ class Handler(BaseHTTPRequestHandler):
                     payload = service().get_blob_client(container, name).download_blob().readall()
                     if hashlib.sha256(payload).hexdigest() != reference['sha256']:
                         return self.send_json(502, {'error': 'Frozen check report hash differs.'})
+                if len(parts) == 8 and parts[5] == 'variant':
+                    parent = json.loads(payload)
+                    checks = parent.get('checks', [])
+                    matches = [item for item in checks if item.get('variant') == parts[6]]
+                    if len(matches) != 1:
+                        return self.send_json(404, {'error': 'Variant check report not found.'})
+                    evidence = matches[0].get('evidence') or {}
+                    container, name = evidence['blob'].split('/', 1)
+                    payload = service().get_blob_client(container, name).download_blob().readall()
+                    if hashlib.sha256(payload).hexdigest() != evidence['sha256']:
+                        return self.send_json(502, {'error': 'Frozen variant evidence hash differs.'})
+                    check = json.loads(payload)
+                    if parts[7] not in check.get('reports', {}):
+                        return self.send_json(404, {'error': 'Variant delivery check not found.'})
+                    report_ref = check['reports'][parts[7]]
+                    container, name = report_ref['blob'].split('/', 1)
+                    payload = service().get_blob_client(container, name).download_blob().readall()
+                    if hashlib.sha256(payload).hexdigest() != report_ref['sha256']:
+                        return self.send_json(502, {'error': 'Frozen variant delivery check hash differs.'})
                 return self.send_bytes(200, payload, 'application/json; charset=utf-8')
             return self.send_json(409, {'error': 'Delivery report is not available.'})
         if identity.get('is_delivery_service'):

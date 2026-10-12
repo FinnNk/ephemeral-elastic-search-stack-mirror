@@ -50,7 +50,7 @@
  }
  async function submit(action){
   if(sending||loading||!options)return;
-  const body={run:data.selected.run,action,intent:$('promotion-intent').value,context:options.context};
+  const body={run:data.selected.run,action,context:options.context};
   if(action==='deploy')body.pr=Number($('approved-proposal').value);
   sending=true;render();
   const encoded=JSON.stringify(body);if(!keys.has(encoded)){

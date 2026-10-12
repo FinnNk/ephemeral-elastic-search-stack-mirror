@@ -66,31 +66,30 @@ def choices(data, identity):
               for name in labels], 'approved_prs': list(approved.values())}
 
 
-def payload(data, action, intent, number=None):
+def payload(data, action, number=None):
     """Translate the panel into existing named operations, with no arbitrary arguments."""
     run = data['selected']['run']
     fields = data.get('release') or {}
     if action in ('integration', 'staging'):
-        value = {'kind': 'promotion', 'target': action, 'run': run, 'intent': intent}
+        value = {'kind': 'promotion', 'target': action, 'run': run}
         for key, source in (('dataset', 'dataset_release'), ('recipe', 'index_recipe_sha256'),
                             ('query_manifest', 'query_manifest_sha256'), ('judgement_manifest', 'judgement_manifest_sha256')):
             if fields.get(source): value[key] = fields[source]
         return value
     if action == 'prepare': return {'kind': 'prepare-production'}
-    if action == 'release': return {'kind': 'release-production', 'intent': intent}
+    if action == 'release': return {'kind': 'release-production'}
     if action == 'deploy': return {'kind': 'merge-reviewed', 'pr': number}
     retained = next(e for e in data['environments'] if e.get('slot') and not e.get('active') and e.get('ready'))
     return {'kind': 'rollback', 'target': 'production',
-            'fingerprint': retained['definition']['fingerprint'], 'intent': intent}
+            'fingerprint': retained['definition']['fingerprint']}
 
 
 def submit(request, identity, key):
     """Deduplicate transport retries and reject stale or ineligible selections."""
     if not identity.get('is_admin') or identity.get('is_reader') or identity.get('is_delivery_service'):
         raise PermissionError('A human lab administrator must request a promotion.')
-    if (not isinstance(request, dict) or set(request) - {'run', 'action', 'intent', 'pr', 'context'} or
+    if (not isinstance(request, dict) or set(request) - {'run', 'action', 'pr', 'context'} or
             type(request.get('run')) is not int or request['run'] < 1 or request.get('action') not in ACTIONS or
-            request.get('intent') not in ('ranking-change', 'preserve-results') or
             not re.fullmatch('[0-9a-f]{64}', str(request.get('context', '')))):
         raise ValueError('Choose a release action and refresh its context.')
     if request['action'] == 'deploy' and (type(request.get('pr')) is not int or request['pr'] < 1):
@@ -114,7 +113,7 @@ def submit(request, identity, key):
     if request['action'] == 'deploy' and request['pr'] not in {p['number'] for p in options['approved_prs']}:
         raise ValueError('The selected proposal is not approved for this release.')
     binding = {'request': request, 'identity': {k: identity[k] for k in ('username', 'is_admin')}}
-    return store.submit(payload(data, request['action'], request['intent'], request.get('pr')),
+    return store.submit(payload(data, request['action'], request.get('pr')),
                         identity, key, release_binding=binding)
 
 

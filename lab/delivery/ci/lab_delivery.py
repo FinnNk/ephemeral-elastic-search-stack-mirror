@@ -135,12 +135,10 @@ def parser():
             cmd.add_argument('--candidate-run', type=int, required=True)
         if name == 'propose-promotion':
             cmd.add_argument('--target', choices=('integration', 'staging', 'production'), required=True)
-            cmd.add_argument('--intent', choices=('ranking-change', 'preserve-results'), required=True)
         if name in ('verify', 'propose-rollback'):
             cmd.add_argument('--target', choices=('integration', 'staging', 'production'), required=True)
         if name == 'propose-rollback':
             cmd.add_argument('--fingerprint', required=True)
-            cmd.add_argument('--intent', choices=('ranking-change', 'preserve-results'), required=True)
         if name in ('merge-reviewed', 'merge-exception', 'request-exception'):
             cmd.add_argument('--pr', type=int, required=True)
         if name == 'request-exception':
