@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The accepted per-variant dashboard/runtime is now deployed and its connectivity
+smoke check passes. The [remaining interface update](per-variant-promotion-activation.md)
+aligns the separate production page and installed delivery-source Actions
+templates. Review those batches, then update the trusted client digest and resume
+the promotion walkthrough.
+
 The [test-runtime recovery batch](test-runtime-recovery.md) records the locked
 uv unit-test setup and agent instructions. All 64 selected delivery and promotion
 fixtures pass on Windows. It also rejects direct production promotion requests
