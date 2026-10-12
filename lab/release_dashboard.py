@@ -221,6 +221,11 @@ def project(run, rows, receipts, environments, reviews, builds, notices):
                        'check_operation': next((r for r in related
                            if r['kind'] in ('promotion','release-production','rollback') and r.get('evidence')), None)})
     for environment in environments.values():
+        matching = next((r for r in reversed(receipts) if r.get('state') == 'verified' and
+            r.get('deployment', {}).get('fingerprint') == environment['definition'].get('fingerprint') and
+            r['deployment']['fields'] == {k: v for k, v in environment['definition'].items()
+                if k not in ('fingerprint', 'environment')}), None)
+        environment['build_run'] = matching['deployment']['build_run'] if matching else None
         environment['rollback_verified'] = any(r.get('state') == 'verified' and r.get('target') == 'production' and
             r.get('deployment', {}).get('fingerprint') == environment['definition'].get('fingerprint') and
             r['deployment']['fields'] == {k: v for k, v in environment['definition'].items() if k not in ('fingerprint', 'environment')}
@@ -233,7 +238,8 @@ def project(run, rows, receipts, environments, reviews, builds, notices):
                for r in rows if r['request']['kind'] == 'release-production' and not operation_deployment(r) and not r['request'].get('_release_binding')][:5]
     build = next((r for r in builds if r['id'] == run), None)
     return {'updated_at': now, 'releases': choices, 'selected': selected,
-        'build': {'state':build.get('conclusion') or build.get('status'), 'url':GITEA+SOURCE+'/actions/runs/'+str(run),
+        'build': {'state':build.get('conclusion') or build.get('status'),
+                  'conclusion':build.get('conclusion'), 'url':GITEA+SOURCE+'/actions/runs/'+str(run),
                   'duration_seconds':duration(build.get('created_at'), build.get('updated_at'))} if build else None,
         'release': anchor['fields'] if anchor else None, 'fingerprint':anchor['fingerprint'] if anchor else None, 'stages': stages,
         'active_production': active, 'environments': list(environments.values()),

@@ -87,6 +87,11 @@ readers see the same tree with unavailable controls and an explanation.
    the target's current default API configuration. The report pins that baseline
    build, variant and configuration hash. Staging requires this exact release to be
    currently verified in Integration. Follow **Open progress and review links**.
+   Each action shows its planned comparison immediately above the button: the
+   candidate build and variants, their individual intents and the current target
+   baseline's build, default variant and configuration hash. Changing **Stage**
+   changes that baseline. Rollback shows the retained release as its candidate;
+   candidate preparation explains that its comparison happens at the release check.
 3. Review the proposal and retained check report in Gitea. Approve the exact PR
    head. Select it under **Approved proposal**, then choose **Deploy approved
    proposal**. The coordinator rechecks the approval and evidence, merges the

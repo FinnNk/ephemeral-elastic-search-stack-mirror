@@ -25,6 +25,28 @@ def fixture():
 
 
 class ReleaseActions(unittest.TestCase):
+    def test_comparison_uses_current_target_baseline_and_each_declared_intent(self):
+        import json
+        data = fixture()
+        data['variant_selection'] = {'state': 'ready', 'source_sha': 'a' * 40, 'variants': [
+            {'variant': 'ranker-a', 'intent': 'ranking-change', 'default': True},
+            {'variant': 'control', 'intent': 'preserve-results', 'default': False}]}
+        current = data['environments'][0]
+        current['build_run'] = 108
+        current['definition']['variant_config_json'] = json.dumps({
+            'default_variant': 'live-default', 'variants': {'live-default': {'field_boosts': {'title': 2}}}})
+        other = deepcopy(current)
+        other.update(name='staging', build_run=109)
+        other['definition']['variant_config_json'] = json.dumps({
+            'default_variant': 'staging-default', 'variants': {'staging-default': {'field_boosts': {'title': 3}}}})
+        data['environments'].append(other)
+        result = control.choices(data, ADMIN)['comparisons']
+        self.assertEqual(result['integration']['baseline']['variant'], 'live-default')
+        self.assertEqual(result['integration']['baseline']['build_run'], 108)
+        self.assertEqual(result['staging']['baseline']['variant'], 'staging-default')
+        self.assertEqual(result['staging']['baseline']['build_run'], 109)
+        self.assertEqual(result['integration']['candidate']['selection'], data['variant_selection'])
+
     def test_readers_and_service_identities_have_no_actions(self):
         for identity in ({'username':'reader','is_reader':True}, {**ADMIN,'is_delivery_service':True}):
             self.assertFalse(any(a['enabled'] for a in control.choices(fixture(), identity)['actions']))

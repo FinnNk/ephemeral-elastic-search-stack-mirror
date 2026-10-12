@@ -80,6 +80,7 @@ def selection_summary(source_sha):
         return {'state': 'ready', 'source_sha': source_sha,
             'selection_sha256': selected['selection_sha256'],
             'variants': [{'variant': row['variant'], 'intent': row['intent'],
+                'configuration_sha256': selected.get('configuration_sha256_by_variant', {}).get(row['variant']),
                 'default': row['variant'] == selected['configuration']['default_variant']}
                 for row in selected['selection']]}
     except (RuntimeError, OSError, ValueError, KeyError, TypeError):

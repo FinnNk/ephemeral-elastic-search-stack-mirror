@@ -11,11 +11,29 @@
   const v=await r.json();if(!r.ok)throw new Error(v.error||'Request failed');return v;
  }
  function link(href,label,parent){const a=document.createElement('a');a.href=href;a.textContent=label;parent.append(a);return a;}
+ function comparison(value,parent){
+  const add=(tag,label,to=parent)=>{const node=document.createElement(tag);node.textContent=label;to.append(node);return node;};
+  add('h3',value?.preparation_only?'Candidate preparation':'Planned comparison');
+  if(value?.preparation_only)add('p','Preparation reuses verified staging. These variants are compared with active production in the later release check.').className='notice';
+  const baseline=value?.baseline||{},candidate=value?.candidate||{build_run:data.selected.run,selection:data.variant_selection};
+  const wrapper=add('div','');wrapper.className='table-wrap';const table=add('table','',wrapper),head=add('tr','',add('thead','',table));
+  for(const label of ['Role','Build','Variant / configuration','Change intent'])add('th',label,head).scope='col';
+  const body=add('tbody','',table);
+  const row=(role,item,variant,intent,config)=>{const r=add('tr','',body);add('td',role,r);add('td',item.build_run==null?'Not available':String(item.build_run)+(item.version?' · v'+item.version:''),r);const cell=add('td',variant||'Not available',r);if(config){const code=add('code',config.slice(0,12),add('div','',cell));code.title=config;}add('td',intent,r);};
+  const targetName=({'integration':'Integration','staging':'Staging','production-blue':'Active production · blue','production-green':'Active production · green'}[baseline.target]||baseline.target);
+  row('Baseline'+(targetName?' · '+targetName:''),baseline,baseline.variant,'Reference',baseline.configuration_sha256);
+  if(baseline.state!=='ready')add('p','The current target baseline is unavailable. Its identity will not be assumed.').className='notice';
+  for(const variant of candidate.selection?.variants||[])row('Candidate',candidate,variant.variant+(variant.default?' · default':''),({'ranking-change':'Intentional ranking change','preserve-results':'Preserve search results'}[variant.intent]||variant.intent),variant.configuration_sha256);
+  if(candidate.selection?.state!=='ready')add('p','Candidate variants and intents are unavailable. Refresh to retry.').className='notice';
+  if(candidate.selection?.source_sha)link('https://gitea.localhost:34443/elastic-agent/delivery-source/src/commit/'+encodeURIComponent(candidate.selection.source_sha)+'/gate/selection.json','Open declared variants and intents',add('p',''));
+ }
  function render(){
   if(!options)return;
   $('promotion-actions').replaceChildren();
   for(const name of byStage[$('promotion-stage').value]){
    const a=options.actions.find(x=>x.name===name),group=document.createElement('div'),button=document.createElement('button');
+   group.className='promotion-check';
+   comparison(options.comparisons?.[name],group);
    button.textContent=a.label;button.disabled=!a.enabled||sending;button.onclick=()=>submit(name);group.append(button);
    const help=document.createElement('p');help.className='action-help';help.textContent=a.reason||(name==='release'?'Runs the production load gate and final comparison.':'Creates a proposal for review.');group.append(help);$('promotion-actions').append(group);
   }

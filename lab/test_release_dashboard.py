@@ -32,6 +32,16 @@ def operation(kind='promotion', run=158, state='complete', target='staging'):
 
 
 class Projection(unittest.TestCase):
+    def test_successful_projected_build_can_reach_promotion_controls(self):
+        from release_control import choices
+        value = dashboard.project(158, [], [receipt('integration', 108), receipt('staging', 158)],
+            {'integration': environment('integration', 108)}, {},
+            [{'id': 158, 'head_sha': 'a' * 40, 'status': 'completed', 'conclusion': 'success'}], [])
+        self.assertEqual(value['build']['conclusion'], 'success')
+        result = choices(value, {'username': 'reviewer', 'is_admin': True})
+        self.assertTrue(next(a for a in result['actions'] if a['name'] == 'integration')['enabled'])
+        self.assertEqual(result['comparisons']['integration']['baseline']['build_run'], 108)
+
     def project(self, rows=(), receipts=(), environments=None, reviews=None, run=158):
         return dashboard.project(run,list(rows),list(receipts),environments or {},reviews or {},[],[])
 

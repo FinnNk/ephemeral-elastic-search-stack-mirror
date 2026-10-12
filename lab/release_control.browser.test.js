@@ -7,6 +7,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   {variant:'control',intent:'preserve-results',default:false}]};
  const errors=[],posts=[];let admin=true,failTransport=true;
  const names=['integration','staging','prepare','release','deploy','rollback'];
+ const comparisons=Object.fromEntries(names.filter(n=>n!=='deploy').map(name=>[name,{
+  baseline:{state:'ready',target:name==='integration'||name==='staging'?name:'production-blue',build_run:108,variant:name==='staging'?'staging-default':'live-default',configuration_sha256:'b'.repeat(64)},
+  candidate:{build_run:data.selected.run,selection:data.variant_selection},preparation_only:name==='prepare'}]));
  const server=http.createServer((req,res)=>{
   if(req.url.startsWith('/api/delivery/dashboard/actions')){
    res.setHeader('Content-Type','application/json');
@@ -17,7 +20,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
      res.writeHead(202);res.end(JSON.stringify({id:'a'.repeat(32),state:'queued'}));
     });return;
    }
-   res.end(JSON.stringify({context:'b'.repeat(64),actions:names.map(name=>({name,label:{release:'Check and request production release',deploy:'Deploy approved proposal'}[name]||name,enabled:admin,reason:admin?'':'Administrator access is required.'})),approved_prs:[{number:25,url:'https://gitea.test/pulls/25'}]}));return;
+   res.end(JSON.stringify({context:'b'.repeat(64),comparisons,actions:names.map(name=>({name,label:{release:'Check and request production release',deploy:'Deploy approved proposal'}[name]||name,enabled:admin,reason:admin?'':'Administrator access is required.'})),approved_prs:[{number:25,url:'https://gitea.test/pulls/25'}]}));return;
   }
   if(req.url.startsWith('/api/delivery/dashboard')){res.setHeader('Content-Type','application/json');res.end(JSON.stringify(data));return;}
   const name=req.url.split('?')[0].slice(1);const file=['lab-design.css','release_control.js','release_dashboard.js'].includes(name)?name:'release-dashboard.html';
@@ -34,6 +37,12 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   assert.ok((await page.locator('#variant-selection').innerText()).includes('Intentional ranking change'));
   assert.ok((await page.locator('#variant-selection').innerText()).includes('Preserve search results'));
   assert.equal(await page.locator('#promotion-intent').count(),0);
+  assert.equal(await page.locator('#promotion-actions tbody tr').count(),3);
+  assert.ok((await page.locator('#promotion-actions').innerText()).includes('Intentional ranking change'));
+  assert.ok((await page.locator('#promotion-actions').innerText()).includes('Preserve search results'));
+  assert.ok((await page.locator('#promotion-actions').innerText()).includes('live-default'));
+  await page.locator('#promotion-stage').selectOption('staging');
+  assert.ok((await page.locator('#promotion-actions').innerText()).includes('staging-default'));
   await page.locator('.tree-node').last().press('Enter');assert.equal(await page.locator('#promotion-stage').inputValue(),'production');
   const release=page.getByRole('button',{name:'Check and request production release',exact:true});await release.click();await page.locator('#promotion-feedback').filter({hasText:'Temporary transport failure'}).waitFor();
   await release.click();await page.getByRole('link',{name:'Open progress and review links',exact:true}).waitFor();

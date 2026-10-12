@@ -24,6 +24,35 @@ def context(data):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def comparison(data, action):
+    """Describe the planned candidate and current target without running checks."""
+    from delivery_variant_selection import configured_baseline, selection_summary
+    target = next((e for e in data.get('environments', []) if e['name'] == action), None) \
+        if action in ('integration', 'staging') else data.get('active_production')
+    selected = data.get('selected') or {}
+    fields = data.get('release') or {}
+    candidate = {'build_run': selected.get('run'), 'version': fields.get('software_version'),
+        'selection': data.get('variant_selection') or {'state': 'unavailable', 'variants': []}}
+    if action == 'rollback':
+        retained = next((e for e in data.get('environments', []) if e.get('slot') and not e.get('active')), None)
+        fields = (retained or {}).get('definition', {})
+        candidate = {'build_run': (retained or {}).get('build_run'),
+            'version': fields.get('software_version'), 'selection': selection_summary(fields.get('source_sha'))}
+    baseline = {'state': 'unavailable'}
+    if target:
+        definition = target['definition']
+        try:
+            pin = configured_baseline({'fields': {k: v for k, v in definition.items()
+                if k not in ('fingerprint', 'environment')},
+                'fingerprint': definition['fingerprint'], 'build_run': target.get('build_run')})
+            baseline = {k: pin[k] for k in ('build_run', 'variant', 'configuration_sha256')}
+            baseline.update(state='ready', version=definition.get('software_version'),
+                target=target['name'], ready=target.get('ready', False))
+        except (ValueError, KeyError, TypeError):
+            pass
+    return {'candidate': candidate, 'baseline': baseline, 'preparation_only': action == 'prepare'}
+
+
 def choices(data, identity):
     """Explain available actions; the worker rechecks the binding before execution."""
     stages = {s['name']: s for s in data.get('stages', [])}
@@ -63,7 +92,9 @@ def choices(data, identity):
     return {'context': context(data), 'actions': [{'name': name, 'label': labels[name],
               'enabled': not (unavailable or reasons[name] or busy),
               'reason': unavailable or reasons[name] or ('A release operation is already queued or running.' if busy else '')}
-              for name in labels], 'approved_prs': list(approved.values())}
+              for name in labels], 'approved_prs': list(approved.values()),
+            'comparisons': {name: comparison(data, name)
+                for name in ('integration', 'staging', 'prepare', 'release', 'rollback')}}
 
 
 def payload(data, action, number=None):

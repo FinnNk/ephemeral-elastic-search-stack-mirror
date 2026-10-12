@@ -8,6 +8,7 @@ from delivery_variant_selection import selection_summary
 class SelectionSummaryTests(unittest.TestCase):
     def test_mixed_intents_are_read_from_the_exact_build_commit(self):
         selected = {'selection_sha256': 'b' * 64,
+            'configuration_sha256_by_variant': {'ranker-a': 'c' * 64, 'control': 'd' * 64},
             'configuration': {'default_variant': 'ranker-a'},
             'selection': [{'variant': 'ranker-a', 'intent': 'ranking-change'},
                           {'variant': 'control', 'intent': 'preserve-results'}]}
@@ -16,8 +17,8 @@ class SelectionSummaryTests(unittest.TestCase):
         load.assert_called_once_with('a' * 40)
         self.assertEqual(value['state'], 'ready')
         self.assertEqual(value['variants'], [
-            {'variant': 'ranker-a', 'intent': 'ranking-change', 'default': True},
-            {'variant': 'control', 'intent': 'preserve-results', 'default': False}])
+            {'variant': 'ranker-a', 'intent': 'ranking-change', 'default': True, 'configuration_sha256': 'c' * 64},
+            {'variant': 'control', 'intent': 'preserve-results', 'default': False, 'configuration_sha256': 'd' * 64}])
 
     def test_no_candidate_does_not_load_or_invent_a_selection(self):
         with patch('delivery_variant_selection.source_selection') as load:
