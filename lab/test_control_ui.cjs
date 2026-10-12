@@ -59,6 +59,9 @@ reader=false;await page.setViewportSize({width:1440,height:1100});await page.got
 await page.locator('#index-version option').nth(1).waitFor({state:'attached'});
 await page.locator('#index-version').selectOption('esci-test-index');
 assert.equal(await page.locator('#index-recipe').inputValue(),'a'.repeat(64));
+assert.equal(await page.getByLabel('Index type',{exact:true}).inputValue(),'shared');
+assert.ok((await page.locator('#index-kind-help').innerText()).includes('each title as one keyword'));
+assert.ok((await page.locator('#index-version-help').innerText()).includes('sets the index type automatically'));
 assert.ok((await page.locator('#index-date').innerText()).includes('12 Oct 2026, 10:00 UTC'));
 assert.ok((await page.locator('#index-date').innerText()).includes('synthetic'));
 await page.locator('#environment-search').fill('lab-delivery');

@@ -63,6 +63,21 @@ beside the product count. **Existing frozen index to restore** lists physical
 indices for that catalogue, with their creation times. Choosing one fills its
 pinned recipe and index kind; a dedicated environment still gets its own index.
 Use **Current index definition** to build or reuse the current recipe instead.
+
+**Index type** controls the structure and sharing behaviour when using the
+current definition:
+
+- **Shared frozen index** uses the standard search mapping. Environments with
+  the same catalogue and recipe share its read-only index, reusing it when available.
+- **Dedicated title-keyword-v1 index** creates an environment-specific read-only
+  index. Its title field stores the whole title as a keyword instead of analysed
+  words. This demonstrates a mapping change that can affect title matching;
+  it does not change the product records.
+
+The existing-index selector chooses a particular historical recipe rather than
+an index type. It sets **Index type** automatically and pins the mapping,
+settings and indexer from that recipe. Dedicated restoration still produces a
+separate index for the environment; it does not share the selected source index.
 Legacy indices without a recipe marker show their dates but cannot be selected
 as a historical recipe. A custom recipe hash remains available.
 
