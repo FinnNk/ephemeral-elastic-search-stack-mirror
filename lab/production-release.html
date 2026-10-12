@@ -6,7 +6,7 @@
 <section><h2>Production and candidate</h2><p id="state">Loading…</p><p id="candidate-state"></p><table id="releases"><thead><tr><th>Detail</th><th>Active production</th><th>Candidate</th></tr></thead><tbody id="release-details"></tbody></table><details id="slot-section" hidden><summary>Deployed slots</summary><table><thead><tr><th>Slot</th><th>Route</th><th>Release</th><th>Source commit</th></tr></thead><tbody id="slots"></tbody></table></details><p><a id="store" hidden>Open active production</a></p><button id="refresh">Refresh status</button></section>
 <section><h2>1. Prepare the candidate</h2><p>Use the verified staging release. Review its preparation PR, approve it in Gitea, then deploy it below. Production keeps serving its current release.</p><button id="prepare">Prepare production candidate</button></section>
 <section><h2>2. Check and request release</h2><p>Run the normal and peak Gatling gate, then compare 1,000 simulated recent queries against the active API and the prepared candidate. Resolve judgement gaps and score both sides with the same frozen labels. Review the report and approve the route-switch PR in Gitea.</p>
-<p>The candidate's merged source commit supplies each selected variant and its change intent. Every variant is checked against the same active production build and default configuration.</p><button id="release">Check and release production</button></section>
+<p>The candidate's merged source commit supplies each selected variant and its change intent. Every variant is checked against the same active production build and default configuration.</p><h3>Candidate variants and change intents</h3><div id="candidate-selection"></div><button id="release">Check and release production</button></section>
 <section><h2>3. Deploy an approved PR</h2><p>Select an approved preparation, route-switch or rollback PR. The coordinator checks its exact approval, asks Argo CD to deploy it and verifies the APIs.</p><form id="merge"><label>Approved production PR<select id="pr" required disabled><option value="">Loading approved PRs…</option></select></label><p id="approval-state" role="status"></p><p><a id="review-pr" hidden>Review selected PR in Gitea</a></p><button id="deploy" disabled>Deploy approved PR</button></form></section>
 <section><h2>Rollback</h2><p>The previous API stays in the other slot. Rollback checks that retained release, creates a reviewed PR and switches the route after approval.</p><button id="rollback">Request rollback to the other slot</button></section><section><h2>Queued and active work</h2><div id="work"></div></section><p id="message" role="status"></p><div id="operation"></div></main>
 <script>
@@ -14,6 +14,15 @@ let current=null,approved=[],sending=false;
 const $=id=>document.getElementById(id);
 async function request(path,body){const response=await fetch(path,{method:body?'POST':'GET',headers:{Accept:'application/json','Content-Type':'application/json','X-Lab-Intent':'1',...(body?{'Idempotency-Key':crypto.randomUUID()}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok){$('signin').hidden=response.status!==401;throw new Error(value.error||'Request failed')}return value}
 function text(tag,value,parent){const el=document.createElement(tag);el.textContent=value;parent.append(el);return el}
+function variantDetails(selection){
+ const root=$('candidate-selection');root.replaceChildren();
+ if(selection?.state!=='ready'){text('p',selection?.state==='not-selected'?'No candidate selected.':'Declared variants and intents are unavailable. No intent has been assumed.',root);return}
+ const table=text('table',null,root),head=text('tr',null,text('thead',null,table));
+ for(const label of ['Variant','Change intent'])text('th',label,head).scope='col';
+ const body=text('tbody',null,table);
+ for(const item of selection.variants){const row=text('tr',null,body);text('td',item.variant+(item.default?' · default':''),row);text('td',({'ranking-change':'Intentional ranking change','preserve-results':'Preserve search results'}[item.intent]||item.intent),row)}
+ const link=text('a','Open candidate gate selection',text('p',null,root));link.href='https://gitea.localhost:34443/elastic-agent/delivery-source/src/commit/'+selection.source_sha+'/gate/selection.json';
+}
 function releaseDetails(value){
  const fields=[['Version','software_version'],['Build run','build_run'],['Source commit','source_sha'],['Release','software_release_id'],['Image','image'],['Catalogue','dataset_release'],['Index','index'],['Elasticsearch','engine']];
  $('release-details').replaceChildren();
@@ -31,7 +40,7 @@ async function refresh(){try{
  const candidate=value.candidate,staging=value.staging,same=staging&&staging.fingerprint===value.production?.fingerprint;
  $('candidate-state').textContent=candidate?'Candidate is prepared in the '+candidate.prepared_slot+' slot.':'No candidate selected.';
  if(!candidate&&same)$('candidate-state').textContent+=' Staging matches active production.';
- releaseDetails(value);$('slots').replaceChildren();$('slot-section').hidden=!Object.keys(value.slots||{}).length;
+ releaseDetails(value);variantDetails(value.candidate_selection);$('slots').replaceChildren();$('slot-section').hidden=!Object.keys(value.slots||{}).length;
  for(const [name,slot] of Object.entries(value.slots||{})){const row=text('tr',null,$('slots'));text('td',name,row);text('td',name===value.active?'Active':name===candidate?.prepared_slot?'Prepared candidate':'Retained release',row);text('td',slot.software_release_id.slice(0,12),row);text('td',slot.source_sha.slice(0,12),row)}
  $('store').href=value.browser_url||'#';$('store').hidden=!value.browser_url;
  for(const b of document.querySelectorAll('button:not(#refresh)'))b.disabled=!identity.is_admin;

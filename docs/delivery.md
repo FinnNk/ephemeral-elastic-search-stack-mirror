@@ -113,6 +113,9 @@ available.
 query-set selection and gate policy. These inputs are frozen for this release.
 Edit the source and build a new release to change them. Promotion intent is
 source-controlled; the panel does not let an operator override it.
+The release dashboard lists the selected variants and each declared change
+intent, marks the default variant and links to that build's exact selection file.
+The Production release page shows the same list for its prepared candidate.
 
 Unknown records are shown explicitly. The dashboard reads recent source runs
 and operations plus retained verification history; it is not a complete archive

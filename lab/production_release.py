@@ -460,7 +460,9 @@ def view():
             if colour != active and slot['fingerprint'] == staging_release['fingerprint']), None)
         if prepared and staging_release['fingerprint'] != definition['fingerprint']:
             candidate = {**staging_release, 'prepared_slot': prepared}
+    from delivery_variant_selection import selection_summary
     return {'state': 'ready' if active else 'not-prepared', 'active': active, 'can_rollback': rollback,
+            'candidate_selection': selection_summary((candidate or {}).get('source_sha')),
             'production': observed_release('production', definition), 'candidate': candidate,
             'staging': staging_release, 'slots': slots,
             'browser_url': 'https://' + NAMESPACE + '.preview.relevance.test:34443/'}

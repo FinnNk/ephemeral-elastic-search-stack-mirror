@@ -2,6 +2,9 @@ const fs=require('fs'),path=require('path'),http=require('http'),assert=require(
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 (async()=>{
  const data=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+ data.variant_selection={state:'ready',source_sha:data.selected.source_sha,variants:[
+  {variant:'ranker-a',intent:'ranking-change',default:true},
+  {variant:'control',intent:'preserve-results',default:false}]};
  const errors=[],posts=[];let admin=true,failTransport=true;
  const names=['integration','staging','prepare','release','deploy','rollback'];
  const server=http.createServer((req,res)=>{
@@ -20,19 +23,26 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   const name=req.url.split('?')[0].slice(1);const file=['lab-design.css','release_control.js','release_dashboard.js'].includes(name)?name:'release-dashboard.html';
   res.setHeader('Content-Type',file.endsWith('.css')?'text/css':file.endsWith('.js')?'text/javascript':'text/html');res.end(fs.readFileSync(path.join(__dirname,file)));
  });
- await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({headless:true});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
+  browser=await chromium.launch({headless:true,channel:process.env.PLAYWRIGHT_CHANNEL});
   const page=await browser.newPage({viewport:{width:1600,height:1100}});page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:'+server.address().port+'/release-dashboard?run=158');
   await page.locator('#control-state').filter({hasText:'select a stage'}).waitFor();
+  assert.equal(await page.locator('#variant-selection tbody tr').count(),2);
+  assert.ok((await page.locator('#variant-selection').innerText()).includes('ranker-a · default'));
+  assert.ok((await page.locator('#variant-selection').innerText()).includes('Intentional ranking change'));
+  assert.ok((await page.locator('#variant-selection').innerText()).includes('Preserve search results'));
+  assert.equal(await page.locator('#promotion-intent').count(),0);
   await page.locator('.tree-node').last().press('Enter');assert.equal(await page.locator('#promotion-stage').inputValue(),'production');
   const release=page.getByRole('button',{name:'Check and request production release',exact:true});await release.click();await page.locator('#promotion-feedback').filter({hasText:'Temporary transport failure'}).waitFor();
   await release.click();await page.getByRole('link',{name:'Open progress and review links',exact:true}).waitFor();
   assert.equal(posts.length,2);assert.equal(posts[0].key,posts[1].key);assert.equal(posts[1].body.run,158);assert.equal(posts[1].body.action,'release');
+  assert.equal('intent' in posts[1].body,false);
   await page.locator('#approved-proposal').selectOption('25');await page.getByRole('button',{name:'Deploy approved proposal',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('#promotion-feedback').textContent.includes('queued'));assert.equal(posts.at(-1).body.pr,25);
   admin=false;await page.locator('#refresh').click();await page.locator('#deploy-reason').filter({hasText:'Administrator access'}).waitFor();assert.equal(await release.isDisabled(),true);
   await page.setViewportSize({width:390,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.deepEqual(errors,[]);
   console.log(JSON.stringify({passed:true,keyboard:true,stable_retry_key:true,approved_selection:true,reader:true,mobile_overflow:false,posts:posts.length}));
- }finally{await browser.close();server.close();}
+ }finally{await browser?.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

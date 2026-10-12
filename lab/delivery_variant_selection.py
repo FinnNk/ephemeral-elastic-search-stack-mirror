@@ -71,6 +71,21 @@ def configured_baseline(deployment):
             'variant': name, 'configuration_sha256': sha(canonical(settings)), 'settings': settings}
 
 
+def selection_summary(source_sha):
+    """Expose a release's immutable declared intents without inventing missing values."""
+    if not source_sha:
+        return {'state': 'not-selected', 'variants': []}
+    try:
+        selected = source_selection(source_sha)
+        return {'state': 'ready', 'source_sha': source_sha,
+            'selection_sha256': selected['selection_sha256'],
+            'variants': [{'variant': row['variant'], 'intent': row['intent'],
+                'default': row['variant'] == selected['configuration']['default_variant']}
+                for row in selected['selection']]}
+    except (RuntimeError, OSError, ValueError, KeyError, TypeError):
+        return {'state': 'unavailable', 'source_sha': source_sha, 'variants': []}
+
+
 def with_variant(deployment, name, settings):
     """Pin one named setting as the API default for a pair comparison preview."""
     from delivery_runtime import fingerprint

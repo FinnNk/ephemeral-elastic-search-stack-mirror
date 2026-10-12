@@ -18,7 +18,16 @@ Gitea runtime identity and Elasticsearch 9.5.4, and reached Nexus.
 
 The remaining separate production page still submitted legacy intent fields for
 release and rollback. This batch removes those fields and explains the same
-source-controlled selection. It requires a further accepted runtime update.
+source-controlled selection. Both release pages now list every selected variant,
+its declared intent and which variant is the default, with a link to the exact
+source selection file. Missing source data is shown explicitly without inventing
+an intent. It requires a further accepted runtime update.
+
+The display update passed 42 selected unit fixtures, including mixed intents,
+exact source-commit lookup, no-candidate state and provider failure. An isolated
+Chrome fixture confirmed two readable intent rows, default marking, intent-free
+submission, keyboard navigation, stable retries and no mobile overflow. The
+production page's inline JavaScript also passed its syntax check.
 
 The installed delivery-source client and seven delivery workflows matched the
 previous templates. Their separate review batch copies the accepted new

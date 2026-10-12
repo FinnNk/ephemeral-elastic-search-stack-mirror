@@ -273,6 +273,8 @@ def snapshot(identity, run=None):
             notices.append('Review status is unavailable for PR #' + str(number) + '.')
     result = project(run, rows, receipts, environments, reviews, builds, notices)
     result['source'] = source_merge(result.get('selected'), rows, notices)
+    from delivery_variant_selection import selection_summary
+    result['variant_selection'] = selection_summary((result.get('selected') or {}).get('source_sha'))
     check_results(result['stages'], notices)
     return result
 

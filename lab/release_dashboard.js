@@ -69,6 +69,11 @@ function render(data) {
   $('page-title').textContent=detail&&data.selected ? `Release · Build ${data.selected.run}` : 'Releases';
   $('page-description').textContent=detail ? 'Source merge, recorded gates and deployment progress.' : 'Browse releases and follow their journey to active production.';
   cards(data);
+  const declared = data.variant_selection;
+  const intentLabel = value => ({'ranking-change':'Intentional ranking change','preserve-results':'Preserve search results'}[value] || value);
+  $('variant-selection').innerHTML = declared?.state === 'ready'
+    ? `<p class="notice">Declared in this build's source commit. ${link(`https://gitea.localhost:34443/elastic-agent/delivery-source/src/commit/${declared.source_sha}/gate/selection.json`,'Open gate selection')}</p><div class="table-wrap"><table><thead><tr><th>Variant</th><th>Change intent</th></tr></thead><tbody>${declared.variants.map(v=>`<tr><td>${escapeText(v.variant)}${v.default ? ' · default' : ''}</td><td>${escapeText(intentLabel(v.intent))}</td></tr>`).join('')}</tbody></table></div>`
+    : `<p class="notice">${declared?.state === 'not-selected' ? 'Select a release to see its declared variants.' : 'Declared variants and intents are unavailable. No intent has been assumed.'}</p>`;
   const active = data.active_production?.definition;
   const production = data.stages.find(s=>s.name==='production');
   const candidate = data.stages.find(s=>s.name==='candidate');
