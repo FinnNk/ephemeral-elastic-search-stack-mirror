@@ -182,11 +182,51 @@ view uses metrics available in every scored set, counts repeated requests in
 each set and pools result counts for coverage. It never replaces an individual
 required outcome.
 
-A primary query manifest identifies one suite. Queries from several sources
-can be included in it, but their measurements then form one set. Use named
-additional sets for separate results and requirements. The catalogue's pinned
-standard manifest always runs during promotion and cannot be replaced by a
-custom primary manifest or an empty list of additional sets.
+### Standard and additional query sets
+
+Reports use two groups:
+
+| Group | Number of sets | Gate requirement |
+| --- | --- | --- |
+| Standard query sets | One or more | Every set is required |
+| Additional query sets | Zero or more | Each set declares Required or Report only |
+
+Each manifest still identifies one query set. The standard group can include
+several manifests, and source `additional_query_sets` can include several named
+files. Each set has separate scores and an independent required outcome; the
+combined view is informational. All selected variants use every standard set.
+
+The lab's trusted [gate policy](../lab/delivery/policies/variant-merge-v1.json)
+owns the standard groups under `primary_query_sets`, keyed by the catalogue's
+standard query-manifest SHA-256. Each group is a non-empty array of names,
+query-manifest hashes and judgement-manifest hashes. The first entry is
+`standard` and retains the catalogue's published default queries and labels.
+Further entries use distinct `primary-` names and compatible retained manifests.
+The current catalogues each retain their existing single standard set; support
+for larger groups does not introduce a new workload until one is configured.
+
+To add a standard set, publish compatible query and judgement manifests, add
+an entry to that catalogue's group in the lab policy, review and activate the
+policy change, then run a fresh comparison. The judgement manifest must name
+the same catalogue and query content. Up to eight standard sets and eight
+additional sets are supported. Standard snapshots use their published labels;
+additional sets retain their existing missing-label resolution behaviour.
+
+The following is a configuration fragment, with illustrative hash placeholders:
+
+```json
+"primary_query_sets": {
+  "<standard query manifest SHA-256>": [
+    {"name": "standard", "query_manifest_sha256": "<standard query manifest SHA-256>", "judgement_manifest_sha256": "<standard judgement manifest SHA-256>"},
+    {"name": "primary-seasonal", "query_manifest_sha256": "<seasonal query manifest SHA-256>", "judgement_manifest_sha256": "<seasonal judgement manifest SHA-256>"}
+  ]
+}
+```
+
+A source change cannot remove, rename or downgrade a standard set. The source
+selection reserves `standard` and `primary-` names. Both source PR comparisons
+and promotion checks retain the full configured group and validate every set.
+A custom primary manifest cannot replace that group.
 
 Retained evidence must contain the exact declared sets, query bytes, reference
 labels, required settings and baseline/candidate configurations. Evidence made

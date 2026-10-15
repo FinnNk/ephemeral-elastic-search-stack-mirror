@@ -124,7 +124,7 @@ class SourceComparisonTests(unittest.TestCase):
         manifest['dependencies']['query-suite'] = sha(query)
         manifest['content']['object'] = 'labels'
         raw_manifest = canonical(manifest)
-        inputs = {'catalogue': catalogue, 'query_manifest': query_manifest, 'judgement_manifest': manifest,
+        inputs = {'query_manifest_sha256':'c'*64, 'catalogue': catalogue, 'query_manifest': query_manifest, 'judgement_manifest': manifest,
                   'judgement_manifest_sha256': sha(raw_manifest), 'queries': [json.loads(query)]}
         selection = {'selected': [{'variant': 'ranker-a', 'intent': 'ranking-change'}],
                      'additional_query_sets': [{'name': 'rewrite', 'path': 'evaluation/queries/test.jsonl'}]}
@@ -156,7 +156,8 @@ class SourceComparisonTests(unittest.TestCase):
             (root/'evaluation/specs/proxy-v2.json').write_bytes((fixture.root/'specification.json').read_bytes())
             account = Mock()
             account.get_blob_client.return_value.download_blob.return_value.readall.return_value = raw_manifest
-            with patch('comparison_evaluator.resolve_extra', side_effect=lambda item, *args: {**item, 'resolved_references': {'resolution': {'sha256': 'f'*64, 'blob': 'runs/resolution'}}}), \
+            with patch('primary_query_sets.configuration',return_value=[{'name':'standard','query_manifest_sha256':'c'*64,'judgement_manifest_sha256':sha(raw_manifest)}]), \
+                    patch('comparison_evaluator.resolve_extra', side_effect=lambda item, *args: {**item, 'resolved_references': {'resolution': {'sha256': 'f'*64, 'blob': 'runs/resolution'}}}), \
                     patch.object(comparison, 'ROOT', root), patch.object(comparison, 'source_bytes', side_effect=source), \
                     patch.object(comparison, 'from_run_bytes', side_effect=receipt), \
                     patch.object(comparison, 'resolve', side_effect=resolve), \

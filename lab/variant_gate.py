@@ -171,22 +171,53 @@ def number(value, name, low=0, high=1):
     return value
 
 
+def primary_declarations(report, policy):
+    """Expand the protected non-empty mandatory group, independently of source choices."""
+    registry = policy.get('primary_query_sets', {})
+    if not isinstance(registry, dict):
+        raise ValueError('Mandatory query-set registry must be an object.')
+    anchor = report.get('primary_query_manifest_sha256')
+    if anchor is None:
+        if any(not isinstance(group, list) or len(group) != 1 for group in registry.values()):
+            raise ValueError('Report is missing the protected mandatory query-set group.')
+        return []  # Retained single-standard evidence predates group metadata.
+    group = registry.get(anchor)
+    if not isinstance(group, list) or not 1 <= len(group) <= 8:
+        raise ValueError('The mandatory group must contain one to eight query sets.')
+    names = set()
+    for index, item in enumerate(group):
+        if (not isinstance(item, dict) or set(item) != {'name','query_manifest_sha256','judgement_manifest_sha256'} or
+                not isinstance(item['name'], str) or item['name'] in names or
+                (item['name'] != 'standard' if index == 0 else not re.fullmatch(r'primary-[a-z0-9-]{1,23}', item['name'])) or
+                any(not re.fullmatch('[0-9a-f]{64}', str(item[key])) for key in ('query_manifest_sha256','judgement_manifest_sha256'))):
+            raise ValueError('Mandatory query sets need distinct protected names and immutable manifests.')
+        names.add(item['name'])
+    if group[0]['query_manifest_sha256'] != anchor or report.get('primary_query_sets') != group:
+        raise ValueError('Report changed or omitted mandatory query-set declarations.')
+    return [{'name':item['name'],'required':True,
+             'path':'evaluation/mandatory/'+item['name']+'.jsonl',
+             'judgements':'evaluation/mandatory/'+item['name']+'-judgements.jsonl'} for item in group[1:]]
+
+
 def additional_suite_states(report, selection, policy, variant, intent):
     """Check each required extra suite; combined averages never decide a gate."""
     declarations = selection.get('additional_query_sets', [])
     if not isinstance(declarations, list) or len(declarations) > 8:
         raise ValueError('Additional query-set selection is invalid.')
-    if not declarations:
+    primary = primary_declarations(report, policy)
+    if any(str(item.get('name', '')).startswith('primary-') for item in declarations if isinstance(item, dict)):
+        raise ValueError('Source query sets cannot use protected primary names.')
+    if not declarations and not primary:
         if report.get('query_sets', {}).keys() - {'standard'}:
             raise ValueError('Report contains additional sets that were not selected.')
         return []
-    if report.get('additional_query_sets_selection_sha256') != sha(canonical(declarations)):
+    if (declarations or primary) and report.get('additional_query_sets_selection_sha256') != sha(canonical(declarations)):
         raise ValueError('Report used another additional query-set selection.')
     suites, metadata = report.get('query_sets', {}), report.get('query_set_metadata', {})
     names = {'standard'}
     states = []
     baseline, metric = report['baseline_variant'], policy['metric']
-    for item in declarations:
+    for item in [*primary, *declarations]:
         if (not isinstance(item, dict) or set(item) - {'name', 'path', 'required', 'judgements'}
                 or not {'name', 'path'} <= set(item)
                 or not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', str(item.get('name', '')))

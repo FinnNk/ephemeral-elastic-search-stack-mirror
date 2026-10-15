@@ -10,6 +10,12 @@ PRs #188–#190 are accepted and active. Promotion review shows versions with
 short source commits and one aligned quality/coverage table. Proposal #25's
 presentation was refreshed without changing its measured evidence.
 
+The [multiple standard sets batch](multiple-standard-query-sets.md) follows
+PR #191. It supports one or more protected standard sets and zero or more
+additional source sets in both source comparisons and promotion checks. Review
+and merge #191 first, then this follow-up; activate the resulting runtime once.
+The existing single standard set per catalogue remains configured.
+
 The [promotion query-set batch](promotion-query-sets.md) carries exact-source
 additional sets through every selected variant's promotion checks. The standard
 suite stays mandatory. Build 184 declares report-only `sneakers`; its older

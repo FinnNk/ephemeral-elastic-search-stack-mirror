@@ -99,11 +99,14 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.screenshot({path:path.join(out,'promotion-review-mobile-fixture.png'),fullPage:true});
  // A promotion keeps the standard suite and separate required/report-only results.
  report.checks[0].query_sets_report={sha256:'1'.repeat(64)};
- detailReports['query-sets']={kind:'promotion-query-set-report',state:'failed',query_sets:{standard,seasonal:standard,exploration:{...extra,complete:false}},query_set_metadata:{standard:{required:true},seasonal:{required:true},exploration:{required:false}},gate_outcomes:{standard:{state:'pass',required:true},seasonal:{state:'blocked',required:true,reason:'Coverage below the required minimum'},exploration:{state:'report_only',required:false,available:false}},combined:{available:false,unavailable_reason:'A query set did not complete; no combined average is reported.'}};
+ detailReports['query-sets']={kind:'promotion-query-set-report',state:'failed',query_sets:{standard,'primary-seasonal':standard,seasonal:standard,exploration:{...extra,complete:false}},query_set_metadata:{standard:{required:true,group:'mandatory'},'primary-seasonal':{required:true,group:'mandatory'},seasonal:{required:true,group:'change-specific'},exploration:{required:false}},gate_outcomes:{standard:{state:'pass',required:true},'primary-seasonal':{state:'pass',required:true},seasonal:{state:'blocked',required:true,reason:'Coverage below the required minimum'},exploration:{state:'report_only',required:false,available:false}},combined:{available:false,unavailable_reason:'A query set did not complete; no combined average is reported.'}};
  await page.goto(url+'/report');await page.getByRole('heading',{name:'ranker-a — Query-set outcomes',exact:true}).waitFor();
- assert.ok((await page.locator('#content').innerText()).includes('Standard suite — required'));
+ assert.ok((await page.locator('#content').innerText()).includes('Standard query sets — required'));
  const outcomes=page.getByRole('heading',{name:'ranker-a — Query-set outcomes',exact:true}).locator('..');
- assert.deepEqual(await outcomes.locator('tbody tr').first().locator('td').allTextContents(),['standard','Required','Passed','']);
+ assert.deepEqual(await outcomes.locator('tbody tr').first().locator('td').allTextContents(),['Standard query sets','standard','Required','Passed','']);
+ assert.equal(await page.getByRole('heading',{name:'ranker-a — Standard query sets',exact:true}).count(),1);
+ assert.equal(await page.getByRole('heading',{name:'ranker-a — Additional query sets',exact:true}).count(),1);
+ assert.equal(await page.getByRole('heading',{name:'ranker-a — primary-seasonal',exact:true}).count(),1);
  assert.ok((await outcomes.innerText()).includes('Coverage below the required minimum'));
  assert.ok((await outcomes.innerText()).includes('Informational — unavailable'));
  assert.equal(await page.getByRole('heading',{name:'ranker-a — seasonal',exact:true}).count(),1);

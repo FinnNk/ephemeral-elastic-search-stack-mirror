@@ -17,7 +17,7 @@ class PromotionQuerySets(unittest.TestCase):
         self.candidate = {'fingerprint': 'new', 'build_run': 2,
                           'fields': {**self.baseline['fields'], 'image': 'new-image'}}
         self.inputs = {'query_manifest_sha256': suites.DEFAULTS['esci-gb-v1']['query-suite'],
-                       'judgement_manifest_sha256': 'b'*64}
+                       'judgement_manifest_sha256': suites.DEFAULTS['esci-gb-v1']['judgement-set']}
         self.runtime = {side: {'variant': 'default' if side=='baseline' else 'ranker-a',
                               'configuration_sha256': side+'-config'} for side in ('baseline','candidate')}
         self.selected = {'source_sha': 'c'*40, 'additional_query_sets': [
@@ -214,6 +214,29 @@ class PromotionQuerySets(unittest.TestCase):
             self.assertEqual(value['gate_outcomes']['seasonal']['state'],'pass')
             self.assertEqual(value['query_sets']['seasonal']['metrics']['candidate']['nDCG@10'],1)
             self.assertFalse(value['query_sets']['exploration']['relevance_available'])
+
+    def test_multiple_standard_sets_with_no_additional_sets(self):
+        self.selected['additional_query_sets']=[]
+        item=self.frozen[0]
+        item.update(name='primary-seasonal',group='mandatory',
+            path='evaluation/mandatory/primary-seasonal.jsonl',judgements='evaluation/mandatory/primary-seasonal-judgements.jsonl',
+            query_manifest_sha256='a'*64,judgement_manifest_sha256='b'*64)
+        self.frozen=[item]
+        group=[{'name':'standard','query_manifest_sha256':self.inputs['query_manifest_sha256'],
+            'judgement_manifest_sha256':'b'*64},{'name':'primary-seasonal','query_manifest_sha256':'a'*64,'judgement_manifest_sha256':'b'*64}]
+        with ExitStack() as stack:
+            self.mocks(stack)
+            stack.enter_context(patch('primary_query_sets.configuration',return_value=group))
+            resolver=stack.enter_context(patch('additional_judgements.resolve_extra'))
+            ref=self.evaluate();self.validate(ref)
+            resolver.assert_not_called()
+            value=self.read(self.read(ref)['query_sets_report'])
+            self.assertEqual(set(value['query_sets']),{'standard','primary-seasonal'})
+            self.assertEqual(value['primary_query_sets'],group)
+            self.assertTrue(all(v['required'] for v in value['gate_outcomes'].values()))
+            altered=self.read(self.read(ref)['query_sets_report']);altered['primary_query_sets'].pop()
+            self.store[self.read(ref)['query_sets_report']['blob']]=altered
+            with self.assertRaisesRegex(ValueError,'mandatory query sets'): self.validate(ref)
 
     def test_undeclared_summary_is_refused(self):
         self.parent['query_sets_report']={'blob':'x'}

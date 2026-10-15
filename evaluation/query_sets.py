@@ -41,7 +41,7 @@ def declarations(selection):
         if (not isinstance(item, dict) or set(item) - {'name', 'path', 'required', 'judgements'}
                 or not {'name', 'path'} <= set(item)
                 or not re.fullmatch(r'[a-z][a-z0-9-]{0,31}', str(item.get('name', '')))
-                or item['name'] in names or type(item.get('required', False)) is not bool):
+                or item['name'] in names or item['name'].startswith('primary-') or type(item.get('required', False)) is not bool):
             raise ValueError('Additional query sets need distinct names and explicit valid settings.')
         names.add(item['name'])
         source_path(item['path'])
@@ -144,7 +144,7 @@ def assemble(standard, extra_reports, frozen, standard_queries, selection):
     metadata = {'standard': {'required': True, 'query_sha256': standard['query_suite_sha256']}}
     for item in frozen:
         metadata[item['name']] = {key: value for key, value in item.items()
-                                  if key in ('name', 'path', 'required', 'judgements',
+                                  if key in ('name', 'path', 'required', 'judgements', 'group', 'query_manifest_sha256', 'judgement_manifest_sha256',
                                              'query_sha256', 'judgement_sha256')}
     requests = {'standard': standard_queries, **{item['name']: item['queries'] for item in frozen}}
     return {**standard, 'query_sets': reports, 'query_set_metadata': metadata,

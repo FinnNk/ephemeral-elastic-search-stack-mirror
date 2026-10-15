@@ -193,7 +193,7 @@ def validate_variant_evidence(evidence, baseline, candidate, expected_inputs=Non
 
     from promotion_query_sets import standard_inputs, frozen_sets, validate as validate_query_sets
     standard_inputs(candidate_deployment, expected_inputs)
-    frozen = frozen_sets(selected)
+    frozen = frozen_sets(selected, candidate_deployment)
 
     for check in evidence['checks']:
         name = check['variant']
@@ -248,7 +248,7 @@ def evaluate_variants(baseline, candidate, profile='probe', target=None):
     selected_inputs = deployment_inputs(candidate)
     from promotion_query_sets import standard_inputs, frozen_sets, evaluate as evaluate_query_sets, validate as validate_query_sets
     standard_inputs(candidate, selected_inputs)
-    frozen = frozen_sets(selection)
+    frozen = frozen_sets(selection, candidate)
     baseline_pin = configured_baseline(baseline)
     baseline_probe = with_variant(baseline, baseline_pin['variant'], baseline_pin['settings'])
     checks = []

@@ -34,15 +34,24 @@ def evaluate_comparison(standard_inputs, extra_observations, extra_sets, catalog
     for item in extra_sets:
         name = item['name']
         observed = extra_observations[name]
-        if resolve_missing:
-            progress('Resolving judgement gaps and freezing labels: ' + name)
-            item = resolve_extra(item, observed, specification, catalogue, retain)
-        else:
+        if not resolve_missing:
             reference = item.get('resolved_references', {}).get('judgements')
             payload = item.get('judgement_bytes')
-            if reference is None or payload is None or sha(payload) != reference['sha256'] or \
-                    payload != b''.join(canonical(row) for row in item['judgements_rows']):
+            if reference is None or payload is None or sha(payload) != reference['sha256']:
                 raise ValueError('Recalculation requires the unchanged retained judgement snapshot.')
+            if item.get('group') == 'mandatory':
+                import json
+                unchanged = [json.loads(line) for line in payload.splitlines()] == item['judgements_rows']
+            else:
+                unchanged = payload == b''.join(canonical(row) for row in item['judgements_rows'])
+            if not unchanged:
+                raise ValueError('Recalculation requires the unchanged retained judgement snapshot.')
+        elif item.get('group') == 'mandatory':
+            from primary_query_sets import retain_labels
+            item = retain_labels(item, retain)
+        else:
+            progress('Resolving judgement gaps and freezing labels: ' + name)
+            item = resolve_extra(item, observed, specification, catalogue, retain)
         reports[name] = score_extra(item, observed, specification, canonical(catalogue))
         frozen.append(item)
     return assemble(standard, reports, frozen, standard_queries, selection), frozen

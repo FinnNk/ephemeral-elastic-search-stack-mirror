@@ -23,6 +23,28 @@ class EvaluatorTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'unchanged retained'):
                 evaluate_comparison({}, {'extra':{}}, [changed], {}, b'{}', [], {}, None, resolve_missing=False)
 
+    def test_primary_replay_keeps_its_original_bytes_and_rejects_changed_labels(self):
+        payload=b'{"query_id": "q", "product_id": "p", "grade": 3}\n'
+        item={'name':'primary-seasonal','group':'mandatory','judgement_bytes':payload,
+              'judgements_rows':[{'query_id':'q','product_id':'p','grade':3}],
+              'resolved_references':{'judgements':{'sha256':sha(payload)}}}
+        with patch('comparison_evaluator.evaluate',return_value={}),patch('comparison_evaluator.score_extra',return_value={}),patch('comparison_evaluator.assemble',return_value={}),patch('comparison_evaluator.resolve_extra') as resolve:
+            evaluate_comparison({}, {'primary-seasonal':{}},[item],{},b'{}',[],{},None,resolve_missing=False)
+            resolve.assert_not_called()
+            item['judgements_rows'][0]['grade']=0
+            with self.assertRaisesRegex(ValueError,'unchanged retained'):
+                evaluate_comparison({}, {'primary-seasonal':{}},[item],{},b'{}',[],{},None,resolve_missing=False)
+
+    def test_new_standard_set_keeps_published_labels_without_resolver_calls(self):
+        item={'name':'primary-seasonal','group':'mandatory','query_manifest_sha256':'a'*64,
+            'judgement_manifest_sha256':'b'*64,'judgement_bytes':b'published snapshot'}
+        with patch('comparison_evaluator.evaluate',return_value={}),patch('comparison_evaluator.score_extra',return_value={}),patch('comparison_evaluator.assemble',return_value={}),patch('comparison_evaluator.resolve_extra') as resolve:
+            _,frozen=evaluate_comparison({}, {'primary-seasonal':{}},[item],{},b'{}',[],{},
+                lambda payload,name:{'sha256':sha(payload),'blob':name})
+            resolve.assert_not_called()
+            self.assertEqual(frozen[0]['judgement_bytes'],b'published snapshot')
+            self.assertEqual(frozen[0]['resolved_references']['judgements']['sha256'],sha(b'published snapshot'))
+
     def test_new_comparison_resolves_once_per_suite_before_scoring_all_variants(self):
         item = {'name':'extra'}
         order = []

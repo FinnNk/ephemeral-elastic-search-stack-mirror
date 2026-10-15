@@ -12,16 +12,21 @@ from query_sets import freeze, score_extra, combine, canonical, sha
 
 def standard_inputs(deployment, selected):
     """Reject a replacement primary suite before creating evaluation workloads."""
+    from primary_query_sets import configuration
+    group = configuration(deployment['fields']['dataset_release'])
     expected = DEFAULTS[deployment['fields']['dataset_release']]['query-suite']
-    if not isinstance(selected, dict) or selected.get('query_manifest_sha256') != expected:
+    if (not isinstance(selected, dict) or selected.get('query_manifest_sha256') != expected or
+            selected.get('judgement_manifest_sha256') != group[0]['judgement_manifest_sha256']):
         raise ValueError('Promotion always requires the catalogue\'s frozen standard query suite. '
                          'Declare custom queries as additional_query_sets instead of replacing it.')
 
 
-def frozen_sets(selection):
+def frozen_sets(selection, deployment=None):
     from delivery_source_comparison import source_bytes
-    return freeze({'additional_query_sets': selection.get('additional_query_sets', [])},
-                  lambda path: source_bytes(path, selection['source_sha']))
+    from primary_query_sets import frozen_sets as mandatory_sets
+    primary = mandatory_sets(deployment['fields']['dataset_release'], deployment['fields']['dataset_sha256']) if deployment else []
+    return [*primary, *freeze({'additional_query_sets': selection.get('additional_query_sets', [])},
+                  lambda path: source_bytes(path, selection['source_sha']))]
 
 
 def policy():
@@ -149,9 +154,11 @@ def evaluate(reference, baseline, candidate, selection, frozen, intent):
     for item in frozen:
         name = item['name']; requests[name] = item['queries']
         metadata[name] = {k: item[k] for k in ('name', 'path', 'required', 'query_sha256')}
-        metadata[name].update(source_judgement_sha256=item['judgement_sha256'])
+        metadata[name].update(source_judgement_sha256=item['judgement_sha256'], group=item.get('group','change-specific'))
+        for key in ('query_manifest_sha256','judgement_manifest_sha256'):
+            if key in item: metadata[name][key]=item[key]
         if item.get('judgements'): metadata[name]['judgements'] = item['judgements']
-        print('Checking additional query set ' + name + (' (required)' if item['required'] else ' (report only)'), flush=True)
+        print('Checking ' + ('standard query set ' if item.get('group') == 'mandatory' else 'additional query set ') + name + (' (required)' if item['required'] else ' (report only)'), flush=True)
         stage = 'API capture'
         try:
             for side, deployment in (('baseline', baseline), ('candidate', candidate)):
@@ -173,7 +180,11 @@ def evaluate(reference, baseline, candidate, selection, frozen, intent):
                 if definition(targets[side]['environment'])['fingerprint'] != deployment['fingerprint']:
                     raise ValueError('A preview changed during additional capture.')
             stage = 'Judgement resolution'
-            resolved = resolve_extra(item, observations, specification, inputs['catalogue'], retain_input)
+            if item.get('group') == 'mandatory':
+                from primary_query_sets import retain_labels
+                resolved = retain_labels(item, retain_input)
+            else:
+                resolved = resolve_extra(item, observations, specification, inputs['catalogue'], retain_input)
             stage = 'Scoring'
             reports[name] = score_extra(resolved, observations, specification, canonical(inputs['catalogue']))
             metadata[name]['judgement_sha256'] = resolved['judgement_sha256']
@@ -191,6 +202,8 @@ def evaluate(reference, baseline, candidate, selection, frozen, intent):
         'standard_inputs': parent['selected_inputs'], 'query_sets': reports, 'query_set_metadata': metadata,
         'gate_outcomes': gates, 'combined': combined_report(reports, requests),
         'state': 'pass' if all(g['state']=='pass' for g in gates.values() if g['required']) else 'failed'}
+    from primary_query_sets import annotate
+    annotate(summary, candidate['fields']['dataset_release'])
     summary_ref = retain(summary, 'promotion-query-sets.json')
     return retain({**parent, 'query_sets_report': summary_ref}, 'delivery-evidence.json')
 
@@ -200,11 +213,15 @@ def validate(reference, baseline, candidate, selection, frozen, intent):
     from delivery_gates import read
     parent = read(reference)
     ref = parent.get('query_sets_report')
+    from primary_query_sets import configuration
+    configured = configuration(candidate['fields']['dataset_release'])
     if not frozen:
         if ref: raise ValueError('Delivery evidence contains undeclared additional query sets.')
         return
     if not ref: raise ValueError('Delivery evidence is missing the source-declared additional query sets.')
     value = read(ref)
+    if value.get('primary_query_sets') != configured or value.get('primary_query_manifest_sha256') != configured[0]['query_manifest_sha256']:
+        raise ValueError('Promotion evidence omitted or changed mandatory query sets.')
     expected = {'standard', *(item['name'] for item in frozen)}
     if (value.get('kind') != 'promotion-query-set-report' or value.get('baseline') != baseline['fingerprint'] or
         value.get('candidate') != candidate['fingerprint'] or value.get('source_sha') != selection['source_sha'] or
@@ -228,7 +245,7 @@ def validate(reference, baseline, candidate, selection, frozen, intent):
         raise ValueError('The standard suite differs from its retained mandatory comparison.')
     for item in frozen:
         name = item['name']; report = value['query_sets'][name]; meta = value['query_set_metadata'][name]
-        if any(meta.get(k) != item.get(k) for k in ('name','path','required','judgements','query_sha256')) or meta.get('source_judgement_sha256') != item['judgement_sha256']:
+        if any(meta.get(k) != item.get(k) for k in ('name','path','required','judgements','query_sha256','query_manifest_sha256','judgement_manifest_sha256')) or meta.get('source_judgement_sha256') != item['judgement_sha256']:
             raise ValueError('Additional query bytes, reference labels or required settings changed.')
         if report.get('variants') != expected_pins or report.get('baseline_variant') != 'baseline':
             raise ValueError('An additional query set used different runtime configurations.')

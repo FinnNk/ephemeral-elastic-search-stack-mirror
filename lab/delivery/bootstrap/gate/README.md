@@ -137,3 +137,12 @@ using the standard suite and each named additional set. Required sets must pass
 separately; report-only failures remain informational. The combined view never
 opens a gate. A custom primary manifest cannot replace the catalogue's standard
 suite. Change the source selection and build again to change required sets.
+
+### Standard and additional query sets
+
+The lab policy defines one or more **Standard query sets**; all are mandatory
+for every selected variant in source and promotion checks. The source selection
+defines zero or more **Additional query sets**, each Required or Report only.
+Names beginning `primary-` are reserved for standard sets. Combined scores never
+replace individual required outcomes. Standard-group changes need a reviewed
+lab-policy change; they cannot be made by opting out in this repository.

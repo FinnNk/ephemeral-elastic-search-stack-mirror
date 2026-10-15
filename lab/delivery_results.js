@@ -113,7 +113,7 @@ async function promotionReview(value,row){
   const s=section(check.variant+' — review summary',(intentNames[check.intent]||label(check.intent))+'. Gate: '+(stateNames[check.state]||label(check.state))+'.');
   s.classList.add('promotion-review');
   const relevance=reports.relevance,results=reports['result-regression'],performance=reports.performance;
-  node('h3','Standard suite — required',s);
+  node('h3','Standard query sets — required',s);
   if(relevance){const b=relevance.metrics?.baseline||{},c=relevance.metrics?.candidate||{};
    const coverage=relevance.judgement_coverage||{};
    table(s,['Metric','Baseline','Candidate','Change'],[
@@ -135,9 +135,13 @@ async function promotionReview(value,row){
 }
 function suiteViews(value,prefix=''){
  if(value.gate_outcomes){
-  table(section(prefix+'Query-set outcomes','Every required set must pass independently. Report-only sets and combined averages do not decide promotion.'),['Query set','Requirement','Outcome','Reason'],Object.entries(value.gate_outcomes).map(([name,g])=>[name,g.required?'Required':'Report only',g.state==='report_only'?(g.available?'Informational':'Informational — unavailable'):(stateNames[g.state]||label(g.state)),g.reason||'']));
+  table(section(prefix+'Query-set outcomes','Every required set must pass independently. Report-only sets and combined averages do not decide promotion.'),['Group','Query set','Requirement','Outcome','Reason'],Object.entries(value.gate_outcomes).map(([name,g])=>[(value.query_set_metadata?.[name]?.group==='mandatory'||name==='standard')?'Standard query sets':'Additional query sets',name,g.required?'Required':'Report only',g.state==='report_only'?(g.available?'Informational':'Informational — unavailable'):(stateNames[g.state]||label(g.state)),g.reason||'']));
  }
- for(const [name,suite] of Object.entries(value.query_sets))summary(suite,prefix+(name==='standard'?'Standard suite':name),value.query_set_metadata?.[name]?.required);
+ for(const group of ['mandatory','change-specific']){
+  const entries=Object.entries(value.query_sets).filter(([name])=>(value.query_set_metadata?.[name]?.group||(name==='standard'?'mandatory':'change-specific'))===group);
+  if(entries.length)section(prefix+(group==='mandatory'?'Standard query sets':'Additional query sets'),group==='mandatory'?'Every suite in this group is required.':'Each set states whether it is required or report only.');
+  for(const [name,suite] of entries)summary(suite,prefix+(name==='standard'?'Standard suite':name),value.query_set_metadata?.[name]?.required);
+ }
  if(value.combined){
   if(value.combined.available===false)node('p',value.combined.unavailable_reason,section(prefix+'Combined view — informational'));
   else {

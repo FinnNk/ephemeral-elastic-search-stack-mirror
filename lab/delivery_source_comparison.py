@@ -219,8 +219,15 @@ def compare(request, progress, operation_id):
     inputs = select(dataset, candidate['fields']['dataset_sha256'],
                     candidate['fields']['query_manifest_sha256'],
                     candidate['fields']['judgement_manifest_sha256'], relevance=True)
+    from primary_query_sets import configuration as primary_configuration
+    primary = primary_configuration(dataset)
+    if (inputs['query_manifest_sha256'] != primary[0]['query_manifest_sha256'] or
+            inputs['judgement_manifest_sha256'] != primary[0]['judgement_manifest_sha256']):
+        raise ValueError('The standard capture differs from the protected primary query-set group.')
     spec_bytes = (ROOT / 'evaluation/specs/proxy-v2.json').read_bytes()
-    extra = freeze(selection, lambda path: source_bytes(path, revision))
+    from primary_query_sets import frozen_sets as mandatory_sets
+    extra = [*mandatory_sets(dataset, candidate['fields']['dataset_sha256']),
+             *freeze(selection, lambda path: source_bytes(path, revision))]
     captured = {}
     def capture(payload, label):
         progress('Capturing fresh results: ' + label)
@@ -254,6 +261,8 @@ def compare(request, progress, operation_id):
     progress('Evaluating the captured comparison')
     report, extra = evaluate_comparison(values, extra_observations, extra, inputs['catalogue'],
         spec_bytes, inputs['queries'], selection, retain_input, progress)
+    from primary_query_sets import annotate
+    annotate(report, dataset)
     report['source_context'] = {'source_sha': revision, 'baseline_sha': baseline_receipt['source_sha'],
                                 'pr': number, 'build_run': candidate_run,
                                 'baseline_build_run': baseline_run,

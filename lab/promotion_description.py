@@ -46,11 +46,12 @@ def description(target, deployment, current, reference, report, intent=None, rol
         lines.extend([f'- **{name}** — {INTENTS.get(row["intent"], row["intent"])}; check **{row["state"]}**. '
                       + configuration(settings.get('variants', {}).get(name)), ''])
     lines.extend(['### Query-set checks', '', 'The frozen standard suite is always required. Every additional required set must pass separately; report-only sets and combined averages are informational.', '',
-                  '| Variant | Query set | Requirement | Outcome |', '| --- | --- | --- | --- |'])
+                  '| Variant | Group | Query set | Requirement | Outcome |', '| --- | --- | --- | --- | --- |'])
     for row in checks:
         outcomes = row.get('query_set_outcomes') or {'standard': {'required': True, 'state': row['state']}}
         for name, outcome in outcomes.items():
-            lines.append(f'| {row["variant"]} | {name} | {"Required" if outcome["required"] else "Report only"} | {outcome["state"].replace("_", " ")} |')
+            group = 'Standard query sets' if name == 'standard' or name.startswith('primary-') else 'Additional query sets'
+            lines.append(f'| {row["variant"]} | {group} | {name} | {"Required" if outcome["required"] else "Report only"} | {outcome["state"].replace("_", " ")} |')
     lines.append('')
     if intent:
         lines.extend([f'Change intent: **{INTENTS.get(intent, intent)}**.', ''])
