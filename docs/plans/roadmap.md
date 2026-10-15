@@ -6,6 +6,10 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [deployed environment link batch](deployed-environment-link.md) adds a
+direct search link after successful deployment verification, on both operation
+and report pages. Review and activate when idle.
+
 The [fresh observability completion batch](fresh-observability-completion.md)
 checks current source, chart and collector inheritance and closes the remaining
 dashboard setup/link gap. Review without disturbing the running evaluation.

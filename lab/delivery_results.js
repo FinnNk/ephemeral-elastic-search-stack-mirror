@@ -15,6 +15,10 @@ const pct=value=>typeof value==='number'?(100*value).toFixed(1)+'%':'Not availab
 const releaseVersion=(version,sha)=>(version||'Version not recorded')+' · '+(sha?String(sha).slice(0,12):'Commit not recorded');
 function node(tag,text,parent){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(parent)parent.append(n);return n}
 function link(id,value){const n=$(id);n.hidden=true;if(!value)return;const u=new URL(value,location.origin);if(!['http:','https:'].includes(u.protocol))return;if(u.hostname==='gitea-internal.lab-ingress.svc.cluster.local'){u.hostname='gitea.localhost';u.port='34443';u.protocol='https:'}n.href=u.href;n.hidden=false}
+function deployedEnvironmentUrl(value){
+ if(value?.state!=='verified'||!/^lab-delivery-(integration|staging|production(?:-blue|-green)?)$/.test(value.environment||''))return null;
+ return 'https://'+value.environment+'.preview.relevance.test:34443/';
+}
 function section(title,description){const s=node('section',null,$('content'));node('h2',title,s);if(description)node('p',description,s);return s}
 function table(parent,headers,rows){const wrap=node('div',null,parent);wrap.className='table-wrap';const t=node('table',null,wrap),head=node('tr',null,node('thead',null,t));for(const text of headers)node('th',text,head).scope='col';const body=node('tbody',null,t);for(const cells of rows){const row=node('tr',null,body);for(const value of cells){const cell=node('td',null,row);if(value instanceof Node)cell.append(value);else cell.textContent=value==null?'':String(value)}}}
 function identity(values){$('identity').replaceChildren();for(const [key,value] of Object.entries(values)){if(value==null||typeof value==='object')continue;node('dt',label(key),$('identity'));node('dd',String(value),$('identity'))}}
@@ -67,7 +71,7 @@ function operation(row){
  if(row.state==='complete'&&['promotion','rollback','prepare-production','release-production'].includes(request.kind)&&result.validation){$('state').textContent=result.validation.passed?'Ready for review':'Proposal validation failed';}
  if(result.state)node('p',stateNames[result.state]||label(result.state),section('Deployment outcome'));
  if(result.validation)node('p',result.validation.detail||'Review the recorded validation result.',section('Proposal validation'));
- link('report',row.report_url);$('report').textContent=['promotion','rollback','prepare-production','release-production'].includes(request.kind)?'Review promotion checks':['verify','merge-reviewed'].includes(request.kind)?'Open deployment verification':'Open comparison report';link('baseline',result.baseline_url);link('candidate',result.candidate_url);link('preview',result.browser_url);link('proposal',result.url);link('decision',row.decision_url);
+ link('report',row.report_url);$('report').textContent=['promotion','rollback','prepare-production','release-production'].includes(request.kind)?'Review promotion checks':['verify','merge-reviewed'].includes(request.kind)?'Open deployment verification':'Open comparison report';link('baseline',result.baseline_url);link('candidate',result.candidate_url);link('preview',deployedEnvironmentUrl(result)||result.browser_url);$('preview').textContent=deployedEnvironmentUrl(result)?'Open deployed '+result.environment.replace('lab-delivery-',''):'Open search page';link('proposal',result.url);link('decision',row.decision_url);
  identity({operation:row.id,source_commit:request.source_sha||result.source_sha,baseline_commit:request.baseline_sha||result.baseline_source_sha,build_run:request.run,target:request.target,report_sha256:result.report?.sha256,updated_at:row.updated_at});
  return ['accepted','queued','running'].includes(row.state);
 }
@@ -196,6 +200,7 @@ async function report(value,operationRecord){
  }
  else if(value.state==='verified'){
   const s=section('Verified release'),deployment=value.deployment||{},fields=deployment.fields||{};
+  const deployedUrl=deployedEnvironmentUrl(value);if(deployedUrl){const a=node('a','Open deployed '+value.environment.replace('lab-delivery-',''),s);a.href=deployedUrl;}
   table(s,['Field','Value'],[['Environment',fmt(value.environment)],['Version',releaseVersion(fields.software_version,fields.source_sha)],['Build run',fmt(deployment.build_run)],['Image',fmt(fields.image)],['Index',fmt(fields.index)],['Source commit',fmt(fields.source_sha)],['Verified at',fmt(value.verified_at)],['Verification duration',fmt(value.seconds)+' s'],...(value.merge_to_verified_seconds==null?[]:[['Merge to verified',fmt(value.merge_to_verified_seconds)+' s']]),['Products checked',fmt(value.sample_ids?.length)]]);
   $('explanation').textContent='This records deployment verification, not a new relevance or load test.';
  }
