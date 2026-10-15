@@ -7,7 +7,7 @@ import subprocess
 import time
 import urllib.error
 
-from common import STATE, apply, guard, k, record
+from common import ROOT, STATE, apply, guard, k, record
 from nexus import CREDENTIALS, REGISTRY, api, request
 
 NEXUS = 'sonatype/nexus3:3.96.3@sha256:a406f4e9dc149e050723a93bf57964311f6d1c88e1dcbed2e42ea373319a1772'
@@ -148,6 +148,22 @@ def configure_network():
     k('patch', 'configmap/coredns-custom', '-n', 'kube-system', '--type=merge', '-p',
       json.dumps({'data': {'nexus.override': 'rewrite name exact nexus.localhost nexus.platform.svc.cluster.local\n'}}))
     configure_node_registries()
+    install_route_reconciler()
+
+
+def install_route_reconciler():
+    """Repair Nexus routes automatically after Docker or container restarts."""
+    server = 'k3d-relevance-lab-server-0'
+    entrypoint = docker('exec', server, 'cat', '/bin/k3d-entrypoint.sh')
+    if '/bin/k3d-entrypoint-*.sh' not in entrypoint:
+        raise RuntimeError('The k3d server does not expose the expected startup hook.')
+    target = '/bin/k3d-entrypoint-zz-lab-nexus.sh'
+    # Base64 keeps Windows pipe newline translation out of the shell script.
+    script = (ROOT / 'lab/nexus-node-startup.sh').read_text(encoding='utf-8')
+    docker('exec', '-i', server, 'sh', '-c', 'base64 -d > ' + target,
+           body=base64.b64encode(script.encode('utf-8')).decode('ascii'))
+    docker('exec', server, 'chmod', '755', target)
+    docker('exec', server, target)
 
 
 def configure_node_registries():

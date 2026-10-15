@@ -24,22 +24,51 @@ $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 uv run --locked python lab/setup_nexus.py
 ```
 
-Setup creates or reuses the pinned containers, configures repositories/accounts and refreshes cluster endpoint addresses. It refuses to silently change an existing container's image. Check the command's result, open the UI and confirm `lab-images` and `lab-releases` exist. Repeat setup after cluster/container recreation to reconnect endpoints; do not delete retained volumes to resolve an address problem.
+Setup creates or reuses the pinned containers, configures repositories/accounts and refreshes cluster endpoint addresses. It also installs automatic route repair on the k3d server. It refuses to silently change an existing container's image. Check the command's result, open the UI and confirm `lab-images` and `lab-releases` exist. Repeat setup after cluster/container recreation to reinstall the startup hook; do not delete retained volumes to resolve an address problem.
 
-## Repair access after a Docker restart
+## Automatic repair after a Docker restart
 
-Docker may assign Nexus a different address after restarting. If a build reports
-`connection refused` at `nexus.localhost:18185`, refresh its cluster route.
-Run from the lab repository root with Docker running and the operator kubeconfig
-in the retained state directory:
+Docker may assign Nexus a different address after restarting. Nexus setup installs
+a small background watcher in the existing k3d server. Every 15 seconds it resolves
+`relevance-nexus` through the node's Docker DNS and updates the lab-owned Nexus
+EndpointSlice when its address differs. It starts before k3s on each node boot,
+waits for DNS and the API, and leaves correct routes unchanged. Repeated setup
+does not start another watcher. It needs no additional container, Python runtime
+or Docker socket.
+
+Existing installations need one network repair after pulling this change to
+install the hook. Run from the lab repository root with Docker running and the
+operator kubeconfig in the retained state directory. Use PowerShell:
 
 ```powershell
 $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 uv run --locked python lab/setup_nexus.py --repair-network
 ```
 
-This updates routing only. It preserves accounts, repository contents and volumes.
-Rerun the failed release workflow in Gitea Actions after the command succeeds.
+On macOS, run from the checkout root:
+
+```sh
+LAB_STATE_DIR="$PWD/.lab" uv run --locked python lab/setup_nexus.py --repair-network
+```
+
+This refreshes routing and installs the watcher without restarting services or
+changing accounts, repository contents or volumes. After future restarts, allow
+the cluster, Nexus and its database to become ready; route reconciliation takes
+up to one polling interval once DNS and the API are available. A request made
+during startup can still fail and needs a new attempt. Failed operations are
+never automatically replayed.
+
+For operator diagnosis, use either shell:
+
+```sh
+docker exec k3d-relevance-lab-server-0 tail -n 30 /var/log/lab-nexus-route.log
+```
+
+The log records changed addresses and waiting or
+ownership errors. The watcher changes only the Nexus EndpointSlice labelled as
+lab-owned. It preserves concurrent operator changes by checking the API revision.
+Recreating the k3d server removes its hook; rerun network repair after recreation.
+The separate snapshot-store route is not managed by this Nexus watcher.
 
 ## Storage and transport
 
