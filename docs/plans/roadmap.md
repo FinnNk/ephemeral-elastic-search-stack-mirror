@@ -20,6 +20,13 @@ probe: p95 253 ms exceeded the 250 ms limit; candidate p95 was 138 ms, with no
 failed requests on either side. Its evidence is retained under operation
 `5b47e81d97b1d4f90eb1da8df9fc7440`; additional sets were not reached.
 
+The [observability link batch](observability-probe-window.md) follows the live
+progress batch (#193). Retained candidate telemetry is present, but the linked
+42-second window and normal-only SLO panels obscure probe traffic. It adds
+separate probe panels and padded, environment-filtered links. Baseline build
+158 has no OTLP endpoint; no historical telemetry is fabricated for it. Review
+both batches, activate the runtime and apply the dashboard before retrying.
+
 The [live evaluation progress batch](live-evaluation-progress.md) adds sampled
 capture counters, scoring/resolution phases and concrete failure reasons. Review
 and merge it, then activate when idle before retrying the walkthrough. Do not

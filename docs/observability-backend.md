@@ -39,6 +39,7 @@ The [investigation diagram](diagrams/interactive/observability-investigation.htm
 | View | Useful for | Limits and next action |
 | --- | --- | --- |
 | Search activity | Whether the selected environment exports search counters, including probes and browser requests | Latest process counters reset on restart. They are not request totals for the selected window. |
+| Probe and evaluation requests | Request increases, failed requests and the fraction successful within 250 ms for probe traffic | Includes warm-up and other probes in the selected interval. These panels are informational; use the retained Gatling report for its measured phases and promotion verdict. |
 | Search SLO | Normal-cohort eligible/good counts, percentages, allowance and burn; lifecycle success/deadline trends | Interval increases use the time picker; operation panels are lab-wide. Use the companion below for a coverage-verified seven-day verdict. |
 | Model health | Inference errors, outcomes, batch latency, labelled coverage and label mix | Select `$model_version` to avoid combining historical judges. Version 1 abstains on every gap. These signals describe activity, not relevance accuracy. |
 | Query-length gap-pool shift | Differences between the frozen query mix and pairs needing resolution | Includes cached resolution outcomes. It measures which queries lack labels, not drift against training data. |
@@ -86,6 +87,23 @@ uv run --locked python lab/observability/window.py --buckets $buckets
 | Fewer than 100 eligible events or no events | Insufficient data for the policy; not a passing SLO |
 
 Finite Gatling checks use `coverage_probe.py` during the run and `export_window.py` afterwards. The latter joins retained probes, actual normal-phase arrivals and SigNoz v5 counter increases. Its run total can be `matched-total-only`: metric export can shift counts between adjacent minute buckets. That does **not** verify minute coverage or the whole seven-day window. The [finite-run evidence](research/evidence/signoz-investigation-2026-09-28.md) and [window fixtures](research/evidence/signoz-window-2026-09-28.md) retain their input conditions.
+
+### Dashboard links from a run
+
+The Gatling panel opens the selected preview environment with a minute-aligned
+range and two minutes of padding before and after the observed run. SigNoz
+aggregates these metrics into intervals of at least one minute, and metric
+exports can arrive after a short workload ends. Padding makes those exports
+visible; neighbouring requests can be included in the dashboard interval.
+
+Use **Probe and evaluation requests** for short functional and Gatling probes.
+The normal search SLO panels require `normal` traffic and can correctly have no
+data during a probe-only run. **Search activity** shows cumulative process
+counters across traffic classes; it is not a request total for the selected run.
+
+If one side still has no activity, check whether that exact API release exports
+OTLP. A legacy release without an endpoint cannot supply historical search
+metrics. Gatling's retained client measurements remain available independently.
 
 ## Install and preserve the backend
 

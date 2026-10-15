@@ -241,8 +241,14 @@ function showGatling(event){
  table(panel,['Side','Phase','Job elapsed / planned traffic','Completed in phase','Failures in phase','Completion rate','Mean latency'],[[event.side,event.phase_label||m?.phase||'Starting driver',fmt(event.elapsed_seconds)+' / '+fmt(event.planned_seconds)+' s',fmt(m?.completed),fmt(m?.failed),fmt(m?.completed_rps)+' requests/s',fmt(m?.mean_latency_ms)+' ms']]);
  const a=node('a','Open observability dashboard',panel);const dashboard=new URL('https://signoz.localhost:34443/dashboard/01a0e51c-1043-79cb-94a8-9511cb0c665b');
  dashboard.searchParams.set('variables',JSON.stringify({environment:[event.environment]}));
- dashboard.searchParams.set('startTime',String(event.started_ms));dashboard.searchParams.set('endTime',String(event.observed_ms));a.href=dashboard.href;
- node('p','Environment: '+event.environment+'. The dashboard opens this environment and the sampled run interval. Operation panels remain lab-wide. Missing telemetry is not a healthy result.',panel);
+ const start=Number(event.started_ms),end=Number(event.observed_ms),minute=60000,padding=120000;
+ if(Number.isFinite(start)&&Number.isFinite(end)&&start>0&&end>=start){
+  dashboard.searchParams.set('startTime',String(Math.floor(start/minute)*minute-padding));
+  dashboard.searchParams.set('endTime',String(Math.ceil(end/minute)*minute+padding));
+ }else dashboard.searchParams.set('relativeTime','15m');
+ a.href=dashboard.href;
+ node('p','The telemetry window includes two minutes of padding for metric exports. Probe traffic is shown separately from normal search SLOs.',panel);
+ node('p','Environment: '+event.environment+'. The dashboard opens this environment and a padded run window. Operation panels remain lab-wide. Missing telemetry is not a healthy result.',panel);
 }
 
 

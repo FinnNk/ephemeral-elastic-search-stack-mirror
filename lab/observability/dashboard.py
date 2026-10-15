@@ -87,6 +87,10 @@ def guidance(policy):
                      'not totals for the selected window. The SLO charts below use only normal traffic. '
                      'An idle counter has zero increase, so its percentages have no value. '
                      'Short bursts before the first export can be missing from increases.\n\n'
+                     'Probe and evaluation panels include warm-up and other probe requests in the selected interval. '
+                     'The immutable Gatling report supplies the promotion gate results. Normal search panels '
+                     'require normal traffic and can be empty during a probe-only run. Links from the run '
+                     'page include time padding for metric exports; neighbouring probes can be included.\n\n'
                      'The remaining charts show per-interval increases. Negative remaining budget '
                      'means the interval exceeded its allowance. Inspect the same service, '
                      'cohort and time in Traces and Logs, then open the immutable run report '
@@ -113,6 +117,14 @@ def build():
     definitions = [
         ('activity', 'Search activity by traffic class (process counters)',
          [activity()], 'none'),
+        ('probe_requests', 'Probe and evaluation requests',
+         [metric('lab.search.eligible', 'A', cohort='probe', hidden=False)], 'none'),
+        ('probe_failures', 'Failed probe and evaluation requests',
+         [metric('lab.search.eligible', 'A', cohort='probe'),
+          metric('lab.search.success_good', 'B', cohort='probe'), formula('F1', 'A-B')], 'none'),
+        ('probe_responsive', 'Probe responses within 250 ms (%)',
+         [metric('lab.search.eligible', 'A', cohort='probe'),
+          metric('lab.search.responsive_good', 'B', cohort='probe'), formula('F1', '(B/A)*100')], 'percent'),
         ('eligible', 'Normal search requests', [metric('lab.search.eligible', 'A', hidden=False)], 'none'),
         ('success_good', 'Successful searches',
          [metric('lab.search.success_good', 'A', hidden=False)], 'none'),
@@ -150,7 +162,7 @@ def build():
             'tags': [{'key': 'lab', 'value': 'relevance'},
                      {'key': 'contract', 'value': 'search-slo-v1'}],
             'spec': {'display': {'name': 'Search and operation SLOs',
-                                 'description': 'Normal search cohort and accepted operations. '
+                                 'description': 'Normal search SLOs, probe traffic and accepted operations. '
                                                 'No data means unknown; check sample count and collection coverage.'},
                      'layouts': [{'kind': 'Grid', 'spec': {'items': items}}],
                      'panels': panels, 'variables': [{

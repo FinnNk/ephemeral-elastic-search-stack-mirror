@@ -14,7 +14,7 @@
   "spec": {
     "display": {
       "name": "Search and operation SLOs",
-      "description": "Normal search cohort and accepted operations. No data means unknown; check sample count and collection coverage."
+      "description": "Normal search SLOs, probe traffic and accepted operations. No data means unknown; check sample count and collection coverage."
     },
     "layouts": [
       {
@@ -45,12 +45,39 @@
               "width": 6,
               "height": 6,
               "content": {
-                "$ref": "#/spec/panels/eligible"
+                "$ref": "#/spec/panels/probe_requests"
               }
             },
             {
               "x": 0,
               "y": 11,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/probe_failures"
+              }
+            },
+            {
+              "x": 6,
+              "y": 11,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/probe_responsive"
+              }
+            },
+            {
+              "x": 0,
+              "y": 17,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/eligible"
+              }
+            },
+            {
+              "x": 6,
+              "y": 17,
               "width": 6,
               "height": 6,
               "content": {
@@ -58,8 +85,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 11,
+              "x": 0,
+              "y": 23,
               "width": 6,
               "height": 6,
               "content": {
@@ -67,8 +94,8 @@
               }
             },
             {
-              "x": 0,
-              "y": 17,
+              "x": 6,
+              "y": 23,
               "width": 6,
               "height": 6,
               "content": {
@@ -76,8 +103,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 17,
+              "x": 0,
+              "y": 29,
               "width": 6,
               "height": 6,
               "content": {
@@ -85,8 +112,8 @@
               }
             },
             {
-              "x": 0,
-              "y": 23,
+              "x": 6,
+              "y": 29,
               "width": 6,
               "height": 6,
               "content": {
@@ -94,8 +121,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 23,
+              "x": 0,
+              "y": 35,
               "width": 6,
               "height": 6,
               "content": {
@@ -103,8 +130,8 @@
               }
             },
             {
-              "x": 0,
-              "y": 29,
+              "x": 6,
+              "y": 35,
               "width": 6,
               "height": 6,
               "content": {
@@ -112,8 +139,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 29,
+              "x": 0,
+              "y": 41,
               "width": 6,
               "height": 6,
               "content": {
@@ -121,8 +148,8 @@
               }
             },
             {
-              "x": 0,
-              "y": 35,
+              "x": 6,
+              "y": 41,
               "width": 6,
               "height": 6,
               "content": {
@@ -130,8 +157,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 35,
+              "x": 0,
+              "y": 47,
               "width": 6,
               "height": 6,
               "content": {
@@ -153,7 +180,7 @@
             "kind": "signoz/TextPanel",
             "spec": {
               "mode": "markdown",
-              "text": "**No data is unknown, not healthy.** An instrumented service with no requests has no activity. A release without the OTLP endpoint exports no search metrics. Check the environment, time window and collector before interpreting an empty panel. Check the eligible count and at least 100 normal requests before interpreting search percentages. The current time picker sets the calculation window; the policy window is 7 days, with 99% success and 95% responsiveness targets. A missing or partial collection interval cannot be treated as good.\n\n**Search activity** shows the latest process counters, including probes and unclassified browser requests. Counters reset when a process restarts; they are not totals for the selected window. The SLO charts below use only normal traffic. An idle counter has zero increase, so its percentages have no value. Short bursts before the first export can be missing from increases.\n\nThe remaining charts show per-interval increases. Negative remaining budget means the interval exceeded its allowance. Inspect the same service, cohort and time in Traces and Logs, then open the immutable run report for the promotion decision.",
+              "text": "**No data is unknown, not healthy.** An instrumented service with no requests has no activity. A release without the OTLP endpoint exports no search metrics. Check the environment, time window and collector before interpreting an empty panel. Check the eligible count and at least 100 normal requests before interpreting search percentages. The current time picker sets the calculation window; the policy window is 7 days, with 99% success and 95% responsiveness targets. A missing or partial collection interval cannot be treated as good.\n\n**Search activity** shows the latest process counters, including probes and unclassified browser requests. Counters reset when a process restarts; they are not totals for the selected window. The SLO charts below use only normal traffic. An idle counter has zero increase, so its percentages have no value. Short bursts before the first export can be missing from increases.\n\nProbe and evaluation panels include warm-up and other probe requests in the selected interval. The immutable Gatling report supplies the promotion gate results. Normal search panels require normal traffic and can be empty during a probe-only run. Links from the run page include time padding for metric exports; neighbouring probes can be included.\n\nThe remaining charts show per-interval increases. Negative remaining budget means the interval exceeded its allowance. Inspect the same service, cohort and time in Traces and Logs, then open the immutable run report for the promotion decision.",
               "presentation": {
                 "textAlign": "left",
                 "verticalAlign": "top"
@@ -222,6 +249,245 @@
                               "name": "lab.traffic_class"
                             }
                           ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "probe_requests": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Probe and evaluation requests"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 0,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'probe' AND deployment.environment.name IN $environment"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "probe_failures": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Failed probe and evaluation requests"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 0,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'probe' AND deployment.environment.name IN $environment"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 0,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'probe' AND deployment.environment.name IN $environment"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.success_good",
+                              "temporality": "cumulative",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A-B",
+                          "disabled": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "probe_responsive": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Probe responses within 250 ms (%)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 0,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'probe' AND deployment.environment.name IN $environment"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.eligible",
+                              "temporality": "cumulative",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "metrics",
+                          "disabled": true,
+                          "stepInterval": 0,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'probe' AND deployment.environment.name IN $environment"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.responsive_good",
+                              "temporality": "cumulative",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(B/A)*100",
+                          "disabled": false
                         }
                       }
                     ]

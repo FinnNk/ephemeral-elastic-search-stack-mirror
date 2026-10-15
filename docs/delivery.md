@@ -384,7 +384,13 @@ Humans approve delivery-state PRs but cannot directly merge them. Use **Deploy
 approved promotion** or the production release UI. Only the coordinator may
 merge to delivery-state main after revalidation; source PRs use normal merging.
 
+The observability link uses minute-aligned boundaries and two minutes of padding
+around the observed run, allowing metric exports to become visible. Probe and
+evaluation panels show probe traffic separately from normal search SLOs. Their
+counts can include warm-up and neighbouring probes; the retained Gatling report
+supplies the exact measured phases and gate outcome.
+
 The live Gatling panel links to SigNoz with the tested search environment and
-the sampled run interval selected. Search panels use that environment filter;
-operation panels remain lab-wide. Apply the reviewed dashboard definition when
-activating this batch. No data is not evidence that a check passed.
+the padded run window selected. Search panels use that environment filter;
+operation panels remain lab-wide. Keep the installed dashboard aligned with
+the source-controlled definition. No data is not evidence that a check passed.
