@@ -6,6 +6,10 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [dashboard navigation batch](dashboard-result-links.md) labels terminal
+operations **View result** and links directly to ready storefronts from the
+deployed environments table. Review and activate when idle.
+
 The [retained evaluation progress batch](retain-evaluation-phases.md) keeps each
 phase and its last reported counters visible across phase changes and status
 refreshes. Review now; activate after the running evaluation finishes.

@@ -71,7 +71,11 @@ means its exact release has a matching deployment receipt and ready rollout.
 the active route. **Previously verified** identifies a historical deployment.
 
 Use **Inputs & policy** for pinned inputs and the source gate configuration;
-**Activity** shows attempts, durations and progress links. The current active
+**Activity** shows attempts and durations. Use **Progress** while an operation is
+running and **View result** after it completes, fails or is interrupted.
+In **Deployed environments**, use **Open storefront** beside a ready environment
+to open its current release; production links follow the active route or named
+inactive slot. The current active
 production release is shown alongside the selected release. The page refreshes
 every 30 seconds while visible. Refreshing reads records without starting work
 or extending leases. Administrators can submit the named operations below;
