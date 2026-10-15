@@ -108,6 +108,30 @@ function nativeGatlingReports(value,variant,parent){
   node('span',' · ',p);const download=node('a','Download '+side+' ZIP',p);download.href=base+side+'/download.zip';
  }
 }
+async function operationGatlingReports(row){
+ if(!row.report_url||!['complete','failed','interrupted'].includes(row.state))return;
+ let panel=null;
+ try{
+  const fetchReport=async url=>{const response=await fetch(url,{headers:{Accept:'application/json'}});if(!response.ok)throw new Error('Report unavailable');return response.json();};
+  const root=await fetchReport(row.report_url);
+  if(root.kind!=='paired-api-performance'&&root.kind!=='delivery-variant-evidence'&&!root.reports?.performance)return;
+  panel=section('Gatling reports','Retained driver reports remain available when a performance gate fails.');
+  if(root.kind==='paired-api-performance'){nativeGatlingReports(root,'pair',panel);return;}
+  const checks=root.kind==='delivery-variant-evidence'?(root.checks||[]):[];
+  const reports=checks.length?await Promise.all(checks.map(async check=>{
+   if(!check.evidence||check.performance_status==='not_run')return {variant:check.variant,notRun:true};
+   try{return {variant:check.variant,value:await fetchReport(row.report_url+'/variant/'+encodeURIComponent(check.variant)+'/performance')};}
+   catch{return {variant:check.variant,unavailable:true};}
+  })):root.reports?.performance?[{variant:'pair',value:await fetchReport(row.report_url+'/performance')}]:[];
+  if(!reports.length){node('p','No Gatling performance report was retained for this operation.',panel);return;}
+  for(const item of reports){
+   const group=node('div',null,panel);node('h3',item.variant==='pair'?'Performance check':'Variant · '+item.variant,group);
+   if(item.notRun)node('p','No performance evidence is recorded for this check. Gatling may have been skipped because an earlier check failed.',group);
+   else if(item.unavailable)node('p','Performance report temporarily unavailable. Open the retained comparison report or refresh to try again.',group);
+   else nativeGatlingReports(item.value,item.variant,group);
+  }
+ }catch{node('p','Gatling report availability could not be checked. Open the retained comparison report or refresh to try again.',panel||section('Gatling reports'));}
+}
 async function promotionReview(value,row){
  const proposal=row?.result?.proposal||{},deployment=proposal.deployment||{},fields=deployment.fields||{},target=proposal.target||row?.request?.target||'target';
  const overview=section('Promotion for review','Compare the currently deployed '+target+' baseline with this candidate. Approval records your decision; deployment is a separate action.');
@@ -237,7 +261,7 @@ async function load(){if(loading)return;loading=true;clearTimeout(timer);try{
   if(!r.ok)throw new Error('Unable to load the recorded gate outcome.');
   record=await r.json();
  }
- const active=operationPage?operation(value):(await report(value,record),false);if(active)timer=setTimeout(load,5000);
+ let active=false;if(operationPage){active=operation(value);if(!active)await operationGatlingReports(value);}else await report(value,record);if(active)timer=setTimeout(load,5000);
  }catch(error){$('state').textContent='Unable to load';$('stage').textContent=error.message;$('explanation').textContent='Refresh to try again. This does not restart the operation.';if(error.status===401)link('signin','/oauth2/start?rd='+encodeURIComponent(location.pathname+location.search));}finally{loading=false}}
 $('json').href=path+'?format=json';$('refresh').addEventListener('click',load);load();
 

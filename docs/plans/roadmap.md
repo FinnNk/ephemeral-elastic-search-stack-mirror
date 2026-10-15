@@ -6,6 +6,10 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [failed-operation Gatling links batch](failed-operation-gatling-links.md)
+puts retained native driver reports directly on terminal operation pages,
+including failures. Review and activate when idle; existing reports need no rerun.
+
 The [Redis rewrite query coverage batch](redis-rewrite-query-coverage.md) adds
 focused requests for all six shared-catalogue aliases, their case variants and
 controls. Merge its source update and use the new merged-source build to resume

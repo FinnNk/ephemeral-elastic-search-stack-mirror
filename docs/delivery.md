@@ -222,8 +222,12 @@ Under **Native Gatling reports**, open **View baseline Gatling report** or
 statistics in a new tab. **Download baseline ZIP** and **Download candidate ZIP**
 retain the HTML report and supporting files for offline inspection. These links
 also appear for completed drivers whose measurements failed the performance
-gate. A driver that did not retain an archive is labelled unavailable. Report
-access uses the operation's permissions and verifies the retained archive hash;
+gate. A driver that did not retain an archive is labelled unavailable. The
+links also appear directly under **Gatling reports** on terminal operation pages,
+including failed attempts. Each variant lists the baseline and candidate
+separately. Skipped checks and temporarily unreadable evidence have explanatory
+text instead of report links. Existing retained reports need no rerun.
+Report access uses the operation's permissions and verifies the retained archive hash;
 viewing it does not start another test.
 Promotion and rollback progress pages link to all three retained checks. After
 deployment, the verification report shows the release, index, products checked

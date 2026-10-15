@@ -71,6 +71,10 @@ class NativeGatlingReports(unittest.TestCase):
         self.documents['root'] = self.performance
         self.assertIn(b'Gatling', view.response(self.operation, 'pair', 'candidate', 'index.html')[0])
 
+    def test_failed_operation_keeps_verified_native_report(self):
+        self.operation['state'] = 'failed'
+        self.assertIn(b'Gatling', view.response(self.operation, 'ranker-a', 'candidate', 'index.html')[0])
+
     def test_each_evidence_document_is_verified(self):
         from delivery_gates import read
         contents = {}
