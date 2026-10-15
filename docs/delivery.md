@@ -374,6 +374,12 @@ A completed query has finished capture across its selected APIs or returned an
 error. Workers publish bounded counters; the coordinator and page sample them
 every five seconds, so short phases may finish between updates.
 
+**Waiting for Kubernetes Job status** means the coordinator cannot currently
+read the capture Job's status. After three consecutive failed reads, the check
+stops with a Kubernetes-access error rather than implying the worker is still
+running. Each status/log command is bounded to ten seconds. Missing log samples
+do not prevent a successfully completed Job from being recognised.
+
 Judgement resolution shows its phase and completed batch counts where available.
 A synchronous service call may report **Waiting for judgement batch** until it
 returns; the page does not invent per-pair progress or a completion estimate.

@@ -1,6 +1,7 @@
 """Live counters are bounded, private and cannot replace capture evidence."""
 import io
 import json
+import subprocess
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
@@ -10,9 +11,43 @@ from capture_progress import Progress
 from operation_telemetry import event_sink
 import evaluation_job as job
 import evaluation_worker
+import common
 
 
 class EvaluationProgressTests(unittest.TestCase):
+    def test_command_timeout_preserves_in_cluster_configuration_and_completed_job(self):
+        token=event_sink.set(lambda event:None);self.addCleanup(event_sink.reset,token)
+        completed=SimpleNamespace(returncode=0,stdout=json.dumps({'status':{'succeeded':1}}))
+        with patch.object(common.subprocess,'run',return_value=completed) as run:
+            job.wait_for_capture('evaluate-safe',4)
+        self.assertEqual(run.call_count,1)
+        self.assertEqual(run.call_args.kwargs['timeout'],10)
+        command=run.call_args.args[0]
+        self.assertEqual(command,common.KUBE+['get','job/evaluate-safe','-n','lab-evaluation','-o','json'])
+        self.assertFalse(any(arg.startswith('--request-timeout') for arg in command))
+
+    def test_status_read_failures_are_bounded_and_not_reported_as_worker_waits(self):
+        events=[];token=event_sink.set(events.append);self.addCleanup(event_sink.reset,token)
+        for failure in (SimpleNamespace(returncode=1,stdout='',stderr='private connection detail'),
+                        subprocess.TimeoutExpired('kubectl',10)):
+            with self.subTest(failure=type(failure).__name__):
+                result={'side_effect':failure} if isinstance(failure,Exception) else {'return_value':failure}
+                with patch.object(job,'k',**result) as command,patch.object(job.time,'sleep'):
+                    with self.assertRaisesRegex(RuntimeError,'status could not be read after three attempts'):
+                        job.wait_for_capture('evaluate-safe',4)
+                self.assertEqual(command.call_count,3)
+        self.assertTrue(all(e['phase']=='Waiting for Kubernetes Job status' for e in events))
+        self.assertNotIn('private',json.dumps(events))
+
+    def test_log_timeout_does_not_hide_job_completion(self):
+        token=event_sink.set(lambda event:None);self.addCleanup(event_sink.reset,token)
+        outcomes=[SimpleNamespace(returncode=0,stdout='{"status":{}}'),
+                  subprocess.TimeoutExpired('kubectl',10),
+                  SimpleNamespace(returncode=0,stdout='{"status":{"succeeded":1}}')]
+        with patch.object(job,'k',side_effect=outcomes) as command,patch.object(job.time,'sleep'):
+            job.wait_for_capture('evaluate-safe',4)
+        self.assertEqual(command.call_count,3)
+
     def test_concurrent_worker_counters_are_accurate_and_do_not_log_requests(self):
         pacer=Mock();pacer.summary.return_value={'retries':2,'wait_seconds':.5}
         stream=io.StringIO()

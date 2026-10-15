@@ -6,9 +6,16 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [capture polling recovery](capture-polling-recovery.md) fixes the standard
+functional checks timing out after their Jobs had completed. A kubectl timeout
+override broke in-cluster configuration; bounded Python subprocesses preserve it.
+Review and merge the tested fix, activate when idle, then retry Integration.
+The latest attempt passed performance (p95 101/107 ms) but collected no functional
+results because of this polling failure; it is not eligible for promotion.
+
 The [release-attempt feedback batch](release-attempt-feedback.md) makes reopening
-an earlier attempt explicit and separates it from starting fresh checks. Review
-and activate after the current evaluation finishes; do not interrupt it.
+an earlier attempt explicit and separates it from starting fresh checks. PR #197
+is accepted and active; its activation followed the evaluation's terminal state.
 
 The [short probe warm-up batch](short-probe-warmup.md) increases only the probe
 to 20 seconds of warm-up and 30 seconds of measurement at 2 requests/s. PR #196

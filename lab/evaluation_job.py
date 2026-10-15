@@ -3,6 +3,7 @@ import hashlib
 import math
 import json
 import re
+import subprocess
 import time
 import uuid
 from pathlib import Path
@@ -41,12 +42,37 @@ def wait_for_capture(name, total):
         return k('wait','--for=condition=complete','job/'+name,'-n',NAMESPACE,'--timeout=300s')
     started = time.monotonic()
     latest = None
+    read_failures = 0
     while time.monotonic()-started < 300:
-        result = k('get','job/'+name,'-n',NAMESPACE,'-o','json','--request-timeout=10s',check=False)
-        status = json.loads(result.stdout).get('status',{}) if result.returncode == 0 else {}
-        logs = k('logs','job/'+name,'-n',NAMESPACE,'--tail=4','--limit-bytes=16384','--request-timeout=10s',check=False)
+        # A kubectl request-timeout override disables this client's in-cluster
+        # configuration fallback. Bound the child process without changing it.
+        try:
+            result = k('get','job/'+name,'-n',NAMESPACE,'-o','json',check=False,timeout=10)
+            if result.returncode:
+                raise ValueError('Job status request failed')
+            status = json.loads(result.stdout).get('status', {})
+            if not isinstance(status, dict):
+                raise ValueError('Invalid Job status')
+        except (subprocess.TimeoutExpired, ValueError, KeyError):
+            read_failures += 1
+            if read_failures >= 3:
+                raise RuntimeError('Evaluation capture Job status could not be read after three attempts. '
+                                   'Check coordinator Kubernetes access.') from None
+            evaluation_progress('Waiting for Kubernetes Job status',suite=LABEL.get(),job=name,
+                elapsed_seconds=round(time.monotonic()-started),unit='queries',
+                metrics=latest,metrics_stale=latest is not None)
+            time.sleep(5)
+            continue
+        read_failures = 0
+        if status.get('succeeded'): return
+        if status.get('failed'): raise RuntimeError('Evaluation capture Job failed; inspect its retained operation evidence.')
+        try:
+            logs = k('logs','job/'+name,'-n',NAMESPACE,'--tail=4','--limit-bytes=16384',check=False,timeout=10)
+            lines = logs.stdout.splitlines() if logs.returncode == 0 else []
+        except subprocess.TimeoutExpired:
+            lines = []
         sample = None
-        for line in logs.stdout.splitlines():
+        for line in lines:
             if line.startswith('LAB_EVALUATION_PROGRESS '):
                 try:
                     value=json.loads(line.split(' ',1)[1])
@@ -58,12 +84,10 @@ def wait_for_capture(name, total):
                                 if type(value.get(key)) in (int,float) and math.isfinite(value[key]) and value[key]>=0}
                 except (ValueError,TypeError):
                     pass
-        if status.get('succeeded'): return
         latest = sample or latest
         evaluation_progress('Capturing query results' if latest else 'Waiting for capture worker',
             suite=LABEL.get(),job=name,elapsed_seconds=round(time.monotonic()-started),
             unit='queries',metrics=latest,metrics_stale=sample is None and latest is not None)
-        if status.get('failed'): raise RuntimeError('Evaluation capture Job failed; inspect its retained operation evidence.')
         time.sleep(5)
     raise TimeoutError('Evaluation capture Job did not finish within 300 seconds.')
 

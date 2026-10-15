@@ -22,16 +22,18 @@ HELM = host_tool('helm')
 K3D = host_tool('k3d')
 
 
-def run(args, body=None, check=True):
+def run(args, body=None, check=True, timeout=None):
     result = subprocess.run(args, input=body, text=True, encoding='utf-8',
-                            capture_output=True, cwd=ROOT)
+                            capture_output=True, cwd=ROOT,
+                            **({'timeout': timeout} if timeout is not None else {}))
     if check and result.returncode:
         raise RuntimeError(f'{args[0]} failed: {result.stderr[-2500:]}')
     return result
 
 
-def k(*args, body=None, check=True):
-    return run(KUBE + list(args), body=None if body is None else json.dumps(body), check=check)
+def k(*args, body=None, check=True, timeout=None):
+    return run(KUBE + list(args), body=None if body is None else json.dumps(body), check=check,
+               **({'timeout': timeout} if timeout is not None else {}))
 
 
 def guard():
