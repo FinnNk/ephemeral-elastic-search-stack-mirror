@@ -117,7 +117,7 @@ def propose(target, deployment, evidence, intent=None, rollback=False):
     if deployment['fingerprint'] == current['fingerprint']:
         raise ValueError('Target already declares this deployment.')
     validate_deployment(deployment)
-    validate_evidence(evidence, current['fingerprint'], deployment['fingerprint'], intent,
+    report = validate_evidence(evidence, current['fingerprint'], deployment['fingerprint'], intent,
                       deployment_inputs(deployment), target=target, baseline_deployment=current,
                       candidate_deployment=deployment)
     source = None if target == 'integration' or rollback else TARGETS[TARGETS.index(target) - 1]
@@ -137,8 +137,7 @@ def propose(target, deployment, evidence, intent=None, rollback=False):
         if slots['slots'].get(other) != deployment:
             raise ValueError('Deploy the candidate into the inactive production slot first.')
         if not rollback:
-            from delivery_gates import read
-            validate_final(read(evidence).get('production_final', {}), slots)
+            validate_final(report.get('production_final', {}), slots)
     materialise(deployment)
     # Grant only old/new frozen indices before Argo can roll between the two versions.
     access('lab-delivery-' + target, deployment)
@@ -147,10 +146,10 @@ def propose(target, deployment, evidence, intent=None, rollback=False):
                 'source_target': source, 'deployment': deployment, 'evidence': evidence}
     if intent:
         proposal['intent'] = intent
-    if evidence.get('kind') == 'delivery-variant-evidence':
-        proposal['baseline_variant'] = evidence['baseline_pin']
+    if report.get('kind') == 'delivery-variant-evidence':
+        proposal['baseline_variant'] = report['baseline_pin']
         proposal['variant_checks'] = [{key: row[key] for key in ('variant', 'intent', 'state', 'evidence')}
-                                      for row in evidence['checks']]
+                                      for row in report['checks']]
     identifier = target + '-' + uuid.uuid4().hex[:10]
     branch = 'promote/' + identifier
     git(DESIRED, 'switch', '-c', branch)
@@ -173,12 +172,12 @@ def propose(target, deployment, evidence, intent=None, rollback=False):
     git(DESIRED, 'commit', '-m', proposal['kind'].capitalize() + ' to ' + target)
     git(DESIRED, 'push', 'origin', branch)
     intent_summary = ('Intent: **' + intent + '**.\n\n' if intent else
-        'Baseline: build ' + str(evidence['baseline_build_run']) + ', variant **' +
-        evidence['baseline_variant'] + '**, configuration SHA-256 `' +
-        evidence['baseline_pin']['configuration_sha256'] + '`.\n\n' +
+        'Baseline: build ' + str(report['baseline_build_run']) + ', variant **' +
+        report['baseline_variant'] + '**, configuration SHA-256 `' +
+        report['baseline_pin']['configuration_sha256'] + '`.\n\n' +
         'Each selected candidate variant was checked against that baseline:\n' +
         ''.join('- **' + row['variant'] + '** (' + row['intent'] + '): ' + row['state'] + '\n'
-                for row in evidence['checks']) + '\n')
+                for row in report['checks']) + '\n')
     body = (
         '## ' + proposal['kind'].capitalize() + ' to ' + target + '\n\n' +
         'Release `' + deployment['fields']['software_release_id'] + '`; source `' + deployment['fields']['source_sha'] + '`.\n\n' +

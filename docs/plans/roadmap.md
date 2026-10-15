@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+PR #185 is accepted and active. Before recovery, inspection found proposal
+construction also reading report fields from its storage reference. The
+[validated-report follow-up](validated-proposal-evidence.md) uses the existing
+validation result for PR details and tests the complete construction path.
+Review and activate it before creating a proposal from the retained checks.
+
 PRs #183 and #184 are accepted and active: promotion controls handle failed
 operations without a PR, and Nexus routing is automatically reconciled.
 Build 184's subsequent Integration checks passed, but the

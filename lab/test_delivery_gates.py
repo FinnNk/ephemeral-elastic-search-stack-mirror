@@ -11,6 +11,53 @@ from delivery_cli import execute, parser
 
 
 class PromotionGateTests(unittest.TestCase):
+    def test_variant_reference_reaches_complete_proposal_and_review_description(self):
+        import json
+        from contextlib import ExitStack
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from delivery_cli import recorded_variant_evaluation
+
+        reference = {'sha256': 'a' * 64,
+                     'blob': 'runs/' + 'a' * 64 + '/delivery-variant-evidence.json'}
+        pin = {'variant': 'default', 'configuration_sha256': 'b' * 64}
+        checks = [{'variant': 'ranker-a', 'intent': 'ranking-change', 'state': 'pass',
+                   'evidence': {'sha256': 'c' * 64, 'blob': 'runs/check'}}]
+        report = {'kind': 'delivery-variant-evidence', 'state': 'pass',
+                  'baseline_build_run': 158, 'baseline_variant': 'default',
+                  'baseline_pin': pin, 'checks': checks}
+        current = {'fingerprint': 'old'}
+        candidate = {'fingerprint': 'new', 'fields': {'software_release_id': 'd' * 64,
+                     'source_sha': 'e' * 40}}
+        pr = {'number': 24, 'html_url': 'https://gitea.example/pulls/24', 'head': {'sha': 'head'}}
+        with TemporaryDirectory() as folder, ExitStack() as stack:
+            stack.enter_context(patch('delivery_cli.RECORDS', Path(folder)))
+            stack.enter_context(patch('delivery_promote.LOCAL', Path(folder)))
+            values = {'delivery_gates.evaluate_variants': reference, 'delivery_gates.read': report,
+                'delivery_promote.checkout': 'base', 'delivery_promote.read_target': current,
+                'delivery_promote.validate_evidence': report, 'delivery_promote.deployment_inputs': {},
+                'delivery_promote.pull_request': pr, 'delivery_promote.validate_pr': {'passed': True},
+                'delivery_cli.resolve': candidate,
+                'delivery_release.from_run': ({'source_sha': 'e' * 40}, None, None),
+                'delivery_variant_selection.source_selection': {'configuration': {}}}
+            mocks = {name: stack.enter_context(patch(name, return_value=value))
+                     for name, value in values.items()}
+            for name in ('validate_deployment', 'materialise', 'access', 'write_target', 'git'):
+                stack.enter_context(patch('delivery_promote.' + name))
+            result = recorded_variant_evaluation(current, candidate, 'probe', 'integration')
+            response = execute(parser().parse_args(['promote', 'integration', '--run', '184',
+                               '--evidence', result['reference_file']]))
+            proposal = response['proposal']
+            self.assertEqual(proposal['evidence'], reference)
+            self.assertEqual(proposal['baseline_variant'], pin)
+            self.assertEqual(proposal['variant_checks'], checks)
+            body = mocks['delivery_promote.pull_request'].call_args.args[3]
+            self.assertIn('Baseline: build 158, variant **default**', body)
+            self.assertIn('**ranker-a** (ranking-change): pass', body)
+            self.assertIn(reference['blob'], body)
+            retained = list((Path(folder) / 'proposals').glob('*.json'))
+            self.assertEqual(json.loads(retained[0].read_text())['evidence'], reference)
+
     def test_variant_evaluation_reference_is_consumed_by_proposal(self):
         import json
         from pathlib import Path
