@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [grouped evaluation progress batch](grouped-evaluation-progress.md) combines
+worker phases into capture, judgement and scoring steps. Completed captures show
+their final counts, with earlier samples in expandable details. Review and
+activate when idle; evaluation behaviour and retained evidence are unchanged.
+
 The [dashboard navigation batch](dashboard-result-links.md) labels terminal
 operations **View result** and links directly to ready storefronts from the
 deployed environments table. Review and activate when idle.

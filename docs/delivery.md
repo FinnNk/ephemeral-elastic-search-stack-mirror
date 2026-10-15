@@ -380,8 +380,12 @@ updates and scrolling; **Resume** continues from the same cursor. Only bounded,
 operation-scoped messages are shown; raw subprocess output is kept out of this
 view. Missing logs do not prevent status or report access.
 
-During functional evaluation, **Evaluation progress** shows the query set and
-phase: preview preparation, capture, scoring or significance calculation.
+During functional evaluation, **Evaluation progress** groups related phases by
+API preparation, query set/check and performance handover. Each query-set group
+shows capture, judgement resolution and scoring as separate steps when relevant.
+Worker startup, sampled capture counts and capture completion share one capture
+step. Scoring and significance calculation share one scoring step. Expand
+**Phase details** for the earlier updates; these remain available after refreshes.
 Capture updates show completed queries, query failures, retries and pacing wait.
 For each selected variant, required standard functional checks are validated
 first, followed by the declared standard/additional query sets. Gatling starts
@@ -390,6 +394,12 @@ An earlier required failure retains its reports and marks performance as not run
 A completed query has finished capture across its selected APIs or returned an
 error. Workers publish bounded counters; the coordinator and page sample them
 every five seconds, so short phases may finish between updates.
+The capture summary uses its final count after **Capture complete** is reported.
+An earlier sample such as 841/1,000 is retained in the details, rather than shown
+as a separate unfinished phase. Without a final capture event, the display keeps
+the sampled count and explicitly says the final count was not reported. This
+never substitutes for completeness validation in the retained report. Counts for
+scoring describe its captured inputs; judgement counters use query–product pairs.
 
 **Waiting for Kubernetes Job status** means the coordinator cannot currently
 read the capture Job's status. After three consecutive failed reads, the check

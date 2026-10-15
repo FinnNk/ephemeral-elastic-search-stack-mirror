@@ -4,6 +4,7 @@ const $=id=>document.getElementById(id), path=location.pathname;
 const operationPage=/^\/api\/delivery\/operations\/[0-9a-f]{32}$/.test(path);
 let timer=null, loading=false, logsPaused=false, logsLoading=false, logCursor=0, latestGatling=null, latestEvaluation=null, operationActive=false, operationUpdatedMs=0;
 const evaluationPhases=[];
+const expandedEvaluationSteps=new Set();
 $("pause-logs").onclick=()=>{logsPaused=!logsPaused;$("pause-logs").textContent=logsPaused?"Resume":"Pause";if(!logsPaused&&operationPage)updateLogs({});};
 const stateNames={accepted:'Waiting for the source build',queued:'Queued',running:'In progress',complete:'Complete',failed:'Failed',interrupted:'Interrupted',pass:'Passed',approved_exception:'Accepted with a recorded exception',decision_required:'Decision required',blocked:'Blocked',invalid:'Invalid evidence',verified:'Deployment verified'};
 const operationTitles={'prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
@@ -284,25 +285,63 @@ function showEvaluation(event){
  renderEvaluationHistory();
 }
 
+function evaluationStep(event){
+ if(/preview|public API/.test(event.phase)&&!event.suite)return 'Prepare API environments';
+ if(event.job||['Waiting for capture worker','Capturing query results','Capture complete','Waiting for Kubernetes Job status'].includes(event.phase))return 'Capture query results';
+ if(/judgement|judgment/i.test(event.phase))return 'Resolve judgements';
+ if(['Scoring frozen results','Calculating significance'].includes(event.phase))return 'Score search quality';
+ if(event.phase==='Comparing result order')return 'Compare result order';
+ return event.phase;
+}
+
+function groupedEvaluations(){
+ const groups=[];
+ for(const {event} of evaluationPhases){
+  const key=event.suite||(/preview|public API/.test(event.phase)?'preparation':/Gatling|Performance check/.test(event.phase)?'performance':'additional');
+  const stepName=evaluationStep(event);
+  let group=groups[groups.length-1];
+  // A new capture Job in the same suite is a separate check, not an update
+  // to a previous variant's completed capture.
+  const capture=group?.steps.find(s=>s.name==='Capture query results');
+  if(!group||group.key!==key||(event.job&&capture?.job&&event.job!==capture.job)){
+   const parts=key.split(' / '),mode={'result-regression':'Result changes',relevance:'Search quality'}[parts[0]];
+   const title=key==='preparation'?'Prepare APIs':key==='performance'?'Performance checks':key==='additional'?'Prepare additional checks':mode?(parts.slice(1).join(' / ')==='standard'?'Standard query set':parts.slice(1).join(' / '))+' · '+mode:'Query set · '+key;
+   group={key,title,steps:[]};groups.push(group);
+  }
+  let step=group.steps[group.steps.length-1];
+  if(!step||step.name!==stepName){step={name:stepName,events:[],metrics:null};group.steps.push(step);}
+  step.events.push(event);step.event=event;if(event.metrics){step.metrics=event.metrics;step.unit=event.unit;}
+  if(event.job)step.job=event.job;
+  if(event.phase==='Capture complete')step.captureComplete=true;
+ }
+ return groups;
+}
+
 function renderEvaluationHistory(){
  const latest=latestEvaluation;
  const current=operationActive&&latest&&latest.observed_ms>=operationUpdatedMs&&latest.observed_ms>=(latestGatling?.observed_ms||0);
  if(current)$('stage').textContent=(latest.suite?latest.suite+' — ':'')+latest.phase;
  let panel=$('evaluation-live');if(!panel){panel=node('section',null,$('content'));panel.id='evaluation-live';panel.setAttribute('aria-live','polite');}
  panel.replaceChildren();node('h2','Evaluation progress',panel);
- node('p','Earlier phases keep their last reported counters. Retained reports determine the gate.',panel);
- for(const [index,entry] of evaluationPhases.entries()){
-  const event=entry.event,m=event.metrics,phase=node('article',null,panel);
-  node('h3',(index+1)+'. '+(event.suite?event.suite+' — ':'')+event.phase,phase);
-  node('p',current&&index===evaluationPhases.length-1?'Current phase':'Recorded phase',phase);
-  if(event.metrics_stale)node('p','Last known counters; no newer worker sample was available.',phase);
-  if(m){
-   const progress=node('progress',null,phase);progress.max=m.total||1;progress.value=m.completed||0;
-   progress.setAttribute('aria-label','Completed '+(event.unit||'queries'));
-   table(phase,['Measure','Value'],[['Completed '+(event.unit||'queries'),fmt(m.completed)+' / '+fmt(m.total)],
-    ...Object.entries(m).filter(([key])=>!['completed','total'].includes(key)).map(([key,value])=>[label(key),fmt(value)])]);
-  }else node('p','No completion count was reported for this phase.',phase);
-  if(event.unit==='queries')node('p','Each completed query finished capture across its selected APIs or returned an error.',phase);
-  node('p','Updated '+new Date(event.observed_ms).toLocaleTimeString()+(event.elapsed_seconds!=null?' · '+fmt(event.elapsed_seconds)+' s elapsed for this task':''),phase);
+ node('p','Related phases are grouped into steps. Capture summaries use the final count when reported; earlier phase snapshots remain in the details. Retained reports determine the gate.',panel);
+ for(const [groupIndex,group] of groupedEvaluations().entries()){
+  const block=node('article',null,panel);block.className='evaluation-group';node('h3',group.title,block);
+  for(const [stepIndex,step] of group.steps.entries()){
+   const event=step.event,m=step.metrics,phase=node('div',null,block);phase.className='evaluation-step';
+   node('h4',step.name,phase);
+   const active=current&&event===latest;
+   node('p',step.captureComplete?'Capture finished':active?'In progress':'Recorded step',phase);
+   if(event.metrics_stale)node('p','Last known counters; no newer worker sample was available.',phase);
+   if(m){
+    const inputCount=step.name==='Score search quality';
+    if(!inputCount){const progress=node('progress',null,phase);progress.max=m.total||1;progress.value=m.completed||0;progress.setAttribute('aria-label','Completed '+(step.unit||'queries'));}
+    table(phase,['Measure','Value'],[[inputCount?'Captured queries available for scoring':'Completed '+(step.unit||'queries'),fmt(m.completed)+' / '+fmt(m.total)],
+     ...Object.entries(m).filter(([key])=>!['completed','total'].includes(key)).map(([key,value])=>[label(key),fmt(value)])]);
+   }else if(['Capture query results','Resolve judgements'].includes(step.name))node('p','No completion count was reported for this step.',phase);
+   if(step.name==='Capture query results')node('p',step.captureComplete?'Final capture count; failed queries, if any, are included.':'Latest sampled count; capture has not reported its final count here.',phase);
+   const details=node('details',null,phase),detailKey=groupIndex+':'+stepIndex;details.open=expandedEvaluationSteps.has(detailKey);details.ontoggle=()=>{if(details.open)expandedEvaluationSteps.add(detailKey);else expandedEvaluationSteps.delete(detailKey);};node('summary','Phase details',details);
+   table(details,['Phase','Last reported count','Updated'],step.events.map(e=>[e.phase,e.metrics?fmt(e.metrics.completed)+' / '+fmt(e.metrics.total)+' '+(e.unit||'queries'):'No count reported',new Date(e.observed_ms).toLocaleTimeString()]));
+   node('p','Updated '+new Date(event.observed_ms).toLocaleTimeString()+(event.elapsed_seconds!=null?' · '+fmt(event.elapsed_seconds)+' s elapsed for this task':''),phase);
+  }
  }
 }
