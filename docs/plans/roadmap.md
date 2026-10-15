@@ -6,6 +6,13 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+PR #182 is accepted and active. The promotion walkthrough exposed a failed
+Nexus read after Docker changed its address; the existing network repair
+restored access and verified build 184's bundle. The failed attempt then exposed
+a null-PR error in promotion controls. The [retry repair](release-controls-failed-attempt.md)
+keeps those controls usable; review and activate it, then complete automatic
+Nexus endpoint reconciliation before resuming the walkthrough.
+
 Lab PR #181 and delivery-source PR #38 are accepted and activated. Source version
 1.1.2 and the trusted client digest are published and mirrored. The next
 [comparison-panel batch](promotion-comparison-summary.md) puts the variants,

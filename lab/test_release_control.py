@@ -25,6 +25,18 @@ def fixture():
 
 
 class ReleaseActions(unittest.TestCase):
+    def test_failed_attempt_without_proposal_does_not_break_retry_controls(self):
+        data = fixture()
+        data['stages'][0].update(state='pending', environment=None)
+        data['activity'] = [{'state': 'failed', 'pr': None, 'error': 'URLError'}]
+        result = control.choices(data, ADMIN)
+        self.assertEqual(result['approved_prs'], [])
+        self.assertTrue(next(a for a in result['actions'] if a['name'] == 'integration')['enabled'])
+        self.assertFalse(next(a for a in result['actions'] if a['name'] == 'deploy')['enabled'])
+        review = {'number': 24, 'state': 'approved', 'head_sha': 'h' * 40}
+        data['activity'].append({'state': 'complete', 'pr': review})
+        self.assertEqual(control.choices(data, ADMIN)['approved_prs'], [review])
+
     def test_comparison_uses_current_target_baseline_and_each_declared_intent(self):
         import json
         data = fixture()

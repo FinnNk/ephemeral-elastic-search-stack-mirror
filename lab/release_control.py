@@ -65,7 +65,7 @@ def choices(data, identity):
     def current(name, state):
         return stages.get(name, {}).get('state') == state and bool(stages.get(name, {}).get('environment'))
     approved = {a['pr']['number']: a['pr'] for a in data.get('activity', [])
-                if a.get('pr', {}).get('state') == 'approved'}
+                if (a.get('pr') or {}).get('state') == 'approved'}
     active = data.get('active_production')
     candidate = stages.get('candidate', {}).get('environment')
     retained = next((e for e in data.get('environments', [])
