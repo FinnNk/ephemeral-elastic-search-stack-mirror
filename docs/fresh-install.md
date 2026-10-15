@@ -331,12 +331,62 @@ application/Gatling metrics and selected structured logs are not sampled.
 Automatic span-derived metrics describe sampled traces. Use the application's
 request counters and retained Gatling reports for complete performance counts.
 
+### Install the current dashboards
+
+After creating the SigNoz organisation, keep a diagnostic connection running in
+another terminal from the repository root:
+
+```sh
+kubectl --kubeconfig .lab/kubeconfig.yaml -n lab-observability port-forward svc/signoz 18090:8080
+```
+
+Use a short-lived administrator session token for this new SigNoz organisation;
+see [dashboard access](observability-backend.md#interpret-dashboards). In the
+original terminal on macOS, read it without putting it in shell history:
+
+```sh
+read -rs 'SIGNOZ_ACCESS_TOKEN?SigNoz administrator session token: '
+printf '\n'
+export SIGNOZ_ACCESS_TOKEN
+uv run --locked python lab/observability/setup_dashboards.py
+unset SIGNOZ_ACCESS_TOKEN
+```
+
+The command creates or updates both dashboards from this checkout and registers
+their IDs with the control runtime. It prints the public IDs and retains them in
+`.lab/observability-dashboards.json`; it does not retain the token. Stop the
+port-forward when finished and refresh any open operation page. Its observability
+link now uses this installation's search dashboard. Until registration succeeds,
+the link opens SigNoz's home page and explains that setup is incomplete.
+
+### Check the installed changes
+
+A new installation builds its control image from the current checkout and seeds
+`delivery-source` with the current Search API, gate configuration and chart.
+Update to the latest merged `main` before starting. Completed installer stages
+are retained on resume; pulling new source does not rebuild an already completed
+image stage or replace an existing source repository.
+
+| Area | Included by the current fresh setup |
+| --- | --- |
+| Promotion controls and reports | Latest-attempt actions, readable release identities, live evaluation progress and retained Gatling reports |
+| Promotion checks | Mandatory standard query sets, selected additional sets, per-variant relevance checks before performance and the short probe's 20-second warm-up / 30-second measurement |
+| Search telemetry | Endpoint, release/environment attributes and collector network access in both delivery and exploratory environment charts |
+| Logs | Structured events with trace/span IDs and matching metric drill-through fields, in both observability profiles |
+| Dashboards | Current definitions, installed and registered by the command above after organisation setup |
+
+After creating an environment, run a small comparison or search, select its
+namespace and a recent time range in SigNoz, and confirm metrics, traces and
+structured logs. The smaller profile samples traces, so an individual request
+need not have a retained trace. No legacy-baseline repair helper is required for
+new environments; those use the current chart from their first deployment.
+
 The command preserves persistent data on repeat runs and refuses larger existing
 PVCs rather than trying to shrink them. Do not use this profile to resize the
 original retained Windows backend. The standard profile remains available for
 its dedicated observability worker. See [observability operations](observability-backend.md)
-for dashboards and diagnostic access; existing Windows dashboard IDs are not
-automatically copied to a new installation.
+for diagnostic access and interpretation. Dashboard IDs belong to the new
+installation; the registration command above uses the IDs returned by SigNoz.
 
 Before choosing a smaller permanent disk budget, measure idle storage growth
 and one bounded Gatling run. Keep spare space for database merges. Native Mac

@@ -126,6 +126,16 @@ class LocalControlApi(unittest.TestCase):
                     self.assertIn('Catalogue and rewrite data', body)
                     self.assertIn(' \u00b7 \u0394nDCG ', body)
 
+    def test_observability_links_require_login_and_use_current_installation(self):
+        with self.assertRaises(urllib.error.HTTPError) as error:
+            urllib.request.urlopen(self.base + '/api/observability')
+        self.assertEqual(error.exception.code, 401)
+        cookie = self.login()
+        with patch('observability_links.links', return_value={'search_dashboard_url':'https://signoz.localhost:34443/dashboard/fresh'}):
+            request = urllib.request.Request(self.base + '/api/observability', headers={'Cookie':cookie})
+            with urllib.request.urlopen(request) as response:
+                self.assertEqual(json.load(response)['search_dashboard_url'],'https://signoz.localhost:34443/dashboard/fresh')
+
     def test_loopback_reads(self):
         with urllib.request.urlopen(self.base + '/api/health') as response:
             self.assertEqual(json.load(response), {'ready': True})

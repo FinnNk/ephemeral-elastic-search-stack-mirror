@@ -152,6 +152,9 @@ class Handler(BaseHTTPRequestHandler):
         identity = self.identity()
         if identity is None:
             return self.send_json(401, {'error': 'Sign in to the lab.'})
+        if parts == ['api', 'observability']:
+            from observability_links import links
+            return self.send_json(200, links())
         if parts == ['api', 'me']:
             return self.send_json(200, {key: value for key, value in identity.items() if key != 'expires_at'})
         if parts == ['api', 'delivery', 'operations']:

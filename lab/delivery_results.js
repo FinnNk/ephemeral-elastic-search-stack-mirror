@@ -217,7 +217,9 @@ const s=section('Delivery checks','Open each retained check. The operation recor
  if(path.startsWith('/api/delivery/operations/'))link('proposal',path.split('/report')[0]);$('proposal').textContent='Open operation progress';
  if(value.kind!=='delivery-variant-evidence')identity({report_kind:value.kind,source_commit:value.source_context?.source_sha,baseline:value.baseline_variant,default:value.default_variant,judgement_sha256:value.judgement_sha256,query_suite_sha256:value.query_suite_sha256,workload_sha256:value.workload_sha256,observation_sha256:value.observation_sha256,evaluated_at:value.evaluated_at});
 }
+let observabilityLinks = null;
 async function load(){if(loading)return;loading=true;clearTimeout(timer);try{
+ if(observabilityLinks===null){try{const config=await fetch('/api/observability');if(config.ok)observabilityLinks=await config.json();}catch{}observabilityLinks=observabilityLinks||{};}
  const response=await fetch(path,{headers:{Accept:'application/json'}}),value=await response.json();
  if(!response.ok){const error=new Error(value.error||'Unable to load this record.');error.status=response.status;throw error}
  $('content').replaceChildren();$('signin').hidden=true;for(const id of ['report','baseline','candidate','preview','proposal','decision'])$(id).hidden=true;
@@ -252,7 +254,7 @@ function showGatling(event){
  node('p','Provisional driver counters; the retained Gatling report decides the gate. Job elapsed time includes driver startup.',panel);
  const m=event.metrics;
  table(panel,['Side','Phase','Job elapsed / planned traffic','Completed in phase','Failures in phase','Completion rate','Mean latency'],[[event.side,event.phase_label||m?.phase||'Starting driver',fmt(event.elapsed_seconds)+' / '+fmt(event.planned_seconds)+' s',fmt(m?.completed),fmt(m?.failed),fmt(m?.completed_rps)+' requests/s',fmt(m?.mean_latency_ms)+' ms']]);
- const a=node('a','Open observability dashboard',panel);const dashboard=new URL('https://signoz.localhost:34443/dashboard/01a0e51c-1043-79cb-94a8-9511cb0c665b');
+ const a=node('a','Open observability dashboard',panel);const dashboard=new URL(observabilityLinks?.search_dashboard_url||'https://signoz.localhost:34443/');
  dashboard.searchParams.set('variables',JSON.stringify({environment:[event.environment]}));
  const start=Number(event.started_ms),end=Number(event.observed_ms),minute=60000,padding=120000;
  if(Number.isFinite(start)&&Number.isFinite(end)&&start>0&&end>=start){
@@ -260,6 +262,7 @@ function showGatling(event){
   dashboard.searchParams.set('endTime',String(Math.ceil(end/minute)*minute+padding));
  }else dashboard.searchParams.set('relativeTime','15m');
  a.href=dashboard.href;
+ if(!observabilityLinks?.search_dashboard_url)node('p','Search dashboard not configured. Complete observability dashboard setup to link directly to this check.',panel);
  node('p','The telemetry window includes two minutes of padding for metric exports. Probe traffic is shown separately from normal search SLOs.',panel);
  node('p','Environment: '+event.environment+'. The dashboard opens this environment and a padded run window. Operation panels remain lab-wide. Missing telemetry is not a healthy result.',panel);
 }

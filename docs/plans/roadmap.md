@@ -6,11 +6,17 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [fresh observability completion batch](fresh-observability-completion.md)
+checks current source, chart and collector inheritance and closes the remaining
+dashboard setup/link gap. Review without disturbing the running evaluation.
+Fresh setup retains its explicit organisation/retention and workstation trust steps.
+
 The [log drill-through field fix](log-drillthrough-fields.md) aligns collected
 log attributes with metric dashboard filters. The reported minute has 43 probe
-logs, but the canonical traffic and environment fields are missing. Review this
-collector change, then verify new logs after activation; historical logs remain
-searchable using their original fields.
+logs, but their canonical traffic and environment fields were missing.
+PR #202 is accepted and active. Fresh baseline/candidate probe logs matched
+the canonical filters through the SigNoz API; historical logs remain searchable
+using their original fields.
 
 PRs #199–#201 are accepted and active. Promotion controls reflect the latest
 attempt, each variant's relevance/query-set checks precede Gatling, and the

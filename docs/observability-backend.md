@@ -82,15 +82,27 @@ uv run --locked python lab/observability/dashboard.py --write-json
 uv run --locked python lab/observability/model_dashboard.py --write-json
 ```
 
-To update the installed dashboards, supply a short-lived administrator session token in `SIGNOZ_ACCESS_TOKEN` outside Git, start the diagnostic forward above, then run:
+To install or update both dashboards and register their links with the control
+runtime, supply a short-lived administrator session token in
+`SIGNOZ_ACCESS_TOKEN` outside Git, start the diagnostic forward above, then run
+from the repository root in PowerShell:
 
 ```powershell
-uv run --locked python lab/observability/dashboard.py --apply
-uv run --locked python lab/observability/model_dashboard.py --apply
+uv run --locked python lab/observability/setup_dashboards.py
 Remove-Item Env:SIGNOZ_ACCESS_TOKEN
 ```
 
-Reapplication updates the named dashboards. A failed API call requires checking session expiry, organisation access and the forward; it is not a successful update.
+Obtain the access token from your own signed-in SigNoz session: in the browser's
+Developer Tools, inspect a successful SigNoz API request and copy only its Bearer
+access token. Do not copy the complete request or share the token. On macOS, use
+the hidden-input command in the [fresh-install guide](fresh-install.md#install-the-current-dashboards).
+
+Reapplication updates the named dashboards and records their public IDs in
+`.lab/observability-dashboards.json` and the control runtime's retained state.
+A failed API call requires checking session expiry, organisation access and the
+forward; it is not a successful update. Refresh open operation pages afterwards.
+The individual `dashboard.py --apply` and `model_dashboard.py --apply` commands
+remain available for dashboard-only maintenance, but do not register runtime links.
 
 ## Assess a seven-day window
 
