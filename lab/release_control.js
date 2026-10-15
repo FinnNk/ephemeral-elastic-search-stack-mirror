@@ -11,7 +11,7 @@
   const v=await r.json();if(!r.ok)throw new Error(v.error||'Request failed');return v;
  }
  function link(href,label,parent){const a=document.createElement('a');a.href=href;a.textContent=label;parent.append(a);return a;}
- function comparison(value,parent){
+ function comparison(value,parent,action){
   const add=(tag,label,to=parent)=>{const node=document.createElement(tag);node.textContent=label;to.append(node);return node;};
   add('h3',value?.preparation_only?'Candidate preparation':'Planned comparison');
   if(value?.preparation_only)add('p','Preparation reuses verified staging. These variants are compared with active production in the later release check.').className='notice';
@@ -23,9 +23,70 @@
   const targetName=({'integration':'Integration','staging':'Staging','production-blue':'Active production · blue','production-green':'Active production · green'}[baseline.target]||baseline.target);
   row('Baseline'+(targetName?' · '+targetName:''),baseline,baseline.variant,'Reference',baseline.configuration_sha256);
   if(baseline.state!=='ready')add('p','The current target baseline is unavailable. Its identity will not be assumed.').className='notice';
-  for(const variant of candidate.selection?.variants||[])row('Candidate',candidate,variant.variant+(variant.default?' · default':''),({'ranking-change':'Intentional ranking change','preserve-results':'Preserve search results'}[variant.intent]||variant.intent),variant.configuration_sha256);
+  const plan=options?.check_plans?.[action];
+  if(plan?.state==='recorded')add('p','The recorded release check plan supplies the intents below. Candidate configurations remain pinned by the source commit.');
+  for(const variant of candidate.selection?.variants||[])row('Candidate',candidate,variant.variant+(variant.default?' · default':''),({'ranking-change':'Intentional ranking change','preserve-results':'Preserve search results'}[(plan?.state==='recorded'?plan.reviewed_variants?.find(v=>v.variant===variant.variant)?.intent:null)||variant.intent]||variant.intent),variant.configuration_sha256);
   if(candidate.selection?.state!=='ready')add('p','Candidate variants and intents are unavailable. Refresh to retry.').className='notice';
-  if(candidate.selection?.source_sha)link('https://gitea.localhost:34443/elastic-agent/delivery-source/src/commit/'+encodeURIComponent(candidate.selection.source_sha)+'/gate/selection.json','Open declared variants and intents',add('p',''));
+  if(candidate.selection?.source_sha)link('https://gitea.localhost:34443/elastic-agent/delivery-source/src/commit/'+encodeURIComponent(candidate.selection.source_sha)+'/gate/selection.json','Open source variant declaration',add('p',''));
+ }
+ const planEdits=new Map();
+ function checkPlan(action,parent){
+  const value=options.check_plans?.[action];if(!value)return;
+  const add=(tag,text,to=parent)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;to.append(n);return n;};
+  add('h3','Release check plan');
+  if(value.state==='current'){add('p','This release is already verified in this environment. Review a plan at its next destination.');return;}
+  const stateNames={needed:'A reviewed plan is required',suggested:'Suggested checks — review required',working:'Preparing the plan',recorded:'Approved plan recorded',approved:'Approved plan — ready to record',unavailable:'Plan unavailable','awaiting review':'Awaiting exact-head approval in Gitea'};
+  add('p',stateNames[value.state]||value.state).className='notice';
+  if(value.error)add('p',value.error);
+  if(value.url)link(value.url,'Open plan PR #'+value.pr,add('p',''));
+  if(value.operation_url)link(value.operation_url,'Follow plan operation',add('p',''));
+  const button=(text,callback)=>{const b=add('button',text);b.type='button';b.disabled=sending||!options.plan_editor||['working','unavailable'].includes(value.state);b.onclick=callback;return b;};
+  button(value.suggestion?'Suggest again from current releases':'Suggest checks from accumulated changes',()=>{const fields={run:value.run,target:value.target};if(value.target==='integration')for(const [key,field] of [['dataset','dataset_release'],['recipe','index_recipe_sha256'],['query_manifest','query_manifest_sha256'],['judgement_manifest','judgement_manifest_sha256']])if(data.release?.[field])fields[key]=data.release[field];submitPlan('suggest-release-plan',fields);});
+  if(value.state==='approved')button('Record approved plan',()=>submitPlan('accept-release-plan',{pr:value.pr}));
+  const suggestion=value.suggestion;if(!suggestion)return;
+  const details=add('details','');details.open=value.state==='suggested';add('summary','Review or revise suggested checks',details);
+  const box=add('div','',details);box.className='panel-body';
+  const pin=suggestion.binding;
+  add('p','Baseline build '+pin.baseline.build_run+' → candidate build '+pin.candidate.build_run+' · '+value.target,box);
+  add('h4','Mandatory checks',box);
+  add('p','Every standard query set remains required. This plan cannot remove or weaken them.',box);
+  const mandatory=add('ul','',box);for(const item of pin.primary_query_sets)add('li',item.name||item.query_manifest_sha256,mandatory);
+  add('h4','Accumulated changes',box);
+  if(suggestion.ancestry.diverged)add('p','The source histories diverge. Review both sides of the change before confirming this plan.',box).className='notice';
+  if(suggestion.ancestry.missing_declarations.length)add('p',suggestion.ancestry.missing_declarations.length+' historical commits have no query-set declaration. Explain how the selected checks cover this gap in the review reason.',box).className='notice';
+  const changes=add('ul','',box);for(const c of suggestion.changes)link('https://gitea.localhost:34443/elastic-agent/delivery-source/commit/'+c.source_sha,(c.side==='baseline-only'?'Removed from baseline · ':'')+c.source_sha.slice(0,12)+' · '+c.title,add('li','',changes));
+  if(!suggestion.changes.length)add('li','No source commits differ; review configuration and data changes.',changes);
+  if(!planEdits.has(value.suggestion_id))planEdits.set(value.suggestion_id,value.reviewed_edits?structuredClone(value.reviewed_edits):{variants:suggestion.variants.map(v=>({...v})),suites:suggestion.suites.map(s=>({id:s.id,disposition:s.required?'required':'report_only',reason:''})),additional_query_sets:[],reason:''});
+  const edits=planEdits.get(value.suggestion_id);
+  const select=(values,current,onchange,to)=>{const select=add('select','',to);for(const [key,label] of values){const o=document.createElement('option');o.value=key;o.textContent=label;select.append(o);}select.value=current;select.disabled=!options.plan_editor;select.onchange=()=>onchange(select.value);return select;};
+  const input=(label,current,onchange,to=box,tag='input')=>{const l=add('label',label+' ',to),n=add(tag,null,l);n.value=current||'';n.disabled=!options.plan_editor;n.oninput=()=>onchange(n.value);return n;};
+  add('h4','Release intent for each candidate variant',box);
+  for(const variant of edits.variants){const l=add('label',variant.variant+' ',box);select([['preserve-results','Preserve current results'],['ranking-change','Intentional ranking change']],variant.intent,v=>variant.intent=v,l);}
+  add('h4','Inherited and current query sets',box);
+  for(const item of suggestion.suites){
+   const decision=edits.suites.find(s=>s.id===item.id),group=add('fieldset','',box);add('legend',item.name+' · '+item.query_sha256.slice(0,8),group);
+   add('p',(item.required?'Inherited requirement':'Report only by default')+' · '+item.origins.length+' source declarations',group);
+   link('https://gitea.localhost:34443/elastic-agent/delivery-source/src/commit/'+item.source_sha+'/'+item.path,'Open pinned queries',add('p','',group));
+   const l=add('label','Use in this release ',group);select([['required','Required'],['report_only','Report only'],['retired','Retire / supersede']],decision.disposition,v=>decision.disposition=v,l);
+   input('Reason for retirement or reduced requirement',decision.reason,v=>decision.reason=v,group,'textarea');
+  }
+  add('h4','Other query sets from the candidate commit',box);
+  add('p','Choose existing evaluation JSONL files at this build’s source commit. Required sets need a matching reviewed judgement file.',box);
+  for(const [index,item] of edits.additional_query_sets.entries()){
+   const group=add('fieldset','',box);add('legend','Additional set '+(index+1),group);
+   for(const [key,label] of [['name','Name'],['path','Query file'],['judgements','Judgement file (required for a required set)']])input(label,item[key],v=>{if(v)item[key]=v;else delete item[key];},group);
+   const l=add('label','Requirement ',group);select([['report_only','Report only'],['required','Required']],item.required?'required':'report_only',v=>item.required=v==='required',l);
+   const remove=add('button','Remove set',group);remove.type='button';remove.disabled=!options.plan_editor;remove.onclick=()=>{edits.additional_query_sets.splice(index,1);render();};
+  }
+  const extra=add('button','Add query set',box);extra.type='button';extra.disabled=!options.plan_editor;extra.onclick=()=>{edits.additional_query_sets.push({name:'',path:'',required:false});render();};
+  input('Review reason: why these checks cover the combined release',edits.reason,v=>edits.reason=v,box,'textarea');
+  const propose=add('button','Create plan PR for review',box);propose.type='button';propose.disabled=sending||!options.plan_editor||value.state==='working';propose.onclick=()=>submitPlan('propose-release-plan',{suggestion:value.suggestion_id,edits});
+ }
+ async function submitPlan(kind,fields){
+  if(sending)return;sending=true;render();$('promotion-feedback').textContent='Submitting release check plan…';
+  try{const row=await request('/api/delivery/operations',{kind,...fields},'plan-'+crypto.randomUUID());const feedback=$('promotion-feedback');feedback.replaceChildren();link('/api/delivery/operations/'+row.id,'Follow plan operation',feedback);await load(data);}
+  catch(error){$('promotion-feedback').textContent=error.message;}
+  finally{sending=false;render();}
  }
  function render(){
   if(!options)return;
@@ -33,7 +94,8 @@
   for(const name of byStage[$('promotion-stage').value]){
    const a=options.actions.find(x=>x.name===name),group=document.createElement('div'),button=document.createElement('button');
    group.className='promotion-check';
-   comparison(options.comparisons?.[name],group);
+   comparison(options.comparisons?.[name],group,name);
+   checkPlan(name,group);
    button.textContent=a.label;button.disabled=!a.enabled||sending;button.onclick=()=>{
     if(a.mode==='progress'||a.mode==='review'){const u=new URL(a.href,location.origin);if(['http:','https:'].includes(u.protocol)){if(u.hostname==='gitea-internal.lab-ingress.svc.cluster.local'){u.hostname='gitea.localhost';u.port='34443';u.protocol='https:'}location.assign(u.href);}return;}
     submit(name);

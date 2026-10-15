@@ -10,6 +10,9 @@ import sqlite3
 from common import STATE
 
 FIELDS = {
+    'suggest-release-plan': {'run', 'target', 'dataset', 'recipe', 'query_manifest', 'judgement_manifest'},
+    'propose-release-plan': {'suggestion', 'edits'},
+    'accept-release-plan': {'pr'},
     'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'},
     'expire-preview': {'name', 'fingerprint', 'expires_at'},
     'prepare-production': set(),
@@ -38,7 +41,7 @@ def validate(payload):
     kind = payload['kind']
     if set(payload) - (FIELDS[kind] | {'kind'}):
         raise ValueError('Unknown delivery operation field.')
-    required = {'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'}, 'expire-preview': {'name', 'fingerprint', 'expires_at'}, 'prepare-production': set(), 'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
+    required = {'suggest-release-plan': {'run','target'}, 'propose-release-plan': {'suggestion','edits'}, 'accept-release-plan': {'pr'}, 'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'}, 'expire-preview': {'name', 'fingerprint', 'expires_at'}, 'prepare-production': set(), 'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
                 else {'baseline_run', 'candidate_run'},
                 'promotion': {'target', 'run'}, 'release-production': set(), 'gate-check': {'pr', 'source_sha'},
                 'request-exception': {'pr', 'source_sha', 'variant', 'reason'},
@@ -47,6 +50,8 @@ def validate(payload):
                 'rollback': {'target', 'fingerprint'}}[kind]
     if not required <= set(payload):
         raise ValueError('Required delivery operation fields are missing.')
+    if kind == 'propose-release-plan' and (not re.fullmatch('[a-f0-9]{32}',str(payload['suggestion'])) or not isinstance(payload['edits'],dict)):
+        raise ValueError('Choose a saved release check suggestion and its review settings.')
     if kind in ('expire-preview', 'set-preview-expiry') and not re.fullmatch(r'lab-delivery-run-[1-9][0-9]*-[a-f0-9]{8}', str(payload['name'])):
         raise ValueError('Only delivery preview environments can expire early.')
     if kind in ('expire-preview', 'set-preview-expiry'):
@@ -113,6 +118,9 @@ class Operations:
     def submit(self, payload, identity, key, *, release_binding=None):
         """Retry the same submission key safely; changed payloads require a new key."""
         validate(payload)
+        from release_check_plans import KINDS as PLAN_KINDS
+        if payload['kind'] in PLAN_KINDS and (not identity.get('is_admin') or identity.get('is_reader') or identity.get('is_delivery_service')):
+            raise ValueError('A human administrator must review release check plans.')
         if payload['kind'] == 'request-exception' and (
                 not identity.get('is_admin') or identity.get('is_delivery_service')):
             raise ValueError('A human lab administrator must request an exception.')
@@ -220,7 +228,26 @@ def execute_next():
         for field in ('dataset', 'recipe', 'query_manifest', 'judgement_manifest'):
             if field in request:
                 options += ['--' + field.replace('_', '-'), request[field]]
-        if kind == 'prepare-production':
+        if kind == 'suggest-release-plan':
+            from release_check_plans import scope, suggest
+            progress('Collecting accumulated source changes and query sets')
+            baseline,candidate=scope(request['run'],request['target'],{
+                field:request[key] for key,field in (
+                    ('dataset','dataset_release'),('recipe','index_recipe_sha256'),
+                    ('query_manifest','query_manifest_sha256'),('judgement_manifest','judgement_manifest_sha256')) if request.get(key)})
+            result={'run':request['run'],'target':request['target'],'suggestion':suggest(baseline,candidate,request['target'])}
+        elif kind == 'propose-release-plan':
+            from release_check_plans import propose
+            saved=store.get(request['suggestion'])
+            if not saved or saved['state']!='complete' or saved['request']['kind']!='suggest-release-plan':
+                raise ValueError('Choose a completed release check suggestion.')
+            progress('Validating the reviewed selection and creating its plan PR')
+            result=propose(saved['result']['suggestion'],request['edits'],row['identity'])
+        elif kind == 'accept-release-plan':
+            from release_check_plans import record
+            progress('Checking exact-head approval and recording the plan in source control')
+            result=record(request['pr'])
+        elif kind == 'prepare-production':
             from production_release import prepare
             progress('Creating the reviewed inactive production candidate')
             from production_release import preparation_context
@@ -299,7 +326,7 @@ def execute_next():
         traceback.print_exc()
         detail = type(error).__name__
         if isinstance(error, ComparisonInputError) or (isinstance(error, ValueError) and (getattr(error, 'reference', None) or
-                request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production', 'expire-preview', 'set-preview-expiry'))):
+                request['kind'] in ('request-exception', 'merge-exception', 'prepare-production', 'release-production', 'expire-preview', 'set-preview-expiry', 'suggest-release-plan', 'propose-release-plan', 'accept-release-plan', 'promotion', 'rollback'))):
             # Decision validation errors contain public evidence/review facts,
             # never credentials or provider response bodies.
             detail += ': ' + str(error)[:600 if isinstance(error, ComparisonInputError) else 240]

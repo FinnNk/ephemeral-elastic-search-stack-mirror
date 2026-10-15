@@ -255,6 +255,8 @@ def final_check(progress=lambda message: None):
         'query_bytes': payload, 'query_sha256': sha(payload), 'judgements_rows': labels,
         'judgement_bytes': label_bytes, 'judgement_sha256': sha(label_bytes)}
     selected = source_selection(second['fields']['source_sha'])
+    from release_check_plans import require
+    selected, plan_reference = require(first,second,'production')
     if json.loads(second['fields'].get('variant_config_json', '{}')) != selected['configuration']:
         raise ValueError('Prepared production candidate does not pin the exact selected variant configuration.')
     active_answer = search(NAMESPACE, queries[0]['query'], service='search')
@@ -328,6 +330,7 @@ def final_check(progress=lambda message: None):
             'specification': retain_bytes(spec, 'specification.json')})
     # The existing delivery gates still decide eligibility. This final check is
     # additional human-reviewed evidence, not a new unqualified quality threshold.
+    report['release_check_plan'] = plan_reference
     report['release_review'] = 'Review relevance, result changes and coverage before activation.'
     return retain(report, 'production-final-comparison.json')
 
@@ -348,6 +351,11 @@ def validate_final(reference, value):
     candidate = value['slots'][other]
     baseline_pin = configured_baseline(value['slots'][active])
     selected = source_selection(candidate['fields']['source_sha'])
+    from release_check_plans import require
+    if not report.get('release_check_plan'):raise ValueError('Final production evidence has no reviewed release check plan.')
+    selected, _ = require(value['slots'][active],candidate,'production',report['release_check_plan'])
+    if moment < datetime.fromisoformat(report['release_check_plan']['merged_at'].replace('Z','+00:00')):
+        raise ValueError('Final production evidence predates the reviewed plan.')
     expected_variants = [{'variant': item['variant'], 'intent': item['intent'],
         'configuration_sha256': selected['configuration_sha256_by_variant'][item['variant']]}
         for item in selected['selection']]

@@ -81,12 +81,13 @@ class ProductionReleaseTests(unittest.TestCase):
             'production_baseline_variant':'default',
             'production_baseline_configuration_sha256':'d'*64,
             'candidate_source_sha':'a'*40,'candidate_selection_sha256':'b'*64,
-            'candidate_configuration_sha256':'c'*64,'candidate_variants':[]}
+            'candidate_configuration_sha256':'c'*64,'candidate_variants':[],'release_check_plan':{'id':'reviewed','merged_at':'2026-10-01T00:00:00Z'}}
         with (
             patch('delivery_gates.read',return_value=report),
             patch.object(release,'frozen_catalogue'),
             patch('delivery_variant_selection.configured_baseline',return_value=baseline_pin),
             patch('delivery_variant_selection.source_selection',return_value=selected),
+            patch('release_check_plans.require',return_value=(selected,{'id':'reviewed'})),
         ):
             release.validate_final({},self.slots)
             other=deepcopy(self.slots);other['active']='green'

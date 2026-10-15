@@ -47,10 +47,11 @@ for the rationale and common examples.
 Promotion uses one explicitly pinned baseline release: the target's current
 build and its ordinary default API configuration. Each selected candidate
 variant is evaluated separately against that same baseline, using the intent
-declared for that variant in the merged source commit. Reports and promotion
+recorded for that variant in the reviewed release check plan. Reports and promotion
 proposals retain the baseline build number, variant name and configuration
-SHA-256, plus each candidate variant, intent and result. Operators cannot
-replace these source-controlled intents in the release UI or Actions form.
+SHA-256, plus each candidate variant, intent and result. The source fixes candidate variants and configurations. Review combined release
+intents and additional checks in an exact-head approved delivery-state plan.
+See [release check plans](release-check-plans.md).
 Production follows the same rule with active production as the baseline.
 
 Use [Actions or remote commands](remote-delivery.md) for developer operations.
@@ -166,8 +167,9 @@ Model predictions retain their qualification behind the judgement API.
 Every required suite must pass independently. The standard ESCI demo allowance
 does not apply to extra suites.
 
-Promotion reads these declarations and files from the exact merged source
-commit. It captures every named set for each selected variant against the
+Promotion uses a reviewed release check plan which accumulates these
+declarations and pins files at their original commits. It captures every active
+planned set for each selected variant against the
 current target's pinned baseline. A required set needs complete capture, usable
 qualified labels, at least 80% labelled results and the trusted intent-specific
 score/result-change limits. Its outcome is **Passed**, **Decision required** or
@@ -192,8 +194,8 @@ Reports use two groups:
 | Additional query sets | Zero or more | Each set declares Required or Report only |
 
 Each manifest still identifies one query set. The standard group can include
-several manifests, and source `additional_query_sets` can include several named
-files. Each set has separate scores and an independent required outcome; the
+several manifests. Promotion plans accumulate source `additional_query_sets`
+across the intervening commits and explicitly account for each suggested set. Each set has separate scores and an independent required outcome; the
 combined view is informational. All selected variants use every standard set.
 
 The lab's trusted [gate policy](../lab/delivery/policies/variant-merge-v1.json)
@@ -231,7 +233,9 @@ A custom primary manifest cannot replace that group.
 Retained evidence must contain the exact declared sets, query bytes, reference
 labels, required settings and baseline/candidate configurations. Evidence made
 before additional promotion sets were supported cannot be reused if the source
-declares any: rerun **Check and propose** after activating the updated runtime.
+declares any. All new promotions require a recorded release check plan and fresh
+evidence captured after its approval. Historical pre-plan evidence remains
+readable but cannot authorise a new deployment.
 
 | Step | Required record |
 | --- | --- |

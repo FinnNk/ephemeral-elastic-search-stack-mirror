@@ -13,7 +13,7 @@ function link(url, text) {
   if (parsed.protocol !== 'https:' && parsed.origin !== location.origin) return escapeText(text);
   return `<a href="${escapeText(parsed.href)}">${escapeText(text)}</a>`;
 }
-const names = {'promotion':'Promotion checks','prepare-production':'Prepare candidate','release-production':'Production release checks','merge-reviewed':'Deploy approved PR','verify':'Verify deployment','rollback':'Rollback','preview':'Create preview'};
+const names = {'suggest-release-plan':'Suggest release checks','propose-release-plan':'Review release check plan','accept-release-plan':'Record approved check plan','promotion':'Promotion checks','prepare-production':'Prepare candidate','release-production':'Production release checks','merge-reviewed':'Deploy approved PR','verify':'Verify deployment','rollback':'Rollback','preview':'Create preview'};
 let busy = false, refreshPending = false, lastData = null, cataloguePage = 0;
 function cards(data) {
   const query=$('release-search').value.toLowerCase(), state=$('release-status').value;

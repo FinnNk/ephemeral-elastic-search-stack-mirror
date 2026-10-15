@@ -131,12 +131,17 @@ The [variant evaluation guide](https://gitea.localhost:34443/elastic-agent/ephem
 
 ### Additional sets during promotion
 
-The coordinator carries this selection into Integration, Staging and Production
-checks. Every selected candidate variant is compared with the target baseline
+Source comparisons use this selection directly. For promotions, the dashboard
+suggests a plan from declarations across all commits since the target baseline,
+including removed declarations. Review the cumulative intent and additional
+sets, approve the exact plan PR head in delivery-state and record it before checks. Every selected candidate variant is compared with the target baseline
 using the standard suite and each named additional set. Required sets must pass
 separately; report-only failures remain informational. The combined view never
 opens a gate. A custom primary manifest cannot replace the catalogue's standard
-suite. Change the source selection and build again to change required sets.
+suite. Candidate variants and configurations remain fixed by the source.
+A reviewed release plan can adjust additional sets and release intents without
+rebuilding. Reducing inherited requirements needs an explicit reason; protected
+standard sets cannot be removed or weakened.
 
 ### Standard and additional query sets
 
@@ -146,3 +151,19 @@ defines zero or more **Additional query sets**, each Required or Report only.
 Names beginning `primary-` are reserved for standard sets. Combined scores never
 replace individual required outcomes. Standard-group changes need a reviewed
 lab-policy change; they cannot be made by opting out in this repository.
+
+## Review accumulated release checks
+
+Before promoting a build, open its release dashboard and suggest a release check
+plan against the current destination baseline. Review the accumulated commits,
+each variant's combined release intent and every inherited additional query set.
+Explicitly retain, replace or retire suggested sets, with reasons for reduced
+requirements. All standard sets remain mandatory.
+
+Create the plan PR, approve its exact head as the named human administrator,
+then choose **Record approved plan** in the dashboard. Only then run promotion
+checks and review the separate deployment proposal. Candidate variants and
+configurations remain fixed by the source build. Review a separate plan for each
+destination; a changed baseline or recorded plan requires fresh checks.
+
+See the [release check plan walkthrough](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/release-check-plans.md).

@@ -85,9 +85,9 @@ readers see the same tree with unavailable controls and an explanation.
 
 1. Select the successful merged-source build. Choose an environment node in the
    tree, or use **Stage** in **Promotion controls**.
-2. Choose **Check and propose Integration** or **Check and propose Staging**.
-   The coordinator reads each selected variant and its intent from the exact
-   merged source commit. It checks every selected variant separately against
+2. [Suggest, review and record the release check plan](release-check-plans.md).
+   Then choose **Check and propose Integration** or **Check and propose Staging**.
+   The coordinator uses source-fixed variants and the recorded release intents. It checks every selected variant separately against
    the target's current default API configuration. The report pins that baseline
    build, variant and configuration hash. Staging requires this exact release to be
    currently verified in Integration. Follow **Open progress and review links**.
@@ -125,12 +125,15 @@ available.
 
 **Customise the next comparison** links to the selected source commit’s variants,
 query-set selection and gate policy. These inputs are frozen for this release.
-Edit the source and build a new release to change them. Promotion intent is
-source-controlled; the panel does not let an operator override it.
+The source fixes candidate variants and configurations. Review a release check
+plan against the destination baseline to select the cumulative release intents
+and additional checks. The approved plan is recorded in delivery-state without
+rebuilding. See the [plan walkthrough](release-check-plans.md).
 Every promotion runs the catalogue's configured standard query sets (one or
 more). Every standard set is required. A custom primary manifest cannot replace
 the group; put custom queries in
-`additional_query_sets` in the merged source's `gate/selection.json`.
+`additional_query_sets` in source `gate/selection.json`. The reviewed plan
+accumulates these declarations, including removed or superseded sets.
 The same named sets are checked for every selected candidate variant against
 one target baseline. Required sets have separate blocking outcomes; report-only
 sets remain informational, including when their capture or scoring fails.
@@ -139,7 +142,8 @@ separate measurements for each set and an informational combined view.
 Combined averages never decide promotion. See [additional query sets](variant-evaluation.md#add-queries-for-your-change).
 
 The release dashboard lists the selected variants and each declared change
-intent, marks the default variant and links to that build's exact selection file.
+intent from the recorded plan, marks the default variant and links to that
+build's exact selection file. Source declarations supply the initial suggestions.
 The Production release page shows the same list for its prepared candidate.
 
 Unknown records are shown explicitly. The dashboard reads recent source runs
@@ -245,9 +249,10 @@ Both paths call the same coordinator; neither requires kubectl.
 The three targets share one cluster. They are separate deployment namespaces,
 not separate failure domains or performance-isolated systems.
 
-1. Run **Promote to integration** on **main**. Enter the successful merged-source
-   build number. The coordinator reads selected variants and each declared
-   intent from that build's exact source commit. It evaluates every selected
+1. Select the successful merged-source build and Integration in the dashboard.
+   [Review and record its check plan](release-check-plans.md), then choose
+   **Check and propose Integration** (or use the existing Actions workflow).
+   The coordinator reads source-fixed variants and the reviewed release intents. It evaluates every selected
    variant separately against the target's current default build/configuration.
    The lab uses `esci-gb-v1`.
 2. Follow the operation to its `delivery-state` PR. The coordinator first
@@ -259,13 +264,14 @@ not separate failure domains or performance-isolated systems.
    The coordinator rechecks the proposal and approval, merges it, then waits for
    Argo CD and the public API. The operation must finish with `state: verified`.
 5. Run **Promote to staging**, then repeat review and deployment using the
-   **same merged build** and frozen inputs.
+   **same merged build** and frozen inputs. First review a separate plan
+   against the current Staging baseline.
    Each preceding target must be verified first. No image is rebuilt.
 6. Use the [production release UI](https://control.localhost:34443/production-release)
    for the final release, as described below.
 
 If desired-state main or the target baseline changes, create a fresh proposal.
-Evidence must match the exact inputs and per-variant source intents and be no more
+Evidence must match the exact inputs, recorded plan and per-variant release intents and be no more
 than three days old. A merged source PR has already passed its per-variant merge
 gate, including any individually approved bounded exception. Promotion reports
 still show each variant's fresh target comparison.
@@ -301,8 +307,9 @@ selects one slot; preparing the other slot does not change that route.
 2. Follow the operation to its preparation PR. Approve the exact head in Gitea,
    then select it under **Deploy an approved PR**. Only open production PRs
    approved at their current commit appear; use **Refresh status** after approval.
-3. Select **Check and release production**. The coordinator reads every selected
-   variant and its intent from the candidate's merged source commit, runs the
+3. Review and record a Production check plan against active production and the
+   deployed inactive candidate. Select **Check and release production**. The
+   coordinator uses the pinned variants and reviewed release intents, runs the
    existing full gates including normal/peak Gatling load, then compares each
    candidate variant with the same active production build and default
    configuration.
@@ -339,7 +346,8 @@ The Actions steps below apply to integration and staging.
    `delivery-state/history/<target>/`. Its retained definition pins the old
    image, configuration, inputs and index recipe.
 2. Run **Request rollback** with the target and fingerprint. The coordinator
-   reads the retained release's source selection and checks each selected
+   requires a reviewed plan for the retained release against active production
+   and checks each selected
    variant against the current target default configuration.
    The coordinator evaluates **current → previous** and creates a new PR.
    Reversing an old report is insufficient. Production rollback uses the full

@@ -397,7 +397,8 @@ class Handler(BaseHTTPRequestHandler):
         if self.headers.get('X-Lab-Intent') != '1' or self.headers.get('Content-Type') != 'application/json':
             raise ValueError('Use the local UI or send JSON with X-Lab-Intent: 1.')
         size = int(self.headers.get('Content-Length', '0'))
-        if size < 0 or size > 4096:
+        limit = 65536 if self.path_parts() == ['api','delivery','operations'] else 4096
+        if size < 0 or size > limit:
             raise ValueError('Request body is too large.')
         value = json.loads(self.rfile.read(size))
         if not isinstance(value, dict):

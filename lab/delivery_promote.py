@@ -161,6 +161,8 @@ def propose(target, deployment, evidence, intent=None, rollback=False):
         proposal['baseline_variant'] = report['baseline_pin']
         proposal['variant_checks'] = [{key: row[key] for key in ('variant', 'intent', 'state', 'evidence')}
                                       for row in report['checks']]
+    if report.get('release_check_plan'):
+        proposal['release_check_plan'] = report['release_check_plan']
     identifier = target + '-' + uuid.uuid4().hex[:10]
     branch = 'promote/' + identifier
     git(DESIRED, 'switch', '-c', branch)
@@ -184,6 +186,8 @@ def propose(target, deployment, evidence, intent=None, rollback=False):
     git(DESIRED, 'push', 'origin', branch)
     from promotion_description import description
     body = description(target, deployment, current, evidence, report, intent, rollback)
+    if report.get('release_check_plan'):
+        body += '\n\n[Reviewed release check plan](' + report['release_check_plan']['url'] + '). Its exact approval and frozen inputs are bound to this evidence.'
     pr = pull_request(DESIRED, branch, proposal['kind'].capitalize() + ': ' + target + ' build ' +
                       str(deployment['build_run']) + ' · ' +
                       (deployment['fields'].get('software_version') or 'version not recorded'), body)
@@ -239,9 +243,11 @@ def inspect_pr(number):
             validate_final(read(proposal['evidence']).get('production_final', {}), before)
     elif git(DESIRED, 'show', head + ':targets/' + target + '/rendered/search.yaml') != rendered(deployment, 'lab-delivery-' + target).strip():
         raise ValueError('Rendered workloads differ from the pinned release and deployment.')
-    validate_evidence(proposal['evidence'], current['fingerprint'], deployment['fingerprint'],
+    checked_evidence = validate_evidence(proposal['evidence'], current['fingerprint'], deployment['fingerprint'],
                       proposal.get('intent'), deployment_inputs(deployment), target=target,
                       baseline_deployment=current, candidate_deployment=deployment)
+    if proposal.get('release_check_plan') != checked_evidence.get('release_check_plan'):
+        raise ValueError('The proposal differs from the reviewed release check plan in its evidence.')
     if proposal['kind'] == 'rollback':
         record = RECORDS / 'verified' / target / (deployment['fingerprint'] + '.json')
         if not record.exists() or json.loads(record.read_text())['deployment'] != deployment:

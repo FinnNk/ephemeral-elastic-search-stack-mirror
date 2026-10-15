@@ -25,6 +25,19 @@ def fixture():
 
 
 class ReleaseActions(unittest.TestCase):
+    def setUp(self):
+        self.plans=patch('release_check_plans.dashboard_status',return_value={name:{'state':'recorded','plan_id':'reviewed'} for name in ('integration','staging','release','rollback')})
+        self.plans.start();self.addCleanup(self.plans.stop)
+
+    def test_promotion_requires_a_recorded_plan_and_binds_its_identity(self):
+        data=fixture()
+        with patch('release_check_plans.dashboard_status',return_value={'staging':{'state':'suggested'}}):
+            choice=next(a for a in control.choices(data,ADMIN)['actions'] if a['name']=='staging')
+            self.assertFalse(choice['enabled']);self.assertIn('release check plan',choice['reason'])
+        first=control.choices(data,ADMIN)['context']
+        with patch('release_check_plans.dashboard_status',return_value={'staging':{'state':'recorded','plan_id':'changed'}}):
+            self.assertNotEqual(first,control.choices(data,ADMIN)['context'])
+
     def test_primary_action_tracks_latest_attempt_for_its_target(self):
         data=fixture();data['stages'][1]['review_operation']=None
         attempt={'id':'a'*32,'kind':'promotion','target':'staging','state':'failed',
@@ -56,7 +69,7 @@ class ReleaseActions(unittest.TestCase):
     def test_navigation_action_cannot_be_used_to_submit_duplicate_checks(self):
         data=fixture()
         data['activity']=[{'id':'a'*32,'kind':'promotion','target':'staging','state':'running'}]
-        request={'run':158,'action':'staging','context':control.context(data)}
+        request={'run':158,'action':'staging','context':control.choices(data,ADMIN)['context']}
         with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch.object(control,'snapshot',return_value=data):
             with self.assertRaisesRegex(ValueError,'already exists'):
                 control.submit(request,ADMIN,'another-submission')
@@ -132,13 +145,13 @@ class ReleaseActions(unittest.TestCase):
         self.assertNotEqual(a,control.context(data))
 
     def test_execution_detects_target_or_approval_drift(self):
-        data=fixture();binding={'identity':ADMIN,'request':{'run':158,'context':control.context(data)}}
+        data=fixture();binding={'identity':ADMIN,'request':{'run':158,'context':control.choices(data,ADMIN)['context']}}
         with patch.object(control,'snapshot',return_value=data):control.validate_binding(binding)
         data['environments'][0]['definition']['fingerprint']='z'*64
         with patch.object(control,'snapshot',return_value=data),self.assertRaises(ValueError):control.validate_binding(binding)
 
     def test_retry_is_durable_even_after_context_changes(self):
-        data=fixture();request={'run':158,'action':'staging','context':control.context(data)}
+        data=fixture();request={'run':158,'action':'staging','context':control.choices(data,ADMIN)['context']}
         with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch.object(control,'snapshot',return_value=data):
             first=control.submit(request,ADMIN,'stable-request');again=control.submit(request,ADMIN,'stable-request')
             self.assertEqual(first['id'],again['id']);self.assertEqual(len(Operations().active()),1)
@@ -157,7 +170,7 @@ class ReleaseActions(unittest.TestCase):
 
     def test_approved_proposal_must_belong_to_selected_release(self):
         data=fixture();data['activity']=[{'pr':{'number':24,'state':'approved','head_sha':'f'*40}}]
-        request={'run':158,'action':'deploy','pr':25,'context':control.context(data)}
+        request={'run':158,'action':'deploy','pr':25,'context':control.choices(data,ADMIN)['context']}
         with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch.object(control,'snapshot',return_value=data):
             with self.assertRaises(ValueError):control.submit(request,ADMIN,'wrong-pr')
 
@@ -171,7 +184,7 @@ class ReleaseActions(unittest.TestCase):
 
     def test_worker_stops_stale_action_before_running_checks(self):
         import delivery_operations
-        data=fixture();binding={'request':{'run':158,'action':'staging','context':control.context(data)},'identity':ADMIN}
+        data=fixture();binding={'request':{'run':158,'action':'staging','context':control.choices(data,ADMIN)['context']},'identity':ADMIN}
         with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch('release_control.validate_binding',side_effect=ValueError('Target moved')),patch('delivery_cli.execute') as execute:
             store=Operations();row=store.submit({'kind':'promotion','target':'staging','run':158},ADMIN,'worker',release_binding=binding)
             delivery_operations.execute_next()

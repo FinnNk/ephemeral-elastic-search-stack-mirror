@@ -10,13 +10,15 @@ ACTIONS = {'integration', 'staging', 'prepare', 'release', 'deploy', 'rollback'}
 BUSY = {'queued', 'running', 'accepted'}
 
 
-def context(data):
+def context(data, plans=None):
     """Bind commands to observed releases and PR heads, excluding refresh timestamps."""
     value = {'selected': data.get('selected'), 'release': data.get('release'),
              'environments': [{k: e.get(k) for k in ('name', 'definition', 'ready', 'active')}
                               for e in data.get('environments', [])],
              'reviews': sorted({(a['pr']['number'], a['pr'].get('head_sha'), a['pr']['state'])
                                 for a in data.get('activity', []) if a.get('pr')})}
+    if plans is not None:
+        value['plans'] = {name: p.get('plan_id') if p.get('state')=='recorded' else None for name,p in plans.items()}
     # Release choice status changes while an operation runs; only its identity
     # belongs in the execution fence.
     if value['selected']:
@@ -67,7 +69,7 @@ def choices(data, identity):
     def current(name, state):
         return stages.get(name, {}).get('state') == state and bool(stages.get(name, {}).get('environment'))
     approved = {a['pr']['number']: a['pr'] for a in data.get('activity', [])
-                if (a.get('pr') or {}).get('state') == 'approved'}
+                if (a.get('pr') or {}).get('state') == 'approved' and a.get('kind') not in ('propose-release-plan','accept-release-plan')}
     active = data.get('active_production')
     candidate = stages.get('candidate', {}).get('environment')
     retained = next((e for e in data.get('environments', [])
@@ -120,7 +122,12 @@ def choices(data, identity):
             action.update(label='Run checks again', retry_of=latest['id'])
             if action['enabled']:
                 action['reason']='Starts a fresh attempt with current settings. The previous result is retained.'
-    return {'context': context(data), 'actions': actions, 'approved_prs': list(approved.values()),
+    from release_check_plans import dashboard_status
+    plans=dashboard_status(data,identity)
+    for action in actions:
+        if action['name'] in plans and action.get('mode')=='submit' and action['enabled'] and plans[action['name']]['state']!='recorded':
+            action.update(enabled=False,reason='Review and record the release check plan below before running promotion checks.')
+    return {'context': context(data,plans), 'check_plans':plans, 'plan_editor':bool(admin and not unavailable), 'actions': actions, 'approved_prs': list(approved.values()),
             'comparisons': {name: comparison(data, name)
                 for name in ('integration', 'staging', 'prepare', 'release', 'rollback')}}
 
@@ -182,5 +189,5 @@ def validate_binding(binding):
     """Fail queued work closed if its observed target or approved head has changed."""
     request = binding['request']
     data = snapshot(binding['identity'], request['run'])
-    if data.get('notices') or context(data) != request['context']:
+    if data.get('notices') or choices(data, binding['identity'])['context'] != request['context']:
         raise ValueError('Release inputs, target or review changed while queued. Refresh and submit again.')

@@ -46,7 +46,8 @@ class Projection(unittest.TestCase):
             {'integration': environment('integration', 108)}, {},
             [{'id': 158, 'head_sha': 'a' * 40, 'status': 'completed', 'conclusion': 'success'}], [])
         self.assertEqual(value['build']['conclusion'], 'success')
-        result = choices(value, {'username': 'reviewer', 'is_admin': True})
+        with patch('release_check_plans.dashboard_status',return_value={'integration':{'state':'recorded','plan_id':'reviewed'}}):
+            result = choices(value, {'username': 'reviewer', 'is_admin': True})
         self.assertTrue(next(a for a in result['actions'] if a['name'] == 'integration')['enabled'])
         self.assertEqual(result['comparisons']['integration']['baseline']['build_run'], 108)
 

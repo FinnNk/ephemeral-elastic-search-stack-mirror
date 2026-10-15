@@ -25,6 +25,9 @@ def frozen_sets(selection, deployment=None):
     from delivery_source_comparison import source_bytes
     from primary_query_sets import frozen_sets as mandatory_sets
     primary = mandatory_sets(deployment['fields']['dataset_release'], deployment['fields']['dataset_sha256']) if deployment else []
+    if selection.get('_release_plan'):
+        from release_check_plans import frozen_additional
+        return [*primary, *frozen_additional(selection['_release_plan'])]
     return [*primary, *freeze({'additional_query_sets': selection.get('additional_query_sets', [])},
                   lambda path: source_bytes(path, selection['source_sha']))]
 
