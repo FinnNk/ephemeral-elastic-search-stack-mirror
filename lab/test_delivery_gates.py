@@ -26,8 +26,8 @@ class PromotionGateTests(unittest.TestCase):
         report = {'kind': 'delivery-variant-evidence', 'state': 'pass',
                   'baseline_build_run': 158, 'baseline_variant': 'default',
                   'baseline_pin': pin, 'checks': checks}
-        current = {'fingerprint': 'old'}
-        candidate = {'fingerprint': 'new', 'fields': {'software_release_id': 'd' * 64,
+        current = {'fingerprint': 'old', 'build_run': 158}
+        candidate = {'fingerprint': 'new', 'build_run': 184, 'fields': {'software_release_id': 'd' * 64,
                      'source_sha': 'e' * 40}}
         pr = {'number': 24, 'html_url': 'https://gitea.example/pulls/24', 'head': {'sha': 'head'}}
         with TemporaryDirectory() as folder, ExitStack() as stack:
@@ -52,11 +52,12 @@ class PromotionGateTests(unittest.TestCase):
             self.assertEqual(proposal['baseline_variant'], pin)
             self.assertEqual(proposal['variant_checks'], checks)
             body = mocks['delivery_promote.pull_request'].call_args.args[3]
-            self.assertIn('Baseline: build 158, variant **default**', body)
-            self.assertIn('**ranker-a** (ranking-change): pass', body)
+            self.assertIn('[Build 158]', body)
+            self.assertIn('**ranker-a** — Intentional ranking change; check **pass**', body)
             self.assertIn(reference['blob'], body)
             retained = list((Path(folder) / 'proposals').glob('*.json'))
             self.assertEqual(json.loads(retained[0].read_text())['evidence'], reference)
+            self.assertIn('\n  "', retained[0].read_text())
 
     def test_variant_evaluation_reference_is_consumed_by_proposal(self):
         import json

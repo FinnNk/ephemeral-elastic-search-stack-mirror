@@ -222,12 +222,13 @@ def read_target(target, revision='HEAD'):
 
 
 def write_target(target, deployment):
+    from delivery_json import write_json
     if target == 'production':
         from production_release import initial, write
         return write(initial(deployment))
     folder = LOCAL / 'targets' / target
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / 'deployment.json').write_bytes(canonical(deployment))
+    write_json(folder / 'deployment.json', deployment)
     (folder / 'rendered').mkdir(exist_ok=True)
     (folder / 'rendered/search.yaml').write_text(rendered(deployment, 'lab-delivery-' + target),
                                                  encoding='utf-8', newline='\n')

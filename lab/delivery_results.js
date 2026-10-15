@@ -7,6 +7,7 @@ $("pause-logs").onclick=()=>{logsPaused=!logsPaused;$("pause-logs").textContent=
 const stateNames={accepted:'Waiting for the source build',queued:'Queued',running:'In progress',complete:'Complete',failed:'Failed',interrupted:'Interrupted',pass:'Passed',approved_exception:'Accepted with a recorded exception',decision_required:'Decision required',blocked:'Blocked',invalid:'Invalid evidence',verified:'Deployment verified'};
 const operationTitles={'prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
 const names={ndcg_at_10:'nDCG@10',ndcg_at_20:'nDCG@20',precision_at_10:'Precision@10',recall_at_10:'Recall@10',rbo_at_10_p_0_9:'RBO@10',jaccard_at_10:'Jaccard@10'};
+const intentNames={'ranking-change':'Intentional ranking change','preserve-results':'Preserve current results'};
 const label=value=>names[value]||String(value).replaceAll('_',' ');
 const fmt=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:4}):value==null?'Not available':String(value);
 const probability=value=>typeof value==='number'&&value>0&&value<.0001?'<0.0001':fmt(value);
@@ -86,7 +87,48 @@ function timings(value,record){
  table(s,['Query set','API environment','Attempts','Successes','Retries','Transient failures','Terminal failures','Pacing wait (s)'],executions.flatMap(([name,suite])=>Object.entries(suite.execution.pacing).map(([environment,p])=>[name,environment,fmt(p.attempts),fmt(p.successes),fmt(p.retries),fmt(p.transient_failures),fmt(p.terminal_failures),fmt(p.wait_seconds)])));
  }
 }
-function report(value,operationRecord){
+function buildLink(run){const a=document.createElement('a');a.textContent=run?'Build '+run:'Build not recorded';if(run)a.href='https://gitea.localhost:34443/elastic-agent/delivery-source/actions/runs/'+encodeURIComponent(run);return a;}
+function settingsText(settings){const boosts=settings?.field_boosts;return boosts?'Search field weights: '+Object.entries(boosts).map(([k,v])=>k+' '+v).join(', '):'Configuration details not recorded';}
+async function promotionReview(value,row){
+ const proposal=row?.result?.proposal||{},deployment=proposal.deployment||{},fields=deployment.fields||{},target=proposal.target||row?.request?.target||'target';
+ const overview=section('Promotion for review','Compare the currently deployed '+target+' baseline with this candidate. Approval records your decision; deployment is a separate action.');
+ overview.classList.add('promotion-review');
+ if(row?.result?.url){const u=new URL(row.result.url,location.origin);if(['http:','https:'].includes(u.protocol)){if(u.hostname==='gitea-internal.lab-ingress.svc.cluster.local'){u.hostname='gitea.localhost';u.port='34443';u.protocol='https:'}const a=node('a','Review proposal in Gitea',overview);a.href=u.href;}}
+ const records=await Promise.all((value.checks||[]).map(async check=>{
+  const reports={};if(check.evidence)await Promise.all(['relevance','result-regression','performance'].map(async mode=>{
+   try{const r=await fetch(path+'/variant/'+encodeURIComponent(check.variant)+'/'+mode,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error();reports[mode]=await r.json();}catch{reports[mode]=null;}
+  }));return{check,reports};
+ }));
+ const frozenBaseline=records.find(r=>r.reports.relevance)?.reports.relevance.baseline||{};
+ table(overview,['Role','Release','Version','Behaviour'],[
+  ['Current '+target+' baseline',buildLink(value.baseline_build_run),frozenBaseline.software_version||frozenBaseline.fields?.software_version||'Version not recorded',value.baseline_variant||'Not recorded'],
+  ['Candidate',buildLink(value.candidate_build_run),fields.software_version||'Version not recorded',(value.checks||[]).map(c=>c.variant).join(', ')]]);
+ const first=records.find(r=>r.reports.relevance)?.reports.relevance;
+ node('p','Catalogue: '+(fields.dataset_release||first?.candidate?.dataset_release||'Not recorded')+'. Checked '+new Date(value.completed_at).toLocaleString()+'.',overview);
+ const config=section('Compared search configurations','Names identify the behaviour being reviewed; exact hashes remain under Evidence details.');
+ node('p','Baseline '+(value.baseline_variant||'default')+' — '+settingsText(value.baseline_pin?.settings),config);
+ let candidateSettings={};try{candidateSettings=JSON.parse(fields.variant_config_json||'{}')}catch{}
+ for(const {check,reports} of records){
+  node('p','Candidate '+check.variant+' — '+(intentNames[check.intent]||label(check.intent))+' — '+settingsText(candidateSettings.variants?.[check.variant]),config);
+  const s=section(check.variant+' — review summary',(intentNames[check.intent]||label(check.intent))+'. Gate: '+(stateNames[check.state]||label(check.state))+'.');
+  s.classList.add('promotion-review');
+  const relevance=reports.relevance,results=reports['result-regression'],performance=reports.performance;
+  if(relevance){const b=relevance.metrics?.baseline||{},c=relevance.metrics?.candidate||{};
+   table(s,['Search quality','Baseline','Candidate','Change'],[['nDCG@10',fmt(b['nDCG@10']),fmt(c['nDCG@10']),typeof b['nDCG@10']==='number'&&typeof c['nDCG@10']==='number'?fmt(c['nDCG@10']-b['nDCG@10']):'Not calculable']]);
+   const coverage=relevance.judgement_coverage||{};
+   table(s,['Judgement coverage','Baseline','Candidate'],[['Labelled result fraction',pct(coverage.baseline?.fraction),pct(coverage.candidate?.fraction)]]);
+   node('p',fmt(relevance.completed_query_count)+' of '+fmt(relevance.query_count)+' queries completed. Coverage and model-label accuracy are separate from measured search quality.',s);
+   if(relevance.judgement_selection==='demo')node('p','Demo model labels are included; their accuracy remains unqualified.',s);
+  }else node('p','Relevance summary unavailable. Open the detailed report before approving.',s);
+  if(results){table(s,['Result changes','Value'],[['Changed queries',fmt(results.changed_query_ids?.length)],['RBO@10 (p = 0.9)',fmt(results.result_similarity?.rbo_at_10_p_0_9)],['Jaccard@10',fmt(results.result_similarity?.jaccard_at_10)]]);}
+  else node('p','Result-change summary unavailable. Open the detailed report before approving.',s);
+  if(performance){const profile={probe:'Short regression probe',smoke:'Smoke test','production-load':'Production load test'}[performance.profile]||performance.profile;node('p','Performance profile: '+profile+'; '+(performance.verdict==='within-budget'?'Within budget':label(performance.verdict))+'. '+(performance.profile==='probe'?'This short regression probe is not a production load test.':''),s);
+   table(s,['Phase','Baseline p95 (ms)','Candidate p95 (ms)','p95 budget (ms)','Baseline failures','Candidate failures'],Object.entries(performance.measured_phases||{}).map(([phase,x])=>[label(phase),fmt(x.baseline?.p95_ms),fmt(x.candidate?.p95_ms),fmt(x.budget?.p95_ms),fmt(x.baseline?.failed_percent)+'%',fmt(x.candidate?.failed_percent)+'%']));
+  }else node('p','Performance summary unavailable. Open the detailed report before approving.',s);
+ }
+ const evidence=$('identity');for(const [k,v] of Object.entries({baseline_deployment:value.baseline,candidate_deployment:value.candidate,baseline_configuration:value.baseline_pin?.configuration_sha256,candidate_configuration:value.candidate_configuration_sha256,source_commit:value.source_sha})){node('dt',label(k),evidence);node('dd',fmt(v),evidence);}
+}
+async function report(value,operationRecord){
  $('title').textContent=value.state==='verified'?'Deployment verification':value.kind==='paired-api-performance'?'Performance comparison':value.kind==='delivery-variant-evidence'?'Per-variant delivery checks':value.reports?'Delivery checks':'Search comparison report';$('state').textContent=value.state==='pass'?'All variants passed':value.state==='failed'?'Variant gate failed':value.valid===false?'Invalid evidence':value.complete===false?'Incomplete evidence':'Report ready';$('stage').textContent='Review search quality, result changes and label coverage separately.';
  $('explanation').textContent='All variants in a relevance comparison use the same frozen judgement set. The report records measurements; the operation page records the gate or deployment decision.';
  const decision=operationRecord?.result?.gate;
@@ -97,6 +139,7 @@ function report(value,operationRecord){
  }else if(operationRecord?.request?.pr){$('state').textContent='Merge gate: not available';$('stage').textContent='No merge decision is recorded for this operation.';}
  else if(value.verdict){$('state').textContent='Check outcome: '+label(value.verdict);}
  else if(value.state==='verified'){$('state').textContent='Deployment verified';$('stage').textContent='Argo CD and the public API verified the declared release.';}
+ if(value.kind==='delivery-variant-evidence'){identity({report_kind:value.kind,evidence_sha256:operationRecord?.result?.report?.sha256,evaluated_at:value.completed_at});await promotionReview(value,operationRecord);}
  timings(value,operationRecord);
  if(value.production_slots_sha256){node('p',value.recent_query_source,section('Final production release',value.release_review));}
 
@@ -121,16 +164,13 @@ function report(value,operationRecord){
  }
  else if(value.kind==='delivery-variant-evidence'){
   $('stage').textContent='One active-target baseline was used for every selected candidate variant.';
-  const baseline=value.baseline_pin||{};
-  const s=section('Pinned comparison baseline','Build '+fmt(value.baseline_build_run)+' · '+fmt(baseline.variant)+' · configuration SHA-256 '+fmt(baseline.configuration_sha256));
-  table(s,['Target','Build','Variant','Configuration SHA-256'],[['Baseline',fmt(value.baseline_build_run),fmt(baseline.variant),fmt(baseline.configuration_sha256)],['Candidate',fmt(value.candidate_build_run),'Selected variants',fmt(value.candidate_configuration_sha256)]]);
   const c=section('Selected variant checks','Each variant uses its intent from the exact merged source commit. Every check is compared with the same baseline build and configuration.');
   table(c,['Variant','Intent','Outcome','Reports'],(value.checks||[]).map(row=>{
    const cell=document.createElement('span');
    if(row.evidence)for(const [mode,labelText] of [['result-regression','Results'],['relevance','Relevance'],['performance','Performance']]){
     const a=document.createElement('a');a.href=path+'/variant/'+encodeURIComponent(row.variant)+'/'+mode;a.textContent=labelText;cell.append(a,document.createTextNode(' '));
    }else cell.textContent='No complete report';
-   return[row.variant,label(row.intent),stateNames[row.state]||label(row.state),cell];
+   return[row.variant,intentNames[row.intent]||label(row.intent),stateNames[row.state]||label(row.state),cell];
   }));
  }
  else if(value.reports){
@@ -138,7 +178,7 @@ function report(value,operationRecord){
 const s=section('Delivery checks','Open each retained check. The operation records the promotion decision.');for(const name of ['result-regression','relevance','performance'])if(value.reports[name]){const p=node('p',null,s),a=node('a','Open '+label(name)+' report',p);a.href=path+'/'+name;}}
  else{const s=section('Delivery evidence','This record combines the retained checks for a delivery operation. Open its operation page to review the decision, or view JSON for the complete evidence.');const values=Object.entries(value).filter(([k,v])=>v!=null&&typeof v!=='object');if(values.length)table(s,['Field','Value'],values.map(([k,v])=>[label(k),fmt(v)]));}
  if(path.startsWith('/api/delivery/operations/'))link('proposal',path.split('/report')[0]);$('proposal').textContent='Open operation progress';
- identity({report_kind:value.kind,source_commit:value.source_context?.source_sha,baseline:value.baseline_variant,default:value.default_variant,judgement_sha256:value.judgement_sha256,query_suite_sha256:value.query_suite_sha256,workload_sha256:value.workload_sha256,observation_sha256:value.observation_sha256,evaluated_at:value.evaluated_at});
+ if(value.kind!=='delivery-variant-evidence')identity({report_kind:value.kind,source_commit:value.source_context?.source_sha,baseline:value.baseline_variant,default:value.default_variant,judgement_sha256:value.judgement_sha256,query_suite_sha256:value.query_suite_sha256,workload_sha256:value.workload_sha256,observation_sha256:value.observation_sha256,evaluated_at:value.evaluated_at});
 }
 async function load(){if(loading)return;loading=true;clearTimeout(timer);try{
  const response=await fetch(path,{headers:{Accept:'application/json'}}),value=await response.json();
@@ -150,7 +190,7 @@ async function load(){if(loading)return;loading=true;clearTimeout(timer);try{
   if(!r.ok)throw new Error('Unable to load the recorded gate outcome.');
   record=await r.json();
  }
- const active=operationPage?operation(value):(report(value,record),false);if(active)timer=setTimeout(load,5000);
+ const active=operationPage?operation(value):(await report(value,record),false);if(active)timer=setTimeout(load,5000);
  }catch(error){$('state').textContent='Unable to load';$('stage').textContent=error.message;$('explanation').textContent='Refresh to try again. This does not restart the operation.';if(error.status===401)link('signin','/oauth2/start?rd='+encodeURIComponent(location.pathname+location.search));}finally{loading=false}}
 $('json').href=path+'?format=json';$('refresh').addEventListener('click',load);load();
 

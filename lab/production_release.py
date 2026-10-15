@@ -99,12 +99,13 @@ def render_state(value):
 
 
 def write(value):
+    from delivery_json import write_json
     validate_state(value)
     folder = LOCAL / 'targets/production'
     folder.mkdir(parents=True, exist_ok=True)
     (folder / 'rendered').mkdir(exist_ok=True)
-    (folder / 'slots.json').write_bytes(canonical(value))
-    (folder / 'deployment.json').write_bytes(canonical(value['slots'][value['active']]))
+    write_json(folder / 'slots.json', value)
+    write_json(folder / 'deployment.json', value['slots'][value['active']])
     (folder / 'rendered/search.yaml').write_text(render_state(value), encoding='utf-8', newline='\n')
 
 
@@ -176,7 +177,8 @@ def prepare():
     git(DESIRED, 'switch', '-c', 'promote/' + identifier)
     write(after)
     folder = LOCAL / 'proposals'; folder.mkdir(exist_ok=True)
-    (folder / (identifier + '.json')).write_bytes(canonical(proposal))
+    from delivery_json import write_json
+    write_json(folder / (identifier + '.json'), proposal)
     git(DESIRED, 'add', '.')
     git(DESIRED, 'commit', '-m', 'Prepare inactive production API')
     git(DESIRED, 'push', 'origin', 'promote/' + identifier)

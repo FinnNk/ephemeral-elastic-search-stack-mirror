@@ -6,6 +6,13 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+PR #186 is accepted and active. Retained checks were revalidated and Integration
+proposal delivery-state #25 is ready for review, without another evaluation.
+The [human review batch](readable-promotion-review.md) replaces opaque hash-led
+overviews and PR descriptions with release/behaviour context and key measurements,
+and prettifies newly written desired-state JSON. Review and activate it, update
+#25's formatting before approval, then resume the walkthrough.
+
 PR #185 is accepted and active. Before recovery, inspection found proposal
 construction also reading report fields from its storage reference. The
 [validated-report follow-up](validated-proposal-evidence.md) uses the existing

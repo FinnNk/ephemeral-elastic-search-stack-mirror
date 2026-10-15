@@ -92,7 +92,12 @@ readers see the same tree with unavailable controls and an explanation.
    baseline's build, default variant and configuration hash. Changing **Stage**
    changes that baseline. Rollback shows the retained release as its candidate;
    candidate preparation explains that its comparison happens at the release check.
-3. Review the proposal and retained check report in Gitea. Approve the exact PR
+3. Open the promotion report and **Review proposal in Gitea**. The report identifies
+   the current target and candidate by linked build number, available version and
+   variant name. Review each variant's intent, nDCG change, result overlap,
+   judgement coverage and measured performance budgets. Missing summaries are
+   labelled unavailable; open the detailed reports before approving. Full hashes
+   remain under **Evidence details**. Review the proposal, then approve the exact PR
    head. Select it under **Approved proposal**, then choose **Deploy approved
    proposal**. The coordinator rechecks the approval and evidence, merges the
    desired state, waits for Argo CD and verifies the API.
@@ -182,6 +187,12 @@ the baseline; relevance scores are shown per variant. Delivery evidence links to
 retained check. Use **View JSON data** for the underlying record. **Submitted**
 does not mean evaluated or deployed. Both comparison revisions must contain the
 current evaluation/configuration contract.
+
+New desired-state proposals, deployment definitions, production slot records and
+history JSON use two-space indentation for readable Gitea diffs. Fingerprints and
+immutable release/evidence artefacts retain canonical encoding. Formatting a
+proposal changes its Git commit, so any existing approval must be renewed for
+the new head even when the JSON values are unchanged.
 
 For workstation commands and retry behaviour, see [remote delivery](remote-delivery.md).
 Both paths call the same coordinator; neither requires kubectl.

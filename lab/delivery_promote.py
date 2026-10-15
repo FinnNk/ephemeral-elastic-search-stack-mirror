@@ -112,6 +112,7 @@ def bootstrap(deployment):
 
 
 def propose(target, deployment, evidence, intent=None, rollback=False):
+    from delivery_json import write_json
     base = checkout()
     current = read_target(target)
     if deployment['fingerprint'] == current['fingerprint']:
@@ -158,7 +159,7 @@ def propose(target, deployment, evidence, intent=None, rollback=False):
     previous = history / (current['fingerprint'] + '.json')
     if previous.exists() and json.loads(previous.read_text()) != current:
         raise ValueError('Retained deployment history differs.')
-    previous.write_bytes(canonical(current))
+    write_json(previous, current)
     if target == 'production':
         proposal['previous_slots'] = slots
         proposal['slots'] = {**slots, 'active': other}
@@ -167,27 +168,15 @@ def propose(target, deployment, evidence, intent=None, rollback=False):
         write_target(target, deployment)
     folder = LOCAL / 'proposals'
     folder.mkdir(exist_ok=True)
-    (folder / (identifier + '.json')).write_bytes(canonical(proposal))
+    write_json(folder / (identifier + '.json'), proposal)
     git(DESIRED, 'add', '.')
     git(DESIRED, 'commit', '-m', proposal['kind'].capitalize() + ' to ' + target)
     git(DESIRED, 'push', 'origin', branch)
-    intent_summary = ('Intent: **' + intent + '**.\n\n' if intent else
-        'Baseline: build ' + str(report['baseline_build_run']) + ', variant **' +
-        report['baseline_variant'] + '**, configuration SHA-256 `' +
-        report['baseline_pin']['configuration_sha256'] + '`.\n\n' +
-        'Each selected candidate variant was checked against that baseline:\n' +
-        ''.join('- **' + row['variant'] + '** (' + row['intent'] + '): ' + row['state'] + '\n'
-                for row in report['checks']) + '\n')
-    body = (
-        '## ' + proposal['kind'].capitalize() + ' to ' + target + '\n\n' +
-        'Release `' + deployment['fields']['software_release_id'] + '`; source `' + deployment['fields']['source_sha'] + '`.\n\n' +
-        'Baseline `' + current['fingerprint'] + '` → candidate `' + deployment['fingerprint'] + '`.\n\n' +
-        intent_summary + 'Evidence SHA-256 `' + evidence['sha256'] + '` in `' + evidence['blob'] + '`.\n\n' +
-        'Review the deployment, full result check, frozen relevance coverage and Gatling report. ' +
-        'Synthetic relevance is a measurement, not automatic quality approval. ' +
-        'The production target is a local simulation. Approval and deployment verification are separate.\n')
-    pr = pull_request(DESIRED, branch, proposal['kind'].capitalize() + ': ' + target + ' release ' +
-                      deployment['fields']['software_release_id'][:12], body)
+    from promotion_description import description
+    body = description(target, deployment, current, evidence, report, intent, rollback)
+    pr = pull_request(DESIRED, branch, proposal['kind'].capitalize() + ': ' + target + ' build ' +
+                      str(deployment['build_run']) + ' · ' +
+                      (deployment['fields'].get('software_version') or 'version not recorded'), body)
     git(DESIRED, 'switch', 'main')
     validation = validate_pr(pr['number'])
     return {'pr': pr['number'], 'url': pr['html_url'], 'head_sha': pr['head']['sha'],
