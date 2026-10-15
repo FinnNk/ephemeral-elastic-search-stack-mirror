@@ -182,8 +182,17 @@ then **Run workflow** on **main**. Supply the successful build run ID
 from its `/actions/runs/<id>` URL; compare also needs a baseline run.
 
 The workflow prints a durable progress URL and releases the runner. Follow that
-record to completion and open the returned storefront or report. Browser links
-show a readable progress page with the current stage and outcome. Report pages separate relevance,
+record to completion and open the returned storefront or report.
+
+The release dashboard distinguishes **New attempt** from **Existing attempt**.
+Reopening an existing attempt starts no new checks. Its original submission time
+and recorded error remain visible. For a failed or interrupted attempt, use
+**Start a new attempt** to run the checks again with current settings; the earlier
+result is retained. Repeating a submission after a network failure reuses the
+same attempt to avoid duplicate work.
+
+Browser links show a readable progress page with the current stage and outcome.
+Report pages separate relevance,
 result overlap and judgement coverage. The recorded merge gate appears at the
 top; a passed gate needs no relevance decision. The PR offers a decision link only
 when a bounded decision is required. An old decision link for a passed gate

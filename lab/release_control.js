@@ -76,8 +76,14 @@
    const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(encoded));keys.set(encoded,'release-'+[...new Uint8Array(digest)].map(v=>v.toString(16).padStart(2,'0')).join(''));
   }
   $('promotion-feedback').textContent='Submitting '+action+' for build '+body.run+'…';
-  try{const row=await request('/api/delivery/dashboard/actions',body,keys.get(encoded));$('promotion-feedback').replaceChildren();const text=document.createElement('p');text.textContent='Operation '+row.state+'.';$('promotion-feedback').append(text);link('/api/delivery/operations/'+encodeURIComponent(row.id),'Open progress and review links',$('promotion-feedback'));
-   if(['failed','interrupted'].includes(row.state)){const retry=document.createElement('button');retry.textContent='Submit a new attempt';retry.onclick=()=>{keys.set(encoded,crypto.randomUUID());submit(action);};$('promotion-feedback').append(retry);}
+  try{const row=await request('/api/delivery/dashboard/actions',body,keys.get(encoded));const feedback=$('promotion-feedback');feedback.replaceChildren();
+   const reused=row.submission_reused===true,finished=['failed','interrupted','complete'].includes(row.state);
+   const title=document.createElement('h3');title.textContent=reused?'Existing attempt — '+row.state:row.submission_reused===false?'New attempt — '+row.state:'Attempt — '+row.state;feedback.append(title);
+   const text=document.createElement('p');text.textContent=reused?'No new checks were started. This is the previously submitted attempt.':'Your request has been accepted. Follow its progress below.';feedback.append(text);
+   if(row.created_at){const when=document.createElement('p');when.textContent='Originally submitted: '+new Date(row.created_at).toLocaleString();feedback.append(when);}
+   if(row.error){const error=document.createElement('p');error.textContent='Recorded outcome: '+row.error;feedback.append(error);}
+   link('/api/delivery/operations/'+encodeURIComponent(row.id),reused?(finished?'Review previous attempt':'Follow existing attempt'):'Open progress and review links',feedback);
+   if(['failed','interrupted'].includes(row.state)){const help=document.createElement('p');help.textContent='Start a new attempt to run the checks again using the current settings. The previous result will be retained.';feedback.append(help);const retry=document.createElement('button');retry.textContent='Start a new attempt';retry.onclick=()=>{keys.set(encoded,crypto.randomUUID());submit(action);};feedback.append(retry);}
   }catch(e){$('promotion-feedback').textContent=e.message;}
   finally{sending=false;render();}
  }

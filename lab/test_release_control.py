@@ -105,6 +105,10 @@ class ReleaseActions(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch.object(control,'snapshot',return_value=data):
             first=control.submit(request,ADMIN,'stable-request');again=control.submit(request,ADMIN,'stable-request')
             self.assertEqual(first['id'],again['id']);self.assertEqual(len(Operations().active()),1)
+            self.assertFalse(first['submission_reused']);self.assertTrue(again['submission_reused'])
+            store=Operations();store.update(first['id'],state='failed',error='Performance budget missed')
+            previous=control.submit(request,ADMIN,'stable-request')
+            self.assertTrue(previous['submission_reused']);self.assertEqual(previous['error'],'Performance budget missed')
             data['notices']=['Provider unavailable']
             self.assertEqual(control.submit(request,ADMIN,'stable-request')['id'],first['id'])
             with self.assertRaises(ValueError):control.submit({**request,'intent':'preserve-results'},ADMIN,'stable-request')

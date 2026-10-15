@@ -44,7 +44,11 @@ class DeliveryOperationTests(unittest.TestCase):
 
     def test_retry_and_changed_payload(self):
         first = self.store.submit(self.payload, self.identity, 'fixture')
-        self.assertEqual(first['id'], self.store.submit(self.payload, self.identity, 'fixture')['id'])
+        again = self.store.submit(self.payload, self.identity, 'fixture')
+        self.assertEqual(first['id'], again['id'])
+        self.assertFalse(first['submission_reused'])
+        self.assertTrue(again['submission_reused'])
+        self.assertNotIn('submission_reused', self.store.get(first['id']))
         with self.assertRaises(ValueError):
             self.store.submit({**self.payload, 'run': 109}, self.identity, 'fixture')
         other = self.store.submit(self.payload, {**self.identity, 'subject': 'another-machine'}, 'fixture')

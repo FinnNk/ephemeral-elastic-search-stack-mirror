@@ -136,7 +136,7 @@ def submit(request, identity, key):
     if previous:
         if previous['request'].get('_release_binding', {}).get('request') != request:
             raise ValueError('Submission key already names a different release action.')
-        return previous
+        return {**previous, 'submission_reused': True}
     data = snapshot(identity, request['run'])
     options = choices(data, identity)
     if options['context'] != request['context']:

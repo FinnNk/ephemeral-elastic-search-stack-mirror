@@ -6,9 +6,14 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [release-attempt feedback batch](release-attempt-feedback.md) makes reopening
+an earlier attempt explicit and separates it from starting fresh checks. Review
+and activate after the current evaluation finishes; do not interrupt it.
+
 The [short probe warm-up batch](short-probe-warmup.md) increases only the probe
-to 20 seconds of warm-up and 30 seconds of measurement at 2 requests/s. Review,
-merge and activate before the next Integration check. Bounded adaptive warm-up
+to 20 seconds of warm-up and 30 seconds of measurement at 2 requests/s. PR #196
+is accepted and active, and the user has started a fresh Integration attempt.
+Bounded adaptive warm-up
 is recorded as a possible extension; it is not implemented.
 
 PRs #193–#195 are accepted and active. The

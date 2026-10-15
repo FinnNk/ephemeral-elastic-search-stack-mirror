@@ -142,7 +142,8 @@ class Operations:
                            (identifier, identity['username'], json.dumps(identity), encoded,
                             'accepted' if payload['kind'] in ('compare', 'gate-check') and payload.get('source_sha') else 'queued',
                             'Waiting for the delivery coordinator', None, None, stamp(), stamp()))
-        return self.get(identifier)
+        # Submission metadata describes this HTTP attempt, not persisted work.
+        return {**self.get(identifier), 'submission_reused': previous is not None}
 
     def get(self, identifier):
         with self.connect() as db:
