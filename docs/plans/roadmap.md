@@ -6,6 +6,10 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [retained evaluation progress batch](retain-evaluation-phases.md) keeps each
+phase and its last reported counters visible across phase changes and status
+refreshes. Review now; activate after the running evaluation finishes.
+
 The [built release version fix](dashboard-built-version.md) reads retained build
 metadata before a first promotion, so versioned new builds are identified in
 the release cards and selector. Review and activate when idle.

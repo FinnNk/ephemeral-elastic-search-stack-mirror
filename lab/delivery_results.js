@@ -3,6 +3,7 @@
 const $=id=>document.getElementById(id), path=location.pathname;
 const operationPage=/^\/api\/delivery\/operations\/[0-9a-f]{32}$/.test(path);
 let timer=null, loading=false, logsPaused=false, logsLoading=false, logCursor=0, latestGatling=null, latestEvaluation=null, operationActive=false, operationUpdatedMs=0;
+const evaluationPhases=[];
 $("pause-logs").onclick=()=>{logsPaused=!logsPaused;$("pause-logs").textContent=logsPaused?"Resume":"Pause";if(!logsPaused&&operationPage)updateLogs({});};
 const stateNames={accepted:'Waiting for the source build',queued:'Queued',running:'In progress',complete:'Complete',failed:'Failed',interrupted:'Interrupted',pass:'Passed',approved_exception:'Accepted with a recorded exception',decision_required:'Decision required',blocked:'Blocked',invalid:'Invalid evidence',verified:'Deployment verified'};
 const operationTitles={'prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
@@ -60,7 +61,7 @@ function operation(row){
  $('title').textContent=operationTitles[request.kind]||'Lab delivery';
  $('state').textContent=stateNames[row.state]||label(row.state);$('stage').textContent=row.progress||'';
  if(latestGatling)showGatling(latestGatling);
- if(latestEvaluation)showEvaluation(latestEvaluation);
+ if(evaluationPhases.length)renderEvaluationHistory();
  updateLogs(row);
  $('queue-panel').hidden=!row.queue;
  if(row.queue){$('queue-detail').replaceChildren();node('span','Position '+row.queue.position+'. ', $('queue-detail'));if(row.queue.blocker?.id){const a=node('a','Waiting for: '+row.queue.blocker.progress,$('queue-detail'));a.href='/api/delivery/operations/'+row.queue.blocker.id;}else node('span','Waiting for the coordinator to take this request.', $('queue-detail'));}
@@ -274,20 +275,34 @@ function showGatling(event){
 
 
 function showEvaluation(event){
- event.observed_ms=event.observed_ms||Date.now();
+ event={...event,observed_ms:event.observed_ms||Date.now()};
  latestEvaluation=event;
- if(operationActive&&event.observed_ms>=operationUpdatedMs&&event.observed_ms>=(latestGatling?.observed_ms||0))$('stage').textContent=(event.suite?event.suite+' — ':'')+event.phase;
+ const key=JSON.stringify([event.suite||'',event.job||'',event.phase]);
+ const previous=evaluationPhases[evaluationPhases.length-1];
+ if(previous?.key===key)previous.event=event;
+ else evaluationPhases.push({key,event});
+ renderEvaluationHistory();
+}
+
+function renderEvaluationHistory(){
+ const latest=latestEvaluation;
+ const current=operationActive&&latest&&latest.observed_ms>=operationUpdatedMs&&latest.observed_ms>=(latestGatling?.observed_ms||0);
+ if(current)$('stage').textContent=(latest.suite?latest.suite+' — ':'')+latest.phase;
  let panel=$('evaluation-live');if(!panel){panel=node('section',null,$('content'));panel.id='evaluation-live';panel.setAttribute('aria-live','polite');}
  panel.replaceChildren();node('h2','Evaluation progress',panel);
- node('p',(event.suite?event.suite+' — ':'')+event.phase,panel);
- const m=event.metrics;
- if(event.metrics_stale)node('p','Last known counters; waiting for a new worker sample.',panel);
- if(m){
-  const progress=node('progress',null,panel);progress.max=m.total||1;progress.value=m.completed||0;
-  progress.setAttribute('aria-label','Completed '+(event.unit||'queries'));
-  table(panel,['Measure','Value'],[['Completed '+(event.unit||'queries'),fmt(m.completed)+' / '+fmt(m.total)],
-   ...Object.entries(m).filter(([key])=>!['completed','total'].includes(key)).map(([key,value])=>[label(key),fmt(value)])]);
- }else node('p','Waiting for the next worker update. No completion count is available for this phase.',panel);
- node('p','Provisional progress; retained reports determine the gate.'+(event.unit==='queries'?' Each completed query has finished capture across its selected APIs or returned an error.':''),panel);
- node('p','Updated '+new Date(event.observed_ms).toLocaleTimeString()+(event.elapsed_seconds!=null?' · '+fmt(event.elapsed_seconds)+' s elapsed for this task':''),panel);
+ node('p','Earlier phases keep their last reported counters. Retained reports determine the gate.',panel);
+ for(const [index,entry] of evaluationPhases.entries()){
+  const event=entry.event,m=event.metrics,phase=node('article',null,panel);
+  node('h3',(index+1)+'. '+(event.suite?event.suite+' — ':'')+event.phase,phase);
+  node('p',current&&index===evaluationPhases.length-1?'Current phase':'Recorded phase',phase);
+  if(event.metrics_stale)node('p','Last known counters; no newer worker sample was available.',phase);
+  if(m){
+   const progress=node('progress',null,phase);progress.max=m.total||1;progress.value=m.completed||0;
+   progress.setAttribute('aria-label','Completed '+(event.unit||'queries'));
+   table(phase,['Measure','Value'],[['Completed '+(event.unit||'queries'),fmt(m.completed)+' / '+fmt(m.total)],
+    ...Object.entries(m).filter(([key])=>!['completed','total'].includes(key)).map(([key,value])=>[label(key),fmt(value)])]);
+  }else node('p','No completion count was reported for this phase.',phase);
+  if(event.unit==='queries')node('p','Each completed query finished capture across its selected APIs or returned an error.',phase);
+  node('p','Updated '+new Date(event.observed_ms).toLocaleTimeString()+(event.elapsed_seconds!=null?' · '+fmt(event.elapsed_seconds)+' s elapsed for this task':''),phase);
+ }
 }
