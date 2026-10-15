@@ -19,7 +19,17 @@ RECORDS = STATE / 'delivery'
 
 
 def save_verification(target, deployment, value):
-    value = {**value, 'deployment': deployment}
+    previous_path = RECORDS / (target + '.json')
+    previous = json.loads(previous_path.read_text(encoding='utf-8')) if previous_path.exists() else {}
+    promoted_at = previous.get('promoted_at') if previous.get('deployment') == deployment else value['verified_at']
+    fields = deployment['fields']
+    metadata = {'version': fields.get('software_version'), 'source_sha': fields['source_sha'],
+                'image': fields['image'], 'promoted_at': promoted_at}
+    apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {
+        'name': 'release-status-' + deployment['fingerprint'][:24], 'namespace': 'lab-delivery-' + target,
+        'labels': {'lab/owner': 'delivery-verification'}},
+        'data': {'release.json': json.dumps(metadata)}})
+    value = {**value, 'deployment': deployment, 'promoted_at': promoted_at}
     reference = retain(value, 'deployment-verification.json')
     record = {**value, 'report': reference}
     folder = RECORDS / 'verified' / target

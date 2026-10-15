@@ -164,3 +164,15 @@ rule. Keep Redis dataset changes in a newly named, reviewed data release.
 Use [the seasonal selection example](examples/seasonal/README.md) to include
 Halloween, Christmas and shared control queries in a PR comparison. The sets
 are report-only by default and are already tracked in `evaluation/queries/`.
+
+## Storefront release information
+
+The storefront footer shows the serving release version and short source commit.
+`GET /release` returns these public identifiers and a promotion timestamp when
+available. The delivery coordinator records the time after successful deployment
+verification; repeating verification preserves it. A rollback or later deployment
+records a new time. Preview environments and older releases without a retained
+time show **Promotion time not recorded**. Kubernetes projects metadata updates
+into running Pods, so the time can take a short while to appear after deployment.
+The footer reads matching image/source metadata, never another production slot's
+release. It does not use build time or Pod restart time as promotion time.

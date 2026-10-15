@@ -13,6 +13,16 @@ from unittest.mock import patch
 
 
 class SearchContract(unittest.TestCase):
+    def test_release_metadata_matches_serving_image_and_source(self):
+        metadata={'image':'image@sha256:abc','source_sha':'a'*40,'promoted_at':'2026-10-15T18:00:00Z'}
+        with patch.dict(os.environ,{'SOFTWARE_VERSION':'1.2.0','SOURCE_SHA':'a'*40,'LAB_RELEASE_SHA':'image@sha256:abc'}), patch('app.Path.read_text',return_value=json.dumps(metadata)):
+            self.assertEqual(app.release_info(),{'version':'1.2.0','source_sha':'a'*40,'promoted_at':metadata['promoted_at']})
+            metadata['image']='different-image'
+            with patch('app.Path.read_text',return_value=json.dumps(metadata)):
+                self.assertIsNone(app.release_info()['promoted_at'])
+        with patch('app.Path.read_text',side_effect=FileNotFoundError):
+            self.assertIsNone(app.release_info()['promoted_at'])
+
     def test_market_and_query_validation(self):
         self.assertEqual(app.validated_query('/search?q=+running++shoes+'), ('running shoes', 'GB', 'GBP', {}))
         with self.assertRaises(ValueError):

@@ -17,6 +17,20 @@ MAX_QUERY_LENGTH = 150
 DIAGNOSTIC_SCHEMA = 1
 
 
+def release_info():
+    """Describe this process and a matching verified promotion, if available."""
+    version = os.environ.get('SOFTWARE_VERSION') or None
+    source = os.environ.get('SOURCE_SHA') or None
+    result = {'version': version, 'source_sha': source, 'promoted_at': None}
+    try:
+        value = json.loads(Path('/release-status/release.json').read_text(encoding='utf-8'))
+        if value.get('image') == os.environ.get('LAB_RELEASE_SHA') and value.get('source_sha') == source:
+            result['promoted_at'] = value.get('promoted_at')
+    except (OSError, ValueError, AttributeError):
+        pass
+    return result
+
+
 def validated_query(path):
     """Normalise and validate a public search URL, including retail filters."""
     params = urllib.parse.parse_qs(urllib.parse.urlparse(path).query)
@@ -120,6 +134,8 @@ class Handler(BaseHTTPRequestHandler):
         if route == '/':
             body = Path(__file__).with_name('index.html').read_bytes()
             return self.send_body(200, body, 'text/html; charset=utf-8')
+        if route == '/release':
+            return self.send_json(200, release_info())
         if route == '/catalogue':
             return self.handle_catalogue()
         if route != '/search':

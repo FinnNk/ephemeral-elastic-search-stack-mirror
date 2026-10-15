@@ -19,6 +19,7 @@
     .empty{padding:2rem;background:#fff;border:1px dashed #cbd8d3;border-radius:6px;color:#53636a}.error{color:#9b2f29;margin-top:.8rem;min-height:1.3rem}
     footer{border-top:1px solid #d7dfdc;padding:1.3rem max(1.5rem,calc((100vw - 1100px)/2));font-size:.75rem;color:#68767b}
     @media(max-width:530px){main{padding-top:2rem}form{display:block}input,form button{width:100%}form button{margin-top:.3rem}.resultbar{display:block}}
+    footer{max-width:1100px;margin:0 auto;padding:1.25rem 1.5rem;color:#586a72;font-size:.85rem;border-top:1px solid #dce3e4}footer time{white-space:nowrap}
   </style>
 </head>
 <body>
@@ -42,6 +43,7 @@
     <details class="meta"><summary>Search details</summary><p id="timing">Only available products appear in results.</p></details>
   </main>
   <footer>A lab storefront for testing search. ESCI products with GBP lab prices.</footer>
+  <footer aria-label="Release information" id="release-info">Release information unavailable</footer>
   <script>
     const form=document.querySelector('#search-form'),input=document.querySelector('#query'),results=document.querySelector('#results'),heading=document.querySelector('#heading'),error=document.querySelector('#error'),timing=document.querySelector('#timing');
     const money=pence=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(pence/100);
@@ -90,6 +92,14 @@
         document.querySelector('footer').textContent='An offline demo with synthetic products. Search uses sample data, without Elasticsearch.';
       }
     }).catch(()=>{document.querySelector('#catalogue').textContent='Catalogue size is temporarily unavailable.';});
+    fetch('/release').then(r=>{if(!r.ok)throw new Error();return r.json();}).then(release=>{
+      const footer=document.getElementById('release-info');
+      footer.textContent=(release.version||'Version not recorded')+(release.source_sha?' · '+release.source_sha.slice(0,12):'');
+      if(release.promoted_at&&Number.isFinite(Date.parse(release.promoted_at))){
+        footer.append(document.createTextNode(' · Promoted '));const time=document.createElement('time');
+        time.dateTime=release.promoted_at;time.textContent=new Date(release.promoted_at).toLocaleString();footer.append(time);
+      }else footer.append(document.createTextNode(' · Promotion time not recorded'));
+    }).catch(()=>{});
     const params=new URLSearchParams(location.search),initial=params.get('q');
     try{
       if(params.getAll('filters').length>1)throw new Error('Supply filters once.');

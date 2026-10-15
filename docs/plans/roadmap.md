@@ -6,6 +6,10 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [storefront release footer batch](storefront-release-footer.md) shows serving
+version/commit and verified promotion time. Review the lab changes before the
+source feature release; build 184 remains unchanged.
+
 The [deployed environment link batch](deployed-environment-link.md) adds a
 direct search link after successful deployment verification, on both operation
 and report pages. Review and activate when idle.

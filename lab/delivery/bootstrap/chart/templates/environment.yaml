@@ -50,6 +50,10 @@ spec:
               value: http://lab-otel-gateway.lab-observability.svc.cluster.local:4318
             - name: LAB_RELEASE_SHA
               value: {{ .Values.image | quote }}
+            - name: SOFTWARE_VERSION
+              value: {{ .Values.software_version | default "" | quote }}
+            - name: SOURCE_SHA
+              value: {{ .Values.source_sha | quote }}
             - name: LAB_DEPLOYMENT_TIER
               value: {{ .Values.environment | quote }}
           envFrom:
@@ -76,10 +80,17 @@ spec:
             capabilities:
               drop: [ALL]
           volumeMounts:
+            - name: release-status
+              mountPath: /release-status
+              readOnly: true
             - name: es-ca
               mountPath: /es-ca
               readOnly: true
       volumes:
+        - name: release-status
+          configMap:
+            name: release-status-{{ .Values.fingerprint | trunc 24 }}
+            optional: true
         - name: es-ca
           secret:
             secretName: es-ca
