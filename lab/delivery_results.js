@@ -7,7 +7,7 @@ const evaluationPhases=[];
 const expandedEvaluationSteps=new Set();
 $("pause-logs").onclick=()=>{logsPaused=!logsPaused;$("pause-logs").textContent=logsPaused?"Resume":"Pause";if(!logsPaused&&operationPage)updateLogs({});};
 const stateNames={accepted:'Waiting for the source build',queued:'Queued',running:'In progress',complete:'Complete',failed:'Failed',interrupted:'Interrupted',pass:'Passed',approved_exception:'Accepted with a recorded exception',decision_required:'Decision required',blocked:'Blocked',invalid:'Invalid evidence',verified:'Deployment verified'};
-const operationTitles={'prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
+const operationTitles={'prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','suggest-release-plan':'Suggest release checks','propose-release-plan':'Review release check plan','accept-release-plan':'Record approved check plan','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
 const names={ndcg_at_10:'nDCG@10',ndcg_at_20:'nDCG@20',precision_at_10:'Precision@10',recall_at_10:'Recall@10',rbo_at_10_p_0_9:'RBO@10',jaccard_at_10:'Jaccard@10'};
 const intentNames={'ranking-change':'Intentional ranking change','preserve-results':'Preserve current results'};
 const label=value=>names[value]||String(value).replaceAll('_',' ');
@@ -172,6 +172,7 @@ function suiteViews(value,prefix=''){
  }
 }
 async function report(value,operationRecord){
+ if(value.release_check_plan){const p=section('Reviewed release check plan');const a=node('a','Open approved plan PR #'+value.release_check_plan.pr,p);a.href=value.release_check_plan.url;}
  $('title').textContent=value.state==='verified'?'Deployment verification':value.kind==='paired-api-performance'?'Performance comparison':value.kind==='delivery-variant-evidence'?'Per-variant delivery checks':value.reports?'Delivery checks':'Search comparison report';$('state').textContent=value.state==='pass'?'All variants passed':value.state==='failed'?'Variant gate failed':value.valid===false?'Invalid evidence':value.complete===false?'Incomplete evidence':'Report ready';$('stage').textContent='Review search quality, result changes and label coverage separately.';
  $('explanation').textContent='All variants in a relevance comparison use the same frozen judgement set. The report records measurements; the operation page records the gate or deployment decision.';
  const decision=operationRecord?.result?.gate;

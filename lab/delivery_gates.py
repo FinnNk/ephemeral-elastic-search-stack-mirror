@@ -112,6 +112,12 @@ def check_report(report, mode, baseline, candidate, intent):
 
 def validate_evidence(reference, baseline, candidate, intent, expected_inputs=None, *, target=None,
                       baseline_deployment=None, candidate_deployment=None):
+    if target and baseline_deployment is not None and candidate_deployment is not None:
+        root = read(reference)
+        if root.get('kind') != 'delivery-variant-evidence':
+            raise ValueError('Promotion requires per-variant evidence bound to a reviewed release check plan.')
+        return validate_variant_evidence(root, baseline, candidate, expected_inputs, target,
+                                         baseline_deployment, candidate_deployment)
     if intent not in ('preserve-results', 'ranking-change'):
         evidence = read(reference)
         if evidence.get('kind') == 'delivery-variant-evidence':
@@ -163,6 +169,18 @@ def validate_variant_evidence(evidence, baseline, candidate, expected_inputs=Non
     if measured > now or now - measured > timedelta(days=3):
         raise ValueError('Per-variant evidence is outside the three-day promotion window.')
     selected = source_selection(evidence.get('source_sha', ''))
+    if target:
+        from release_check_plans import require
+        if not evidence.get('release_check_plan'):
+            raise ValueError('Promotion evidence has no reviewed release check plan. Review a plan and run fresh checks.')
+        selected, _ = require(baseline_deployment,candidate_deployment,target,evidence['release_check_plan'])
+        try:
+            started = datetime.fromisoformat(evidence['started_at'].replace('Z','+00:00'))
+            approved = datetime.fromisoformat(evidence['release_check_plan']['merged_at'].replace('Z','+00:00'))
+            if started.tzinfo is None or approved.tzinfo is None or not approved <= started <= measured:
+                raise ValueError('The plan must be recorded before its checks start.')
+        except (KeyError, TypeError):
+            raise ValueError('Promotion evidence does not record when reviewed checks started.') from None
     if (evidence.get('selection_sha256') != selected['selection_sha256'] or
             evidence.get('evaluation_sha256') != selected['evaluation_sha256'] or
             evidence.get('selected_inputs') != expected_inputs or
@@ -240,8 +258,13 @@ def evaluate_variants(baseline, candidate, profile='probe', target=None):
     """Run the complete delivery gates for each selected candidate variant."""
     from delivery_variant_selection import configured_baseline, source_selection, with_variant
 
+    started_at = datetime.now(timezone.utc).isoformat()
     source_sha = candidate['fields']['source_sha']
     selection = source_selection(source_sha)
+    plan_reference = None
+    if target:
+        from release_check_plans import require
+        selection, plan_reference = require(baseline,candidate,target)
     configured = json.loads(candidate['fields'].get('variant_config_json', '{}'))
     if configured != selection['configuration']:
         raise ValueError('Candidate deployment does not pin the exact selected source variants.')
@@ -322,6 +345,8 @@ def evaluate_variants(baseline, candidate, profile='probe', target=None):
         'evaluation_sha256': selection['evaluation_sha256'],
         'candidate_configuration_sha256': selection['configuration_sha256'],
         'selected_inputs': selected_inputs, 'checks': checks,
+        'started_at': started_at,
+        **({'release_check_plan':plan_reference} if plan_reference else {}),
         'completed_at': datetime.now(timezone.utc).isoformat()}
     reference = retain(value, 'delivery-variant-evidence.json')
     print('Retained per-variant evidence: ' + json.dumps(reference), flush=True)

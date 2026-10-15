@@ -432,3 +432,11 @@ still requires successful migration completion and ready backend workloads.
 | Installer ownership differs | Do not adopt another cluster or overwrite its credentials. Inspect the cleanup inventory and resolve the identity mismatch first. |
 
 For an existing lab restoration, follow the separate [transfer runbook](lab-transfer.md).
+
+## Release checks after installation
+
+The control runtime includes [reviewed release check plans](release-check-plans.md).
+The initial baseline needs no promotion plan. For later promotions, suggest and
+review a plan in the release dashboard, approve the exact delivery-state PR head
+and record it. No additional service or installation flag is required. Standard
+query sets remain compulsory for every selected variant.

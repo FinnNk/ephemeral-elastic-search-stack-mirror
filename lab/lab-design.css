@@ -33,3 +33,6 @@ input:focus-visible,textarea:focus-visible,a:focus-visible,button:focus-visible,
 
 .promotion-check{width:100%;min-width:0}
 #evaluation-live .evaluation-group + .evaluation-group{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border,#dce4eb)}#evaluation-live .evaluation-step{margin:.8rem 0;padding-left:1rem;border-left:3px solid var(--border,#dce4eb)}#evaluation-live h4{margin:.7rem 0}#evaluation-live details{margin:.7rem 0}
+
+
+.promotion-check fieldset{margin:12px 0;padding:14px;border:1px solid var(--border,#dce3eb);border-radius:6px;min-width:0}.promotion-check legend{font-weight:600;padding:0 5px}.promotion-check textarea,.promotion-check input{width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--border,#dce3eb);border-radius:4px}.promotion-check textarea{min-height:72px;resize:vertical}.promotion-check details .panel-body{padding:12px 0}.promotion-check li{overflow-wrap:anywhere;margin:5px 0}

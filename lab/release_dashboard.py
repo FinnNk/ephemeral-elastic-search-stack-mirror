@@ -174,7 +174,7 @@ def project(run, rows, receipts, environments, reviews, builds, notices):
     activity = []
     for r in rows:
         d = operation_deployment(r)
-        bound = matches(d) if d else (r['request'].get('run') or r['request'].get('_release_binding', {}).get('request', {}).get('run')) == run and run is not None
+        bound = matches(d) if d else (r['request'].get('run') or r['result'].get('run') or r['request'].get('_release_binding', {}).get('request', {}).get('run')) == run and run is not None
         if not bound:
             continue
         url = '/api/delivery/operations/' + r['id']

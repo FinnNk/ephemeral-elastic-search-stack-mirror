@@ -41,3 +41,13 @@ four-query and 40-pair counts. No live check was rerun and no evidence was chang
 After review and merge, activate the runtime when idle. Reopening the existing
 operation reconstructs the grouped view; no evaluation rerun is needed. This
 batch is independent of the reviewed release check plan implementation.
+
+## Main-branch reconciliation
+
+Merged the reviewed release check plan implementation into this branch after its
+activation. Retained both sets of scoped UI styles and both roadmap entries. The
+operation report retains the reviewed-plan link alongside grouped evaluation
+progress. Rechecked grouped history, capture telemetry and release-plan/promotion
+contracts against the combined tree before updating the existing PR. All 141
+Python tests passed, along with the grouped-history DOM test and JavaScript
+syntax checks.

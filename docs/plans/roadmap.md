@@ -11,6 +11,12 @@ worker phases into capture, judgement and scoring steps. Completed captures show
 their final counts, with earlier samples in expandable details. Review and
 activate when idle; evaluation behaviour and retained evidence are unchanged.
 
+The [reviewed release check plan batch](reviewed-release-check-plans.md) gathers
+accumulated source changes and query declarations, lets a human review release
+intents and additional sets, and records exact-head approval in delivery-state.
+All promotion paths require the current plan; standard sets remain mandatory.
+This workflow is merged and active. Review a plan before the next promotion.
+
 The [dashboard navigation batch](dashboard-result-links.md) labels terminal
 operations **View result** and links directly to ready storefronts from the
 deployed environments table. Review and activate when idle.
