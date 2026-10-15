@@ -6,6 +6,10 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [built release version fix](dashboard-built-version.md) reads retained build
+metadata before a first promotion, so versioned new builds are identified in
+the release cards and selector. Review and activate when idle.
+
 The [storefront release footer batch](storefront-release-footer.md) shows serving
 version/commit and verified promotion time. Review the lab changes before the
 source feature release; build 184 remains unchanged.

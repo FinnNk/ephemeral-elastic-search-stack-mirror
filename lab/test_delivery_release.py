@@ -14,6 +14,25 @@ import delivery_release
 
 
 class ReleaseIntegrityTests(unittest.TestCase):
+    def test_build_metadata_checks_identity_without_loading_bundle_and_caches_exact_attempt(self):
+        run={'id':194,'run_attempt':1,'head_sha':'a'*40,'event':'push','status':'completed','conclusion':'success'}
+        receipt={'release_id':'r','source_sha':'a'*40,'event_kind':'push','source_repository':'elastic-agent/delivery-source','image':'image','run_id':194,'run_attempt':1,'version':'1.2.0+build.194.1'}
+        release={**receipt,'declared_version':'1.2.0'}
+        delivery_release._build_metadata.cache_clear()
+        with patch.object(delivery_release,'request',return_value=json.dumps(receipt).encode()) as request, patch.object(delivery_release,'load_descriptor',return_value=release), patch.object(delivery_release,'validate_bundle') as bundles:
+            self.assertEqual(delivery_release.build_metadata(run),{'version':'1.2.0+build.194.1','release_id':'r'})
+            delivery_release.build_metadata(run)
+            self.assertEqual(request.call_count,1)
+            bundles.assert_not_called()
+            with self.assertRaises(ValueError): delivery_release.build_metadata({**run,'run_attempt':2})
+        delivery_release._build_metadata.cache_clear()
+
+    def test_build_metadata_does_not_infer_versions_for_unfinished_or_failed_runs(self):
+        with patch.object(delivery_release,'request') as request:
+            self.assertEqual(delivery_release.build_metadata({'status':'running'}),{})
+            self.assertEqual(delivery_release.build_metadata({'status':'completed','conclusion':'failure'}),{})
+            request.assert_not_called()
+
     def test_original_receipt_bytes_survive_verification(self):
         receipt = {'release_id': 'r', 'source_sha': 'a' * 40, 'event_kind': 'pull_request',
                    'source_repository': 'elastic-agent/delivery-source', 'image': 'image',

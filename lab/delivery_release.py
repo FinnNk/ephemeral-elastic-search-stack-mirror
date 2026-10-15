@@ -1,5 +1,6 @@
 """Verify retained release descriptors, bundles and successful provider build receipts."""
 import io
+from functools import lru_cache
 import json
 from pathlib import PurePosixPath
 import tarfile
@@ -31,7 +32,7 @@ def validate_bundle(release, content):
     return result
 
 
-def load(release_id):
+def load_descriptor(release_id):
     if len(release_id) != 64 or any(c not in '0123456789abcdef' for c in release_id):
         raise ValueError('Invalid release ID.')
     descriptor = request('/repository/lab-releases/releases/' + release_id + '.json', identity='reader')
@@ -40,6 +41,11 @@ def load(release_id):
     release = validate(json.loads(descriptor))
     if canonical(release) != descriptor:
         raise ValueError('Release encoding differs.')
+    return release
+
+
+def load(release_id):
+    release = load_descriptor(release_id)
     bundle = request('/repository/lab-releases/bundles/' + release['bundle_sha256'] + '.tar.gz', identity='reader')
     return release, validate_bundle(release, bundle)
 
@@ -59,6 +65,12 @@ def from_run_bytes(run_id):
     payload = request('/repository/lab-releases/' + path, identity='reader')
     receipt = json.loads(payload)
     release, files = load(receipt['release_id'])
+    validate_receipt(run, receipt, release)
+    return receipt, release, files, payload
+
+
+def validate_receipt(run, receipt, release):
+    """Bind displayed and deployed metadata to the same exact successful build."""
     if (receipt['source_sha'] != run['head_sha'] or release['source_sha'] != run['head_sha'] or
             receipt['event_kind'] != run['event'] or receipt['source_repository'] != 'elastic-agent/' + SOURCE or
             release['source_repository'] != receipt['source_repository'] or receipt['image'] != release['image'] or
@@ -70,4 +82,20 @@ def from_run_bytes(run_id):
                                  receipt.get('pr_number'))
         if receipt.get('version') != release['version'] or expected != release['version']:
             raise ValueError('Version differs from the exact successful build.')
-    return receipt, release, files, payload
+
+
+def build_metadata(run):
+    """Read successful-build identity without downloading its source bundle."""
+    if run.get('status') != 'completed' or run.get('conclusion') != 'success':
+        return {}
+    return dict(_build_metadata(run['id'], run['run_attempt'], run['head_sha'], run['event']))
+
+
+@lru_cache(maxsize=128)
+def _build_metadata(identifier, attempt, source, event):
+    run = {'id': identifier, 'run_attempt': attempt, 'head_sha': source, 'event': event}
+    path = f'builds/{source}/{identifier}-{attempt}.json'
+    receipt = json.loads(request('/repository/lab-releases/' + path, identity='reader'))
+    release = load_descriptor(receipt['release_id'])
+    validate_receipt(run, receipt, release)
+    return {'version': release.get('version'), 'release_id': receipt['release_id']}

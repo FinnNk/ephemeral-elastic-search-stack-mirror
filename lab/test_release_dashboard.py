@@ -32,6 +32,14 @@ def operation(kind='promotion', run=158, state='complete', target='staging'):
 
 
 class Projection(unittest.TestCase):
+    def test_unpromoted_build_displays_verified_release_version(self):
+        build={'id':194,'head_sha':'a'*40,'status':'completed','conclusion':'success','version':'1.2.0+build.194.1','release_id':'r'}
+        value=dashboard.project(194,[],[],{}, {},[build],[])
+        self.assertEqual(value['selected']['version'],'1.2.0+build.194.1')
+        self.assertEqual(value['selected']['release_id'],'r')
+        self.assertEqual(value['selected']['state'],'built')
+        self.assertEqual(value['selected']['environments'],[])
+
     def test_successful_projected_build_can_reach_promotion_controls(self):
         from release_control import choices
         value = dashboard.project(158, [], [receipt('integration', 108), receipt('staging', 158)],

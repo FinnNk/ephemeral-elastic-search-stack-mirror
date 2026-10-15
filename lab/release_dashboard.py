@@ -133,7 +133,7 @@ def project(run, rows, receipts, environments, reviews, builds, notices):
     choices = {d['build_run']: {'run': d['build_run'], 'source_sha': d['fields']['source_sha'],
         'release_id': d['fields']['software_release_id'], 'version': d['fields'].get('software_version')} for d in deployments}
     for build in builds:
-        choices.setdefault(build['id'], {'run': build['id'], 'source_sha': build['head_sha'], 'release_id': None})
+        choices.setdefault(build['id'], {'run': build['id'], 'source_sha': build['head_sha'], 'release_id': build.get('release_id'), 'version': build.get('version')})
     choices = sorted(choices.values(), key=lambda r: r['run'], reverse=True)
     for choice in choices:
         deployed = [e for e in environments.values() if any(
@@ -263,6 +263,12 @@ def snapshot(identity, run=None):
                   if r.get('event') == 'push' and r.get('path') == 'release.yaml@refs/heads/main']
     except (RuntimeError, OSError, KeyError, ValueError):
         notices.append('Source build status is unavailable.')
+    from delivery_release import build_metadata
+    for build in builds:
+        try:
+            build.update(build_metadata(build))
+        except (RuntimeError, OSError, ValueError, KeyError):
+            notices.append('Release metadata is unavailable for build ' + str(build['id']) + '.')
     environments, warnings = observed()
     notices += warnings
     # Only fetch reviews for the selected release, keeping refresh work bounded.
