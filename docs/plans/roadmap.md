@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The user requested removal of blanket demo/label-qualification commentary from
+the interface. The [UI prose batch](remove-demo-ui-commentary.md) follows #188;
+it retains provenance data, coverage measurements and all gate rules. Review
+and activate both batches, then update proposal #25's presentation for review.
+
 PR #187 is accepted and active; proposal #25 has readable review text and
 formatted JSON, with semantic hashes preserved and its new head validated.
 The [version identity batch](release-version-identity.md) adds the source commit

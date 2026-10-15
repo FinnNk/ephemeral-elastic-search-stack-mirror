@@ -124,7 +124,7 @@
     document.querySelector('#report-summary').textContent='Verdict '+openReport.verdict+' · '+openReport.completed_query_count+'/'+openReport.query_count+' queries';
     document.querySelector('#report-quality-note').hidden=openReport.mode!=='relevance';
     document.querySelector('#report-coverage').hidden=!openReport.judgement_coverage;
-    let coverageText=openReport.judgement_selection==='demo'?'Lab demo labels; model accuracy unqualified. ':' ';
+    let coverageText='';
     if(openReport.judgement_coverage){
       const percent=side=>((openReport.judgement_coverage[side].fraction??0)*100).toFixed(1)+'%';
       coverageText+='Judged results: baseline '+percent('baseline')+', candidate '+percent('candidate')+'. Coverage '+coverageState+'.';

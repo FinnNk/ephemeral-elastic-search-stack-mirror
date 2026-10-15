@@ -36,7 +36,7 @@ def description(target, deployment, current, reference, report, intent=None, rol
         f'[Open release dashboard](https://control.localhost:34443/release-dashboard?run={run})', '',
         '### What to review', '',
         f'- Catalogue: **{fields.get("dataset_release", "Not recorded")}**; Elasticsearch {fields.get("engine", "Not recorded")}.',
-        '- Compare relevance scores, result changes and judgement coverage separately. Model labels do not establish independent label accuracy.',
+        '- Compare relevance scores, result changes and judgement coverage separately.',
         '- Review the performance profile and measured budgets. A probe is not a production load test.',
         '- Approve this exact PR commit, then use **Deploy approved proposal** in the lab dashboard. Approval alone does not deploy it.', '',
         '### Compared configurations', '',
@@ -56,5 +56,5 @@ def description(target, deployment, current, reference, report, intent=None, rol
         f'- Baseline deployment: `{current["fingerprint"]}`.',
         f'- Candidate deployment: `{deployment["fingerprint"]}`.',
         f'- Evidence SHA-256: `{reference["sha256"]}`.', f'- Evidence location: `{reference["blob"]}`.', '',
-        '</details>', '', 'This production target is a local simulation.'])
+        '</details>'])
     return '\n'.join(lines)

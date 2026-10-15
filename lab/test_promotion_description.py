@@ -42,3 +42,5 @@ class HumanReview(unittest.TestCase):
         self.assertIn('s' * 40, details)
         self.assertIn('Version not recorded', lead)
         self.assertIn('Deploy approved proposal', lead)
+        self.assertNotIn('independent label accuracy', text)
+        self.assertNotIn('local simulation', text)

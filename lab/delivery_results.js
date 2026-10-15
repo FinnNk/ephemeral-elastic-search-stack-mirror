@@ -32,11 +32,11 @@ function summary(report,title,required,baseline=report.baseline_variant){
  const tests=Object.entries(stats.comparisons).flatMap(([variant,metrics])=>Object.entries(metrics).map(([metric,x])=>({comparison:variant+' vs '+baseline,metric,...x})));
  table(t,['Comparison','Metric','Mean change','95% interval','Raw p','Adjusted p','Significant at 5%?'],tests.map(x=>[x.comparison,x.metric,fmt(x.mean_difference),x.confidence_interval_95?x.confidence_interval_95.map(fmt).join(' to '):'Not available',probability(x.p_value),probability(x.adjusted_p_value),x.significant==null?'Insufficient data':x.significant?'Yes':'No']));
  table(t,['Comparison','Metric','Queries scored','Request groups','Excluded queries'],tests.map(x=>[x.comparison,x.metric,fmt(x.paired_queries),fmt(x.request_groups),fmt(x.excluded_queries)]));
- node('p','Two-sided paired permutation test; 95% request-group bootstrap interval. P-values use Holm adjustment across variants and nDCG cut-offs within this view. The interval is not adjusted for multiple comparisons. A non-significant result does not establish equivalence. Tested means can differ from quality averages when queries are excluded. Inference is conditional on the frozen labels and does not qualify model label accuracy.',t);
+ node('p','Two-sided paired permutation test; 95% request-group bootstrap interval. P-values use Holm adjustment across variants and nDCG cut-offs within this view. The interval is not adjusted for multiple comparisons. A non-significant result does not establish equivalence. Tested means can differ from quality averages when queries are excluded.',t);
  for(const [variant,metrics] of Object.entries(stats.comparisons))for(const [metric,x] of Object.entries(metrics))if(x.unavailable_reason)node('p',variant+' — '+metric+': '+x.unavailable_reason,t);
  }
  if(report.relevance_unavailable_reason)node('p','Not calculable: '+report.relevance_unavailable_reason,s);
- if(report.judgement_resolution){const r=report.judgement_resolution,e=r.execution||{},c=r.counts.pool;const j=section(title+' — judgement resolution');table(j,['Measure','Count'],[['Pairs in the result union',fmt(c.required)],['Supplied labels reused',fmt(c.stored)],['Stored API labels reused',fmt(e.stored_pairs)],['Cached outcomes reused',fmt(e.cache_hits)],['Pairs sent to the model',fmt(e.inferred_pairs)],['Resolved labels',fmt(c.newly_labelled)],['Abstentions or ineligible predictions',fmt(c.abstained)],['Errors',fmt(c.failed)],['API requests without a response',fmt(e.response_errors||0)]]);node('p','One frozen judgement snapshot scores every variant. Model labels remain distinct from reference labels.',j);}
+ if(report.judgement_resolution){const r=report.judgement_resolution,e=r.execution||{},c=r.counts.pool;const j=section(title+' — judgement resolution');table(j,['Measure','Count'],[['Pairs in the result union',fmt(c.required)],['Supplied labels reused',fmt(c.stored)],['Stored API labels reused',fmt(e.stored_pairs)],['Cached outcomes reused',fmt(e.cache_hits)],['Pairs sent to the model',fmt(e.inferred_pairs)],['Resolved labels',fmt(c.newly_labelled)],['Abstentions or ineligible predictions',fmt(c.abstained)],['Errors',fmt(c.failed)],['API requests without a response',fmt(e.response_errors||0)]]);node('p','One frozen judgement snapshot scores every variant.',j);}
  const candidates=Object.keys(similarity).filter(v=>v!==baseline);
  if(candidates.length){
   node('h3','Results compared with '+baseline,s);
@@ -45,7 +45,6 @@ function summary(report,title,required,baseline=report.baseline_variant){
  }
  if(!keys.length)node('p','Relevance scores are unavailable for this set. Result overlap can still show whether the searches changed.',s);
 
- if(report.unqualified_judgements>0)node('p',fmt(report.unqualified_judgements)+' model labels have unqualified accuracy. These scores are exploratory evidence.',s);
  const coverage=report.coverage||report.judgement_coverage;
  if(coverage){const c=section(title+' — judgement coverage');table(c,['Variant','Judged coverage','Labelled results','Returned results'],Object.entries(coverage).map(([v,x])=>[v,pct(x.fraction),fmt(x.judged),fmt(x.returned)]));}
  else if(Object.values(metrics).some(m=>m?.['Judged@10']!=null)){const c=section(title+' — judgement coverage');table(c,['Variant','Judged@10'],Object.entries(metrics).map(([v,m])=>[v,pct(m['Judged@10'])]));}
@@ -118,8 +117,7 @@ async function promotionReview(value,row){
    table(s,['Search quality','Baseline','Candidate','Change'],[['nDCG@10',fmt(b['nDCG@10']),fmt(c['nDCG@10']),typeof b['nDCG@10']==='number'&&typeof c['nDCG@10']==='number'?fmt(c['nDCG@10']-b['nDCG@10']):'Not calculable']]);
    const coverage=relevance.judgement_coverage||{};
    table(s,['Judgement coverage','Baseline','Candidate'],[['Labelled result fraction',pct(coverage.baseline?.fraction),pct(coverage.candidate?.fraction)]]);
-   node('p',fmt(relevance.completed_query_count)+' of '+fmt(relevance.query_count)+' queries completed. Coverage and model-label accuracy are separate from measured search quality.',s);
-   if(relevance.judgement_selection==='demo')node('p','Demo model labels are included; their accuracy remains unqualified.',s);
+   node('p',fmt(relevance.completed_query_count)+' of '+fmt(relevance.query_count)+' queries completed.',s);
   }else node('p','Relevance summary unavailable. Open the detailed report before approving.',s);
   if(results){table(s,['Result changes','Value'],[['Changed queries',fmt(results.changed_query_ids?.length)],['RBO@10 (p = 0.9)',fmt(results.result_similarity?.rbo_at_10_p_0_9)],['Jaccard@10',fmt(results.result_similarity?.jaccard_at_10)]]);}
   else node('p','Result-change summary unavailable. Open the detailed report before approving.',s);
@@ -145,7 +143,6 @@ async function report(value,operationRecord){
  if(value.production_slots_sha256){node('p',value.recent_query_source,section('Final production release',value.release_review));}
 
  if(value.kind==='variant-evaluation-report'||value.kind==='controlled-api-comparison')section('Read the results','RBO describes order similarity; Jaccard describes product-set overlap. A value of 1 means identical at the captured depth. Coverage shows how many results have relevance labels; added labels do not establish better search.');
- if(value.judgement_selection==='demo')node('p','Lab demo: this report includes authorised model labels whose accuracy remains unqualified.',section('Label policy'));
  if(value.query_sets){for(const [name,suite] of Object.entries(value.query_sets))summary(suite,name==='standard'?'Standard suite':name,value.query_set_metadata?.[name]?.required);if(value.combined)summary(value.combined,'Combined view',false,value.baseline_variant);}
  else if(value.kind==='variant-evaluation-report')summary(value,'Search results',null);
  else if(value.kind==='controlled-api-comparison'){summary({...value,baseline_variant:'baseline',variants:{baseline:{},candidate:{}},result_changes:{candidate:{changed_queries:value.changed_query_ids?.length}},result_similarity:{candidate:value.result_similarity||{}}},'Search results',null);}
