@@ -496,6 +496,10 @@ def baseline():
     run = wait_build('search-spike', git('rev-parse', 'HEAD', cwd=source), retry_failed=dns_repaired)
     from delivery_provider import git as delivery_git
     delivery_run = wait_build('delivery-source', delivery_git('delivery-source', 'rev-parse', 'HEAD'))
+    from delivery_release import from_run
+    _, release, _ = from_run(delivery_run)
+    if not release.get('version'):
+        raise ValueError('Fresh delivery baseline must publish a versioned release from its VERSION file.')
     private_json(STATE / 'fresh-baselines.json', {'search_run': run, 'delivery_run': delivery_run})
     state = STATE / 'state-source'
     if not has_commit(state):
@@ -580,7 +584,7 @@ def verify():
       'python', 'lab/control-runtime/smoke.py')
     for target in ('integration', 'staging', 'production'):
         k('exec', 'deployment/lab-control', '-n', 'lab-control', '-c', 'api', '--',
-          'python', 'lab/delivery_cli.py', 'verify', target)
+          'python', 'lab/delivery_cli.py', 'verify', target, '--require-version')
     private_json(STATE / 'fresh-ready.json', {'ready': True, 'verified_at': time.time(),
         'catalogue': 'esci-gb-v1', 'judge': 'CPU abstaining', 'research_models': False})
     print('Verified CPU lab. Browser DNS and certificate trust remain workstation setup steps.')

@@ -27,6 +27,18 @@ describes API compatibility; a higher version does not establish better relevanc
 
 ## Identity and ordering
 
+Release views show the semantic version followed by the first 12 characters of
+the Git source commit, for example `1.1.1+build.184.1 · 8b32d1a196d0`.
+The build number and immutable release identifiers remain available. Historical
+releases without SemVer show **Version not recorded** followed by their commit;
+the UI never invents a version for them.
+
+Fresh delivery-source repositories include a `VERSION` file. Publishing requires
+it, and fresh installation checks both the published baseline and all delivery
+targets for version metadata. Final verification also requires a valid source
+commit. An unversioned delivery target cannot produce a successful fresh
+installation result. Existing retained installations keep their legacy releases.
+
 Nexus retains a write-once version reservation bound to the repository and the
 complete Git tree. Changing any tracked file, including documentation, requires
 a version bump once that version has been published. PR builds check existing

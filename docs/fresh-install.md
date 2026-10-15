@@ -8,6 +8,11 @@ The installer also sets up Nexus, snapshot storage, the CPU abstaining judgement
 service, shared Redis rewrite datasets, small simulated monthly and event catalogues
 and OIDC sign-in for Gitea, Argo CD, Headlamp and the control UI.
 
+The delivery-source seed includes a semantic version. Baseline publication and
+final verification require versioned delivery releases with exact source commits;
+an unversioned Integration, Staging or Production target fails verification.
+See [release versions and identities](delivery-versioning.md#identity-and-ordering).
+
 Large research models, GPU jobs and the optional Headlamp development testbed
 are not installed. SigNoz is an optional follow-on installation using the demo
 profile below. Windows credentials and CA keys are not transferred.

@@ -21,8 +21,11 @@ def description(target, deployment, current, reference, report, intent=None, rol
     baseline_run = report.get('baseline_build_run', current.get('build_run'))
     baseline_variant = report.get('baseline_variant', 'default')
     build = lambda n: f'[Build {n}](https://gitea.localhost:34443/elastic-agent/delivery-source/actions/runs/{n})' if n else 'Build not recorded'
-    version = fields.get('software_version') or 'Version not recorded'
-    old_version = current.get('fields', {}).get('software_version') or 'Version not recorded'
+    def version_label(value):
+        return (value.get('software_version') or 'Version not recorded') + ' · ' + (
+            value['source_sha'][:12] if value.get('source_sha') else 'Commit not recorded')
+    version = version_label(fields)
+    old_version = version_label(current.get('fields', {}))
     settings = json.loads(fields.get('variant_config_json') or '{}')
     checks = report.get('checks') or []
     lines = [f'## {"Rollback" if rollback else "Promote"} build {run} to {target.title()}', '',

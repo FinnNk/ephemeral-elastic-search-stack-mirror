@@ -36,6 +36,7 @@ class HumanReview(unittest.TestCase):
         lead, details = text.split('<details>')
         self.assertIn('Promote build 184 to Integration', lead)
         self.assertIn('1.2.3+build.184.1', lead)
+        self.assertIn('1.2.3+build.184.1 · ' + 's' * 12, lead)
         self.assertIn('title 4', lead)
         self.assertNotIn('s' * 40, lead)
         self.assertIn('s' * 40, details)

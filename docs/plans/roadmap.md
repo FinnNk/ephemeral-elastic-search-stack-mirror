@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+PR #187 is accepted and active; proposal #25 has readable review text and
+formatted JSON, with semantic hashes preserved and its new head validated.
+The [version identity batch](release-version-identity.md) adds the source commit
+beside versions and requires versioned delivery targets for fresh-install
+acceptance. Review and activate it before returning to proposal approval.
+
 PR #186 is accepted and active. Retained checks were revalidated and Integration
 proposal delivery-state #25 is ready for review, without another evaluation.
 The [human review batch](readable-promotion-review.md) replaces opaque hash-led

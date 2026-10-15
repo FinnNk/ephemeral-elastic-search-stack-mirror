@@ -21,11 +21,13 @@ async function main(){
     res.writeHead(200,{'Content-Type':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'});res.end(fs.readFileSync(path.join(__dirname,file)));
   });
   await new Promise(r=>server.listen(0,'127.0.0.1',r));
-  const base='http://127.0.0.1:'+server.address().port,browser=await chromium.launch({headless:true});
+  const base='http://127.0.0.1:'+server.address().port;let browser;
   try{
+    browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{})});
     const page=await browser.newPage({viewport:{width:1600,height:1100}});page.on('pageerror',e=>errors.push(e.message));
     await page.goto(base+'/release-dashboard');await page.locator('.release-card').first().waitFor();
     if(!live){
+      assert.ok((await page.locator('#environments').innerText()).includes('1.0.0+build.158.1 · '+ 'a'.repeat(12)));
       assert.equal(await page.locator('.release-card').count(),9);
       await page.locator('#next-page').click();assert.equal(await page.locator('.release-card').count(),3);
       await page.locator('#release-status').selectOption('candidate ready');assert.equal(await page.locator('.release-card').count(),1);
@@ -49,6 +51,6 @@ async function main(){
     responseStatus=401;await page.locator('#refresh').click();await page.getByRole('link',{name:'Sign in to the lab'}).waitFor();
     assert.equal(requests.some(r=>!r.startsWith('GET ')),false);
     assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:true,read_only_requests:requests.length,tree_nodes:5,fixture:live?'retained live snapshot':'synthetic scenarios'}));
-  }finally{await browser.close();await new Promise(r=>server.close(r));}
+  }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

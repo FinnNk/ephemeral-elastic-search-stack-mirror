@@ -32,12 +32,14 @@ def comparison(data, action):
     selected = data.get('selected') or {}
     fields = data.get('release') or {}
     candidate = {'build_run': selected.get('run'), 'version': fields.get('software_version'),
+        'source_sha': selected.get('source_sha') or fields.get('source_sha'),
         'selection': data.get('variant_selection') or {'state': 'unavailable', 'variants': []}}
     if action == 'rollback':
         retained = next((e for e in data.get('environments', []) if e.get('slot') and not e.get('active')), None)
         fields = (retained or {}).get('definition', {})
         candidate = {'build_run': (retained or {}).get('build_run'),
-            'version': fields.get('software_version'), 'selection': selection_summary(fields.get('source_sha'))}
+            'version': fields.get('software_version'), 'source_sha': fields.get('source_sha'),
+            'selection': selection_summary(fields.get('source_sha'))}
     baseline = {'state': 'unavailable'}
     if target:
         definition = target['definition']
@@ -46,7 +48,7 @@ def comparison(data, action):
                 if k not in ('fingerprint', 'environment')},
                 'fingerprint': definition['fingerprint'], 'build_run': target.get('build_run')})
             baseline = {k: pin[k] for k in ('build_run', 'variant', 'configuration_sha256')}
-            baseline.update(state='ready', version=definition.get('software_version'),
+            baseline.update(state='ready', version=definition.get('software_version'), source_sha=definition.get('source_sha'),
                 target=target['name'], ready=target.get('ready', False))
         except (ValueError, KeyError, TypeError):
             pass

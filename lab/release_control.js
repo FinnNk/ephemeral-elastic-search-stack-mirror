@@ -19,7 +19,7 @@
   const wrapper=add('div','');wrapper.className='table-wrap';const table=add('table','',wrapper),head=add('tr','',add('thead','',table));
   for(const label of ['Role','Build','Variant / configuration','Change intent'])add('th',label,head).scope='col';
   const body=add('tbody','',table);
-  const row=(role,item,variant,intent,config)=>{const r=add('tr','',body);add('td',role,r);add('td',item.build_run==null?'Not available':String(item.build_run)+(item.version?' · v'+item.version:''),r);const cell=add('td',variant||'Not available',r);if(config){const code=add('code',config.slice(0,12),add('div','',cell));code.title=config;}add('td',intent,r);};
+  const row=(role,item,variant,intent,config)=>{const r=add('tr','',body);add('td',role,r);add('td',item.build_run==null?'Not available':String(item.build_run)+' · '+(item.version||'Version not recorded')+' · '+(item.source_sha?item.source_sha.slice(0,12):'Commit not recorded'),r);const cell=add('td',variant||'Not available',r);if(config){const code=add('code',config.slice(0,12),add('div','',cell));code.title=config;}add('td',intent,r);};
   const targetName=({'integration':'Integration','staging':'Staging','production-blue':'Active production · blue','production-green':'Active production · green'}[baseline.target]||baseline.target);
   row('Baseline'+(targetName?' · '+targetName:''),baseline,baseline.variant,'Reference',baseline.configuration_sha256);
   if(baseline.state!=='ready')add('p','The current target baseline is unavailable. Its identity will not be assumed.').className='notice';

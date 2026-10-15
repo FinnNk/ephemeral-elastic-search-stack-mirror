@@ -11,6 +11,21 @@ from delivery_cli import execute, parser
 
 
 class PromotionGateTests(unittest.TestCase):
+    def test_fresh_verification_requires_version_and_exact_source_identity(self):
+        args = parser().parse_args(['verify', 'integration', '--require-version'])
+        for fields in ({'source_sha': 'a' * 40}, {'software_version': '1.2.3', 'source_sha': 'bad'},
+                       {'software_version': 'not-semver', 'source_sha': 'a' * 40}):
+            with patch('delivery_cli.checkout'), patch('delivery_cli.read_target', return_value={'fields': fields}), \
+                 patch('delivery_cli.verify_target') as verify:
+                with self.assertRaises(ValueError):
+                    execute(args)
+                verify.assert_not_called()
+        with patch('delivery_cli.checkout'), \
+             patch('delivery_cli.read_target', return_value={'fields': {'software_version': '1.2.3+build.1.1', 'source_sha': 'a' * 40}}), \
+             patch('delivery_cli.verify_target', return_value={'state': 'verified'}) as verify:
+            self.assertEqual(execute(args)['state'], 'verified')
+            verify.assert_called_once_with('integration')
+
     def test_variant_reference_reaches_complete_proposal_and_review_description(self):
         import json
         from contextlib import ExitStack

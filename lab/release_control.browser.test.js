@@ -8,8 +8,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  const errors=[],posts=[];let admin=true,failTransport=true;
  const names=['integration','staging','prepare','release','deploy','rollback'];
  const comparisons=Object.fromEntries(names.filter(n=>n!=='deploy').map(name=>[name,{
-  baseline:{state:'ready',target:name==='integration'||name==='staging'?name:'production-blue',build_run:108,variant:name==='staging'?'staging-default':'live-default',configuration_sha256:'b'.repeat(64)},
-  candidate:{build_run:data.selected.run,selection:data.variant_selection},preparation_only:name==='prepare'}]));
+  baseline:{state:'ready',target:name==='integration'||name==='staging'?name:'production-blue',build_run:108,version:'1.0.0',source_sha:'b'.repeat(40),variant:name==='staging'?'staging-default':'live-default',configuration_sha256:'b'.repeat(64)},
+  candidate:{build_run:data.selected.run,version:'1.1.0',source_sha:'a'.repeat(40),selection:data.variant_selection},preparation_only:name==='prepare'}]));
  const server=http.createServer((req,res)=>{
   if(req.url.startsWith('/api/delivery/dashboard/actions')){
    res.setHeader('Content-Type','application/json');
@@ -41,6 +41,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   assert.ok((await page.locator('#promotion-actions').innerText()).includes('Intentional ranking change'));
   assert.ok((await page.locator('#promotion-actions').innerText()).includes('Preserve search results'));
   assert.ok((await page.locator('#promotion-actions').innerText()).includes('live-default'));
+  assert.ok((await page.locator('#promotion-actions').innerText()).includes('1.1.0 · '+ 'a'.repeat(12)));
   await page.locator('#promotion-stage').selectOption('staging');
   assert.ok((await page.locator('#promotion-actions').innerText()).includes('staging-default'));
   await page.locator('.tree-node').last().press('Enter');assert.equal(await page.locator('#promotion-stage').inputValue(),'production');

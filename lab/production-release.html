@@ -28,6 +28,7 @@ function releaseDetails(value){
  $('release-details').replaceChildren();
  for(const [label,key] of fields){const row=text('tr',null,$('release-details'));text('th',label,row);
   for(const release of [value.production,value.candidate]){const cell=text('td',null,row),v=release?.[key];
+   if(key==='software_version'&&release){text('span',(v||'Version not recorded')+' · '+(release.source_sha?release.source_sha.slice(0,12):'Commit not recorded'),cell);continue}
    if(v==null){text('span',release?'Not available':'—',cell).className='missing';continue}
    if(key==='source_sha'||key==='build_run'){const a=text('a',key==='source_sha'?v.slice(0,12):String(v),cell);a.title=String(v);a.href='https://gitea.localhost:34443/elastic-agent/delivery-source/'+(key==='source_sha'?'commit/':'actions/runs/')+encodeURIComponent(v)}
    else{const span=text('span',key==='software_release_id'?v.slice(0,12):String(v),cell);span.title=String(v)}

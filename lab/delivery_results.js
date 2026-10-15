@@ -12,6 +12,7 @@ const label=value=>names[value]||String(value).replaceAll('_',' ');
 const fmt=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:4}):value==null?'Not available':String(value);
 const probability=value=>typeof value==='number'&&value>0&&value<.0001?'<0.0001':fmt(value);
 const pct=value=>typeof value==='number'?(100*value).toFixed(1)+'%':'Not available';
+const releaseVersion=(version,sha)=>(version||'Version not recorded')+' · '+(sha?String(sha).slice(0,12):'Commit not recorded');
 function node(tag,text,parent){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(parent)parent.append(n);return n}
 function link(id,value){const n=$(id);n.hidden=true;if(!value)return;const u=new URL(value,location.origin);if(!['http:','https:'].includes(u.protocol))return;if(u.hostname==='gitea-internal.lab-ingress.svc.cluster.local'){u.hostname='gitea.localhost';u.port='34443';u.protocol='https:'}n.href=u.href;n.hidden=false}
 function section(title,description){const s=node('section',null,$('content'));node('h2',title,s);if(description)node('p',description,s);return s}
@@ -101,8 +102,8 @@ async function promotionReview(value,row){
  }));
  const frozenBaseline=records.find(r=>r.reports.relevance)?.reports.relevance.baseline||{};
  table(overview,['Role','Release','Version','Behaviour'],[
-  ['Current '+target+' baseline',buildLink(value.baseline_build_run),frozenBaseline.software_version||frozenBaseline.fields?.software_version||'Version not recorded',value.baseline_variant||'Not recorded'],
-  ['Candidate',buildLink(value.candidate_build_run),fields.software_version||'Version not recorded',(value.checks||[]).map(c=>c.variant).join(', ')]]);
+  ['Current '+target+' baseline',buildLink(value.baseline_build_run),releaseVersion(frozenBaseline.software_version||frozenBaseline.fields?.software_version,frozenBaseline.source_sha||frozenBaseline.fields?.source_sha),value.baseline_variant||'Not recorded'],
+  ['Candidate',buildLink(value.candidate_build_run),releaseVersion(fields.software_version,fields.source_sha||value.source_sha),(value.checks||[]).map(c=>c.variant).join(', ')]]);
  const first=records.find(r=>r.reports.relevance)?.reports.relevance;
  node('p','Catalogue: '+(fields.dataset_release||first?.candidate?.dataset_release||'Not recorded')+'. Checked '+new Date(value.completed_at).toLocaleString()+'.',overview);
  const config=section('Compared search configurations','Names identify the behaviour being reviewed; exact hashes remain under Evidence details.');
@@ -159,7 +160,7 @@ async function report(value,operationRecord){
  }
  else if(value.state==='verified'){
   const s=section('Verified release'),deployment=value.deployment||{},fields=deployment.fields||{};
-  table(s,['Field','Value'],[['Environment',fmt(value.environment)],['Version',fmt(fields.software_version)],['Build run',fmt(deployment.build_run)],['Image',fmt(fields.image)],['Index',fmt(fields.index)],['Source commit',fmt(fields.source_sha)],['Verified at',fmt(value.verified_at)],['Verification duration',fmt(value.seconds)+' s'],...(value.merge_to_verified_seconds==null?[]:[['Merge to verified',fmt(value.merge_to_verified_seconds)+' s']]),['Products checked',fmt(value.sample_ids?.length)]]);
+  table(s,['Field','Value'],[['Environment',fmt(value.environment)],['Version',releaseVersion(fields.software_version,fields.source_sha)],['Build run',fmt(deployment.build_run)],['Image',fmt(fields.image)],['Index',fmt(fields.index)],['Source commit',fmt(fields.source_sha)],['Verified at',fmt(value.verified_at)],['Verification duration',fmt(value.seconds)+' s'],...(value.merge_to_verified_seconds==null?[]:[['Merge to verified',fmt(value.merge_to_verified_seconds)+' s']]),['Products checked',fmt(value.sample_ids?.length)]]);
   $('explanation').textContent='This records deployment verification, not a new relevance or load test.';
  }
  else if(value.kind==='delivery-variant-evidence'){

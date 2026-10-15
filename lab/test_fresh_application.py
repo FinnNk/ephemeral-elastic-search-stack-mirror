@@ -20,6 +20,26 @@ import cleanup_fresh_install as cleanup
 
 
 class FreshApplications(unittest.TestCase):
+    def test_fresh_delivery_source_seeds_required_semver_file(self):
+        import setup_delivery
+        from delivery.ci.versioning import declared
+        with tempfile.TemporaryDirectory() as folder, \
+             patch.object(setup_delivery, 'api', return_value={'empty': True}), \
+             patch.object(setup_delivery, 'git'):
+            root = Path(folder)
+            setup_delivery.seed_source(root)
+            self.assertEqual(declared(root), declared(setup_delivery.ROOT / 'lab/delivery/bootstrap'))
+            self.assertIn('VERSION text eol=lf', (root / '.gitattributes').read_text())
+
+    def test_final_acceptance_requires_versioned_targets(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(app, 'STATE', Path(folder)), \
+             patch.object(app, 'k') as command, patch.object(app, 'private_json'):
+            app.verify()
+        checks = [c.args for c in command.call_args_list if 'lab/delivery_cli.py' in c.args]
+        self.assertEqual(len(checks), 3)
+        self.assertEqual({c[-2] for c in checks}, {'integration', 'staging', 'production'})
+        self.assertTrue(all(c[-1] == '--require-version' for c in checks))
+
     def test_delivery_verification_timeout_reports_argo_wait_state(self):
         import delivery_runtime as runtime
         resource = argparse.Namespace(stdout=json.dumps({'status': {

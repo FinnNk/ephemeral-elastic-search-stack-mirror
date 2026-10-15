@@ -1,13 +1,13 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 (async()=>{
- const browser=await chromium.launch({headless:true});
+ const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{})});
  try{
  const page=await browser.newPage({viewport:{width:1000,height:1000}}),errors=[],requests=[];
  page.on('pageerror',e=>errors.push(e.message));
  let admin=true,prepared=false,same=false,hasApprovals=true;
  const slots={blue:{software_release_id:'a'.repeat(64),source_sha:'b'.repeat(40),fingerprint:'c'.repeat(64)},green:{software_release_id:'d'.repeat(64),source_sha:'e'.repeat(40),fingerprint:'f'.repeat(64)}};
- const production={...slots.blue,build_run:108,image:'nexus.test/search@sha256:'+ 'a'.repeat(64),dataset_release:'esci-gb-v1',index:'esci-frozen',engine:'9.5.4',verified:true};
+ const production={...slots.blue,software_version:'1.0.0+build.108.1',build_run:108,image:'nexus.test/search@sha256:'+ 'a'.repeat(64),dataset_release:'esci-gb-v1',index:'esci-frozen',engine:'9.5.4',verified:true};
  const candidate={...slots.green,build_run:109,image:'nexus.test/search@sha256:'+ 'd'.repeat(64),dataset_release:'esci-gb-v1',index:'esci-frozen',engine:'9.5.4',verified:true};
  await page.route('https://control.test/**',async route=>{
  const req=route.request(),u=new URL(req.url());
@@ -21,11 +21,12 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
  throw new Error('Unexpected route '+u.pathname);
  });
  await page.goto('https://control.test/production-release');await page.locator('#state').filter({hasText:'Active production'}).waitFor();
+ assert.ok((await page.locator('#release-details').innerText()).includes('1.0.0+build.108.1 · '+ 'b'.repeat(12)));
  await page.getByRole('button',{name:'Prepare production candidate'}).click();await page.getByRole('link',{name:'Open progress and review links'}).waitFor();assert.deepEqual(requests.pop(),{kind:'prepare-production'});
  prepared=true;await page.getByRole('button',{name:'Refresh status'}).click();await page.getByText('Candidate is prepared',{exact:false}).waitFor();assert.equal(await page.locator('#prepare').isDisabled(),true);
- await page.getByRole('button',{name:'Check and release production'}).click();await page.locator('.submission-feedback').filter({hasText:'Operation queued.'}).last().waitFor();assert.deepEqual(requests.pop(),{kind:'release-production',intent:'ranking-change'});
+ await page.getByRole('button',{name:'Check and release production'}).click();await page.locator('.submission-feedback').filter({hasText:'Operation queued.'}).last().waitFor();assert.deepEqual(requests.pop(),{kind:'release-production'});
  await page.locator('#pr').selectOption('42');await page.getByRole('link',{name:'Review selected PR in Gitea'}).waitFor();await page.getByRole('button',{name:'Deploy approved PR'}).click();await page.locator('.submission-feedback').filter({hasText:'Operation queued.'}).last().waitFor();assert.deepEqual(requests.pop(),{kind:'merge-reviewed',pr:42});
- await page.getByRole('button',{name:'Request rollback to the other slot'}).click();await page.locator('.submission-feedback').filter({hasText:'Operation queued.'}).last().waitFor();assert.deepEqual(requests.pop(),{kind:'rollback',target:'production',fingerprint:'f'.repeat(64),intent:'ranking-change'});
+ await page.getByRole('button',{name:'Request rollback to the other slot'}).click();await page.locator('.submission-feedback').filter({hasText:'Operation queued.'}).last().waitFor();assert.deepEqual(requests.pop(),{kind:'rollback',target:'production',fingerprint:'f'.repeat(64)});
  admin=false;await page.getByRole('button',{name:'Refresh status'}).click();await page.waitForFunction(()=>document.querySelector('#prepare').disabled);assert.equal(await page.locator('#release').isDisabled(),true);assert.deepEqual(errors,[]);
  admin=true;prepared=false;await page.getByRole('button',{name:'Refresh status'}).click();await page.getByText('No candidate selected.',{exact:true}).waitFor();
  assert.equal(await page.locator('#release-details').getByRole('link',{name:'108',exact:true}).count(),1);

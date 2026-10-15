@@ -67,6 +67,8 @@ def parser():
         cmd.add_argument('pr', type=int)
     cmd = commands.add_parser('verify')
     cmd.add_argument('target', choices=TARGETS)
+    cmd.add_argument('--require-version', action='store_true',
+                     help='Require version and source identity for fresh-install acceptance')
     cmd = commands.add_parser('delete-preview')
     cmd.add_argument('name')
     commands.add_parser('expire-previews')
@@ -165,6 +167,15 @@ def execute(args):
         return merge_reviewed(args.pr)
     if args.command == 'verify':
         checkout()
+        if args.require_version:
+            from delivery.ci.versioning import parse
+            fields = read_target(args.target)['fields']
+            if not fields.get('software_version'):
+                raise ValueError('Fresh delivery target has no version; publish and bootstrap the versioned source release.')
+            parse(fields['software_version'])
+            import re
+            if not re.fullmatch('[0-9a-f]{40}', fields.get('source_sha', '')):
+                raise ValueError('Fresh delivery target has no valid source commit.')
         return verify_target(args.target)
     if args.command == 'delete-preview':
         remove_preview(args.name)

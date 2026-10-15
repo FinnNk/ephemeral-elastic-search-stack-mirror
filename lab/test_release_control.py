@@ -55,6 +55,8 @@ class ReleaseActions(unittest.TestCase):
         result = control.choices(data, ADMIN)['comparisons']
         self.assertEqual(result['integration']['baseline']['variant'], 'live-default')
         self.assertEqual(result['integration']['baseline']['build_run'], 108)
+        self.assertEqual(result['integration']['baseline']['source_sha'], 'a' * 40)
+        self.assertEqual(result['integration']['candidate']['source_sha'], 'a' * 40)
         self.assertEqual(result['staging']['baseline']['variant'], 'staging-default')
         self.assertEqual(result['staging']['baseline']['build_run'], 109)
         self.assertEqual(result['integration']['candidate']['selection'], data['variant_selection'])
