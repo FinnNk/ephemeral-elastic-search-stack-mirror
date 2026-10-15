@@ -167,3 +167,22 @@ configurations remain fixed by the source build. Review a separate plan for each
 destination; a changed baseline or recorded plan requires fresh checks.
 
 See the [release check plan walkthrough](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/release-check-plans.md).
+
+## Check the shared Redis rewrite rules
+
+The `redis-rewrites` set contains 18 queries for the six rules paired with
+`esci-gb-v1`: trainers, sneakers, earbuds, couch, tee and cell phone. It includes
+lower-case and title-case aliases, each distinct canonical target as a control,
+and an unrelated query that should pass through unchanged. Seasonal-only rules
+remain covered by their separate catalogue-specific query sets.
+
+Add `evaluation/queries/redis-rewrites.jsonl` to `additional_query_sets` with the
+name `redis-rewrites` and `required: false`. The comparison captures results and
+reports label resolution, relevance and result changes. This set has no authored
+reference judgements, so it is report only; the protected standard sets remain
+mandatory. Exercising an alias does not by itself establish relevance quality or
+verify the Redis failure fallback, which has separate API contract tests.
+
+For promotions, review this set in the accumulated release check plan. A source
+PR that only adds query coverage uses `preserve-results`; select the promotion
+intent against the complete change since the destination baseline.

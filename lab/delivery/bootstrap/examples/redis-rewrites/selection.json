@@ -1,0 +1,22 @@
+{
+  "kind": "variant-gate-selection",
+  "schema_version": 1,
+  "selected": [
+    {
+      "intent": "preserve-results",
+      "variant": "ranker-a"
+    }
+  ],
+  "additional_query_sets": [
+    {
+      "name": "sneakers",
+      "path": "evaluation/queries/sneakers.jsonl",
+      "required": false
+    },
+    {
+      "name": "redis-rewrites",
+      "path": "evaluation/queries/redis-rewrites.jsonl",
+      "required": false
+    }
+  ]
+}

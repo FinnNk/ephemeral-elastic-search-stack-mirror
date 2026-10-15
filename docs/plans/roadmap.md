@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [Redis rewrite query coverage batch](redis-rewrite-query-coverage.md) adds
+focused requests for all six shared-catalogue aliases, their case variants and
+controls. Merge its source update and use the new merged-source build to resume
+the promotion walkthrough, reviewing a fresh plan at each destination.
+
 The [grouped evaluation progress batch](grouped-evaluation-progress.md) combines
 worker phases into capture, judgement and scoring steps. Completed captures show
 their final counts, with earlier samples in expandable details. Review and
