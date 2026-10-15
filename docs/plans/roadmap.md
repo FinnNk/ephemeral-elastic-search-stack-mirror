@@ -6,6 +6,10 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [comparison-table refinement](promotion-metrics-table.md) follows #188/#189.
+It aligns quality and judgement coverage in one table with explicit change units.
+Review the presentation batches in order and activate them together.
+
 The user requested removal of blanket demo/label-qualification commentary from
 the interface. The [UI prose batch](remove-demo-ui-commentary.md) follows #188;
 it retains provenance data, coverage measurements and all gate rules. Review

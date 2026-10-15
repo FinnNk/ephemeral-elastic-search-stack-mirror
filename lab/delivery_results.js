@@ -114,9 +114,10 @@ async function promotionReview(value,row){
   s.classList.add('promotion-review');
   const relevance=reports.relevance,results=reports['result-regression'],performance=reports.performance;
   if(relevance){const b=relevance.metrics?.baseline||{},c=relevance.metrics?.candidate||{};
-   table(s,['Search quality','Baseline','Candidate','Change'],[['nDCG@10',fmt(b['nDCG@10']),fmt(c['nDCG@10']),typeof b['nDCG@10']==='number'&&typeof c['nDCG@10']==='number'?fmt(c['nDCG@10']-b['nDCG@10']):'Not calculable']]);
    const coverage=relevance.judgement_coverage||{};
-   table(s,['Judgement coverage','Baseline','Candidate'],[['Labelled result fraction',pct(coverage.baseline?.fraction),pct(coverage.candidate?.fraction)]]);
+   table(s,['Metric','Baseline','Candidate','Change'],[
+    ['nDCG@10 (search quality)',fmt(b['nDCG@10']),fmt(c['nDCG@10']),typeof b['nDCG@10']==='number'&&typeof c['nDCG@10']==='number'?fmt(c['nDCG@10']-b['nDCG@10']):'Not calculable'],
+    ['Labelled results (judgement coverage)',pct(coverage.baseline?.fraction),pct(coverage.candidate?.fraction),typeof coverage.baseline?.fraction==='number'&&typeof coverage.candidate?.fraction==='number'?fmt(100*(coverage.candidate.fraction-coverage.baseline.fraction))+' percentage points':'Not calculable']]);
    node('p',fmt(relevance.completed_query_count)+' of '+fmt(relevance.query_count)+' queries completed.',s);
   }else node('p','Relevance summary unavailable. Open the detailed report before approving.',s);
   if(results){table(s,['Result changes','Value'],[['Changed queries',fmt(results.changed_query_ids?.length)],['RBO@10 (p = 0.9)',fmt(results.result_similarity?.rbo_at_10_p_0_9)],['Jaccard@10',fmt(results.result_similarity?.jaccard_at_10)]]);}
