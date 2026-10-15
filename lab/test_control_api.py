@@ -390,6 +390,23 @@ class LocalControlApi(unittest.TestCase):
             with urllib.request.urlopen(urllib.request.Request(url,headers=headers)) as response:
                 self.assertIn(b'delivery_results.js',response.read())
 
+    def test_native_gatling_assets_keep_operation_permissions(self):
+        url = self.base + '/api/delivery/operations/' + 'a'*32 + '/gatling/ranker-a/candidate/js/stats.js'
+        row = {'id': 'a'*32, 'owner': 'bob', 'result': {}}
+        with patch('delivery_operations.Operations') as operations, patch('gatling_view.response') as asset:
+            operations.return_value.get.return_value = row
+            asset.return_value = (b'var stats = {};', 'text/javascript', {'Content-Security-Policy': "connect-src 'none'"})
+            for headers, status in [({}, 401), ({'Cookie': self.login('alice')}, 403)]:
+                with self.assertRaises(urllib.error.HTTPError) as failure:
+                    urllib.request.urlopen(urllib.request.Request(url, headers=headers))
+                self.assertEqual(failure.exception.code, status)
+            asset.assert_not_called()
+            headers = {'Cookie': self.login('bob'), 'Accept': 'text/html'}
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers)) as response:
+                self.assertEqual(response.read(), b'var stats = {};')
+                self.assertEqual(response.headers['Content-Security-Policy'], "connect-src 'none'")
+            asset.assert_called_once_with(row, 'ranker-a', 'candidate', 'js/stats.js')
+
     def login(self, username='alice'):
         request = urllib.request.Request(self.base + '/api/login', method='POST',
             data=json.dumps({'username': username, 'password': 'test-password'}).encode(),

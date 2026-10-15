@@ -91,6 +91,17 @@ function timings(value,record){
 }
 function buildLink(run){const a=document.createElement('a');a.textContent=run?'Build '+run:'Build not recorded';if(run)a.href='https://gitea.localhost:34443/elastic-agent/delivery-source/actions/runs/'+encodeURIComponent(run);return a;}
 function settingsText(settings){const boosts=settings?.field_boosts;return boosts?'Search field weights: '+Object.entries(boosts).map(([k,v])=>k+' '+v).join(', '):'Configuration details not recorded';}
+function nativeGatlingReports(value,variant,parent){
+ const s=parent||section('Native Gatling reports','Full driver reports include response-time charts, request statistics and errors.');
+ if(parent)node('h3','Native Gatling reports',s);
+ const base=path.split('/report')[0]+'/gatling/'+encodeURIComponent(variant)+'/';
+ for(const side of ['baseline','candidate']){
+  const p=node('p',null,s),title=side==='baseline'?'Baseline':'Candidate';
+  if(!value[side]?.native_report_blob||!value[side]?.native_report_sha256){node('span',title+' native report unavailable; the driver did not retain an archive.',p);continue;}
+  const view=node('a','View '+side+' Gatling report',p);view.href=base+side+'/index.html';view.target='_blank';view.rel='noopener noreferrer';
+  node('span',' · ',p);const download=node('a','Download '+side+' ZIP',p);download.href=base+side+'/download.zip';
+ }
+}
 async function promotionReview(value,row){
  const proposal=row?.result?.proposal||{},deployment=proposal.deployment||{},fields=deployment.fields||{},target=proposal.target||row?.request?.target||'target';
  const overview=section('Promotion for review','Compare the currently deployed '+target+' baseline with this candidate. Approval records your decision; deployment is a separate action.');
@@ -128,6 +139,7 @@ async function promotionReview(value,row){
   else node('p','Result-change summary unavailable. Open the detailed report before approving.',s);
   if(performance){const profile={probe:'Short regression probe',smoke:'Smoke test','production-load':'Production load test'}[performance.profile]||performance.profile;node('p','Performance profile: '+profile+'; '+(performance.verdict==='within-budget'?'Within budget':label(performance.verdict))+'. '+(performance.profile==='probe'?'This short regression probe is not a production load test.':''),s);
    table(s,['Phase','Baseline p95 (ms)','Candidate p95 (ms)','p95 budget (ms)','Baseline failures','Candidate failures'],Object.entries(performance.measured_phases||{}).map(([phase,x])=>[label(phase),fmt(x.baseline?.p95_ms),fmt(x.candidate?.p95_ms),fmt(x.budget?.p95_ms),fmt(x.baseline?.failed_percent)+'%',fmt(x.candidate?.failed_percent)+'%']));
+   nativeGatlingReports(performance,check.variant,s);
   }else node('p','Performance summary unavailable. Open the detailed report before approving.',s);
   if(check.query_sets_report){
    if(reports['query-sets'])suiteViews(reports['query-sets'],check.variant+' — ');
@@ -173,6 +185,7 @@ async function report(value,operationRecord){
  else if(value.kind==='variant-evaluation-report')summary(value,'Search results',null);
  else if(value.kind==='controlled-api-comparison'){summary({...value,baseline_variant:'baseline',variants:{baseline:{},candidate:{}},result_changes:{candidate:{changed_queries:value.changed_query_ids?.length}},result_similarity:{candidate:value.result_similarity||{}}},'Search results',null);}
  else if(value.kind==='paired-api-performance'){
+ nativeGatlingReports(value,decodeURIComponent(path.match(/\/report\/variant\/([^/]+)\/performance$/)?.[1]||'pair'));
  $('stage').textContent='Gatling performance comparison';$('explanation').textContent='Profile: '+value.profile+'. Outcome: '+label(value.verdict)+'. Review workload validity and each measured phase.';
  const durations=['baseline','candidate'].filter(side=>typeof value[side]?.duration_seconds==='number');
  if(durations.length)table(section('Gatling workload duration','Baseline and candidate run sequentially. These durations include warm-up; measured phase results follow.'),['Release','Workload duration (s)'],durations.map(side=>[side,fmt(value[side].duration_seconds)]));

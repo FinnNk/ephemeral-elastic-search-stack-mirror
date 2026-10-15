@@ -157,13 +157,24 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['api', 'delivery', 'operations']:
             from delivery_operations import Operations
             return self.send_json(200, {'operations': [row for row in Operations().active() if self.visible(row, identity)]})
-        if parts[:3] == ['api', 'delivery', 'operations'] and len(parts) in (4, 5, 6, 8):
+        if parts[:3] == ['api', 'delivery', 'operations'] and (len(parts) in (4, 5, 6, 8) or
+                len(parts) >= 8 and parts[4] == 'gatling'):
             from delivery_operations import Operations
             row = Operations().get(parts[3])
             if row is None:
                 return self.send_json(404, {'error': 'Delivery operation not found.'})
             if not self.visible(row, identity):
                 return self.send_json(403, {'error': 'Delivery operation belongs to another owner.'})
+            if len(parts) >= 8 and parts[4] == 'gatling':
+                from gatling_view import response, ReportUnavailable
+                import zipfile
+                try:
+                    payload, mime, headers = response(row, parts[5], parts[6], '/'.join(parts[7:]))
+                    return self.send_bytes(200, payload, mime, headers)
+                except ReportUnavailable as error:
+                    return self.send_json(404, {'error': str(error)})
+                except (ValueError, KeyError, zipfile.BadZipFile, RuntimeError, OSError):
+                    return self.send_json(502, {'error': 'The retained Gatling report could not be verified or read.'})
             if len(parts) == 4:
                 blocker = (row.get('queue') or {}).get('blocker')
                 if blocker and not self.visible(Operations().get(blocker['id']), identity):

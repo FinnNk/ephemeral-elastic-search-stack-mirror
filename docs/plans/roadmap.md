@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [native Gatling report viewer](native-gatling-reports.md) follows #193/#194.
+It adds baseline/candidate HTML and ZIP links to retained performance checks,
+including failed gates. Review and activate the batches in order; no workload
+rerun is required to view existing driver reports.
+
 PRs #188–#190 are accepted and active. Promotion review shows versions with
 short source commits and one aligned quality/coverage table. Proposal #25's
 presentation was refreshed without changing its measured evidence.

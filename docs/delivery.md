@@ -191,6 +191,14 @@ also shows that no decision is needed. Timings distinguish elapsed time since
 submission (including waiting) from each search capture Job. Capture requests
 are functional checks; their retry counts do not constitute a load test. Gatling
 reports show workload duration, latency, failed requests and phase budgets.
+Under **Native Gatling reports**, open **View baseline Gatling report** or
+**View candidate Gatling report** for the driver's complete charts and request
+statistics in a new tab. **Download baseline ZIP** and **Download candidate ZIP**
+retain the HTML report and supporting files for offline inspection. These links
+also appear for completed drivers whose measurements failed the performance
+gate. A driver that did not retain an archive is labelled unavailable. Report
+access uses the operation's permissions and verifies the retained archive hash;
+viewing it does not start another test.
 Promotion and rollback progress pages link to all three retained checks. After
 deployment, the verification report shows the release, index, products checked
 and verification duration. RBO and Jaccard compare each variant with

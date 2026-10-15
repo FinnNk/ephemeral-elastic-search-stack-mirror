@@ -93,7 +93,15 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.setViewportSize({width:1440,height:1100});
  operation={...operation,request:{kind:'promotion',target:'integration'},result:{url:'https://gitea.example/pulls/25',proposal:{target:'integration',deployment:{fields:{software_version:'1.1.1+build.184.1',source_sha:'a'.repeat(40),dataset_release:'esci-gb-v1',variant_config_json:JSON.stringify({variants:{'ranker-a':{field_boosts:{title:4}}}})}}}}};
  detailReports={relevance:{query_count:1000,completed_query_count:1000,metrics:{baseline:{'nDCG@10':.7},candidate:{'nDCG@10':.7}},judgement_coverage:{baseline:{fraction:.81},candidate:{fraction:.81}}},'result-regression':{changed_query_ids:[],result_similarity:{rbo_at_10_p_0_9:1,jaccard_at_10:1}},performance:{profile:'probe',verdict:'within-budget',measured_phases:{normal:{baseline:{p95_ms:124,failed_percent:0},candidate:{p95_ms:136,failed_percent:0},budget:{p95_ms:250}}}}};
+ for(const side of ['baseline','candidate'])detailReports.performance[side]={native_report_sha256:'f'.repeat(64),native_report_blob:'runs/retained/gatling-report.zip'};
  await page.goto(url+'/report');await page.getByRole('heading',{name:'ranker-a — review summary',exact:true}).waitFor();
+ for(const side of ['baseline','candidate']){
+  const view=page.getByRole('link',{name:'View '+side+' Gatling report',exact:true});
+  assert.equal(await view.getAttribute('href'),'/api/delivery/operations/'+id+'/gatling/ranker-a/'+side+'/index.html');
+  assert.equal(await view.getAttribute('rel'),'noopener noreferrer');
+  assert.equal(await page.getByRole('link',{name:'Download '+side+' ZIP',exact:true}).getAttribute('href'),'/api/delivery/operations/'+id+'/gatling/ranker-a/'+side+'/download.zip');
+ }
+
  assert.equal(await page.getByRole('link',{name:'Build 158',exact:true}).count(),1);
  assert.equal(await page.getByRole('link',{name:'Build 184',exact:true}).count(),1);
  assert.ok((await page.locator('#content').innerText()).includes('1.1.1+build.184.1'));
@@ -135,6 +143,10 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  operation={...operation,request:{kind:'merge-reviewed'},result:{state:'verified'}};
  await page.goto(url+'/report');await page.getByRole('heading',{name:'Verified release',exact:true}).waitFor();assert.equal(await page.locator('#state').innerText(),'Deployment verified');assert.ok((await page.locator('#content').innerText()).includes('Merge to verified'));
  report={kind:'paired-api-performance',valid:true,profile:'production-load',verdict:'within-budget',baseline:{duration_seconds:15},candidate:{duration_seconds:15},measured_phases:{normal:{budget:{p95_ms:250,p99_ms:500,failed_percent:1},baseline:{p95_ms:20,p99_ms:40,failed_percent:0,within_budget:true},candidate:{p95_ms:25,p99_ms:45,failed_percent:0,within_budget:true}}}};await page.goto(url+'/report/performance');await page.getByRole('heading',{name:'normal',exact:true}).waitFor();assert.ok((await page.locator('#content').innerText()).includes('p95 ≤250 ms'));assert.equal(await page.getByRole('heading',{name:'Gatling workload duration',exact:true}).count(),1);
+ assert.ok((await page.locator('#content').innerText()).includes('Baseline native report unavailable'));
+ report.candidate={...report.candidate,native_report_sha256:'f'.repeat(64),native_report_blob:'runs/retained/gatling-report.zip'};
+ await page.goto(url+'/report/performance');await page.getByRole('link',{name:'View candidate Gatling report',exact:true}).waitFor();
+ assert.equal(await page.getByRole('link',{name:'View candidate Gatling report',exact:true}).getAttribute('href'),'/api/delivery/operations/'+id+'/gatling/pair/candidate/index.html');
  operation={...operation,state:'failed',progress:'Operation failed',error:'<script>alert(1)</script>',result:null};await page.goto(url);await page.getByRole('heading',{name:'What happened'}).waitFor();assert.equal(await page.locator('#state').innerText(),'Failed');assert.ok((await page.locator('#content').innerText()).includes('<script>'));
  denied=true;await page.locator('#refresh').click();await page.getByText('Sign in to the lab.',{exact:true}).waitFor();assert.equal(await page.locator('#signin').isVisible(),true);
  assert.deepEqual(errors,[]);console.log('Progress refresh, gate/coverage separation, extra sets, mobile layout, failure escaping and sign-in passed');
