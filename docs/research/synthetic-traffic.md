@@ -4,7 +4,7 @@ Historical synthetic-release research. Current workflows use the [ESCI catalogue
 
 The [frozen trace](../../lab/traffic/source-trace-v1.csv) has 4,399 synthetic `(timestamp, query)` pairs across ten minutes. Its [manifest](../../lab/traffic/source-manifest-v1.json) pins the source SHA-256, 50-query release hash, seed, time range and modelling assumptions. It contains no production traffic.
 
-The million-product release has a separate [30-minute trace](../../lab/traffic/source-trace-million-v2.csv) with 13,099 wholly synthetic events drawn from its 1,000 frozen queries; 976 occur at least once. Its [manifest](../../lab/traffic/source-manifest-million-v2.json) pins the query object and source hashes. The longer [recipes](../../lab/traffic/recipes-million-v2.json) use distinct source seconds for warm-up, measured load and recovery. The original ten-minute [million trace](../../lab/traffic/source-trace-million-v1.csv) and [recipes](../../lab/traffic/recipes-million-v1.json) remain versioned for reproducibility.
+The million-product release has a separate [30-minute trace](../../lab/traffic/source-trace-million-v2.csv) with 13,099 wholly synthetic events drawn from its 1,000 frozen queries; 976 occur at least once. Its [manifest](../../lab/traffic/source-manifest-million-v2.json) pins the query object and source hashes. The longer [recipes](../../lab/traffic/recipes-million-v3.json) use distinct source seconds for warm-up, measured load and recovery. The original ten-minute [million trace](../../lab/traffic/source-trace-million-v1.csv) and [recipes](../../lab/traffic/recipes-million-v1.json) remain versioned for reproducibility.
 
 | Assumption | Ten-minute 10,000-product trace |
 | --- | --- |
@@ -15,15 +15,21 @@ The million-product release has a separate [30-minute trace](../../lab/traffic/s
 
 The million-product trace draws 70% of events from 50 head queries and 30% from the other 950. Its events are generated anew from the million-query release; the ten-minute trace's 10/40 split does not apply to it.
 
-The [active v2 recipes](../../lab/traffic/recipes-v2.json) select source windows and resample their query mix into explicit one-second arrival buckets. [V1](../../lab/traffic/recipes-v1.json) is retained because the first normal-load and smoke evidence used it. V1's peak window averaged only 10.45 requests/s, so v2 sets a sustained 20 requests/s plateau. The [compiler](../../lab/traffic.py) writes a schedule and one Gatling feeder per phase under ignored `.lab/workloads/<workload-sha>/`. Every file has a hash in the compiled manifest. A timestamp in the feeder identifies the planned event; Gatling's open injection steps schedule the arrivals. The Java simulation records actual arrival time, phase, query ID and planned offset so the report adapter can reject missing events or large scheduling drift.
+The [active v3 recipes](../../lab/traffic/recipes-v3.json) select source windows and resample their query mix into explicit one-second arrival buckets. [V1](../../lab/traffic/recipes-v1.json) is retained because the first normal-load and smoke evidence used it. V1's peak window averaged only 10.45 requests/s, so v2 sets a sustained 20 requests/s plateau. The [compiler](../../lab/traffic.py) writes a schedule and one Gatling feeder per phase under ignored `.lab/workloads/<workload-sha>/`. Every file has a hash in the compiled manifest. A timestamp in the feeder identifies the planned event; Gatling's open injection steps schedule the arrivals. The Java simulation records actual arrival time, phase, query ID and planned offset so the report adapter can reject missing events or large scheduling drift.
 
 | Profile | Warm-up and measured phases | Offered load |
 | --- | --- | --- |
-| Probe | 5 s warm-up, 10 s normal | 2 requests/s |
+| Probe | 20 s warm-up, 30 s normal | 2 requests/s |
 | Smoke | 30 s ramp, 60 s warm-up, 300 s normal | 10 requests/s measured |
 | Normal | 30 s warm-up, 120 s normal | Source trace rate |
 | Peak | 30 s warm-up, 120 s sustained peak | 20 requests/s measured; source query mix |
 | Stress/recovery | 30 s warm-up, three 30 s stress steps, 60 s recovery | 15, 25, 35, then 10 requests/s |
+
+The probe sends 40 warm-up and 60 measured requests per API. A sequential pair
+therefore has 100 seconds of planned traffic, plus driver startup and report
+collection. It is a short regression check, not capacity or sustained-load
+evidence. The v1/v2 recipes remain available for reproducing earlier reports.
+Warm-up success confirms valid responses; it does not establish latency stability.
 
 The source windows and scaling choices are lab hypotheses, not measured production rates. Fixed-rate resampling changes the source's exact within-second gaps; it keeps the selected query order and places the compiled requests regularly within each target second. Warm-up and ramp traffic establish the declared runtime state but are excluded from measured latency verdicts. Normal, peak and recovery have separate provisional budgets; stress steps identify the first budget breach or state that no breach occurred at the maximum offered rate. The 120-second peak and 30-second stress steps are calibration runs. The [design's longer duration gate](../prototype-design.md#traffic-profiles-and-phases) remains outstanding, including fifteen measured peak minutes, two-minute stress holds and five-minute recovery.
 

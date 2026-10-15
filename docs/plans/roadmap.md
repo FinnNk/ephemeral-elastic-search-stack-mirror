@@ -6,9 +6,15 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-The [native Gatling report viewer](native-gatling-reports.md) follows #193/#194.
+The [short probe warm-up batch](short-probe-warmup.md) increases only the probe
+to 20 seconds of warm-up and 30 seconds of measurement at 2 requests/s. Review,
+merge and activate before the next Integration check. Bounded adaptive warm-up
+is recorded as a possible extension; it is not implemented.
+
+PRs #193–#195 are accepted and active. The
+[native Gatling report viewer](native-gatling-reports.md) follows #193/#194.
 It adds baseline/candidate HTML and ZIP links to retained performance checks,
-including failed gates. Review and activate the batches in order; no workload
+including failed gates. SigNoz probe panels are applied. No workload
 rerun is required to view existing driver reports.
 
 PRs #188–#190 are accepted and active. Promotion review shows versions with
@@ -25,16 +31,15 @@ probe: p95 253 ms exceeded the 250 ms limit; candidate p95 was 138 ms, with no
 failed requests on either side. Its evidence is retained under operation
 `5b47e81d97b1d4f90eb1da8df9fc7440`; additional sets were not reached.
 
-The [observability link batch](observability-probe-window.md) follows the live
-progress batch (#193). Retained candidate telemetry is present, but the linked
-42-second window and normal-only SLO panels obscure probe traffic. It adds
+The active [observability link batch](observability-probe-window.md) follows the
+live progress batch (#193). The earlier 42-second window and normal-only SLO
+panels obscured retained candidate probe traffic. The active dashboard adds
 separate probe panels and padded, environment-filtered links. Baseline build
-158 has no OTLP endpoint; no historical telemetry is fabricated for it. Review
-both batches, activate the runtime and apply the dashboard before retrying.
+158 has no OTLP endpoint; no historical telemetry is fabricated for it.
 
 The [live evaluation progress batch](live-evaluation-progress.md) adds sampled
-capture counters, scoring/resolution phases and concrete failure reasons. Review
-and merge it, then activate when idle before retrying the walkthrough. Do not
+capture counters, scoring/resolution phases and concrete failure reasons. These
+are active for the next walkthrough operation. Do not
 relax budgets or replace the retained failed evidence.
 
 

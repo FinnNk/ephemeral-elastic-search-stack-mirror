@@ -252,7 +252,7 @@ Use `verify` with the target to recheck after an operator repairs a failed deplo
 
 | Target | Gatling profile | Required evidence |
 | --- | --- | --- |
-| Integration / staging | `probe` | Short wiring/regression check |
+| Integration / staging | `probe` | 20 s warm-up, 30 s measurement at 2 requests/s per API |
 | Simulated production | `production-load` | One minute warmup, five minutes at 10 requests/s and fifteen minutes at 20 requests/s, for each release |
 
 The production **load gate** runs sequentially against temporary baseline/candidate

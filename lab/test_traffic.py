@@ -10,6 +10,33 @@ import traffic
 
 
 class FrozenTrafficContract(unittest.TestCase):
+    def test_short_probe_has_separate_warmup_and_measured_windows(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            trace, queries, manifest = (root / name for name in ('trace.csv', 'queries.jsonl', 'manifest.json'))
+            trace.write_text('timestamp,query_id,query\n' + ''.join(
+                f'2026-01-01T00:00:{second:02d}Z,q1,shirt\n' for second in range(50)), encoding='utf-8')
+            queries.write_text(json.dumps({'query_id': 'q1', 'query': 'shirt',
+                'country': 'GB', 'currency': 'GBP', 'filters': {}}) + '\n', encoding='utf-8')
+            manifest.write_text(json.dumps({'trace_sha256': traffic.sha(trace.read_bytes()),
+                'query_sha256': traffic.sha(queries.read_bytes())}), encoding='utf-8')
+            with patch('traffic.generate_catalogue_trace', return_value=(trace, manifest, queries)), \
+                    patch.object(traffic, 'OUTPUT', root / 'workloads'):
+                current = compile_profile('probe')
+                self.assertEqual(current, compile_profile('probe'))
+                self.assertEqual(current['duration_seconds'], 50)
+                self.assertEqual(current['phase_counts'], {'warmup': 40, 'normal': 60})
+                folder = Path(current['directory'])
+                with (folder / 'schedule.csv').open(encoding='utf-8', newline='') as handle:
+                    schedule = list(csv.DictReader(handle))
+                self.assertEqual([int(row['offset_second']) for row in schedule], list(range(50)))
+                self.assertTrue(all(int(row['count']) == 2 for row in schedule))
+                self.assertEqual([row['phase'] for row in schedule], ['warmup']*20 + ['normal']*30)
+                with patch.object(traffic, 'MILLION_RECIPES_EXT', ROOT / 'recipes-million-v2.json'):
+                    previous = compile_profile('probe')
+                self.assertEqual(previous['phase_counts'], {'warmup': 10, 'normal': 20})
+                self.assertNotEqual(current['workload_sha256'], previous['workload_sha256'])
+
     def test_feeders_bind_market_and_filters_to_frozen_queries(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

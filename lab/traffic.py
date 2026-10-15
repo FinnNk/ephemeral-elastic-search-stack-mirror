@@ -16,13 +16,13 @@ from catalogue import DEFAULT_RELEASE, RELEASES
 
 ROOT = Path(__file__).with_name('traffic')
 TRACE = ROOT / 'source-trace-v1.csv'
-RECIPES = ROOT / 'recipes-v2.json'
+RECIPES = ROOT / 'recipes-v3.json'
 QUERY_PATH = STATE / 'releases/retail-gb-10k-v1/queries.jsonl'
 MILLION_TRACE = ROOT / 'source-trace-million-v1.csv'
 MILLION_RECIPES = ROOT / 'recipes-million-v1.json'
 MILLION_QUERIES = STATE / 'releases/retail-gb-1m-v1/queries.jsonl'
 MILLION_TRACE_EXT = ROOT / 'source-trace-million-v2.csv'
-MILLION_RECIPES_EXT = ROOT / 'recipes-million-v2.json'
+MILLION_RECIPES_EXT = ROOT / 'recipes-million-v3.json'
 OUTPUT = STATE / 'workloads'
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'search-app'))
 from search_filters import encode_filters
