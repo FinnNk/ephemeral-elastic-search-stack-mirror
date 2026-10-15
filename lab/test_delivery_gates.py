@@ -11,6 +11,33 @@ from delivery_cli import execute, parser
 
 
 class PromotionGateTests(unittest.TestCase):
+    def test_variant_evaluation_reference_is_consumed_by_proposal(self):
+        import json
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from delivery_cli import recorded_variant_evaluation
+
+        reference = {'sha256': 'a' * 64,
+                     'blob': 'runs/' + 'a' * 64 + '/delivery-variant-evidence.json'}
+        report = {'kind': 'delivery-variant-evidence', 'state': 'pass', 'checks': []}
+        with TemporaryDirectory() as folder, \
+             patch('delivery_cli.RECORDS', Path(folder)), \
+             patch('delivery_gates.evaluate_variants', return_value=reference), \
+             patch('delivery_gates.read', return_value=report) as read:
+            result = recorded_variant_evaluation({'fingerprint': 'old'}, {'fingerprint': 'new'},
+                                                 'probe', 'integration')
+            read.assert_called_once_with(reference)
+            self.assertEqual(json.loads(Path(result['reference_file']).read_text()), reference)
+            with patch('delivery_release.from_run', return_value=({'source_sha': 's' * 40}, None, None)), \
+                 patch('delivery_variant_selection.source_selection', return_value={'configuration': {}}), \
+                 patch('delivery_cli.resolve', return_value={'fingerprint': 'new'}), \
+                 patch('delivery_cli.propose', return_value={'pr': 24}) as propose:
+                response = execute(parser().parse_args(['promote', 'integration', '--run', '184',
+                                   '--evidence', result['reference_file']]))
+            self.assertEqual(response, {'pr': 24})
+            self.assertEqual(propose.call_args.args[2], reference)
+            self.assertEqual(report['state'], 'pass')
+
     def test_separate_reviewer_must_approve_exact_head(self):
         review = {'state': 'APPROVED', 'commit_id': 'head',
                   'user': {'login': 'lab-admin'}}

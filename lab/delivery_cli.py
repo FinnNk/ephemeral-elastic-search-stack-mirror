@@ -96,10 +96,10 @@ def recorded_variant_evaluation(baseline, candidate, profile, target=None):
     from delivery_gates import evaluate_variants
     value = evaluate_variants(baseline, candidate, profile, target)
     from delivery_gates import read
-    record = read(value)
+    read(value)
     RECORDS.mkdir(exist_ok=True)
     path = RECORDS / ('evidence-' + value['sha256'] + '.json')
-    path.write_text(json.dumps(record, indent=2), encoding='utf-8')
+    path.write_text(json.dumps(value, indent=2), encoding='utf-8')
     return {**value, 'reference_file': str(path)}
 
 

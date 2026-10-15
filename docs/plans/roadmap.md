@@ -6,6 +6,14 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+PRs #183 and #184 are accepted and active: promotion controls handle failed
+operations without a PR, and Nexus routing is automatically reconciled.
+Build 184's subsequent Integration checks passed, but the
+[evidence hand-off](variant-evidence-handover.md) wrote a report where proposal
+creation expects its storage reference. Review and activate that repair, then
+revalidate the retained passing evidence before creating the proposal. The
+failed-attempt UX feedback is recorded in that plan for the next batch.
+
 PR #182 is accepted and active. The promotion walkthrough exposed a failed
 Nexus read after Docker changed its address; the existing network repair
 restored access and verified build 184's bundle. The failed attempt then exposed
