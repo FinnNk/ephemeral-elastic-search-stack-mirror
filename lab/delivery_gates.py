@@ -259,12 +259,18 @@ def evaluate_variants(baseline, candidate, profile='probe', target=None):
               str(baseline['build_run']) + '/' + baseline_pin['variant'] + '...', flush=True)
         reference = None
         try:
-            reference = evaluate(baseline_probe, candidate_probe, intent, profile)
+            def check_query_sets(partial):
+                updated = partial
+                try:
+                    updated = evaluate_query_sets(partial, baseline_probe, candidate_probe, selection, frozen, intent)
+                    validate_query_sets(updated, baseline_probe, candidate_probe, selection, frozen, intent)
+                except ValueError as error:
+                    raise EvidenceFailure(str(error), updated) from error
+                return updated
+            reference = evaluate(baseline_probe, candidate_probe, intent, profile,
+                                 **({'before_performance': check_query_sets} if frozen else {}))
             validate_evidence(reference, baseline_probe['fingerprint'], candidate_probe['fingerprint'],
                               intent, selected_inputs, target=target)
-            if frozen:
-                reference = evaluate_query_sets(reference, baseline_probe, candidate_probe, selection, frozen, intent)
-                validate_query_sets(reference, baseline_probe, candidate_probe, selection, frozen, intent)
             measured = read(reference).get('variant_runtime', {})
             if (measured.get('baseline', {}).get('variant') != baseline_pin['variant'] or
                     measured.get('baseline', {}).get('configuration_sha256') != baseline_pin['configuration_sha256'] or
@@ -301,7 +307,9 @@ def evaluate_variants(baseline, candidate, profile='probe', target=None):
                              if reference else None), 'error': str(error)[:240]})
     for check in checks:
         if check.get('evidence'):
-            suite_ref = read(check['evidence']).get('query_sets_report')
+            retained_check = read(check['evidence'])
+            check['performance_status'] = retained_check.get('performance_status')
+            suite_ref = retained_check.get('query_sets_report')
             if suite_ref:
                 check['query_sets_report'] = suite_ref
                 check['query_set_outcomes'] = read(suite_ref)['gate_outcomes']
@@ -336,7 +344,8 @@ def attach_offline(reference, report_reference, policy_reference, expected):
     return retained
 
 
-def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):
+def evaluate(baseline, candidate, intent='preserve-results', profile='probe', *, before_performance=None):
+    """Validate functional and declared-set evidence before starting performance."""
     if baseline['fingerprint'] == candidate['fingerprint']:
         raise ValueError('Select two distinct frozen release definitions.')
     if baseline['fields']['dataset_release'] != candidate['fields']['dataset_release']:
@@ -358,25 +367,45 @@ def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):
                       'configuration_sha256': answer.get('configuration_sha256')}
                for side, answer in runtime.items()}
     reports = {}
-    for mode in ('result-regression', 'relevance', 'performance'):
+    extra_fields = {}
+
+    def retained():
+        if definition(first['name'])['fingerprint'] != baseline['fingerprint'] or \
+                definition(second['name'])['fingerprint'] != candidate['fingerprint']:
+            raise ValueError('A preview changed during evaluation.')
+        value = {'format': 1, 'baseline': baseline['fingerprint'], 'candidate': candidate['fingerprint'],
+                 'intent': intent, 'completed_at': datetime.now(timezone.utc).isoformat(),
+                 'dataset_release': baseline['fields']['dataset_release'], 'profile': profile,
+                 'selected_inputs': selected, 'variant_runtime': runtime,
+                 'reports': dict(reports), 'previews': [first['name'], second['name']],
+                 'performance_status': 'completed' if 'performance' in reports else 'not_run', **extra_fields}
+        return retain(value, 'delivery-evidence.json')
+
+    for mode in ('result-regression', 'relevance'):
         print('Evaluating ' + mode + ' through both public APIs...', flush=True)
-        summary = (evaluate_performance_pair(first, second, profile, owner='delivery')
-                   if mode == 'performance' else
-                   evaluate_pair(first, second, mode, scope='full',
-                       query_manifest_sha=selected['query_manifest_sha256'],
-                       judgement_manifest_sha=selected['judgement_manifest_sha256']
-                       if mode == 'relevance' else None))
+        summary = evaluate_pair(first, second, mode, scope='full',
+            query_manifest_sha=selected['query_manifest_sha256'],
+            judgement_manifest_sha=selected['judgement_manifest_sha256'] if mode == 'relevance' else None)
         reports[mode] = {'sha256': summary['report_sha256'], 'blob': summary['report_blob']}
-        # Retain failed evidence for inspection, but do not turn it into a passing gate.
-    if definition(first['name'])['fingerprint'] != baseline['fingerprint'] or \
-            definition(second['name'])['fingerprint'] != candidate['fingerprint']:
-        raise ValueError('A preview changed during evaluation.')
-    value = {'format': 1, 'baseline': baseline['fingerprint'], 'candidate': candidate['fingerprint'],
-             'intent': intent, 'completed_at': datetime.now(timezone.utc).isoformat(),
-             'dataset_release': baseline['fields']['dataset_release'], 'profile': profile,
-             'selected_inputs': selected, 'variant_runtime': runtime,
-             'reports': reports, 'previews': [first['name'], second['name']]}
-    reference = retain(value, 'delivery-evidence.json')
+        try:
+            functional = read(reports[mode])
+            check_report(functional, mode, baseline['fingerprint'], candidate['fingerprint'], intent)
+            if (functional.get('query_manifest_sha256') != selected['query_manifest_sha256'] or
+                    mode == 'relevance' and functional.get('judgement_manifest_sha256') != selected['judgement_manifest_sha256']):
+                raise ValueError('Functional report uses different selected inputs.')
+        except ValueError as error:
+            evaluation_progress('Performance check skipped: required functional check failed')
+            raise EvidenceFailure(str(error), retained()) from error
+    if before_performance:
+        evaluation_progress('Checking declared query sets before performance')
+        reference = before_performance(retained())
+        extra = read(reference)
+        extra_fields = {key: extra[key] for key in ('query_sets_report',) if key in extra}
+    evaluation_progress('Running Gatling performance checks')
+    print('Evaluating performance through both public APIs...', flush=True)
+    summary = evaluate_performance_pair(first, second, profile, owner='delivery')
+    reports['performance'] = {'sha256': summary['report_sha256'], 'blob': summary['report_blob']}
+    reference = retained()
     print('Retained evaluation reference: ' + json.dumps(reference), flush=True)
     try:
         validate_evidence(reference, baseline['fingerprint'], candidate['fingerprint'], intent, selected)

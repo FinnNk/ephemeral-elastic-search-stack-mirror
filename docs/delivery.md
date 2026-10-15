@@ -379,6 +379,10 @@ view. Missing logs do not prevent status or report access.
 During functional evaluation, **Evaluation progress** shows the query set and
 phase: preview preparation, capture, scoring or significance calculation.
 Capture updates show completed queries, query failures, retries and pacing wait.
+For each selected variant, required standard functional checks are validated
+first, followed by the declared standard/additional query sets. Gatling starts
+only after those required checks pass. Report-only sets remain informational.
+An earlier required failure retains its reports and marks performance as not run.
 A completed query has finished capture across its selected APIs or returned an
 error. Workers publish bounded counters; the coordinator and page sample them
 every five seconds, so short phases may finish between updates.

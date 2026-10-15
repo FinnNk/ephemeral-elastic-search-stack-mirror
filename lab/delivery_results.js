@@ -140,7 +140,7 @@ async function promotionReview(value,row){
   if(performance){const profile={probe:'Short regression probe',smoke:'Smoke test','production-load':'Production load test'}[performance.profile]||performance.profile;node('p','Performance profile: '+profile+'; '+(performance.verdict==='within-budget'?'Within budget':label(performance.verdict))+'. '+(performance.profile==='probe'?'This short regression probe is not a production load test.':''),s);
    table(s,['Phase','Baseline p95 (ms)','Candidate p95 (ms)','p95 budget (ms)','Baseline failures','Candidate failures'],Object.entries(performance.measured_phases||{}).map(([phase,x])=>[label(phase),fmt(x.baseline?.p95_ms),fmt(x.candidate?.p95_ms),fmt(x.budget?.p95_ms),fmt(x.baseline?.failed_percent)+'%',fmt(x.candidate?.failed_percent)+'%']));
    nativeGatlingReports(performance,check.variant,s);
-  }else node('p','Performance summary unavailable. Open the detailed report before approving.',s);
+  }else node('p',check.performance_status==='not_run'?'Performance check not run: required functional or query-set checks did not pass.':'Performance summary unavailable. Open the detailed report before approving.',s);
   if(check.query_sets_report){
    if(reports['query-sets'])suiteViews(reports['query-sets'],check.variant+' — ');
    else node('p','Additional query-set report unavailable. Open its detailed report before approving.',s);

@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [relevance-before-performance batch](relevance-before-performance.md) moves
+required functional validation and declared query sets ahead of Gatling for
+each variant. Review and activate when idle; an earlier required failure retains
+its evidence and marks performance as not run. Existing runs remain undisturbed.
+
 The [next release action batch](next-release-action.md) makes the primary control
 open running work or a proposal, and start a fresh check directly after failure.
 Review and activate when idle. Build 184 has a running Integration attempt;

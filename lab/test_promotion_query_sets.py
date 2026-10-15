@@ -172,6 +172,7 @@ class PromotionQuerySets(unittest.TestCase):
             stack.enter_context(patch('delivery_variant_selection.with_variant',side_effect=lambda dep,*args:dep))
             stack.enter_context(patch('delivery_gates.deployment_inputs',return_value=self.inputs))
             standard=stack.enter_context(patch('delivery_gates.evaluate',return_value={'blob':'parent','sha256':'parent'}))
+            standard.side_effect=lambda *args,**kwargs:kwargs['before_performance']({'blob':'parent','sha256':'parent'})
             stack.enter_context(patch('delivery_gates.validate_evidence'))
             stack.enter_context(patch('delivery_gates.validate_variant_evidence'))
             stack.enter_context(patch('promotion_query_sets.frozen_sets',return_value=self.frozen))
