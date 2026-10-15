@@ -2,7 +2,7 @@
 'use strict';
 const $=id=>document.getElementById(id), path=location.pathname;
 const operationPage=/^\/api\/delivery\/operations\/[0-9a-f]{32}$/.test(path);
-let timer=null, loading=false, logsPaused=false, logsLoading=false, logCursor=0, latestGatling=null;
+let timer=null, loading=false, logsPaused=false, logsLoading=false, logCursor=0, latestGatling=null, latestEvaluation=null, operationActive=false, operationUpdatedMs=0;
 $("pause-logs").onclick=()=>{logsPaused=!logsPaused;$("pause-logs").textContent=logsPaused?"Resume":"Pause";if(!logsPaused&&operationPage)updateLogs({});};
 const stateNames={accepted:'Waiting for the source build',queued:'Queued',running:'In progress',complete:'Complete',failed:'Failed',interrupted:'Interrupted',pass:'Passed',approved_exception:'Accepted with a recorded exception',decision_required:'Decision required',blocked:'Blocked',invalid:'Invalid evidence',verified:'Deployment verified'};
 const operationTitles={'prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
@@ -52,9 +52,11 @@ function summary(report,title,required,baseline=report.baseline_variant){
 function gate(value){if(!value)return;const s=section('Merge gate',stateNames[value.state]||label(value.state));if(value.variants)table(s,['Variant','Intent','Outcome','Relevance delta','Judged coverage'],value.variants.map(v=>[v.variant,label(v.intent),stateNames[v.state]||label(v.state),fmt(v.delta),pct(v.judged_fraction)]));node('p','This is the recorded merge decision. A passing gate does not deploy the change.',s)}
 function operation(row){
  const result=row.result||{},request=row.request||{};
+ operationActive=['accepted','queued','running'].includes(row.state);operationUpdatedMs=Date.parse(row.updated_at)||0;
  $('title').textContent=operationTitles[request.kind]||'Lab delivery';
  $('state').textContent=stateNames[row.state]||label(row.state);$('stage').textContent=row.progress||'';
  if(latestGatling)showGatling(latestGatling);
+ if(latestEvaluation)showEvaluation(latestEvaluation);
  updateLogs(row);
  $('queue-panel').hidden=!row.queue;
  if(row.queue){$('queue-detail').replaceChildren();node('span','Position '+row.queue.position+'. ', $('queue-detail'));if(row.queue.blocker?.id){const a=node('a','Waiting for: '+row.queue.blocker.progress,$('queue-detail'));a.href='/api/delivery/operations/'+row.queue.blocker.id;}else node('span','Waiting for the coordinator to take this request.', $('queue-detail'));}
@@ -112,6 +114,7 @@ async function promotionReview(value,row){
   node('p','Candidate '+check.variant+' — '+(intentNames[check.intent]||label(check.intent))+' — '+settingsText(candidateSettings.variants?.[check.variant]),config);
   const s=section(check.variant+' — review summary',(intentNames[check.intent]||label(check.intent))+'. Gate: '+(stateNames[check.state]||label(check.state))+'.');
   s.classList.add('promotion-review');
+  if(check.error)node('p',check.error,s);
   const relevance=reports.relevance,results=reports['result-regression'],performance=reports.performance;
   node('h3','Standard query sets — required',s);
   if(relevance){const b=relevance.metrics?.baseline||{},c=relevance.metrics?.candidate||{};
@@ -222,7 +225,7 @@ async function updateLogs(row){
  try{const response=await fetch(path+'/logs?after='+logCursor,{headers:{Accept:'application/json'}});
   if(!response.ok)throw new Error('Logs unavailable');
   const value=await response.json();
-  for(const line of value.logs){const pre=$('log-lines');let message=line.message;try{const event=JSON.parse(message);if(event.event==='gatling.live'){latestGatling=event;showGatling(event);const m=event.metrics;message=event.side+' — '+(m?.phase||'Starting driver')+' · '+fmt(event.elapsed_seconds)+' / '+fmt(event.planned_seconds)+' s'+(m?' · '+fmt(m.completed)+' completed, '+fmt(m.failed)+' failed':'');}else message=event.operation+' — '+event.state+' ('+fmt(event.duration_ms)+' ms)';}catch(e){}pre.textContent+=new Date(line.at).toLocaleTimeString()+' '+message+'\n';logCursor=line.sequence;}
+  for(const line of value.logs){const pre=$('log-lines');let message=line.message;try{const event=JSON.parse(message);if(event.event==='gatling.live'){latestGatling=event;showGatling(event);const m=event.metrics;message=event.side+' — '+(event.phase_label||m?.phase||'Starting driver')+' · '+fmt(event.elapsed_seconds)+' / '+fmt(event.planned_seconds)+' s'+(m?' · '+fmt(m.completed)+' completed, '+fmt(m.failed)+' failed':'');}else if(event.event==='evaluation.live'){showEvaluation(event);const m=event.metrics;message=(event.suite?event.suite+' — ':'')+event.phase+(m?' · '+fmt(m.completed)+' / '+fmt(m.total)+' '+(event.unit||'queries')+(m.failed!=null?' · '+fmt(m.failed)+' failed':''):'');}else message=event.operation+' — '+event.state+' ('+fmt(event.duration_ms)+' ms)';}catch(e){}pre.textContent+=new Date(line.at).toLocaleTimeString()+' '+message+'\n';logCursor=line.sequence;}
   const lines=$('log-lines').textContent.split('\n');if(lines.length>501)$('log-lines').textContent=lines.slice(-501).join('\n');
   $('log-lines').scrollTop=$('log-lines').scrollHeight;
   $('log-status').textContent=value.logs.length?'':'No new log entries.';
@@ -235,9 +238,29 @@ function showGatling(event){
  panel.replaceChildren();node('h2','Live Gatling check',panel);
  node('p','Provisional driver counters; the retained Gatling report decides the gate. Job elapsed time includes driver startup.',panel);
  const m=event.metrics;
- table(panel,['Side','Phase','Job elapsed / planned traffic','Completed in phase','Failures in phase','Completion rate','Mean latency'],[[event.side,m?.phase||'Starting driver',fmt(event.elapsed_seconds)+' / '+fmt(event.planned_seconds)+' s',fmt(m?.completed),fmt(m?.failed),fmt(m?.completed_rps)+' requests/s',fmt(m?.mean_latency_ms)+' ms']]);
+ table(panel,['Side','Phase','Job elapsed / planned traffic','Completed in phase','Failures in phase','Completion rate','Mean latency'],[[event.side,event.phase_label||m?.phase||'Starting driver',fmt(event.elapsed_seconds)+' / '+fmt(event.planned_seconds)+' s',fmt(m?.completed),fmt(m?.failed),fmt(m?.completed_rps)+' requests/s',fmt(m?.mean_latency_ms)+' ms']]);
  const a=node('a','Open observability dashboard',panel);const dashboard=new URL('https://signoz.localhost:34443/dashboard/01a0e51c-1043-79cb-94a8-9511cb0c665b');
  dashboard.searchParams.set('variables',JSON.stringify({environment:[event.environment]}));
  dashboard.searchParams.set('startTime',String(event.started_ms));dashboard.searchParams.set('endTime',String(event.observed_ms));a.href=dashboard.href;
  node('p','Environment: '+event.environment+'. The dashboard opens this environment and the sampled run interval. Operation panels remain lab-wide. Missing telemetry is not a healthy result.',panel);
+}
+
+
+function showEvaluation(event){
+ event.observed_ms=event.observed_ms||Date.now();
+ latestEvaluation=event;
+ if(operationActive&&event.observed_ms>=operationUpdatedMs&&event.observed_ms>=(latestGatling?.observed_ms||0))$('stage').textContent=(event.suite?event.suite+' — ':'')+event.phase;
+ let panel=$('evaluation-live');if(!panel){panel=node('section',null,$('content'));panel.id='evaluation-live';panel.setAttribute('aria-live','polite');}
+ panel.replaceChildren();node('h2','Evaluation progress',panel);
+ node('p',(event.suite?event.suite+' — ':'')+event.phase,panel);
+ const m=event.metrics;
+ if(event.metrics_stale)node('p','Last known counters; waiting for a new worker sample.',panel);
+ if(m){
+  const progress=node('progress',null,panel);progress.max=m.total||1;progress.value=m.completed||0;
+  progress.setAttribute('aria-label','Completed '+(event.unit||'queries'));
+  table(panel,['Measure','Value'],[['Completed '+(event.unit||'queries'),fmt(m.completed)+' / '+fmt(m.total)],
+   ...Object.entries(m).filter(([key])=>!['completed','total'].includes(key)).map(([key,value])=>[label(key),fmt(value)])]);
+ }else node('p','Waiting for the next worker update. No completion count is available for this phase.',panel);
+ node('p','Provisional progress; retained reports determine the gate.'+(event.unit==='queries'?' Each completed query has finished capture across its selected APIs or returned an error.':''),panel);
+ node('p','Updated '+new Date(event.observed_ms).toLocaleTimeString()+(event.elapsed_seconds!=null?' · '+fmt(event.elapsed_seconds)+' s elapsed for this task':''),panel);
 }

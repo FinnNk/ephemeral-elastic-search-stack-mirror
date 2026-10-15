@@ -1,10 +1,13 @@
 """Run a frozen functional suite in one scoped, finite Kubernetes Job."""
 import hashlib
+import math
 import json
 import re
 import time
 import uuid
 from pathlib import Path
+from contextlib import contextmanager
+from contextvars import ContextVar
 
 from common import ROOT, apply, guard, k
 from operation_telemetry import correlation
@@ -17,7 +20,59 @@ SOURCE = Path(__file__).with_name('evaluation_worker.py')
 VARIANT_SOURCE = ROOT / 'lab/variant_capture_worker.py'
 FILTER_SOURCE = ROOT / 'lab/search-app/search_filters.py'
 PACING_SOURCE = ROOT / 'lab/adaptive_pacing.py'
+PROGRESS_SOURCE = ROOT / 'lab/capture_progress.py'
+LABEL = ContextVar('evaluation_suite_label', default='Query set')
 
+
+
+@contextmanager
+def capture_scope(label):
+    token = LABEL.set(label)
+    try:
+        yield
+    finally:
+        LABEL.reset(token)
+
+
+def wait_for_capture(name, total):
+    """Publish bounded worker snapshots while retaining the existing finite deadline."""
+    from operation_telemetry import event_sink, evaluation_progress
+    if event_sink.get() is None:
+        return k('wait','--for=condition=complete','job/'+name,'-n',NAMESPACE,'--timeout=300s')
+    started = time.monotonic()
+    latest = None
+    while time.monotonic()-started < 300:
+        result = k('get','job/'+name,'-n',NAMESPACE,'-o','json','--request-timeout=10s',check=False)
+        status = json.loads(result.stdout).get('status',{}) if result.returncode == 0 else {}
+        logs = k('logs','job/'+name,'-n',NAMESPACE,'--tail=4','--limit-bytes=16384','--request-timeout=10s',check=False)
+        sample = None
+        for line in logs.stdout.splitlines():
+            if line.startswith('LAB_EVALUATION_PROGRESS '):
+                try:
+                    value=json.loads(line.split(' ',1)[1])
+                    if not isinstance(value,dict): continue
+                    if (value.get('total') == total and type(value.get('completed')) is int and
+                        0 <= value['completed'] <= total and type(value.get('failed')) is int and
+                        0 <= value['failed'] <= value['completed']):
+                        sample={key:value[key] for key in ('total','completed','failed','retries','pacing_wait_seconds')
+                                if type(value.get(key)) in (int,float) and math.isfinite(value[key]) and value[key]>=0}
+                except (ValueError,TypeError):
+                    pass
+        if status.get('succeeded'): return
+        latest = sample or latest
+        evaluation_progress('Capturing query results' if latest else 'Waiting for capture worker',
+            suite=LABEL.get(),job=name,elapsed_seconds=round(time.monotonic()-started),
+            unit='queries',metrics=latest,metrics_stale=sample is None and latest is not None)
+        if status.get('failed'): raise RuntimeError('Evaluation capture Job failed; inspect its retained operation evidence.')
+        time.sleep(5)
+    raise TimeoutError('Evaluation capture Job did not finish within 300 seconds.')
+
+
+def completed_capture(rows, started, name):
+    from operation_telemetry import evaluation_progress
+    evaluation_progress('Capture complete',suite=LABEL.get(),job=name,unit='queries',
+        elapsed_seconds=round(time.monotonic()-started),
+        metrics={'total':len(rows),'completed':len(rows),'failed':sum('error' in row for row in rows)})
 
 def run(suite_bytes, baseline, candidate):
     guard()
@@ -32,7 +87,7 @@ def run(suite_bytes, baseline, candidate):
     apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NAMESPACE}})
     source = SOURCE.read_text(encoding='utf-8')
     payload = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': config, 'namespace': NAMESPACE},
-               'data': {'worker.py': source, 'search_target.py': Path(__file__).with_name('search_target.py').read_text(encoding='utf-8'), 'adaptive_pacing.py': PACING_SOURCE.read_text(encoding='utf-8'),
+               'data': {'capture_progress.py': PROGRESS_SOURCE.read_text(encoding='utf-8'), 'worker.py': source, 'search_target.py': Path(__file__).with_name('search_target.py').read_text(encoding='utf-8'), 'adaptive_pacing.py': PACING_SOURCE.read_text(encoding='utf-8'),
                         'search_filters.py': FILTER_SOURCE.read_text(encoding='utf-8'),
                         'queries.jsonl': suite_bytes.decode('utf-8')}}
     job = {'apiVersion': 'batch/v1', 'kind': 'Job', 'metadata': {'name': job_name, 'namespace': NAMESPACE},
@@ -54,15 +109,16 @@ def run(suite_bytes, baseline, candidate):
     try:
         k('create', '-f', '-', body=payload)
         apply(job)
-        k('wait', '--for=condition=complete', 'job/' + job_name, '-n', NAMESPACE, '--timeout=300s')
-        # The first line is a bounded completion event for the log agent;
-        # the second remains the order-stable result protocol.
+        wait_for_capture(job_name, len(suite_bytes.splitlines()))
+        # Progress precedes the final two lines: completion counters and the
+        # order-stable result protocol. No sampled counter is scoring evidence.
         lines = k('logs', 'job/' + job_name, '-n', NAMESPACE).stdout.splitlines()
         rows = json.loads(lines[-1])
         expected = [json.loads(line)['query_id'] for line in suite_bytes.splitlines()]
         if not isinstance(rows, list) or [row['query_id'] for row in rows] != expected:
             raise ValueError('Evaluator output does not match the frozen query order.')
-        return rows, {'execution': 'in-cluster evaluator Job', 'seconds': round(time.monotonic() - started, 3),
+        completed_capture(rows, started, job_name)
+        return rows, {'progress_sha256': hashlib.sha256(PROGRESS_SOURCE.read_text(encoding='utf-8').encode()).hexdigest(), 'execution': 'in-cluster evaluator Job', 'seconds': round(time.monotonic() - started, 3),
                       'worker_sha256': hashlib.sha256(source.encode()).hexdigest(),
                       'target_routing_sha256': hashlib.sha256(Path(__file__).with_name('search_target.py').read_bytes()).hexdigest(),
                       'adaptive_pacing_sha256': hashlib.sha256(PACING_SOURCE.read_text(encoding='utf-8').encode()).hexdigest(),
@@ -92,7 +148,7 @@ def run_variants(suite_bytes, variants):
     apply({'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NAMESPACE}})
     k('create', '-f', '-', body={'apiVersion': 'v1', 'kind': 'ConfigMap',
         'metadata': {'name': config, 'namespace': NAMESPACE},
-        'data': {'worker.py': source, 'adaptive_pacing.py': PACING_SOURCE.read_text(encoding='utf-8'),
+        'data': {'capture_progress.py': PROGRESS_SOURCE.read_text(encoding='utf-8'), 'worker.py': source, 'adaptive_pacing.py': PACING_SOURCE.read_text(encoding='utf-8'),
                  'search_filters.py': FILTER_SOURCE.read_text(encoding='utf-8'),
                  'queries.jsonl': suite_bytes.decode('utf-8'),
                  'variants.json': json.dumps(variants, sort_keys=True)}})
@@ -115,14 +171,14 @@ def run_variants(suite_bytes, variants):
     started = time.monotonic()
     try:
         apply(job)
-        k('wait', '--for=condition=complete', 'job/' + job_name, '-n', NAMESPACE,
-          '--timeout=300s')
+        wait_for_capture(job_name, len(suite_bytes.splitlines()))
         lines = k('logs', 'job/' + job_name, '-n', NAMESPACE).stdout.splitlines()
         rows = json.loads(lines[-1])
         expected = [json.loads(line)['query_id'] for line in suite_bytes.splitlines()]
         if not isinstance(rows, list) or [row['query_id'] for row in rows] != expected:
             raise ValueError('Capture output does not match the frozen query order.')
-        return rows, {'execution': 'in-cluster variant capture Job',
+        completed_capture(rows, started, job_name)
+        return rows, {'progress_sha256': hashlib.sha256(PROGRESS_SOURCE.read_text(encoding='utf-8').encode()).hexdigest(), 'execution': 'in-cluster variant capture Job',
                       'seconds': round(time.monotonic() - started, 3),
                       'worker_sha256': hashlib.sha256(source.encode()).hexdigest(),
                       'adaptive_pacing_sha256': hashlib.sha256(PACING_SOURCE.read_text(encoding='utf-8').encode()).hexdigest(),

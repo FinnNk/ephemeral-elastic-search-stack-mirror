@@ -10,18 +10,21 @@ PRs #188–#190 are accepted and active. Promotion review shows versions with
 short source commits and one aligned quality/coverage table. Proposal #25's
 presentation was refreshed without changing its measured evidence.
 
-The [multiple standard sets batch](multiple-standard-query-sets.md) follows
-PR #191. It supports one or more protected standard sets and zero or more
-additional source sets in both source comparisons and promotion checks. Review
-and merge #191 first, then this follow-up; activate the resulting runtime once.
-The existing single standard set per catalogue remains configured.
+PRs #191/#192 are accepted and active. Standard and additional query-set groups
+are available in source comparisons and promotion checks. Existing catalogue
+configurations each retain one standard set. The obsolete proposal #25 must not
+be used with its earlier omitted-set evidence.
 
-The [promotion query-set batch](promotion-query-sets.md) carries exact-source
-additional sets through every selected variant's promotion checks. The standard
-suite stays mandatory. Build 184 declares report-only `sneakers`; its older
-promotion evidence omits that set. After review, merge and activation, rerun
-**Check and propose** rather than deploy proposal #25 using incomplete coverage
-of the declared query sets. No proposal is merged or deployed by this batch.
+The new Integration attempt for build 184 failed its baseline performance
+probe: p95 253 ms exceeded the 250 ms limit; candidate p95 was 138 ms, with no
+failed requests on either side. Its evidence is retained under operation
+`5b47e81d97b1d4f90eb1da8df9fc7440`; additional sets were not reached.
+
+The [live evaluation progress batch](live-evaluation-progress.md) adds sampled
+capture counters, scoring/resolution phases and concrete failure reasons. Review
+and merge it, then activate when idle before retrying the walkthrough. Do not
+relax budgets or replace the retained failed evidence.
+
 
 PR #186 is accepted and active. Retained checks were revalidated and Integration
 proposal delivery-state #25 is ready for review, without another evaluation.

@@ -43,11 +43,14 @@ def request(variant, target, row, pacer=None):
             'ids': ids[:10], 'total': value['total']}
 
 
-def run(rows, variants, worker_count=8, diagnostics=None):
+def run(rows, variants, worker_count=8, diagnostics=None, progress=False):
     if not 1 <= worker_count <= 16:
         raise ValueError('Capture concurrency must be between 1 and 16.')
 
     pacers = {name: Pacer() for name in variants}
+
+    from capture_progress import Progress
+    tracker = Progress(len(rows), pacers) if progress else None
 
     def one(row):
         try:
@@ -58,8 +61,12 @@ def run(rows, variants, worker_count=8, diagnostics=None):
             return {'query_id': row['query_id'], 'error': {
                 'kind': type(error).__name__, 'detail': str(error)[:120]}}
 
+    def tracked(row):
+        value = one(row)
+        return tracker.completed(value) if tracker else value
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker_count) as workers:
-        result = list(workers.map(one, rows))
+        result = list(workers.map(tracked, rows))
     if diagnostics is not None:
         diagnostics.update({name: pacer.summary() for name, pacer in pacers.items()})
     return result
@@ -70,7 +77,7 @@ if __name__ == '__main__':
     variants = json.loads(Path('/input/variants.json').read_text(encoding='utf-8'))
     started = time.monotonic()
     pacing = {}
-    result = run(rows, variants, diagnostics=pacing)
+    result = run(rows, variants, diagnostics=pacing, progress=True)
     print(json.dumps({'event': 'lab.job.completed', 'service': 'lab-variant-capture-worker',
                       'state': 'complete' if all('error' not in row for row in result) else 'incomplete',
                       'query_count': len(rows), 'variant_count': len(variants),

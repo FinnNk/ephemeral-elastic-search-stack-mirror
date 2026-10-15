@@ -350,12 +350,35 @@ updates and scrolling; **Resume** continues from the same cursor. Only bounded,
 operation-scoped messages are shown; raw subprocess output is kept out of this
 view. Missing logs do not prevent status or report access.
 
+During functional evaluation, **Evaluation progress** shows the query set and
+phase: preview preparation, capture, scoring or significance calculation.
+Capture updates show completed queries, query failures, retries and pacing wait.
+A completed query has finished capture across its selected APIs or returned an
+error. Workers publish bounded counters; the coordinator and page sample them
+every five seconds, so short phases may finish between updates.
+
+Judgement resolution shows its phase and completed batch counts where available.
+A synchronous service call may report **Waiting for judgement batch** until it
+returns; the page does not invent per-pair progress or a completion estimate.
+The panel retains its timestamp across browser refreshes. If the coordinator
+cannot read a fresh worker sample, it labels the displayed counters as last known.
+Counters are provisional; final reports and gates still require complete,
+validated evidence. Query text, product IDs and raw worker output are not
+forwarded into the progress panel.
+
+If a variant check fails, the operation error includes its concrete retained
+reason, such as which side missed a performance budget. The report repeats that
+reason beside the variant. Review it before deciding whether to retry; a failed
+check never becomes a pass because a live counter reached its total.
+
 During a Gatling check, live driver counters show the side, phase, completed
 requests, failures and mean latency. These are provisional. Job elapsed time
 includes startup; planned traffic time does not. The retained report supplies
 the gate's workload validity, percentiles and outcome. A failed check links its
 evidence and identifies a missed side, phase and threshold when available.
-An incomplete driver run cannot satisfy the gate.
+Later missing samples retain the last known counters and show **Finalising
+driver**, rather than returning to **Starting driver**. An incomplete driver run
+cannot satisfy the gate.
 
 Humans approve delivery-state PRs but cannot directly merge them. Use **Deploy
 approved promotion** or the production release UI. Only the coordinator may

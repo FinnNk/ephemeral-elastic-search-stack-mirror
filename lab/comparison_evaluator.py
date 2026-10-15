@@ -24,6 +24,7 @@ def evaluate_comparison(standard_inputs, extra_observations, extra_sets, catalog
     expected = {item['name'] for item in extra_sets}
     if set(extra_observations) != expected:
         raise ValueError('Captured suites differ from the selected frozen suites.')
+    progress('Scoring standard query results')
     with tempfile.TemporaryDirectory() as directory:
         folder = Path(directory)
         for name, payload in standard_inputs.items():
@@ -52,6 +53,7 @@ def evaluate_comparison(standard_inputs, extra_observations, extra_sets, catalog
         else:
             progress('Resolving judgement gaps and freezing labels: ' + name)
             item = resolve_extra(item, observed, specification, catalogue, retain)
+        progress('Scoring query results: ' + name)
         reports[name] = score_extra(item, observed, specification, canonical(catalogue))
         frozen.append(item)
     return assemble(standard, reports, frozen, standard_queries, selection), frozen

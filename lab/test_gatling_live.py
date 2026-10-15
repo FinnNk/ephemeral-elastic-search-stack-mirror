@@ -24,6 +24,17 @@ class LiveDriverTests(unittest.TestCase):
         self.assertLessEqual(events[0]['started_ms'], events[0]['observed_ms'])
         self.assertNotIn('Unrelated',json.dumps(events))
 
+    def test_missing_later_samples_do_not_reset_driver_to_starting(self):
+        events=[];token=event_sink.set(events.append);self.addCleanup(event_sink.reset,token)
+        statuses=iter([{}, {}, {'succeeded':1}]);logs=iter([
+            'LAB_GATLING_METRICS {"phase":"normal","completed":20,"failed":0}', '', ''])
+        def k(*args,**kwargs):
+            return SimpleNamespace(stdout=json.dumps({'status':next(statuses)}) if args[0]=='get' else next(logs))
+        with patch('run_gatling_job.k',side_effect=k),patch('run_gatling_job.time.sleep'):
+            wait_for_gatling('job',{'duration_seconds':15},'baseline','baseline-preview')
+        self.assertEqual([e['phase_label'] for e in events],['normal','Finalising driver','Driver finished'])
+        self.assertTrue(all(e['metrics']['completed']==20 for e in events))
+
     def test_failed_job_cannot_become_complete(self):
         token=event_sink.set(lambda event:None)
         self.addCleanup(event_sink.reset,token)

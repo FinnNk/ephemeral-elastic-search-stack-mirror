@@ -188,3 +188,13 @@ def operation(name, deadline_seconds=None):
                         pass
         return wrapped
     return decorate
+
+
+def evaluation_progress(phase, **fields):
+    """Send provisional counters to operation logs without affecting the evaluation."""
+    sink = event_sink.get()
+    if sink is not None:
+        try:
+            sink({'event':'evaluation.live','phase':phase,'provisional':True,'observed_ms':int(time.time()*1000),**fields})
+        except Exception:
+            pass

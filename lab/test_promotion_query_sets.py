@@ -184,6 +184,7 @@ class PromotionQuerySets(unittest.TestCase):
             with self.assertRaises(EvidenceFailure) as failed:
                 evaluate_variants(self.baseline,self.candidate)
             root=self.read(failed.exception.reference)
+            self.assertIn('seasonal',str(failed.exception))
             self.assertEqual(standard.call_count,2)
             self.assertEqual(extras.call_count,2)
             self.assertEqual(root['state'],'failed')

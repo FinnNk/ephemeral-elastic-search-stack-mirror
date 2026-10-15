@@ -15,7 +15,7 @@ from common import ROOT
 sys.path.insert(0, str(ROOT))
 from judgements.core import pool, resolve
 from judgements.drift import input_shift
-from operation_telemetry import judgement_pool
+from operation_telemetry import judgement_pool, evaluation_progress
 from variant_gate import canonical, sha
 
 
@@ -59,6 +59,7 @@ def products_for(manifest, ids):
 def resolve_extra(item, observations, specification, catalogue, retain):
     """Freeze one union of labels for every variant; ordinary calls reuse inference."""
     started = time.monotonic()
+    evaluation_progress('Connecting to judgement service',suite=item['name'])
     url = os.environ.get('LAB_JUDGEMENT_URL',
         'http://judgement-service-million.lab-models.svc.cluster.local:18086').rstrip('/')
     health = call(url, '/health')
@@ -76,10 +77,18 @@ def resolve_extra(item, observations, specification, catalogue, retain):
     known = {(row['query_id'], row['product_id']) for row in item['judgements_rows']}
     products = products_for(catalogue, {pair['product_id'] for pair in pairs
                                      if (pair['query_id'], pair['product_id']) not in known})
+    completed = len({(pair['query_id'],pair['product_id']) for pair in pairs} & known)
+    def progress(phase):
+        evaluation_progress(phase,suite=item['name'],unit='pairs',elapsed_seconds=round(time.monotonic()-started),
+            metrics={'total':len(pairs),'completed':completed,'inferred':execution['inferred_pairs'],
+                     'cache_hits':execution['cache_hits'],'stored':execution['stored_pairs']})
     execution = {'response_errors': 0, 'inferred_pairs': 0, 'cache_hits': 0, 'stored_pairs': 0, 'requests': 0}
     selection = 'gate' if item['required'] else 'exploratory'
 
+    progress('Resolving judgement gaps')
+
     def infer(items):
+        nonlocal completed
         unique = {}
         keys = []
         for pair in items:
@@ -88,6 +97,7 @@ def resolve_extra(item, observations, specification, catalogue, retain):
             keys.append(key)
             unique[key] = {**pair, 'query_id': internal}
         execution['requests'] += 1
+        progress('Waiting for judgement batch')
         try:
             answer = call(url, '/v1/judgements:resolve', {
                 'context': context, 'pairs': list(unique.values()), 'selection': selection,
@@ -100,6 +110,8 @@ def resolve_extra(item, observations, specification, catalogue, retain):
         for name in ('inferred_pairs', 'cache_hits'):
             execution[name] += answer['execution'][name]
         execution['stored_pairs'] += len(unique) - answer['execution']['inferred_pairs'] - answer['execution']['cache_hits']
+        completed += len(unique)
+        progress('Judgement batch completed')
         mapped = dict(zip(unique, answer['results']))
         return [{**mapped[key], 'query_id': item['query_id'],
                  'outcome': 'abstain' if mapped[key]['outcome'] == 'unjudged' else
@@ -115,6 +127,7 @@ def resolve_extra(item, observations, specification, catalogue, retain):
     else:
         labels, receipt = resolve(observations, json.loads(specification), item['judgements_rows'],
                                   products, infer, selection=selection)
+    progress('Freezing judgement snapshot')
     payload = b''.join(canonical(row) for row in labels)
     receipt.update(model=model, inference_identity=health['inference'],
                    query_registration=registration, execution={**execution, 'seconds': round(time.monotonic()-started, 3)})

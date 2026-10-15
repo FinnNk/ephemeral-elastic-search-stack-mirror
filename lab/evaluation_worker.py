@@ -41,10 +41,13 @@ def request(name, row, pacer=None):
     return {'ids': ids, 'total': value['total']}
 
 
-def run(rows, baseline, candidate, worker_count=8, diagnostics=None):
+def run(rows, baseline, candidate, worker_count=8, diagnostics=None, progress=False):
     if not 1 <= worker_count <= 16:
         raise ValueError('Evaluator concurrency must be between 1 and 16.')
     pacers = {name: Pacer() for name in (baseline, candidate)}
+
+    from capture_progress import Progress
+    tracker = Progress(len(rows), pacers) if progress else None
 
     def one(row):
         try:
@@ -53,8 +56,12 @@ def run(rows, baseline, candidate, worker_count=8, diagnostics=None):
         except Exception as error:
             return {'query_id': row['query_id'], 'error': {'kind': type(error).__name__,
                     'detail': str(error)[:120]}}
+    def tracked(row):
+        value = one(row)
+        return tracker.completed(value) if tracker else value
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker_count) as pool:
-        result = list(pool.map(one, rows))
+        result = list(pool.map(tracked, rows))
     if diagnostics is not None:
         diagnostics.update({name: pacer.summary() for name, pacer in pacers.items()})
     return result
@@ -64,7 +71,7 @@ if __name__ == '__main__':
     rows = [json.loads(line) for line in Path('/input/queries.jsonl').read_text(encoding='utf-8').splitlines()]
     started = time.monotonic()
     pacing = {}
-    result = run(rows, os.environ['BASELINE'], os.environ['CANDIDATE'], diagnostics=pacing)
+    result = run(rows, os.environ['BASELINE'], os.environ['CANDIDATE'], diagnostics=pacing, progress=True)
     event = {'event': 'lab.job.completed', 'service': 'lab-comparison-worker',
              'operation': 'comparison.capture', 'job_name': os.environ.get('LAB_JOB_NAME'),
              'state': 'complete' if all('error' not in item for item in result) else 'incomplete',

@@ -129,7 +129,7 @@ def evaluate(reference, baseline, candidate, selection, frozen, intent):
     """Capture extras once per variant, resolve once per suite and freeze all results."""
     from delivery_gates import read, retain
     from delivery_source_comparison import retain_input
-    from evaluation_job import run_variants
+    from evaluation_job import run_variants, capture_scope
     from additional_judgements import resolve_extra
     from compare_search import definition
     from input_selection import select
@@ -164,7 +164,8 @@ def evaluate(reference, baseline, candidate, selection, frozen, intent):
             for side, deployment in (('baseline', baseline), ('candidate', candidate)):
                 if definition(targets[side]['environment'])['fingerprint'] != deployment['fingerprint']:
                     raise ValueError('A preview changed before additional capture.')
-            rows, execution = run_variants(item['query_bytes'], targets)
+            with capture_scope(name):
+                rows, execution = run_variants(item['query_bytes'], targets)
             if any('error' in row for row in rows): raise ValueError('Additional capture has failed requests.')
             observations = {'kind': 'search-variant-observation-set', 'schema_version': 1,
                 'default_variant': 'candidate', 'baseline_variant': 'baseline', 'variants': variant_pins,
@@ -185,6 +186,8 @@ def evaluate(reference, baseline, candidate, selection, frozen, intent):
                 resolved = retain_labels(item, retain_input)
             else:
                 resolved = resolve_extra(item, observations, specification, inputs['catalogue'], retain_input)
+            from operation_telemetry import evaluation_progress
+            evaluation_progress('Scoring frozen results',suite=name)
             stage = 'Scoring'
             reports[name] = score_extra(resolved, observations, specification, canonical(inputs['catalogue']))
             metadata[name]['judgement_sha256'] = resolved['judgement_sha256']

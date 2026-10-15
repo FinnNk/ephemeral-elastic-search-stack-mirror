@@ -67,13 +67,16 @@ def wait_for_gatling(name, workload, target, environment):
                     samples.append(json.loads(line.split('LAB_GATLING_METRICS ', 1)[1]))
                 except (ValueError, IndexError):
                     pass
-        metric = samples[-1] if samples else None
+        metric = samples[-1] if samples else previous
         event = {'event': 'gatling.live', 'side': target, 'environment': environment,
                  'started_ms': started_ms, 'observed_ms': int(time.time() * 1000),
                  'elapsed_seconds': round(time.monotonic() - started),
                  'planned_seconds': workload['duration_seconds'], 'provisional': True,
+                 'phase_label': ('Driver finished' if obj.get('status',{}).get('succeeded') else
+                                 'Finalising driver' if metric and not samples else
+                                 metric.get('phase','Running driver') if metric else 'Starting driver'),
                  'metrics': metric}
-        if metric != previous or not metric:
+        if metric != previous or not metric or not samples or obj.get('status',{}).get('succeeded'):
             sink(event)
             previous = metric
         status = obj.get('status', {})

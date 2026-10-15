@@ -55,9 +55,10 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
                                'kind': type(error).__name__, 'detail': str(error)[:120],
                                'stage': 'response preflight'})
     if not errors:
-        from evaluation_job import run as run_job
+        from evaluation_job import run as run_job, capture_scope
         try:
-            observations, execution = run_job(suite_bytes, baseline['name'], candidate['name'])
+            with capture_scope(mode + ' / standard'):
+                observations, execution = run_job(suite_bytes, baseline['name'], candidate['name'])
         except (AssertionError, KeyError, RuntimeError, TimeoutError, TypeError, ValueError) as error:
             observations, execution = [], {'execution': 'in-cluster evaluator Job', 'error': type(error).__name__}
             errors.append({'kind': type(error).__name__, 'detail': str(error)[:120], 'stage': 'evaluation job'})
@@ -117,6 +118,8 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
         verdict = 'unchanged' if not changed else 'changed'
     else:
         verdict = 'measured'
+    from operation_telemetry import evaluation_progress
+    evaluation_progress('Scoring frozen results' if mode == 'relevance' else 'Comparing result order',suite=mode+' / standard',unit='queries',metrics={'total':len(suite),'completed':len(results),'failed':len(errors)})
     metrics = None
     significance = None
     if mode == 'relevance' and complete:
@@ -127,6 +130,7 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
             graded.setdefault(judgement['query_id'], set()).add(judgement['product_id'])
         per_query = {side: query_ndcg(judgements, {row['query_id']: row[side]['ids'] for row in results})
                      for side in ('baseline', 'candidate')}
+        evaluation_progress('Calculating significance',suite=mode+' / standard')
         significance = ndcg_statistics(judgements,
             {side: {row['query_id']: row[side]['ids'] for row in results} for side in per_query},
             request_by_id, 'baseline', per_query)

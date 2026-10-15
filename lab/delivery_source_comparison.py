@@ -16,7 +16,7 @@ from delivery_runtime import resolve, preview
 from input_selection import select
 from blob_config import service, settings
 from compare_search import immutable_blob
-from evaluation_job import run_variants
+from evaluation_job import run_variants, capture_scope
 from nexus import publish, request as nexus_request
 from variant_gate import attest, check, canonical, sha
 from variant_gate_issue import operator_key
@@ -231,7 +231,8 @@ def compare(request, progress, operation_id):
     captured = {}
     def capture(payload, label):
         progress('Capturing fresh results: ' + label)
-        rows, execution = run_variants(payload, targets)
+        with capture_scope(label):
+            rows, execution = run_variants(payload, targets)
         if any('error' in row for row in rows):
             raise ValueError('A search request failed; capture is incomplete.')
         requests = {row['query_id']: row for row in map(json.loads, payload.splitlines())}

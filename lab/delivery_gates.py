@@ -318,7 +318,7 @@ def evaluate_variants(baseline, candidate, profile='probe', target=None):
     reference = retain(value, 'delivery-variant-evidence.json')
     print('Retained per-variant evidence: ' + json.dumps(reference), flush=True)
     if value['state'] != 'pass':
-        raise EvidenceFailure('One or more variant checks failed. Review each retained result before requesting promotion.', reference)
+        raise EvidenceFailure('Variant checks failed: ' + '; '.join(row['variant'] + ': ' + row.get('error','No passing evidence') for row in checks if row['state'] != 'pass')[:700], reference)
     validate_variant_evidence(value, baseline['fingerprint'], candidate['fingerprint'], selected_inputs, target,
                               baseline_deployment=baseline, candidate_deployment=candidate)
     return reference
@@ -344,7 +344,12 @@ def evaluate(baseline, candidate, intent='preserve-results', profile='probe'):
     if baseline['fields']['dataset_sha256'] != candidate['fields']['dataset_sha256']:
         raise ValueError('Both environments must use the same frozen catalogue.')
     selected = deployment_inputs(candidate)
-    first, second = preview(baseline), preview(candidate)
+    from operation_telemetry import evaluation_progress
+    evaluation_progress('Preparing baseline preview')
+    first = preview(baseline)
+    evaluation_progress('Preparing candidate preview')
+    second = preview(candidate)
+    evaluation_progress('Checking public API configurations')
     runtime = {'baseline': search(first['name'], 'running shoes'),
                'candidate': search(second['name'], 'running shoes')}
     if not runtime['baseline'] or not runtime['candidate']:
