@@ -123,6 +123,15 @@ available.
 query-set selection and gate policy. These inputs are frozen for this release.
 Edit the source and build a new release to change them. Promotion intent is
 source-controlled; the panel does not let an operator override it.
+Every promotion runs the catalogue's standard frozen query suite. A custom
+primary query manifest cannot replace it; put custom queries in
+`additional_query_sets` in the merged source's `gate/selection.json`.
+The same named sets are checked for every selected candidate variant against
+one target baseline. Required sets have separate blocking outcomes; report-only
+sets remain informational, including when their capture or scoring fails.
+The report shows the standard suite, each additional set and a combined view.
+Combined averages never decide promotion. See [additional query sets](variant-evaluation.md#add-queries-for-your-change).
+
 The release dashboard lists the selected variants and each declared change
 intent, marks the default variant and links to that build's exact selection file.
 The Production release page shows the same list for its prepared candidate.

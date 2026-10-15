@@ -366,6 +366,30 @@ class LocalControlApi(unittest.TestCase):
                 urllib.request.urlopen(urllib.request.Request(url, headers=headers))
             self.assertEqual(failure.exception.code, 502)
 
+    def test_variant_query_set_report_checks_all_hashes_and_has_html_view(self):
+        payload = b'{"kind":"promotion-query-set-report","state":"pass"}'
+        ref = {'blob':'runs/suites/report.json','sha256':hashlib.sha256(payload).hexdigest()}
+        parent = json.dumps({'query_sets_report':ref}).encode()
+        check = {'variant':'ranker-a','evidence':{'blob':'runs/check/evidence.json','sha256':hashlib.sha256(parent).hexdigest()}}
+        root = json.dumps({'checks':[check]}).encode()
+        row = {'id':'a'*32,'owner':'alice','result':{'report':{'blob':'runs/root/evidence.json','sha256':hashlib.sha256(root).hexdigest()}}}
+        contents={'root/evidence.json':root,'check/evidence.json':parent,'suites/report.json':payload}
+        blobs=Mock();blobs.get_blob_client.side_effect=lambda container,name:Mock(download_blob=lambda:Mock(readall=lambda:contents[name]))
+        headers={'Cookie':self.login('alice'),'Accept':'application/json'}
+        url=self.base+'/api/delivery/operations/'+'a'*32+'/report/variant/ranker-a/query-sets'
+        with patch('delivery_operations.Operations') as operations,patch('control_api.service',return_value=blobs):
+            operations.return_value.get.return_value=row
+            with urllib.request.urlopen(urllib.request.Request(url,headers=headers)) as response:
+                self.assertEqual(response.read(),payload)
+            for name in contents:
+                saved=contents[name];contents[name]=b'{}'
+                with self.subTest(blob=name),self.assertRaises(urllib.error.HTTPError) as failure:
+                    urllib.request.urlopen(urllib.request.Request(url,headers=headers))
+                self.assertEqual(failure.exception.code,502);contents[name]=saved
+            headers['Accept']='text/html'
+            with urllib.request.urlopen(urllib.request.Request(url,headers=headers)) as response:
+                self.assertIn(b'delivery_results.js',response.read())
+
     def login(self, username='alice'):
         request = urllib.request.Request(self.base + '/api/login', method='POST',
             data=json.dumps({'username': username, 'password': 'test-password'}).encode(),

@@ -135,7 +135,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_bytes(200, UI.with_name('delivery_results.js').read_bytes(),
                                    'text/javascript; charset=utf-8')
         delivery_view = (parts[:3] == ['api', 'delivery', 'operations'] and
-                         (len(parts) == 4 or len(parts) in (5, 6) and parts[4] == 'report'))
+                         (len(parts) == 4 or len(parts) in (5, 6, 8) and parts[4] == 'report'))
         comparison_view = (parts[:2] == ['api', 'comparisons'] and
                            len(parts) == 4 and parts[3] == 'report')
         query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
@@ -206,9 +206,10 @@ class Handler(BaseHTTPRequestHandler):
                     if hashlib.sha256(payload).hexdigest() != evidence['sha256']:
                         return self.send_json(502, {'error': 'Frozen variant evidence hash differs.'})
                     check = json.loads(payload)
-                    if parts[7] not in check.get('reports', {}):
+                    reports = {**check.get('reports', {}), **({'query-sets': check['query_sets_report']} if check.get('query_sets_report') else {})}
+                    if parts[7] not in reports:
                         return self.send_json(404, {'error': 'Variant delivery check not found.'})
-                    report_ref = check['reports'][parts[7]]
+                    report_ref = reports[parts[7]]
                     container, name = report_ref['blob'].split('/', 1)
                     payload = service().get_blob_client(container, name).download_blob().readall()
                     if hashlib.sha256(payload).hexdigest() != report_ref['sha256']:

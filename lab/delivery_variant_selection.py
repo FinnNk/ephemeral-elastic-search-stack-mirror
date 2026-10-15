@@ -23,6 +23,8 @@ def source_selection(source_sha):
     selection, layout = json.loads(selection_bytes), json.loads(layout_bytes)
     if not isinstance(selection, dict) or not isinstance(layout, dict):
         raise ValueError('The merged source variant files must contain JSON objects.')
+    from query_sets import declarations
+    extra_sets = declarations(selection)
     choices = selection.get('selected')
     if not isinstance(choices, list) or not choices or any(not isinstance(item, dict) for item in choices):
         raise ValueError('The merged source must select at least one candidate variant.')
@@ -47,6 +49,7 @@ def source_selection(source_sha):
     config = {'default_variant': default, 'variants': variants}
     return {'source_sha': source_sha, 'selection': choices, 'selection_sha256': sha(selection_bytes),
             'evaluation_sha256': sha(layout_bytes), 'configuration': config,
+            'additional_query_sets': extra_sets,
             'configuration_sha256': sha(canonical(config)), 'baseline_variant': baseline,
             'configuration_sha256_by_variant': {name: sha(canonical(value))
                                                  for name, value in variants.items()}}

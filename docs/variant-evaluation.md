@@ -166,6 +166,33 @@ Model predictions retain their qualification behind the judgement API.
 Every required suite must pass independently. The standard ESCI demo allowance
 does not apply to extra suites.
 
+Promotion reads these declarations and files from the exact merged source
+commit. It captures every named set for each selected variant against the
+current target's pinned baseline. A required set needs complete capture, usable
+qualified labels, at least 80% labelled results and the trusted intent-specific
+score/result-change limits. Its outcome is **Passed**, **Decision required** or
+**Blocked**; only **Passed** permits a proposal. A source-merge exception does
+not authorise a different promotion comparison. A set needing a decision stays
+blocked; this flow does not yet accept per-set promotion exceptions.
+
+Report-only sets have an **Informational** outcome, with unavailable scores and
+capture failures shown explicitly. A failure does not block promotion, but it
+suppresses the combined average when the capture is incomplete. The combined
+view uses metrics available in every scored set, counts repeated requests in
+each set and pools result counts for coverage. It never replaces an individual
+required outcome.
+
+A primary query manifest identifies one suite. Queries from several sources
+can be included in it, but their measurements then form one set. Use named
+additional sets for separate results and requirements. The catalogue's pinned
+standard manifest always runs during promotion and cannot be replaced by a
+custom primary manifest or an empty list of additional sets.
+
+Retained evidence must contain the exact declared sets, query bytes, reference
+labels, required settings and baseline/candidate configurations. Evidence made
+before additional promotion sets were supported cannot be reused if the source
+declares any: rerun **Check and propose** after activating the updated runtime.
+
 | Step | Required record |
 | --- | --- |
 | Declare intent in the source PR | `gate/selection.json`: one or more variant names, each with `ranking-change` or `preserve-results`; no source SHA |

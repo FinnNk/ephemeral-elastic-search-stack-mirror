@@ -191,6 +191,10 @@ def validate_variant_evidence(evidence, baseline, candidate, expected_inputs=Non
     if configured_baseline(baseline_deployment) != baseline_pin:
         raise ValueError('Baseline default variant or configuration changed after evaluation.')
 
+    from promotion_query_sets import standard_inputs, frozen_sets, validate as validate_query_sets
+    standard_inputs(candidate_deployment, expected_inputs)
+    frozen = frozen_sets(selected)
+
     for check in evidence['checks']:
         name = check['variant']
         if check.get('intent') != source_intents[name] or check.get('state') != 'pass':
@@ -211,13 +215,22 @@ def validate_variant_evidence(evidence, baseline, candidate, expected_inputs=Non
         # also validated against its exact report inputs below.
         validate_evidence(sub, baseline_probe.get('fingerprint'), candidate_probe.get('fingerprint'),
                           check['intent'], expected_inputs, target=target)
-        observed = read(sub).get('variant_runtime', {})
+        retained = read(sub)
+        if check.get('query_sets_report') != retained.get('query_sets_report'):
+            raise ValueError('The query-set report link differs from its retained evidence.')
+        if retained.get('query_sets_report') and check.get('query_set_outcomes') != read(retained['query_sets_report'])['gate_outcomes']:
+            raise ValueError('The advertised query-set outcomes differ from their retained evidence.')
+        observed = retained.get('variant_runtime', {})
         if (observed.get('baseline', {}).get('variant') != baseline_pin['variant'] or
                 observed.get('baseline', {}).get('configuration_sha256') != baseline_pin['configuration_sha256'] or
                 observed.get('candidate', {}).get('variant') != name or
                 observed.get('candidate', {}).get('configuration_sha256') !=
                     selected['configuration_sha256_by_variant'][name]):
             raise ValueError('Public APIs served a different baseline or candidate configuration.')
+        candidate_definition = with_variant(candidate_deployment, name, selected['configuration']['variants'][name])
+        if candidate_definition['fingerprint'] != candidate_probe.get('fingerprint'):
+            raise ValueError('The candidate probe differs from its source configuration.')
+        validate_query_sets(sub, baseline_definition, candidate_definition, selected, frozen, check['intent'])
         if baseline_definition['fingerprint'] != baseline_probe.get('fingerprint'):
             raise ValueError('The baseline probe no longer represents the named active configuration.')
     return evidence
@@ -233,6 +246,9 @@ def evaluate_variants(baseline, candidate, profile='probe', target=None):
     if configured != selection['configuration']:
         raise ValueError('Candidate deployment does not pin the exact selected source variants.')
     selected_inputs = deployment_inputs(candidate)
+    from promotion_query_sets import standard_inputs, frozen_sets, evaluate as evaluate_query_sets, validate as validate_query_sets
+    standard_inputs(candidate, selected_inputs)
+    frozen = frozen_sets(selection)
     baseline_pin = configured_baseline(baseline)
     baseline_probe = with_variant(baseline, baseline_pin['variant'], baseline_pin['settings'])
     checks = []
@@ -246,6 +262,9 @@ def evaluate_variants(baseline, candidate, profile='probe', target=None):
             reference = evaluate(baseline_probe, candidate_probe, intent, profile)
             validate_evidence(reference, baseline_probe['fingerprint'], candidate_probe['fingerprint'],
                               intent, selected_inputs, target=target)
+            if frozen:
+                reference = evaluate_query_sets(reference, baseline_probe, candidate_probe, selection, frozen, intent)
+                validate_query_sets(reference, baseline_probe, candidate_probe, selection, frozen, intent)
             measured = read(reference).get('variant_runtime', {})
             if (measured.get('baseline', {}).get('variant') != baseline_pin['variant'] or
                     measured.get('baseline', {}).get('configuration_sha256') != baseline_pin['configuration_sha256'] or
@@ -280,6 +299,12 @@ def evaluate_variants(baseline, candidate, profile='probe', target=None):
                     'configuration_sha256': selection['configuration_sha256_by_variant'][name]},
                 'evidence': ({'sha256': reference['sha256'], 'blob': reference['blob']}
                              if reference else None), 'error': str(error)[:240]})
+    for check in checks:
+        if check.get('evidence'):
+            suite_ref = read(check['evidence']).get('query_sets_report')
+            if suite_ref:
+                check['query_sets_report'] = suite_ref
+                check['query_set_outcomes'] = read(suite_ref)['gate_outcomes']
     value = {'kind': 'delivery-variant-evidence', 'format': 1,
         'state': 'pass' if all(row['state'] == 'pass' for row in checks) else 'failed',
         'baseline': baseline['fingerprint'], 'baseline_build_run': baseline['build_run'],

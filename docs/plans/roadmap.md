@@ -6,20 +6,16 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-The [comparison-table refinement](promotion-metrics-table.md) follows #188/#189.
-It aligns quality and judgement coverage in one table with explicit change units.
-Review the presentation batches in order and activate them together.
+PRs #188–#190 are accepted and active. Promotion review shows versions with
+short source commits and one aligned quality/coverage table. Proposal #25's
+presentation was refreshed without changing its measured evidence.
 
-The user requested removal of blanket demo/label-qualification commentary from
-the interface. The [UI prose batch](remove-demo-ui-commentary.md) follows #188;
-it retains provenance data, coverage measurements and all gate rules. Review
-and activate both batches, then update proposal #25's presentation for review.
-
-PR #187 is accepted and active; proposal #25 has readable review text and
-formatted JSON, with semantic hashes preserved and its new head validated.
-The [version identity batch](release-version-identity.md) adds the source commit
-beside versions and requires versioned delivery targets for fresh-install
-acceptance. Review and activate it before returning to proposal approval.
+The [promotion query-set batch](promotion-query-sets.md) carries exact-source
+additional sets through every selected variant's promotion checks. The standard
+suite stays mandatory. Build 184 declares report-only `sneakers`; its older
+promotion evidence omits that set. After review, merge and activation, rerun
+**Check and propose** rather than deploy proposal #25 using incomplete coverage
+of the declared query sets. No proposal is merged or deployed by this batch.
 
 PR #186 is accepted and active. Retained checks were revalidated and Integration
 proposal delivery-state #25 is ready for review, without another evaluation.

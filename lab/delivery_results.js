@@ -95,7 +95,7 @@ async function promotionReview(value,row){
  overview.classList.add('promotion-review');
  if(row?.result?.url){const u=new URL(row.result.url,location.origin);if(['http:','https:'].includes(u.protocol)){if(u.hostname==='gitea-internal.lab-ingress.svc.cluster.local'){u.hostname='gitea.localhost';u.port='34443';u.protocol='https:'}const a=node('a','Review proposal in Gitea',overview);a.href=u.href;}}
  const records=await Promise.all((value.checks||[]).map(async check=>{
-  const reports={};if(check.evidence)await Promise.all(['relevance','result-regression','performance'].map(async mode=>{
+  const reports={};if(check.evidence)await Promise.all(['relevance','result-regression','performance',...(check.query_sets_report?['query-sets']:[])].map(async mode=>{
    try{const r=await fetch(path+'/variant/'+encodeURIComponent(check.variant)+'/'+mode,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error();reports[mode]=await r.json();}catch{reports[mode]=null;}
   }));return{check,reports};
  }));
@@ -113,6 +113,7 @@ async function promotionReview(value,row){
   const s=section(check.variant+' — review summary',(intentNames[check.intent]||label(check.intent))+'. Gate: '+(stateNames[check.state]||label(check.state))+'.');
   s.classList.add('promotion-review');
   const relevance=reports.relevance,results=reports['result-regression'],performance=reports.performance;
+  node('h3','Standard suite — required',s);
   if(relevance){const b=relevance.metrics?.baseline||{},c=relevance.metrics?.candidate||{};
    const coverage=relevance.judgement_coverage||{};
    table(s,['Metric','Baseline','Candidate','Change'],[
@@ -125,8 +126,25 @@ async function promotionReview(value,row){
   if(performance){const profile={probe:'Short regression probe',smoke:'Smoke test','production-load':'Production load test'}[performance.profile]||performance.profile;node('p','Performance profile: '+profile+'; '+(performance.verdict==='within-budget'?'Within budget':label(performance.verdict))+'. '+(performance.profile==='probe'?'This short regression probe is not a production load test.':''),s);
    table(s,['Phase','Baseline p95 (ms)','Candidate p95 (ms)','p95 budget (ms)','Baseline failures','Candidate failures'],Object.entries(performance.measured_phases||{}).map(([phase,x])=>[label(phase),fmt(x.baseline?.p95_ms),fmt(x.candidate?.p95_ms),fmt(x.budget?.p95_ms),fmt(x.baseline?.failed_percent)+'%',fmt(x.candidate?.failed_percent)+'%']));
   }else node('p','Performance summary unavailable. Open the detailed report before approving.',s);
+  if(check.query_sets_report){
+   if(reports['query-sets'])suiteViews(reports['query-sets'],check.variant+' — ');
+   else node('p','Additional query-set report unavailable. Open its detailed report before approving.',s);
+  }
  }
  const evidence=$('identity');for(const [k,v] of Object.entries({baseline_deployment:value.baseline,candidate_deployment:value.candidate,baseline_configuration:value.baseline_pin?.configuration_sha256,candidate_configuration:value.candidate_configuration_sha256,source_commit:value.source_sha})){node('dt',label(k),evidence);node('dd',fmt(v),evidence);}
+}
+function suiteViews(value,prefix=''){
+ if(value.gate_outcomes){
+  table(section(prefix+'Query-set outcomes','Every required set must pass independently. Report-only sets and combined averages do not decide promotion.'),['Query set','Requirement','Outcome','Reason'],Object.entries(value.gate_outcomes).map(([name,g])=>[name,g.required?'Required':'Report only',g.state==='report_only'?(g.available?'Informational':'Informational — unavailable'):(stateNames[g.state]||label(g.state)),g.reason||'']));
+ }
+ for(const [name,suite] of Object.entries(value.query_sets))summary(suite,prefix+(name==='standard'?'Standard suite':name),value.query_set_metadata?.[name]?.required);
+ if(value.combined){
+  if(value.combined.available===false)node('p',value.combined.unavailable_reason,section(prefix+'Combined view — informational'));
+  else {
+   summary(value.combined,prefix+'Combined view — informational',false,value.baseline_variant||'baseline');
+   if(value.combined.weighting)node('p',value.combined.weighting+'. Repeated requests: '+fmt(value.combined.repeated_request_count)+'.',section(prefix+'Combined weighting'));
+  }
+ }
 }
 async function report(value,operationRecord){
  $('title').textContent=value.state==='verified'?'Deployment verification':value.kind==='paired-api-performance'?'Performance comparison':value.kind==='delivery-variant-evidence'?'Per-variant delivery checks':value.reports?'Delivery checks':'Search comparison report';$('state').textContent=value.state==='pass'?'All variants passed':value.state==='failed'?'Variant gate failed':value.valid===false?'Invalid evidence':value.complete===false?'Incomplete evidence':'Report ready';$('stage').textContent='Review search quality, result changes and label coverage separately.';
@@ -144,7 +162,7 @@ async function report(value,operationRecord){
  if(value.production_slots_sha256){node('p',value.recent_query_source,section('Final production release',value.release_review));}
 
  if(value.kind==='variant-evaluation-report'||value.kind==='controlled-api-comparison')section('Read the results','RBO describes order similarity; Jaccard describes product-set overlap. A value of 1 means identical at the captured depth. Coverage shows how many results have relevance labels; added labels do not establish better search.');
- if(value.query_sets){for(const [name,suite] of Object.entries(value.query_sets))summary(suite,name==='standard'?'Standard suite':name,value.query_set_metadata?.[name]?.required);if(value.combined)summary(value.combined,'Combined view',false,value.baseline_variant);}
+ if(value.query_sets)suiteViews(value);
  else if(value.kind==='variant-evaluation-report')summary(value,'Search results',null);
  else if(value.kind==='controlled-api-comparison'){summary({...value,baseline_variant:'baseline',variants:{baseline:{},candidate:{}},result_changes:{candidate:{changed_queries:value.changed_query_ids?.length}},result_similarity:{candidate:value.result_similarity||{}}},'Search results',null);}
  else if(value.kind==='paired-api-performance'){
@@ -166,7 +184,7 @@ async function report(value,operationRecord){
   const c=section('Selected variant checks','Each variant uses its intent from the exact merged source commit. Every check is compared with the same baseline build and configuration.');
   table(c,['Variant','Intent','Outcome','Reports'],(value.checks||[]).map(row=>{
    const cell=document.createElement('span');
-   if(row.evidence)for(const [mode,labelText] of [['result-regression','Results'],['relevance','Relevance'],['performance','Performance']]){
+   if(row.evidence)for(const [mode,labelText] of [['result-regression','Results'],['relevance','Relevance'],['performance','Performance'],...(row.query_sets_report?[['query-sets','Query sets']]:[])]){
     const a=document.createElement('a');a.href=path+'/variant/'+encodeURIComponent(row.variant)+'/'+mode;a.textContent=labelText;cell.append(a,document.createTextNode(' '));
    }else cell.textContent='No complete report';
    return[row.variant,intentNames[row.intent]||label(row.intent),stateNames[row.state]||label(row.state),cell];

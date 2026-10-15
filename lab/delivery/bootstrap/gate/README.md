@@ -128,3 +128,12 @@ report, source commit, policy, selection, variant, reviewer and decision merge
 commit. An exception preserves the scores. It does not approve deployment. Source merge requires passing checks; the lab allows authors to merge their own demonstration changes. Deployment requires a separate approving reviewer.
 
 The [variant evaluation guide](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/variant-evaluation.md) explains report fields and evidence publication. Synthetic fixture scores demonstrate the workflow, not real search quality.
+
+### Additional sets during promotion
+
+The coordinator carries this selection into Integration, Staging and Production
+checks. Every selected candidate variant is compared with the target baseline
+using the standard suite and each named additional set. Required sets must pass
+separately; report-only failures remain informational. The combined view never
+opens a gate. A custom primary manifest cannot replace the catalogue's standard
+suite. Change the source selection and build again to change required sets.
