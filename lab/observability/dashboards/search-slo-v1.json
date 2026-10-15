@@ -54,7 +54,7 @@
               "width": 6,
               "height": 6,
               "content": {
-                "$ref": "#/spec/panels/probe_failures"
+                "$ref": "#/spec/panels/probe_successes"
               }
             },
             {
@@ -63,11 +63,20 @@
               "width": 6,
               "height": 6,
               "content": {
-                "$ref": "#/spec/panels/probe_responsive"
+                "$ref": "#/spec/panels/probe_failures"
               }
             },
             {
               "x": 0,
+              "y": 17,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/probe_responsive"
+              }
+            },
+            {
+              "x": 6,
               "y": 17,
               "width": 6,
               "height": 6,
@@ -76,8 +85,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 17,
+              "x": 0,
+              "y": 23,
               "width": 6,
               "height": 6,
               "content": {
@@ -85,7 +94,7 @@
               }
             },
             {
-              "x": 0,
+              "x": 6,
               "y": 23,
               "width": 6,
               "height": 6,
@@ -94,8 +103,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 23,
+              "x": 0,
+              "y": 29,
               "width": 6,
               "height": 6,
               "content": {
@@ -103,7 +112,7 @@
               }
             },
             {
-              "x": 0,
+              "x": 6,
               "y": 29,
               "width": 6,
               "height": 6,
@@ -112,8 +121,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 29,
+              "x": 0,
+              "y": 35,
               "width": 6,
               "height": 6,
               "content": {
@@ -121,7 +130,7 @@
               }
             },
             {
-              "x": 0,
+              "x": 6,
               "y": 35,
               "width": 6,
               "height": 6,
@@ -130,8 +139,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 35,
+              "x": 0,
+              "y": 41,
               "width": 6,
               "height": 6,
               "content": {
@@ -139,7 +148,7 @@
               }
             },
             {
-              "x": 0,
+              "x": 6,
               "y": 41,
               "width": 6,
               "height": 6,
@@ -148,8 +157,8 @@
               }
             },
             {
-              "x": 6,
-              "y": 41,
+              "x": 0,
+              "y": 47,
               "width": 6,
               "height": 6,
               "content": {
@@ -157,7 +166,7 @@
               }
             },
             {
-              "x": 0,
+              "x": 6,
               "y": 47,
               "width": 6,
               "height": 6,
@@ -263,7 +272,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Probe and evaluation requests"
+            "name": "Probe requests"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -320,11 +329,72 @@
           ]
         }
       },
+      "probe_successes": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Successful probe requests"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "chartAppearance": {
+                "lineStyle": "solid",
+                "lineInterpolation": "linear",
+                "fillMode": "none"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "metrics",
+                          "disabled": false,
+                          "stepInterval": 0,
+                          "filter": {
+                            "expression": "lab.traffic_class = 'probe' AND deployment.environment.name IN $environment"
+                          },
+                          "aggregations": [
+                            {
+                              "metricName": "lab.search.success_good",
+                              "temporality": "cumulative",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
       "probe_failures": {
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Failed probe and evaluation requests"
+            "name": "Failed probe requests"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -563,7 +633,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Successful searches"
+            "name": "Successful normal searches"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -624,7 +694,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Successful within 250 ms"
+            "name": "Normal searches successful within 250 ms"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -685,7 +755,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Search success / eligible"
+            "name": "Normal search success (%)"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -774,7 +844,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Responsive / eligible"
+            "name": "Normal searches within 250 ms (%)"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -863,7 +933,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Search success budget remaining"
+            "name": "Normal search success budget remaining"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -952,7 +1022,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Responsiveness budget remaining"
+            "name": "Normal search responsiveness budget remaining"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -1041,7 +1111,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Search success budget burn"
+            "name": "Normal search success budget burn"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -1130,7 +1200,7 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Responsiveness budget burn"
+            "name": "Normal search responsiveness budget burn"
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",

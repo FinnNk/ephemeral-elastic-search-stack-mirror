@@ -11,7 +11,7 @@ class ProbeDashboardTests(unittest.TestCase):
 
     def test_probe_panels_are_visible_and_filter_the_selected_environment(self):
         panels=dashboard.build()['spec']['panels']
-        for key in ('probe_requests','probe_failures','probe_responsive'):
+        for key in ('probe_requests','probe_successes','probe_failures','probe_responsive'):
             queries=panels[key]['spec']['queries'][0]['spec']['plugin']['spec']['queries']
             builder=[q['spec'] for q in queries if q['type']=='builder_query']
             self.assertTrue(builder)
@@ -23,6 +23,17 @@ class ProbeDashboardTests(unittest.TestCase):
             self.assertTrue(all("lab.traffic_class = 'normal'" in q['spec']['filter']['expression']
                 for q in queries if q['type']=='builder_query'))
         self.assertIn('warm-up',panels['guidance']['spec']['plugin']['spec']['text'])
+
+    def test_probe_successes_and_normal_successes_are_named_and_filtered_separately(self):
+        panels=dashboard.build()['spec']['panels']
+        probe=panels['probe_successes']['spec']
+        self.assertEqual(probe['display']['name'],'Successful probe requests')
+        query=probe['queries'][0]['spec']['plugin']['spec']['queries'][0]['spec']
+        self.assertEqual(query['aggregations'][0]['metricName'],'lab.search.success_good')
+        self.assertIn("lab.traffic_class = 'probe'",query['filter']['expression'])
+        for key in ('eligible','success_good','responsive_good','success_ratio','responsive_ratio',
+                    'success_remaining','responsive_remaining','success_burn','responsive_burn'):
+            self.assertIn('normal',panels[key]['spec']['display']['name'].lower())
 
 
 if __name__=='__main__':unittest.main()

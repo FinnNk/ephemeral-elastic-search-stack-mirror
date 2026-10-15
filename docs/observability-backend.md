@@ -39,14 +39,23 @@ The [investigation diagram](diagrams/interactive/observability-investigation.htm
 | View | Useful for | Limits and next action |
 | --- | --- | --- |
 | Search activity | Whether the selected environment exports search counters, including probes and browser requests | Latest process counters reset on restart. They are not request totals for the selected window. |
-| Probe and evaluation requests | Request increases, failed requests and the fraction successful within 250 ms for probe traffic | Includes warm-up and other probes in the selected interval. These panels are informational; use the retained Gatling report for its measured phases and promotion verdict. |
+| Probe requests / Successful probe requests / Failed probe requests | Request and outcome increases for the probe traffic class | Includes warm-up and other probes in the selected interval. Use the retained Gatling report for measured phases and its promotion verdict. |
+| Probe responses within 250 ms (%) | Responsiveness of successful probe requests | Informational telemetry; neighbouring probes can be included. |
 | Search SLO | Normal-cohort eligible/good counts, percentages, allowance and burn; lifecycle success/deadline trends | Interval increases use the time picker; operation panels are lab-wide. Use the companion below for a coverage-verified seven-day verdict. |
 | Model health | Inference errors, outcomes, batch latency, labelled coverage and label mix | Select `$model_version` to avoid combining historical judges. Version 1 abstains on every gap. These signals describe activity, not relevance accuracy. |
 | Query-length gap-pool shift | Differences between the frozen query mix and pairs needing resolution | Includes cached resolution outcomes. It measures which queries lack labels, not drift against training data. |
 
 Gap-pool shift is Jensen–Shannon divergence, bounded 0–1. The reference has one occurrence of each frozen query; the observed side is the query-length mix of pairs sent for gap resolution. No missing pairs means no new divergence value. Coverage and shift come from completed resolution pools and are separated by label selection: `gate`, `exploratory` or `demo`. Charts show interval averages of their last reported observations; exact pool counts remain in the frozen resolution report.
 
-An empty chart is not a passing check. Start with **Search activity**: ordinary browser requests are unclassified, offline comparisons use probes, and normal-phase Gatling requests use the normal cohort. Only the latter belongs in the SLO charts. A diagnostic request can explicitly use that cohort, but a small sample does not establish an SLO. Idle counters have zero increase, so percentages and mean latency have no value. Short bursts before the first counter export can be missing from increases. Chart intervals adapt to the selected time range.
+An empty chart is not a passing check. Start with **Search activity**. Ordinary
+browser requests are unclassified. Gatling's short `probe` and `smoke` profiles
+classify every phase as probe traffic, including the phase named `normal`.
+Normal phases in other Gatling profiles use the normal cohort. Panels labelled
+**normal** use only that cohort; successful probe traffic does not change them.
+A small diagnostic sample does not establish an SLO. Idle counters have zero
+increase, so percentages and mean latency have no value. Short bursts before the
+first counter export can be missing from increases. Chart intervals adapt to the
+selected time range.
 
 Coverage and gap-pool shift appear after a new additional-query or production-release comparison resolves its pool. Replaying retained scores makes no resolution calls. Neither dashboard reconstructs missing historical telemetry; widen the time window for earlier activity, or run a new comparison when appropriate.
 
@@ -96,7 +105,8 @@ aggregates these metrics into intervals of at least one minute, and metric
 exports can arrive after a short workload ends. Padding makes those exports
 visible; neighbouring requests can be included in the dashboard interval.
 
-Use **Probe and evaluation requests** for short functional and Gatling probes.
+Use **Probe requests** and **Successful probe requests** for short Gatling probes
+and other requests carrying the probe traffic class.
 The normal search SLO panels require `normal` traffic and can correctly have no
 data during a probe-only run. **Search activity** shows cumulative process
 counters across traffic classes; it is not a request total for the selected run.
@@ -104,6 +114,46 @@ counters across traffic classes; it is not a request total for the selected run.
 If one side still has no activity, check whether that exact API release exports
 OTLP. A legacy release without an endpoint cannot supply historical search
 metrics. Gatling's retained client measurements remain available independently.
+
+### Enable an instrumented legacy delivery API
+
+Current release charts already configure telemetry. For an older Integration,
+Staging or delivery-preview chart whose image contains the OpenTelemetry SDK,
+the operator can enable the existing instrumentation without rebuilding it.
+Wait for evaluations and comparisons to finish. This setting requires a Pod
+restart; avoid starting checks while applying it.
+
+From the repository root in PowerShell:
+
+```powershell
+$env:LAB_STATE_DIR = (Resolve-Path .lab).Path
+$ns = 'lab-delivery-integration'
+$cm = kubectl --kubeconfig .lab/kubeconfig.yaml -n $ns get configmap frozen-definition -o json | ConvertFrom-Json
+$frozen = $cm.data.'definition.json' | ConvertFrom-Json
+uv run --locked python lab/observability/enable_search.py --namespace $ns --fingerprint $frozen.fingerprint
+```
+
+On macOS or Linux:
+
+```sh
+export LAB_STATE_DIR="$PWD/.lab"
+namespace=lab-delivery-integration
+fingerprint="$(kubectl --kubeconfig .lab/kubeconfig.yaml -n "$namespace" get configmap frozen-definition -o json | uv run --locked python -c 'import json,sys; print(json.loads(json.load(sys.stdin)["data"]["definition.json"])["fingerprint"])')"
+uv run --locked python lab/observability/enable_search.py --namespace "$namespace" --fingerprint "$fingerprint"
+```
+
+Use the comparison's baseline preview namespace to enable that API as well.
+The helper checks the image and fingerprint, SDK availability and idle state,
+adds only the collector runtime settings and scoped network access, and restarts
+only when needed. Existing chart settings take precedence; conflicting settings
+are rejected. Credentials and frozen release fields are preserved. The added
+NetworkPolicy is owned by the observability installer, and the configuration
+receipt is retained under `.lab/activation-receipts/`.
+
+Confirm new activity in SigNoz using the exact namespace filter. Exports begin
+prospectively; old reports and missing historical telemetry remain unchanged.
+Repeat this setup if a legacy namespace is deleted and recreated. SDK availability
+and configuration checks do not by themselves establish successful ingestion.
 
 ## Install and preserve the backend
 

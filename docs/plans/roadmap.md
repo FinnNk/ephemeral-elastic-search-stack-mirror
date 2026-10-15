@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [baseline telemetry batch](baseline-probe-telemetry.md) clarifies normal-only
+dashboard panels, adds successful probe requests and prepares recorded runtime
+wiring for the already-instrumented legacy baseline image. Review after #199/#200;
+enable and verify ingestion only when evaluations are idle.
+
 The [relevance-before-performance batch](relevance-before-performance.md) moves
 required functional validation and declared query sets ahead of Gatling for
 each variant. Review and activate when idle; an earlier required failure retains
