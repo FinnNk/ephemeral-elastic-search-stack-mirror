@@ -34,6 +34,20 @@ Open `http://127.0.0.1:18090` while it runs. Stopping the forward closes that di
 
 The [investigation diagram](diagrams/interactive/observability-investigation.html) shows these relationships. Backend queries and UI links are provider-specific. Local evidence confirms stored trace/log correlation; the complete browser drill-through and instrumented three-target release rehearsal remain in the [validation plan](plans/signoz-merged-release-rehearsal.md).
 
+### Follow metrics into logs
+
+Search logs use the same `lab.traffic_class` and `deployment.environment.name`
+fields as the metric filters. A probe-panel drill-through should therefore find
+structured search events for the selected environment and interval. The collector
+also sets `service.name` and `service.version` and preserves trace/span IDs.
+
+For logs collected before this mapping was activated, open Logs Explorer and
+replace those filters with `traffic_class = 'probe'` and
+`deployment_tier = '<environment namespace>'`. Keep the original time range.
+Existing stored logs are not rewritten. If a new request still has no matching
+log, check the log-agent Pods and whether its stdout event contains `event`;
+the collector excludes unstructured access lines.
+
 ## Interpret dashboards
 
 | View | Useful for | Limits and next action |

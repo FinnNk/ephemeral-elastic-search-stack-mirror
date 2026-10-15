@@ -6,27 +6,26 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-The [baseline telemetry batch](baseline-probe-telemetry.md) clarifies normal-only
-dashboard panels, adds successful probe requests and prepares recorded runtime
-wiring for the already-instrumented legacy baseline image. Review after #199/#200;
-enable and verify ingestion only when evaluations are idle.
+The [log drill-through field fix](log-drillthrough-fields.md) aligns collected
+log attributes with metric dashboard filters. The reported minute has 43 probe
+logs, but the canonical traffic and environment fields are missing. Review this
+collector change, then verify new logs after activation; historical logs remain
+searchable using their original fields.
 
-The [relevance-before-performance batch](relevance-before-performance.md) moves
-required functional validation and declared query sets ahead of Gatling for
-each variant. Review and activate when idle; an earlier required failure retains
-its evidence and marks performance as not run. Existing runs remain undisturbed.
-
-The [next release action batch](next-release-action.md) makes the primary control
-open running work or a proposal, and start a fresh check directly after failure.
-Review and activate when idle. Build 184 has a running Integration attempt;
-preserve it while this UI batch is reviewed.
+PRs #199–#201 are accepted and active. Promotion controls reflect the latest
+attempt, each variant's relevance/query-set checks precede Gatling, and the
+probe dashboard includes successful requests. Legacy baseline preview and
+Integration telemetry are enabled; SigNoz queries confirmed successful probe
+series from both baseline and candidate. The latest Integration attempt
+`e3393364eadc2251549db710195022da` completed successfully; preserve its evidence
+and proposal while continuing human review.
 
 The [capture polling recovery](capture-polling-recovery.md) fixes the standard
 functional checks timing out after their Jobs had completed. A kubectl timeout
 override broke in-cluster configuration; bounded Python subprocesses preserve it.
-PR #198 is accepted and active. A fresh Integration attempt is running.
-The latest attempt passed performance (p95 101/107 ms) but collected no functional
-results because of this polling failure; it is not eligible for promotion.
+PR #198 is accepted and active. The earlier failed attempt passed performance
+(p95 101/107 ms) but collected no functional results; it remains ineligible for
+promotion. The subsequent Integration attempt completed successfully.
 
 The [release-attempt feedback batch](release-attempt-feedback.md) makes reopening
 an earlier attempt explicit and separates it from starting fresh checks. PR #197

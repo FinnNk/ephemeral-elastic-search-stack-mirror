@@ -41,11 +41,15 @@ data:
           - {key: query, action: delete}
           - {key: search.query, action: delete}
           - {key: authorization, action: delete}
-      resource/lab:
-        attributes:
-          - {key: service.name, from_attribute: service, action: upsert}
-          - {key: service.version, from_attribute: service_version, action: upsert}
-          - {key: deployment.environment.name, from_attribute: deployment_tier, action: upsert}
+      transform/lab:
+        error_mode: propagate
+        log_statements:
+          - context: log
+            statements:
+              - set(resource.attributes["service.name"], log.attributes["service"]) where log.attributes["service"] != nil
+              - set(resource.attributes["service.version"], log.attributes["service_version"]) where log.attributes["service_version"] != nil
+              - set(resource.attributes["deployment.environment.name"], log.attributes["deployment_tier"]) where log.attributes["deployment_tier"] != nil
+              - set(log.attributes["lab.traffic_class"], log.attributes["traffic_class"]) where log.attributes["traffic_class"] != nil
       batch: {timeout: 1s, send_batch_size: 256}
     exporters:
       otlp/gateway:
@@ -57,7 +61,7 @@ data:
       pipelines:
         logs:
           receivers: [filelog/lab]
-          processors: [memory_limiter, filter/structured, attributes/redact, resource/lab, batch]
+          processors: [memory_limiter, filter/structured, attributes/redact, transform/lab, batch]
           exporters: [otlp/gateway]
 ---
 apiVersion: apps/v1
