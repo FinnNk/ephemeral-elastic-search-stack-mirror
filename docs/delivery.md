@@ -186,9 +186,18 @@ record to completion and open the returned storefront or report.
 
 The release dashboard distinguishes **New attempt** from **Existing attempt**.
 Reopening an existing attempt starts no new checks. Its original submission time
-and recorded error remain visible. For a failed or interrupted attempt, use
-**Start a new attempt** to run the checks again with current settings; the earlier
-result is retained. Repeating a submission after a network failure reuses the
+and recorded error remain visible. The primary control reflects the selected
+stage's latest attempt:
+
+| Current state | Primary control | Result |
+| --- | --- | --- |
+| No earlier attempt | **Check and propose Integration** (or the selected stage's action) | Submit checks |
+| Queued or running | **View progress** | Open the existing attempt |
+| Failed or interrupted | **Run checks again** | Submit a fresh attempt using current settings; retain the previous result |
+| Open proposal | **Review proposal** | Open its Gitea review |
+
+The latest attempt's outcome and link remain beside the control. Preconditions
+and access checks can disable an action. Repeating a submission after a network failure reuses the
 same attempt to avoid duplicate work.
 
 Browser links show a readable progress page with the current stage and outcome.

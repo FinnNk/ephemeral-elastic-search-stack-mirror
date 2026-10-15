@@ -34,7 +34,11 @@
    const a=options.actions.find(x=>x.name===name),group=document.createElement('div'),button=document.createElement('button');
    group.className='promotion-check';
    comparison(options.comparisons?.[name],group);
-   button.textContent=a.label;button.disabled=!a.enabled||sending;button.onclick=()=>submit(name);group.append(button);
+   button.textContent=a.label;button.disabled=!a.enabled||sending;button.onclick=()=>{
+    if(a.mode==='progress'||a.mode==='review'){const u=new URL(a.href,location.origin);if(['http:','https:'].includes(u.protocol)){if(u.hostname==='gitea-internal.lab-ingress.svc.cluster.local'){u.hostname='gitea.localhost';u.port='34443';u.protocol='https:'}location.assign(u.href);}return;}
+    submit(name);
+   };group.append(button);
+   if(a.attempt){const previous=document.createElement('p');previous.className='action-help';previous.append(document.createTextNode('Latest attempt: '+a.attempt.state+(a.attempt.created_at?' · '+new Date(a.attempt.created_at).toLocaleString():'')+'. '));link('/api/delivery/operations/'+encodeURIComponent(a.attempt.id),'View attempt',previous);if(a.attempt.error)previous.append(document.createTextNode(' — '+a.attempt.error));group.append(previous);}
    const help=document.createElement('p');help.className='action-help';help.textContent=a.reason||(name==='release'?'Runs the production load gate and final comparison.':'Creates a proposal for review.');group.append(help);$('promotion-actions').append(group);
   }
   const deploy=options.actions.find(x=>x.name==='deploy');
@@ -71,7 +75,8 @@
   const body={run:data.selected.run,action,context:options.context};
   if(action==='deploy')body.pr=Number($('approved-proposal').value);
   sending=true;render();
-  const encoded=JSON.stringify(body);if(!keys.has(encoded)){
+  const actionOptions=options.actions.find(a=>a.name===action);
+  const encoded=JSON.stringify({...body,...(actionOptions?.retry_of?{after_attempt:actionOptions.retry_of}:{})});if(!keys.has(encoded)){
    // Stable across reloads and network retries for the exact semantic request.
    const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(encoded));keys.set(encoded,'release-'+[...new Uint8Array(digest)].map(v=>v.toString(16).padStart(2,'0')).join(''));
   }
@@ -83,7 +88,12 @@
    if(row.created_at){const when=document.createElement('p');when.textContent='Originally submitted: '+new Date(row.created_at).toLocaleString();feedback.append(when);}
    if(row.error){const error=document.createElement('p');error.textContent='Recorded outcome: '+row.error;feedback.append(error);}
    link('/api/delivery/operations/'+encodeURIComponent(row.id),reused?(finished?'Review previous attempt':'Follow existing attempt'):'Open progress and review links',feedback);
-   if(['failed','interrupted'].includes(row.state)){const help=document.createElement('p');help.textContent='Start a new attempt to run the checks again using the current settings. The previous result will be retained.';feedback.append(help);const retry=document.createElement('button');retry.textContent='Start a new attempt';retry.onclick=()=>{keys.set(encoded,crypto.randomUUID());submit(action);};feedback.append(retry);}
+   if(actionOptions&&action!=='deploy'){
+    actionOptions.attempt={id:row.id,state:row.state,created_at:row.created_at,error:row.error};
+    if(['failed','interrupted'].includes(row.state))Object.assign(actionOptions,{mode:'submit',label:'Run checks again',retry_of:row.id,reason:'Starts a fresh attempt with current settings. The previous result is retained.'});
+    else if(row.result?.url)Object.assign(actionOptions,{mode:'review',label:'Review proposal',href:row.result.url,reason:'Review the existing proposal before deployment.'});
+    else Object.assign(actionOptions,{mode:'progress',label:'View progress',href:'/api/delivery/operations/'+encodeURIComponent(row.id),reason:'Open the submitted attempt. No new checks will be started.'});
+   }
   }catch(e){$('promotion-feedback').textContent=e.message;}
   finally{sending=false;render();}
  }

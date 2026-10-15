@@ -6,10 +6,15 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [next release action batch](next-release-action.md) makes the primary control
+open running work or a proposal, and start a fresh check directly after failure.
+Review and activate when idle. Build 184 has a running Integration attempt;
+preserve it while this UI batch is reviewed.
+
 The [capture polling recovery](capture-polling-recovery.md) fixes the standard
 functional checks timing out after their Jobs had completed. A kubectl timeout
 override broke in-cluster configuration; bounded Python subprocesses preserve it.
-Review and merge the tested fix, activate when idle, then retry Integration.
+PR #198 is accepted and active. A fresh Integration attempt is running.
 The latest attempt passed performance (p95 101/107 ms) but collected no functional
 results because of this polling failure; it is not eligible for promotion.
 

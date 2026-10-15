@@ -25,6 +25,43 @@ def fixture():
 
 
 class ReleaseActions(unittest.TestCase):
+    def test_primary_action_tracks_latest_attempt_for_its_target(self):
+        data=fixture();data['stages'][1]['review_operation']=None
+        attempt={'id':'a'*32,'kind':'promotion','target':'staging','state':'failed',
+                 'created_at':'2026-10-15T10:00:00Z','error':'Capture failed'}
+        data['activity']=[attempt,dict(attempt,id='b'*32,target='integration',state='complete')]
+        action=lambda:next(a for a in control.choices(data,ADMIN)['actions'] if a['name']=='staging')
+        self.assertEqual(action()['label'],'Run checks again')
+        self.assertEqual(action()['retry_of'],attempt['id'])
+        for state in ('queued','running','accepted'):
+            attempt['state']=state
+            self.assertEqual(action()['mode'],'progress')
+            self.assertTrue(action()['enabled'])
+            self.assertEqual(action()['href'],'/api/delivery/operations/'+attempt['id'])
+        attempt['state']='complete'
+        data['stages'][1]['review_operation']={'pr':{'number':24,'state':'awaiting review','url':'https://gitea.test/pulls/24'}}
+        self.assertEqual(action()['mode'],'review');self.assertEqual(action()['label'],'Review proposal')
+        self.assertEqual(action()['href'],'https://gitea.test/pulls/24')
+
+    def test_primary_action_uses_creation_order_and_keeps_other_stage_blocked(self):
+        data=fixture()
+        old={'id':'a'*32,'kind':'promotion','target':'staging','state':'failed','created_at':'2026-10-15T10:00:00Z'}
+        new={**old,'id':'b'*32,'state':'running','created_at':'2026-10-15T11:00:00Z'}
+        data['activity']=[old,new]
+        actions={a['name']:a for a in control.choices(data,ADMIN)['actions']}
+        self.assertEqual(actions['staging']['attempt']['id'],new['id'])
+        self.assertEqual(actions['staging']['mode'],'progress')
+        self.assertFalse(actions['integration']['enabled'])
+
+    def test_navigation_action_cannot_be_used_to_submit_duplicate_checks(self):
+        data=fixture()
+        data['activity']=[{'id':'a'*32,'kind':'promotion','target':'staging','state':'running'}]
+        request={'run':158,'action':'staging','context':control.context(data)}
+        with tempfile.TemporaryDirectory() as folder,patch('delivery_operations.STATE',Path(folder)),patch.object(control,'snapshot',return_value=data):
+            with self.assertRaisesRegex(ValueError,'already exists'):
+                control.submit(request,ADMIN,'another-submission')
+            self.assertEqual(Operations().active(),[])
+
     def test_failed_attempt_without_proposal_does_not_break_retry_controls(self):
         data = fixture()
         data['stages'][0].update(state='pending', environment=None)

@@ -91,10 +91,36 @@ def choices(data, identity):
               'prepare': 'Prepare production candidate', 'release': 'Check and request production release',
               'deploy': 'Deploy approved proposal', 'rollback': 'Check and request rollback'}
     busy = any(a.get('state') in BUSY for a in data.get('activity', []))
-    return {'context': context(data), 'actions': [{'name': name, 'label': labels[name],
+    actions = [{'name': name, 'label': labels[name],
               'enabled': not (unavailable or reasons[name] or busy),
               'reason': unavailable or reasons[name] or ('A release operation is already queued or running.' if busy else '')}
-              for name in labels], 'approved_prs': list(approved.values()),
+              for name in labels]
+    for action in actions:
+        name = action['name']
+        if name == 'deploy': continue
+        kind = {'integration':'promotion','staging':'promotion','prepare':'prepare-production',
+                'release':'release-production','rollback':'rollback'}[name]
+        target = name if name in ('integration','staging') else 'production'
+        attempts = [a for a in data.get('activity', []) if a.get('id') and
+                    a.get('kind') == kind and a.get('target') == target]
+        latest = max(attempts, key=lambda a: (a.get('created_at') or '', a.get('id')), default=None)
+        action['mode'] = 'submit'
+        if latest:
+            action['attempt'] = {k:latest.get(k) for k in ('id','state','created_at','error')}
+        stage = stages.get({'prepare':'candidate','release':'production','rollback':'production'}.get(name,name), {})
+        review = (stage.get('review_operation') or {}).get('pr') if name != 'rollback' else (latest or {}).get('pr')
+        if latest and latest['state'] in BUSY:
+            action.update(mode='progress', label='View progress',
+                          href='/api/delivery/operations/'+latest['id'],
+                          enabled=not unavailable, reason=unavailable or 'Checks are already queued or running. No new checks will be started.')
+        elif review and review.get('state') in ('awaiting review','approved','changes requested') and review.get('url'):
+            action.update(mode='review', label='Review proposal', href=review['url'],
+                          enabled=not unavailable, reason=unavailable or 'Review the existing proposal before deployment.')
+        elif latest and latest['state'] in ('failed','interrupted'):
+            action.update(label='Run checks again', retry_of=latest['id'])
+            if action['enabled']:
+                action['reason']='Starts a fresh attempt with current settings. The previous result is retained.'
+    return {'context': context(data), 'actions': actions, 'approved_prs': list(approved.values()),
             'comparisons': {name: comparison(data, name)
                 for name in ('integration', 'staging', 'prepare', 'release', 'rollback')}}
 
@@ -143,6 +169,8 @@ def submit(request, identity, key):
         raise ValueError('The release or environment changed. Refresh before continuing.')
     choice = next(a for a in options['actions'] if a['name'] == request['action'])
     if not choice['enabled']: raise ValueError(choice['reason'])
+    if choice.get('mode', 'submit') != 'submit':
+        raise ValueError('An attempt or proposal already exists. Open its progress or review instead.')
     if request['action'] == 'deploy' and request['pr'] not in {p['number'] for p in options['approved_prs']}:
         raise ValueError('The selected proposal is not approved for this release.')
     binding = {'request': request, 'identity': {k: identity[k] for k in ('username', 'is_admin')}}
