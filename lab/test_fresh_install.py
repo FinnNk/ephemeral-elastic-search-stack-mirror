@@ -46,6 +46,17 @@ class FreshInstallTests(unittest.TestCase):
                 installer.preflight()
         self.assertFalse(installer.path.exists())
 
+    def test_new_server_default_and_resumed_capacity_are_distinct(self):
+        self.args.server_memory = None
+        self.assertEqual(setup.Installer(self.args).args.server_memory, '10g')
+        value = self.record()
+        value['configuration'] = {'server_memory': '6g'}
+        setup.private_json(self.state / 'fresh-install.json', value)
+        self.args.server_memory = None
+        self.assertEqual(setup.Installer(self.args).args.server_memory, '6g')
+        self.args.server_memory = '12g'
+        self.assertEqual(setup.Installer(self.args).args.server_memory, '12g')
+
     def test_changed_node_identity_is_rejected(self):
         self.record()
         installer = setup.Installer(self.args)

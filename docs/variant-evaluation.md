@@ -177,8 +177,9 @@ score/result-change limits. Its outcome is **Passed**, **Decision required** or
 not authorise a different promotion comparison. A set needing a decision stays
 blocked; this flow does not yet accept per-set promotion exceptions.
 
-Report-only sets have an **Informational** outcome, with unavailable scores and
-capture failures shown explicitly. A failure does not block promotion, but it
+Report-only sets show **Passed (advisory)**, **Failed (advisory)**,
+**Review advised (advisory)** or **Incomplete (advisory)**, with coverage and the
+reason shown separately. No usable labels or an unfinished capture is incomplete. A failure does not block promotion, but it
 suppresses the combined average when the capture is incomplete. The combined
 view uses metrics available in every scored set, counts repeated requests in
 each set and pools result counts for coverage. It never replaces an individual
@@ -282,3 +283,10 @@ Optional [exploratory notebooks](data-evaluation-contracts.md#exploratory-notebo
 - [Managed gate rehearsal](research/evidence/managed-variant-gate.md): a blocked live report and a separate fixture pass.
 - [Gate policy](../lab/delivery/policies/variant-merge-v1.json): thresholds and exception bounds.
 - [Delivery guide](delivery.md): promotion and rollback.
+
+
+The seeded sneakers and Redis rewrite sets include accepted model judgements.
+They reproduce 90% coverage on both sides of their packaged captures. These
+labels are advisory only and retain their provenance; they cannot be promoted
+to required reference labels by changing the selection. See the
+[dataset record](../lab/delivery/bootstrap/evaluation/judgements/README.md).

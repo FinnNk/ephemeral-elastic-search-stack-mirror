@@ -45,7 +45,7 @@ before treating the transferred lab as ready for a demonstration.
 
 ## Allocate resources
 
-The current CPU nodes have Docker memory limits totalling 30 GiB: 6 GiB for the
+The current CPU nodes have Docker memory limits totalling 34 GiB: 10 GiB for the
 server, 4 GiB for the main agent, 12 GiB for observability and 8 GiB for the
 optional Headlamp testbed. Nexus and its database add 4.5 GiB of limits. These
 are configured limits, not measured simultaneous usage or a Mac minimum.
@@ -67,7 +67,7 @@ For an **empty rehearsal cluster**, the retained base configuration can be used:
 
 ```sh
 k3d cluster create --config research/platform-spike/k3d.yaml \
-  --servers-memory 6g --agents-memory 4g
+  --servers-memory 10g --agents-memory 4g
 mkdir -p "$LAB_STATE_DIR"
 k3d kubeconfig get relevance-lab > "$LAB_STATE_DIR/kubeconfig.yaml"
 kubectl --kubeconfig "$LAB_STATE_DIR/kubeconfig.yaml" get nodes

@@ -23,3 +23,6 @@ data/fresh-judgements/*.manifest.json -text
 
 # The release contract requires a canonical version-file newline.
 lab/delivery/bootstrap/VERSION text eol=lf
+
+# Frozen query and judgement hashes must survive Windows and Mac checkouts.
+lab/delivery/bootstrap/evaluation/** -text

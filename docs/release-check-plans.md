@@ -29,10 +29,12 @@ All standard query sets remain mandatory, independently of this selection.
    JSON file in `delivery-state/release-check-plans/` and links its Gitea PR.
    Review the changes and approve the exact head as the named administrator who
    proposed the plan. A bot or delivery service account cannot provide this review.
-7. Refresh the dashboard and select **Record approved plan**. This merges only
-   the plan record; it does not deploy or run the promotion checks.
-8. Once the plan is recorded, use **Check and propose**. Review and approve the
-   resulting deployment proposal separately, then deploy through the usual flow.
+7. Refresh the dashboard and select **Record approval and start checks**. The
+   coordinator verifies approval, records the plan and queues one check attempt.
+   You can leave the page; the queued checks are durable. To defer checks, choose
+   **Record approved plan only**, then use **Check and propose** later.
+8. Follow the promotion-check link from the completed plan operation. Review and
+   approve the separate deployment proposal, then deploy through the usual flow.
 
 Plan operations have progress links in the dashboard and release activity. The
 editor retains unsent selections during refreshes within the current page; save
@@ -63,7 +65,16 @@ plan PR, exact head, merged commit and approval. A new destination, candidate,
 policy or newly recorded replacement plan requires a fresh reviewed plan and
 fresh evidence. A draft replacement alone does not amend a recorded plan.
 
-Review a separate plan for each destination. Production's load gate and final
+When the exact release is still deployed in the immediately preceding stage,
+the suggestion carries forward its reviewed intents and query-set choices. It
+links the previous plan and keeps the editor available for destination-specific
+changes. New required declarations remain required. Different candidate data,
+configuration, policy or standard sets prevent reuse. Unlabelled advisory copies
+are suggested for retirement when a labelled version of the same queries exists;
+the plan records the reviewer’s choice and reason.
+
+Review and approve a separate plan for each destination: carried selections do
+not transfer approval or evidence across different baselines. Production's load gate and final
 active-versus-candidate comparison share the same reviewed intents. Rollback
 requires a plan for the retained inactive release against active production.
 

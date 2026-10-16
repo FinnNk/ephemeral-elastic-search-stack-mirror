@@ -29,7 +29,11 @@ class HumanReview(unittest.TestCase):
                       'ranker-a': {'field_boosts': {'title': 4, 'brand': 2}}}})}
         report = {'baseline_build_run': 158, 'baseline_variant': 'default',
                   'baseline_pin': {'settings': {'field_boosts': {'title': 3}}},
-                  'checks': [{'variant': 'ranker-a', 'intent': 'ranking-change', 'state': 'pass'}]}
+                  'checks': [{'variant': 'ranker-a', 'intent': 'ranking-change', 'state': 'pass',
+                    'query_set_outcomes': {
+                        'sneakers': {'required': False, 'state': 'report_only', 'assessment': 'pass', 'judged_fraction': .9},
+                        'failed-extra': {'required': False, 'state': 'report_only', 'assessment': 'blocked', 'judged_fraction': .7},
+                        'missing-extra': {'required': False, 'state': 'report_only', 'assessment': 'incomplete', 'reason': 'No usable labels.'}}}]}
         text = description('integration', {'build_run': 184, 'fingerprint': 'new', 'fields': fields},
                            {'build_run': 158, 'fingerprint': 'old'},
                            {'sha256': 'a' * 64, 'blob': 'runs/hash/evidence.json'}, report)
@@ -44,3 +48,8 @@ class HumanReview(unittest.TestCase):
         self.assertIn('Deploy approved proposal', lead)
         self.assertNotIn('independent label accuracy', text)
         self.assertNotIn('local simulation', text)
+        self.assertIn('Passed (advisory)', text)
+        self.assertIn('Failed (advisory)', text)
+        self.assertIn('Incomplete (advisory)', text)
+        self.assertIn('90.0%', text)
+        self.assertIn('No usable labels.', text)

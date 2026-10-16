@@ -178,13 +178,19 @@ def project(run, rows, receipts, environments, reviews, builds, notices):
         if not bound:
             continue
         url = '/api/delivery/operations/' + r['id']
+        pr = reviews.get(r['result'].get('pr') or r['request'].get('pr'))
+        if pr and d:
+            fields = d['fields']
+            from release_names import label
+            pr = {**pr, 'release_label': label(d),
+                  'changes_url': GITEA + SOURCE + '/commit/' + fields['source_sha']}
         activity.append({'id': r['id'], 'kind': r['request']['kind'], 'state': r['state'],
             'target': (r['result'].get('proposal') or proposals.get(r['request'].get('pr'), {})).get('target', r['request'].get('target') or {'prepare':'production','release':'production','deploy':'production','rollback':'production'}.get(r['request'].get('_release_binding', {}).get('request', {}).get('action'))),
             'progress': r['progress'], 'error': r['error'], 'created_at': r['created_at'],
             'updated_at': r['updated_at'], 'duration_seconds': duration(r['created_at'], now if r['state'] in ('running','queued','accepted') else r['updated_at']),
             'url': url, 'report_url': url + '/report' if r['result'].get('report') else None,
             'evidence': r['result'].get('report'),
-            'pr': reviews.get(r['result'].get('pr') or r['request'].get('pr')),
+            'pr': pr,
             'intent': r['request'].get('intent') or r['result'].get('proposal', {}).get('intent')})
     stages = []
     for name, title in (('integration','Integration'), ('staging','Staging'),
@@ -213,7 +219,7 @@ def project(run, rows, receipts, environments, reviews, builds, notices):
                 state, message = latest['state'], latest['error'] or latest['progress']
             elif latest.get('pr') and latest['pr']['state'] != 'merged':
                 state, message = latest['pr']['state'], 'Review the proposal and retained checks in Gitea.'
-            elif latest.get('pr') and latest['pr']['state'] == 'merged' and not current:
+            elif latest.get('pr') and latest['pr']['state'] == 'merged' and not current and not history:
                 state, message = 'merged', 'Proposal merged; matching current rollout is not yet observed.'
         stages.append({'name': name, 'title': title, 'state': state, 'message': message,
                        'environment': current, 'verification': {k: receipt.get(k) for k in ('verified_at','seconds','git_revision')} if receipt else None,
@@ -284,6 +290,11 @@ def snapshot(identity, run=None):
             reviews[number] = {'number':number,'state':'unknown','url':GITEA+DESIRED+'/pulls/'+str(number)}
             notices.append('Review status is unavailable for PR #' + str(number) + '.')
     result = project(run, rows, receipts, environments, reviews, builds, notices)
+    from release_names import changelog
+    change_url = changelog((result.get('selected') or {}).get('source_sha'))
+    if change_url:
+        for row in result['activity']:
+            if row.get('pr'): row['pr']['changelog_url'] = change_url
     result['source'] = source_merge(result.get('selected'), rows, notices)
     from delivery_variant_selection import selection_summary
     result['variant_selection'] = selection_summary((result.get('selected') or {}).get('source_sha'))

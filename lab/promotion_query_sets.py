@@ -38,17 +38,19 @@ def policy():
 
 def outcome(report, required, intent):
     """Apply the trusted required-set limits; report-only measurements never block."""
-    if not required:
-        return {'state': 'report_only', 'required': False,
-                'available': report.get('complete') is True, 'used_for_gate': False,
-                **({'reason': report['relevance_unavailable_reason']} if report.get('relevance_unavailable_reason') else {})}
-    result = {'state': 'blocked', 'required': True, 'used_for_gate': True}
+    result = {'state': 'blocked', 'required': required, 'used_for_gate': required}
+    def measured(value):
+        if required:
+            return value
+        return {**value, 'state': 'report_only', 'assessment': value['state'],
+                'available': report.get('complete') is True}
     try:
         from variant_gate import require_gate_judgements, number
         limits = policy()
         if report.get('complete') is not True or report.get('relevance_available') is not True:
             raise ValueError(report.get('relevance_unavailable_reason') or 'Required query set has incomplete capture or no usable relevance scores.')
-        require_gate_judgements(report)
+        if required:
+            require_gate_judgements(report)
         metric = limits['metric']
         coverage = min(number(report['coverage'][v]['fraction'], 'Judged coverage')
                        for v in ('baseline', 'candidate'))
@@ -66,10 +68,17 @@ def outcome(report, required, intent):
             state = 'pass'
         else:
             state = 'decision_required'
-        return {**result, 'state': state, 'delta': delta, 'judged_fraction': coverage,
-                'changed_query_fraction': fraction}
+        reasons = []
+        if coverage < limits['minimum_judged_fraction']:
+            reasons.append(f'Judged coverage {coverage:.1%} is below {limits["minimum_judged_fraction"]:.1%}.')
+        if delta < limits['pass_min_delta']:
+            reasons.append(f'{metric} change {delta:+.4f} is below {limits["pass_min_delta"]:+.4f}.')
+        if fraction > budgets['pass']:
+            reasons.append(f'Changed-query fraction {fraction:.1%} exceeds {budgets["pass"]:.1%}.')
+        return measured({**result, 'state': state, 'delta': delta, 'judged_fraction': coverage,
+                'changed_query_fraction': fraction, 'reason': ' '.join(reasons) or 'Within the comparison limits.'})
     except (ValueError, KeyError, TypeError) as error:
-        return {**result, 'reason': str(error)}
+        return measured({**result, 'state': 'blocked' if required else 'incomplete', 'reason': str(error)})
 
 
 def pins(baseline, candidate, runtime):

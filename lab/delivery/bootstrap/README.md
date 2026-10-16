@@ -10,6 +10,10 @@ This repository is part of the [ephemeral search lab](https://gitea.localhost:34
 - Read [`app/variants.py`](app/variants.py) to see how named ranking settings are selected. A field boost controls how much a match in a field such as the title or brand contributes to the score.
 - Read [`app/test_app.py`](app/test_app.py) for examples of expected requests and responses.
 
+Review [release notes](CHANGELOG.md) before promoting a build. The
+[additional judgement data](evaluation/judgements/README.md) explains the
+source-pinned sneakers and Redis rewrite labels and their measured coverage.
+
 ## Run the tests
 
 You need Git and a running Docker installation. Before cloning over HTTPS, set up lab DNS and certificate trust using the [Windows, Linux and macOS workstation instructions](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/workstation-access.md). The recommended Windows setup creates a user-owned CA bundle once, so the clone below needs no extra certificate arguments. Browser trust is a separate step. Lab DNS also covers preview URLs without hosts-file edits. From a terminal, run:

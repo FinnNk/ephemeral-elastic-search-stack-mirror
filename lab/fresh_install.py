@@ -174,6 +174,8 @@ class Installer:
         self.env = dict(os.environ, LAB_STATE_DIR=str(self.state), PYTHONUNBUFFERED='1')
         self.kube = ['kubectl', '--kubeconfig', str(self.state / 'kubeconfig.yaml')]
         self.record = json.loads(self.path.read_text(encoding='utf-8')) if self.path.exists() else None
+        if getattr(args, 'server_memory', None) is None:
+            args.server_memory = (self.record or {}).get('configuration', {}).get('server_memory', '10g')
 
     def command(self, command, **options):
         return execute(command, env=self.env, **options)
@@ -462,11 +464,11 @@ def main():
     parser.add_argument('--corporate-ca', help='PEM bundle; kept outside Git and mounted into k3d nodes')
     parser.add_argument('--gitea-registry', choices=('docker.io/gitea/gitea', 'docker.gitea.com/gitea'),
                         default='docker.io/gitea/gitea')
-    parser.add_argument('--server-memory', default='6g')
+    parser.add_argument('--server-memory', help='Server memory: 10g for a new lab; retain the recorded value on resume.')
     parser.add_argument('--agent-memory', default='4g')
     parser.add_argument('--through', choices=PHASES, default='verify')
     args = parser.parse_args()
-    if not all(re.fullmatch(r'[1-9][0-9]*[gm]', value) for value in (args.server_memory, args.agent_memory)):
+    if not all(re.fullmatch(r'[1-9][0-9]*[gm]', value) for value in (args.server_memory, args.agent_memory) if value is not None):
         parser.error('Memory limits must be positive whole values such as 6g.')
     try:
         Installer(args).install()

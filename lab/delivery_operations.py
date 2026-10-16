@@ -12,11 +12,11 @@ from common import STATE
 FIELDS = {
     'suggest-release-plan': {'run', 'target', 'dataset', 'recipe', 'query_manifest', 'judgement_manifest'},
     'propose-release-plan': {'suggestion', 'edits'},
-    'accept-release-plan': {'pr'},
+    'accept-release-plan': {'pr', 'run_checks'},
     'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'},
     'expire-preview': {'name', 'fingerprint', 'expires_at'},
     'prepare-production': set(),
-    'release-production': set(),
+    'release-production': {'run'},
     'preview': {'run', 'dataset', 'recipe'},
     'compare': {'baseline_run', 'candidate_run', 'dataset', 'recipe', 'pr', 'source_sha', 'baseline_sha'},
     'promotion': {'target', 'run', 'dataset', 'recipe', 'query_manifest', 'judgement_manifest'},
@@ -52,6 +52,8 @@ def validate(payload):
         raise ValueError('Required delivery operation fields are missing.')
     if kind == 'propose-release-plan' and (not re.fullmatch('[a-f0-9]{32}',str(payload['suggestion'])) or not isinstance(payload['edits'],dict)):
         raise ValueError('Choose a saved release check suggestion and its review settings.')
+    if kind == 'accept-release-plan' and 'run_checks' in payload and type(payload['run_checks']) is not bool:
+        raise ValueError('Choose whether to start checks after recording approval.')
     if kind in ('expire-preview', 'set-preview-expiry') and not re.fullmatch(r'lab-delivery-run-[1-9][0-9]*-[a-f0-9]{8}', str(payload['name'])):
         raise ValueError('Only delivery preview environments can expire early.')
     if kind in ('expire-preview', 'set-preview-expiry'):
@@ -115,7 +117,7 @@ class Operations:
             ((result.get('result') or {}).get('gate') or {}).get('state') == 'decision_required' else None
         return result
 
-    def submit(self, payload, identity, key, *, release_binding=None):
+    def submit(self, payload, identity, key, *, release_binding=None, check_plan_id=None):
         """Retry the same submission key safely; changed payloads require a new key."""
         validate(payload)
         from release_check_plans import KINDS as PLAN_KINDS
@@ -131,6 +133,11 @@ class Operations:
             raise ValueError('Supply a stable Idempotency-Key of 1–128 characters.')
         owner = identity.get('issuer', '') + ':' + identity.get('subject', identity['username'])
         identifier = hashlib.sha256((owner + '\n' + key).encode()).hexdigest()[:32]
+        if check_plan_id:
+            if not re.fullmatch('[a-f0-9]{64}', check_plan_id) or payload['kind'] not in ('promotion', 'release-production'):
+                raise ValueError('Invalid recorded-plan check request.')
+            payload = {**payload, '_check_plan_id': check_plan_id}
+            identifier = hashlib.sha256(('plan-checks\n' + check_plan_id).encode()).hexdigest()[:32]
         if release_binding:
             payload = {**payload, '_release_binding': release_binding}
         if payload['kind'] == 'prepare-production':
@@ -224,6 +231,16 @@ def execute_next():
             from release_control import validate_binding
             validate_binding(request['_release_binding'])
         kind = request['kind']
+        if request.get('_check_plan_id'):
+            from release_check_plans import scope, require
+            target = request.get('target', 'production')
+            settings = {field: request[key] for key, field in (
+                ('dataset', 'dataset_release'), ('recipe', 'index_recipe_sha256'),
+                ('query_manifest', 'query_manifest_sha256'), ('judgement_manifest', 'judgement_manifest_sha256')) if request.get(key)}
+            baseline, candidate = scope(request['run'], target, settings)
+            _, recorded = require(baseline, candidate, target)
+            if recorded['id'] != request['_check_plan_id']:
+                raise ValueError('The recorded check plan changed while queued. Review it before starting checks.')
         options = []
         for field in ('dataset', 'recipe', 'query_manifest', 'judgement_manifest'):
             if field in request:
@@ -236,6 +253,8 @@ def execute_next():
                     ('dataset','dataset_release'),('recipe','index_recipe_sha256'),
                     ('query_manifest','query_manifest_sha256'),('judgement_manifest','judgement_manifest_sha256')) if request.get(key)})
             result={'run':request['run'],'target':request['target'],'suggestion':suggest(baseline,candidate,request['target'])}
+            from release_plan_reuse import recommend
+            result.update(recommend(result['suggestion']))
         elif kind == 'propose-release-plan':
             from release_check_plans import propose
             saved=store.get(request['suggestion'])
@@ -247,6 +266,9 @@ def execute_next():
             from release_check_plans import record
             progress('Checking exact-head approval and recording the plan in source control')
             result=record(request['pr'])
+            if request.get('run_checks'):
+                from release_plan_reuse import queue_checks
+                result['checks_operation'] = queue_checks(result, row['identity'], store)
         elif kind == 'prepare-production':
             from production_release import prepare
             progress('Creating the reviewed inactive production candidate')
@@ -256,6 +278,9 @@ def execute_next():
             result = prepare()
         elif kind == 'release-production':
             from production_release import release
+            if request.get('run'):
+                from release_check_plans import scope
+                scope(request['run'], 'production')
             result = release(progress=progress)
         elif kind == 'preview':
             progress('Preparing the frozen preview')

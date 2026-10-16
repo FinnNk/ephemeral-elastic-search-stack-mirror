@@ -89,6 +89,22 @@ class Projection(unittest.TestCase):
         self.assertEqual(result['stages'][1]['state'],'failed')
         self.assertEqual(len(result['activity']),2)
 
+    def test_merged_proposal_does_not_erase_previous_deployment_history(self):
+        result=self.project(rows=[operation()],receipts=[receipt()],
+            environments={'staging':environment('staging',run=160)},
+            reviews={24:{'number':24,'state':'merged','url':'/pr/24'}})
+        stage=result['stages'][1]
+        self.assertEqual(stage['state'],'previously verified')
+        self.assertIn('another release is now deployed',stage['message'])
+        self.assertNotIn('not yet observed',stage['message'])
+
+    def test_approved_proposals_include_release_identity_and_changes_link(self):
+        result=self.project(rows=[operation()],reviews={24:{'number':24,'state':'approved','url':'/pr/24'}})
+        pr=result['activity'][0]['pr']
+        self.assertIn('build 158',pr['release_label'])
+        self.assertIn('a'*12,pr['release_label'])
+        self.assertTrue(pr['changes_url'].endswith('/commit/'+'a'*40))
+
     def test_unbound_failure_not_attributed_to_current_candidate(self):
         row=operation('release-production',state='failed',target='production')
         row['request']={'kind':'release-production','intent':'ranking-change'};row['result']={}

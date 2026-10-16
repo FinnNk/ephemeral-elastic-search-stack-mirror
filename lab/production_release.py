@@ -447,7 +447,10 @@ def approved_prs():
         proposal = json.loads(base64.b64decode(contents['content']))
         if proposal.get('target') != 'production' or proposal.get('kind') not in ('prepare-production', 'promotion', 'rollback'):
             continue
+        from release_names import label, changelog
+        deployed = proposal.get('candidate') or proposal.get('deployment') or {}
         result.append({'number': pr['number'], 'title': pr['title'], 'kind': proposal['kind'],
+                       'release_label': label(deployed), 'changelog_url': changelog(deployed.get('fields', {}).get('source_sha')),
                        'head_sha': pr['head']['sha'],
                        'url': f"https://gitea.localhost:34443/elastic-agent/delivery-state/pulls/{pr['number']}"})
     return sorted(result, key=lambda row: row['number'])

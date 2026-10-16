@@ -104,7 +104,22 @@ class PromotionQuerySets(unittest.TestCase):
         for update in ({'complete':False},{'relevance_available':False},{'unqualified_judgements':1}):
             self.assertEqual(suites.outcome({**self.extra_report(),**update},True,'ranking-change')['state'],'blocked')
         self.assertEqual(suites.outcome({'complete':False},False,'ranking-change'),
-                         {'state':'report_only','required':False,'available':False,'used_for_gate':False})
+                         {'state':'report_only','assessment':'incomplete','required':False,'available':False,'used_for_gate':False,'reason':'Required query set has incomplete capture or no usable relevance scores.'})
+
+    def test_advisory_assessment_retains_failures_without_closing_gate(self):
+        report=self.extra_report()
+        self.assertEqual(suites.outcome(report,False,'ranking-change')['assessment'],'pass')
+        report['metrics']['candidate']['nDCG@10']=.5
+        result=suites.outcome(report,False,'ranking-change')
+        self.assertEqual(result['assessment'],'blocked')
+        self.assertFalse(result['used_for_gate'])
+        self.assertIn('nDCG',result['reason'])
+        report=self.extra_report();report['coverage']['candidate']['fraction']=.7
+        self.assertEqual(suites.outcome(report,False,'ranking-change')['assessment'],'blocked')
+        # An informational measurement does not claim that its labels are qualified.
+        report=self.extra_report();report.update(judgement_selection='exploratory',unqualified_judgements=10)
+        self.assertEqual(suites.outcome(report,False,'ranking-change')['assessment'],'pass')
+        self.assertEqual(suites.outcome(report,True,'ranking-change')['state'],'blocked')
 
     def test_capture_once_per_extra_and_validate_retained_contract(self):
         with ExitStack() as stack:

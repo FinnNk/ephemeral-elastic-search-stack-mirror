@@ -42,11 +42,15 @@
   if(value.operation_url)link(value.operation_url,'Follow plan operation',add('p',''));
   const button=(text,callback)=>{const b=add('button',text);b.type='button';b.disabled=sending||!options.plan_editor||['working','unavailable'].includes(value.state);b.onclick=callback;return b;};
   button(value.suggestion?'Suggest again from current releases':'Suggest checks from accumulated changes',()=>{const fields={run:value.run,target:value.target};if(value.target==='integration')for(const [key,field] of [['dataset','dataset_release'],['recipe','index_recipe_sha256'],['query_manifest','query_manifest_sha256'],['judgement_manifest','judgement_manifest_sha256']])if(data.release?.[field])fields[key]=data.release[field];submitPlan('suggest-release-plan',fields);});
-  if(value.state==='approved')button('Record approved plan',()=>submitPlan('accept-release-plan',{pr:value.pr}));
+  if(value.state==='approved'){
+   button('Record approval and start checks',()=>submitPlan('accept-release-plan',{pr:value.pr,run_checks:true}));
+   button('Record approved plan only',()=>submitPlan('accept-release-plan',{pr:value.pr}));
+  }
   const suggestion=value.suggestion;if(!suggestion)return;
   const details=add('details','');details.open=value.state==='suggested';add('summary','Review or revise suggested checks',details);
   const box=add('div','',details);box.className='panel-body';
   const pin=suggestion.binding;
+  if(value.carried_from){add('p','Selections carried forward from '+value.carried_from.target+' for this exact release. The destination baseline and approval are new.',box);link(value.carried_from.url,'Review previous plan PR #'+value.carried_from.pr,add('p','',box));}
   add('p','Baseline build '+pin.baseline.build_run+' → candidate build '+pin.candidate.build_run+' · '+value.target,box);
   add('h4','Mandatory checks',box);
   add('p','Every standard query set remains required. This plan cannot remove or weaken them.',box);
@@ -56,7 +60,7 @@
   if(suggestion.ancestry.missing_declarations.length)add('p',suggestion.ancestry.missing_declarations.length+' historical commits have no query-set declaration. Explain how the selected checks cover this gap in the review reason.',box).className='notice';
   const changes=add('ul','',box);for(const c of suggestion.changes)link('https://gitea.localhost:34443/elastic-agent/delivery-source/commit/'+c.source_sha,(c.side==='baseline-only'?'Removed from baseline · ':'')+c.source_sha.slice(0,12)+' · '+c.title,add('li','',changes));
   if(!suggestion.changes.length)add('li','No source commits differ; review configuration and data changes.',changes);
-  if(!planEdits.has(value.suggestion_id))planEdits.set(value.suggestion_id,value.reviewed_edits?structuredClone(value.reviewed_edits):{variants:suggestion.variants.map(v=>({...v})),suites:suggestion.suites.map(s=>({id:s.id,disposition:s.required?'required':'report_only',reason:''})),additional_query_sets:[],reason:''});
+  if(!planEdits.has(value.suggestion_id))planEdits.set(value.suggestion_id,value.reviewed_edits||value.recommended_edits?structuredClone(value.reviewed_edits||value.recommended_edits):{variants:suggestion.variants.map(v=>({...v})),suites:suggestion.suites.map(s=>({id:s.id,disposition:s.required?'required':'report_only',reason:''})),additional_query_sets:[],reason:''});
   const edits=planEdits.get(value.suggestion_id);
   const select=(values,current,onchange,to)=>{const select=add('select','',to);for(const [key,label] of values){const o=document.createElement('option');o.value=key;o.textContent=label;select.append(o);}select.value=current;select.disabled=!options.plan_editor;select.onchange=()=>onchange(select.value);return select;};
   const input=(label,current,onchange,to=box,tag='input')=>{const l=add('label',label+' ',to),n=add(tag,null,l);n.value=current||'';n.disabled=!options.plan_editor;n.oninput=()=>onchange(n.value);return n;};
@@ -106,7 +110,7 @@
   const deploy=options.actions.find(x=>x.name==='deploy');
   $('deploy-proposal').disabled=!deploy.enabled||!$('approved-proposal').value||sending;
   $('deploy-reason').textContent=deploy.reason||'The coordinator rechecks exact approval and evidence before merging and verifying.';
-  $('proposal-link').replaceChildren();const pr=options.approved_prs.find(p=>String(p.number)===$('approved-proposal').value);if(pr)link(pr.url,'Review PR #'+pr.number+' in Gitea',$('proposal-link'));
+  $('proposal-link').replaceChildren();const pr=options.approved_prs.find(p=>String(p.number)===$('approved-proposal').value);if(pr){link(pr.url,'Review PR #'+pr.number+' in Gitea',$('proposal-link'));const changes=pr.changelog_url||pr.changes_url;if(changes){$('proposal-link').append(document.createTextNode(' · '));link(changes,pr.changelog_url?'Release changelog':'Release changes',$('proposal-link'));}}
   for(const node of document.querySelectorAll('.tree-node'))node.setAttribute('aria-pressed',String(node.dataset.stage===$('promotion-stage').value));
  }
  async function load(value){
@@ -122,7 +126,7 @@
   try{
    const result=await request('/api/delivery/dashboard/actions?run='+data.selected.run);if(current!==epoch)return;
    options=result;const previous=$('approved-proposal').value;$('approved-proposal').replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent=result.approved_prs.length?'Select an approved proposal':'No approved proposals';$('approved-proposal').append(empty);
-   for(const pr of result.approved_prs){const option=document.createElement('option');option.value=pr.number;option.textContent='PR #'+pr.number;$('approved-proposal').append(option);}
+   for(const pr of result.approved_prs){const option=document.createElement('option');option.value=pr.number;option.textContent=(pr.release_label?pr.release_label+' · ':'')+'PR #'+pr.number;$('approved-proposal').append(option);}
    if(result.approved_prs.some(p=>String(p.number)===previous))$('approved-proposal').value=previous;
    $('approved-proposal').disabled=!result.actions.find(a=>a.name==='deploy').enabled;
    $('control-state').textContent='Build '+data.selected.run+' · select a stage to review its next action.';

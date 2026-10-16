@@ -354,3 +354,18 @@ retain a documented non-zero unjudged fraction, and have reproducible source
 references and model provenance. Report the measured coverage and any remaining
 gaps. No judgement generation or historical evidence changes are part of this
 feedback-recording batch.
+
+
+## Final Production walkthrough feedback implementation
+
+The [completion batch](walkthrough-feedback-final.md) implements the remaining
+16 October feedback, including the earlier requests for release names and
+changelogs in selectors, an accurate superseded-deployment state, plan selections
+carried forward for an unchanged preceding release, and starting checks after
+recording approval. The explicit combined action queues durable checks; it does
+not approve or deploy the resulting proposal. Standard sets stay mandatory.
+
+The two additional query sets now have 306 accepted Luna judgements, with 90%
+coverage on both sides of the retained captures. Labels and observations are new
+source data; historical promotion evidence has not been rewritten. They remain
+advisory model assessments rather than qualified required-gate labels.

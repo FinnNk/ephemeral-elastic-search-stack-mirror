@@ -161,8 +161,9 @@ Explicitly retain, replace or retire suggested sets, with reasons for reduced
 requirements. All standard sets remain mandatory.
 
 Create the plan PR, approve its exact head as the named human administrator,
-then choose **Record approved plan** in the dashboard. Only then run promotion
-checks and review the separate deployment proposal. Candidate variants and
+then choose **Record approval and start checks** in the dashboard. To defer
+checks, choose **Record approved plan only**. Review the separate deployment
+proposal after the checks finish. Candidate variants and
 configurations remain fixed by the source build. Review a separate plan for each
 destination; a changed baseline or recorded plan requires fresh checks.
 
@@ -178,9 +179,11 @@ remain covered by their separate catalogue-specific query sets.
 
 Add `evaluation/queries/redis-rewrites.jsonl` to `additional_query_sets` with the
 name `redis-rewrites` and `required: false`. The comparison captures results and
-reports label resolution, relevance and result changes. This set has no authored
-reference judgements, so it is report only; the protected standard sets remain
-mandatory. Exercising an alias does not by itself establish relevance quality or
+reports label resolution, relevance and result changes. It includes accepted
+Luna judgements at `evaluation/judgements/redis-rewrites.jsonl`, retaining
+90% coverage on each side of the packaged capture. Include that `judgements`
+path in the declaration. These model labels remain advisory; the protected
+standard sets remain mandatory. Exercising an alias does not by itself establish relevance quality or
 verify the Redis failure fallback, which has separate API contract tests.
 
 For promotions, review this set in the accumulated release check plan. A source

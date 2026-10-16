@@ -1,0 +1,63 @@
+{
+  "kind": "accepted-advisory-judgements",
+  "schema_version": 1,
+  "model": "gpt-6-luna",
+  "rubric": "esci-v1",
+  "acceptance": {
+    "reviewer": "finnnk",
+    "decided_at": "2026-10-16",
+    "reason": "The owner explicitly authorises Luna-generated judgements for these additional sets and accepts them as-is; preserve model provenance and use them as advisory reference data."
+  },
+  "catalogue_sha256": "dfe6cecbc7d745a728fbed59679be10af0532be69583f65dc078c8108c25ff50",
+  "inputs_sha256": "31f401339eab77c2348fef22fe5a4147dc28f2955f0b8b52d3d2b40f0be2df34",
+  "sampling": "Per query, omit the lowest SHA-256(query_id + newline + product_id) in the shared pool, or one per side when pools do not intersect. Selection precedes judging and does not use ranks or relevance scores.",
+  "sets": {
+    "redis-rewrites": {
+      "labels": 252,
+      "grades": {
+        "E": 178,
+        "I": 19,
+        "C": 44,
+        "S": 11
+      },
+      "coverage": {
+        "baseline": {
+          "judged": 162,
+          "returned": 180,
+          "fraction": 0.9
+        },
+        "candidate": {
+          "judged": 162,
+          "returned": 180,
+          "fraction": 0.9
+        }
+      },
+      "query_sha256": "28dcb119704dd534329b20a85ce3ceb8ad4d146ae63524fdb70bef9c9d394a3e",
+      "judgement_sha256": "5ad868a0b247f481f03117f5e9e72d6ad9853be6fcfaeeee209f2ce7d6681d81",
+      "observations_sha256": "abaf1def53732aed8e61737761c9e51037abdba9a3e4c590651f4b0408bf712e"
+    },
+    "sneakers": {
+      "labels": 54,
+      "grades": {
+        "E": 46,
+        "S": 5,
+        "I": 3
+      },
+      "coverage": {
+        "baseline": {
+          "judged": 36,
+          "returned": 40,
+          "fraction": 0.9
+        },
+        "candidate": {
+          "judged": 36,
+          "returned": 40,
+          "fraction": 0.9
+        }
+      },
+      "query_sha256": "dac924fff7a536191025f06b6f757de725d74a3429a6c598d7c905457f02e3e1",
+      "judgement_sha256": "c10d8b45b7035b193c459691590cbc855d7d6354fb35b075f7ae6b3405b744db",
+      "observations_sha256": "024d99092efcb2e4fd836530432c6e3d8667edb2bc487c683bb0c27628b872b4"
+    }
+  }
+}

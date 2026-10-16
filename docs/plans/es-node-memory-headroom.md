@@ -87,19 +87,20 @@ samples, interval summaries and the original node limits are retained under
 `.lab/walkthroughs/build207/node-memory-test/` in the shared lab-state directory.
 They are diagnostic records and do not replace immutable promotion evidence.
 
-## Next validation
+## Full Production validation and fresh setup
 
-1. Keep the unchanged normal, peak and recovery budgets. Run the full required
-   Production checks at the retained node capacity when the walkthrough resumes.
-2. Inspect both Gatling reports and build 207's `took` traces. Check node-limit
-   increments, swap traffic, cache refaults, CPU throttling and search queues.
-3. If the full run supports the result, propose an explicit sustained-load
-   installation capacity setting and its host-memory requirement. The fresh
-   installer's server default remains 6 GiB; resuming it does not resize a node.
-4. If latency remains outside budget, investigate the remaining correlated
-   signal before changing Elasticsearch CPU, heap or container memory. Change
-   one resource at a time and preserve failed evidence.
+The subsequent full Production operation
+`fd78bddcf1caaeb169c4f7a504044dc8` completed successfully at 10 GiB, with the
+normal, peak and recovery budgets unchanged. It produced delivery-state PR #42,
+which the user approved and deployed. Operation
+`d2063a29ed69dce39d9bcb752426e8ef` verified the active green build 207 image.
 
-The live test ran on Windows/WSL. No Mac performance or sizing acceptance is
-claimed. See the earlier [API CPU experiment](peak-cpu-headroom-diagnostic.md)
+The walkthrough completion batch therefore sets new servers to 10 GiB. Existing
+installations keep their configured limits on resume. The fresh guide allows
+40 GiB for Docker Desktop, including the 16 GiB application agent and external
+stores. Elasticsearch's own CPU, 3 GiB container memory and 1 GiB heap stay
+unchanged. Keep measuring host and enclosing-node pressure when adding workloads.
+
+This evidence was collected on Windows/WSL. Native Mac performance acceptance
+is still required. See the earlier [API CPU experiment](peak-cpu-headroom-diagnostic.md)
 and Elastic's [filesystem-cache guidance](https://www.elastic.co/docs/deploy-manage/production-guidance/optimize-performance/search-speed).

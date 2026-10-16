@@ -6,5 +6,19 @@
       "variant": "ranker-a",
       "intent": "preserve-results"
     }
+  ],
+  "additional_query_sets": [
+    {
+      "name": "sneakers",
+      "path": "evaluation/queries/sneakers.jsonl",
+      "required": false,
+      "judgements": "evaluation/judgements/sneakers.jsonl"
+    },
+    {
+      "name": "redis-rewrites",
+      "path": "evaluation/queries/redis-rewrites.jsonl",
+      "required": false,
+      "judgements": "evaluation/judgements/redis-rewrites.jsonl"
+    }
   ]
 }

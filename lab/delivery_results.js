@@ -73,6 +73,7 @@ function operation(row){
  if(row.state==='complete'&&['promotion','rollback','prepare-production','release-production'].includes(request.kind)&&result.validation){$('state').textContent=result.validation.passed?'Ready for review':'Proposal validation failed';}
  if(result.state)node('p',stateNames[result.state]||label(result.state),section('Deployment outcome'));
  if(result.validation)node('p',result.validation.detail||'Review the recorded validation result.',section('Proposal validation'));
+ if(result.checks_operation){const s=section('Promotion checks','Approval was recorded. The coordinator queued one check attempt for this plan.');const a=node('a','Follow promotion checks',s);a.href=result.checks_operation.url;}
  link('report',row.report_url);$('report').textContent=['promotion','rollback','prepare-production','release-production'].includes(request.kind)?'Review promotion checks':['verify','merge-reviewed'].includes(request.kind)?'Open deployment verification':'Open comparison report';link('baseline',result.baseline_url);link('candidate',result.candidate_url);link('preview',deployedEnvironmentUrl(result)||result.browser_url);$('preview').textContent=deployedEnvironmentUrl(result)?'Open deployed '+result.environment.replace('lab-delivery-',''):'Open search page';link('proposal',result.url);link('decision',row.decision_url);
  identity({operation:row.id,source_commit:request.source_sha||result.source_sha,baseline_commit:request.baseline_sha||result.baseline_source_sha,build_run:request.run,target:request.target,report_sha256:result.report?.sha256,updated_at:row.updated_at});
  return ['accepted','queued','running'].includes(row.state);
@@ -180,7 +181,7 @@ async function promotionReview(value,row){
 }
 function suiteViews(value,prefix=''){
  if(value.gate_outcomes){
-  table(section(prefix+'Query-set outcomes','Every required set must pass independently. Report-only sets and combined averages do not decide promotion.'),['Group','Query set','Requirement','Outcome','Reason'],Object.entries(value.gate_outcomes).map(([name,g])=>[(value.query_set_metadata?.[name]?.group==='mandatory'||name==='standard')?'Standard query sets':'Additional query sets',name,g.required?'Required':'Report only',g.state==='report_only'?(g.available?'Informational':'Informational — unavailable'):(stateNames[g.state]||label(g.state)),g.reason||'']));
+  table(section(prefix+'Query-set outcomes','Every required set must pass independently. Report-only sets and combined averages do not decide promotion.'),['Group','Query set','Requirement','Outcome','Reason'],Object.entries(value.gate_outcomes).map(([name,g])=>[(value.query_set_metadata?.[name]?.group==='mandatory'||name==='standard')?'Standard query sets':'Additional query sets',name,g.required?'Required':'Report only',g.state==='report_only'?(({pass:'Passed',blocked:'Failed',decision_required:'Review advised',incomplete:'Incomplete'}[g.assessment]||(value.query_sets?.[name]?.relevance_available===false||!g.available?'Incomplete':'Outcome not recorded'))+' (advisory)'):(stateNames[g.state]||label(g.state)),g.reason||'']));
  }
  for(const group of ['mandatory','change-specific']){
   const entries=Object.entries(value.query_sets).filter(([name])=>(value.query_set_metadata?.[name]?.group||(name==='standard'?'mandatory':'change-specific'))===group);

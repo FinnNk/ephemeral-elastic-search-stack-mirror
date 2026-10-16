@@ -7,7 +7,7 @@
 <section><h2>1. Prepare the candidate</h2><p>Use the verified staging release. Review its preparation PR, approve it in Gitea, then deploy it below. Production keeps serving its current release.</p><button id="prepare">Prepare production candidate</button></section>
 <section><h2>2. Check and request release</h2><p>Run the normal and peak Gatling gate, then compare 1,000 simulated recent queries against the active API and the prepared candidate. Resolve judgement gaps and score both sides with the same frozen labels. Review the report and approve the route-switch PR in Gitea.</p>
 <p>The candidate's source fixes its variants and configurations. The recorded release check plan supplies the cumulative release intents and query sets. Every variant is checked against the same active production build and default configuration.</p><h3>Candidate source variants and initial intents</h3><div id="candidate-selection"></div><button id="release">Check and release production</button></section>
-<section><h2>3. Deploy an approved PR</h2><p>Select an approved preparation, route-switch or rollback PR. The coordinator checks its exact approval, asks Argo CD to deploy it and verifies the APIs.</p><form id="merge"><label>Approved production PR<select id="pr" required disabled><option value="">Loading approved PRs…</option></select></label><p id="approval-state" role="status"></p><p><a id="review-pr" hidden>Review selected PR in Gitea</a></p><button id="deploy" disabled>Deploy approved PR</button></form></section>
+<section><h2>3. Deploy an approved PR</h2><p>Select an approved preparation, route-switch or rollback PR. The coordinator checks its exact approval, asks Argo CD to deploy it and verifies the APIs.</p><form id="merge"><label>Approved production PR<select id="pr" required disabled><option value="">Loading approved PRs…</option></select></label><p id="approval-state" role="status"></p><p><a id="review-pr" hidden>Review selected PR in Gitea</a> · <a id="review-changelog" hidden>Release changelog</a></p><button id="deploy" disabled>Deploy approved PR</button></form></section>
 <section><h2>Rollback</h2><p>The previous API stays in the other slot. Rollback checks that retained release, creates a reviewed PR and switches the route after approval.</p><button id="rollback">Request rollback to the other slot</button></section><section><h2>Queued and active work</h2><div id="work"></div></section><p id="message" role="status"></p><div id="operation"></div></main>
 <script>
 let current=null,approved=[],sending=false;
@@ -50,13 +50,13 @@ async function refresh(){try{
  $('rollback').disabled=!identity.is_admin||!value.can_rollback;
  await loadApproved(identity.is_admin);
 }catch(e){$('message').textContent=e.message}}
-function chooseApproved(admin){const selected=approved.find(pr=>String(pr.number)===$('pr').value);$('deploy').disabled=!admin||!selected;$('review-pr').hidden=!selected;if(selected)$('review-pr').href=selected.url}
+function chooseApproved(admin){const selected=approved.find(pr=>String(pr.number)===$('pr').value);$('deploy').disabled=!admin||!selected;$('review-pr').hidden=!selected;if(selected)$('review-pr').href=selected.url;$('review-changelog').hidden=!selected?.changelog_url;if(selected?.changelog_url)$('review-changelog').href=selected.changelog_url}
 async function loadApproved(admin){
  const selected=$('pr').value;
  $('pr').disabled=true;$('deploy').disabled=true;$('review-pr').hidden=true;
  try{const value=await request('/api/delivery/production/approved-prs');approved=value.prs;
   $('pr').replaceChildren();const placeholder=text('option',approved.length?'Select an approved PR':'No approved production PRs',$('pr'));placeholder.value='';
-  for(const pr of approved){text('option','#'+pr.number+' — '+pr.title,$('pr')).value=String(pr.number)}
+  for(const pr of approved){text('option',(pr.release_label?pr.release_label+' · ':'')+'#'+pr.number+' — '+pr.title,$('pr')).value=String(pr.number)}
   if(approved.some(pr=>String(pr.number)===selected))$('pr').value=selected;
   $('pr').disabled=!admin||!approved.length;$('approval-state').textContent=approved.length?'Approval is checked again before deployment.':'Approve a production PR in Gitea, then refresh.';
   $('pr').onchange=()=>chooseApproved(admin);chooseApproved(admin);

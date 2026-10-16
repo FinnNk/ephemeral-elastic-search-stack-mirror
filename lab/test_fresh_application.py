@@ -30,6 +30,15 @@ class FreshApplications(unittest.TestCase):
             setup_delivery.seed_source(root)
             self.assertEqual(declared(root), declared(setup_delivery.ROOT / 'lab/delivery/bootstrap'))
             self.assertIn('VERSION text eol=lf', (root / '.gitattributes').read_text())
+            self.assertIn('evaluation/** -text', (root / '.gitattributes').read_text())
+            from query_sets import freeze
+            selection = json.loads((root / 'gate/selection.json').read_text(encoding='utf-8'))
+            frozen = freeze(selection, lambda path: (root / path).read_bytes())
+            self.assertEqual({item['name'] for item in frozen}, {'sneakers', 'redis-rewrites'})
+            self.assertTrue(all(item['judgements_rows'] and not item['required'] for item in frozen))
+            self.assertTrue((root / 'evaluation/judgements/inputs.jsonl.gz').exists())
+            self.assertTrue((root / 'evaluation/judgements/ESCI-NOTICE').exists())
+            self.assertTrue((root / 'CHANGELOG.md').exists())
 
     def test_final_acceptance_requires_versioned_targets(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(app, 'STATE', Path(folder)), \

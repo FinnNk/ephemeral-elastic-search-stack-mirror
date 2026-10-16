@@ -29,7 +29,7 @@ def description(target, deployment, current, reference, report, intent=None, rol
     settings = json.loads(fields.get('variant_config_json') or '{}')
     checks = report.get('checks') or []
     lines = [f'## {"Rollback" if rollback else "Promote"} build {run} to {target.title()}', '',
-        '**Checks passed; human approval is required before deployment.**', '',
+        '**Required checks passed; human approval is required before deployment.**', '',
         '| Role | Release | Version | Behaviour |', '| --- | --- | --- | --- |',
         f'| Current {target.title()} baseline | {build(baseline_run)} | {old_version} | {baseline_variant} |',
         f'| Candidate | {build(run)} | {version} | {", ".join(row["variant"] for row in checks) or settings.get("default_variant", "default")} |', '',
@@ -46,12 +46,19 @@ def description(target, deployment, current, reference, report, intent=None, rol
         lines.extend([f'- **{name}** — {INTENTS.get(row["intent"], row["intent"])}; check **{row["state"]}**. '
                       + configuration(settings.get('variants', {}).get(name)), ''])
     lines.extend(['### Query-set checks', '', 'The frozen standard suite is always required. Every additional required set must pass separately; report-only sets and combined averages are informational.', '',
-                  '| Variant | Group | Query set | Requirement | Outcome |', '| --- | --- | --- | --- | --- |'])
+                  '| Variant | Group | Query set | Requirement | Outcome | Coverage | Reason |', '| --- | --- | --- | --- | --- | --- | --- |'])
     for row in checks:
         outcomes = row.get('query_set_outcomes') or {'standard': {'required': True, 'state': row['state']}}
         for name, outcome in outcomes.items():
             group = 'Standard query sets' if name == 'standard' or name.startswith('primary-') else 'Additional query sets'
-            lines.append(f'| {row["variant"]} | {group} | {name} | {"Required" if outcome["required"] else "Report only"} | {outcome["state"].replace("_", " ")} |')
+            measured = outcome.get('assessment', outcome['state'])
+            label = {'pass':'Passed', 'blocked':'Failed', 'decision_required':'Review required', 'incomplete':'Incomplete', 'report_only':'Outcome not recorded'}.get(measured, measured)
+            if not outcome['required']:
+                label = ('Review advised' if measured == 'decision_required' else label) + ' (advisory)'
+            coverage = outcome.get('judged_fraction')
+            coverage = f'{coverage:.1%}' if coverage is not None else 'Not available'
+            reason = str(outcome.get('reason', '')).replace('|', '\\|').replace('\n', ' ')
+            lines.append(f'| {row["variant"]} | {group} | {name} | {"Required" if outcome["required"] else "Advisory"} | {label} | {coverage} | {reason} |')
     lines.append('')
     if intent:
         lines.extend([f'Change intent: **{INTENTS.get(intent, intent)}**.', ''])

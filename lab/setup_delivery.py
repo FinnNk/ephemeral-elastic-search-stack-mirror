@@ -67,9 +67,10 @@ def seed_source(path):
     shutil.copytree(ROOT / 'lab/delivery/ci', path / 'ci', ignore=shutil.ignore_patterns('__pycache__'), dirs_exist_ok=True)
     shutil.copyfile(ROOT / 'lab/variant_gate.py', path / 'ci/variant_gate.py')
     shutil.copyfile(ROOT / 'lab/delivery/bootstrap/VERSION', path / 'VERSION')
+    shutil.copyfile(ROOT / 'lab/delivery/bootstrap/CHANGELOG.md', path / 'CHANGELOG.md')
     for name in ('pyproject.toml', 'uv.lock', '.python-version'):
         shutil.copyfile(ROOT / 'lab/delivery/bootstrap' / name, path / name)
-    (path / '.gitattributes').write_text('VERSION text eol=lf\n', encoding='utf-8')
+    (path / '.gitattributes').write_text('VERSION text eol=lf\nevaluation/** -text\n', encoding='utf-8')
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/chart', path / 'chart', dirs_exist_ok=True)
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/evaluation', path / 'evaluation', dirs_exist_ok=True)
     shutil.copytree(ROOT / 'lab/delivery/bootstrap/configurations', path / 'configurations', dirs_exist_ok=True)

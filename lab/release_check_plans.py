@@ -272,7 +272,7 @@ def propose(suggestion,edits,identity):
         git(DESIRED,'add',path);git(DESIRED,'commit','-m','Review release checks for '+pin['target'])
         git(DESIRED,'push','origin',branch)
     finally:git(DESIRED,'switch','main')
-    body='Review the release check plan in `'+path+'`.\n\nBaseline build '+str(baseline['build_run'])+' → candidate build '+str(candidate['build_run'])+' ('+pin['target']+').\n\nAll protected primary sets remain required. Review inherited suites, retirements and each variant intent. '+identity['username']+' must approve this exact head, then choose **Record approved plan** in the release dashboard. Recording this plan does not deploy.\n\n[Open release dashboard](https://control.localhost:34443/release-dashboard?run='+str(candidate['build_run'])+')'
+    body='Review the release check plan in `'+path+'`.\n\nBaseline build '+str(baseline['build_run'])+' → candidate build '+str(candidate['build_run'])+' ('+pin['target']+').\n\nAll protected primary sets remain required. Review inherited suites, retirements and each variant intent. '+identity['username']+' must approve this exact head, then choose **Record approval and start checks**, or **Record approved plan only** to defer checks, in the release dashboard. Recording this plan does not deploy.\n\n[Open release dashboard](https://control.localhost:34443/release-dashboard?run='+str(candidate['build_run'])+')'
     pr=pull_request(DESIRED,branch,'Release check plan: '+pin['target']+' build '+str(candidate['build_run']),body)
     api(endpoint(DESIRED,'/statuses/'+pr['head']['sha']),'POST',{'context':'delivery/validation','state':'success','description':'Release check plan inputs verified; exact-head human review required','target_url':pr['html_url']})
     return {'run':candidate['build_run'],'target':pin['target'],'plan':plan,**status(pr['number'])}
@@ -362,7 +362,10 @@ def dashboard_status(data, identity):
                 pin['candidate']['fingerprint']==candidate_environment['definition']['fingerprint']))
         saved=[r for r in rows if r['request']['kind'] in KINDS and matches(r)]
         draft=next((r for r in saved if r['request']['kind']=='suggest-release-plan' and r['state']=='complete'),None)
-        if draft:value.update(state='suggested',suggestion_id=draft['id'],suggestion=draft['result']['suggestion'])
+        if draft:
+            value.update(state='suggested',suggestion_id=draft['id'],suggestion=draft['result']['suggestion'])
+            for key in ('recommended_edits', 'carried_from'):
+                if key in draft['result']: value[key] = draft['result'][key]
         proposal=next((r for r in saved if r['result'].get('pr')),None)
         if proposal:
             try:

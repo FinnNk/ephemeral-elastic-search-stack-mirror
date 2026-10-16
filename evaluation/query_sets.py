@@ -6,6 +6,7 @@ from pathlib import PurePosixPath
 import re
 from pathlib import Path
 import tempfile
+from datetime import date
 
 from search_filters import validate_filters
 from result_similarity import summarise
@@ -80,10 +81,24 @@ def freeze(selection, read_source):
                     or label['grade'] not in range(4)
                     or (label['query_id'], label['product_id']) in pairs):
                 raise ValueError('Additional labels need unique query/product pairs and ESCI grades.')
-            # Source-controlled labels are authored reference judgements. Model
-            # predictions belong behind the judgement API with their provenance.
             if label.get('provenance', {}).get('kind') == 'model':
-                raise ValueError('Model predictions cannot be supplied as source reference labels.')
+                provenance = label['provenance']
+                accepted = provenance.get('acceptance', {})
+                try:
+                    date.fromisoformat(accepted.get('decided_at', ''))
+                    accepted_date = True
+                except (ValueError, TypeError, AttributeError):
+                    accepted_date = False
+                if (item.get('required') or label.get('gate_eligible') is not False or
+                        label.get('source') != 'model' or
+                        provenance.get('query_suite_sha256') != sha(payload) or
+                        not re.fullmatch('[a-f0-9]{64}', str(provenance.get('catalogue_sha256', ''))) or
+                        not re.fullmatch('[a-f0-9]{64}', str(provenance.get('input_sha256', ''))) or
+                        not isinstance(provenance.get('model'), str) or not provenance['model'] or
+                        not isinstance(accepted, dict) or not accepted_date or
+                        not isinstance(accepted.get('reviewer'), str) or not accepted['reviewer'].strip() or
+                        not isinstance(accepted.get('reason'), str) or len(accepted['reason'].strip()) < 20):
+                    raise ValueError('Model reference labels need explicit acceptance and provenance and are advisory only.')
             pairs.add((label['query_id'], label['product_id']))
         frozen.append({**item, 'required': item.get('required', False),
                        'query_bytes': payload, 'query_sha256': sha(payload), 'queries': rows,
@@ -156,6 +171,12 @@ def assemble(standard, extra_reports, frozen, standard_queries, selection):
 def score_extra(item, observations, specification_bytes, catalogue_manifest_bytes):
     """Score a fresh extra capture; absent reference labels stay explicitly unknown."""
     from offline import evaluate, validate_observations
+    for label in item['judgements_rows']:
+        provenance = label.get('provenance', {})
+        if provenance.get('kind') == 'model' and provenance.get('acceptance') and (
+                provenance.get('catalogue_sha256') != observations['catalogue_sha256'] or
+                provenance.get('query_suite_sha256') != item['query_sha256']):
+            raise ValueError('Accepted model labels belong to another frozen catalogue or query set.')
     validate_observations(observations)
     if observations['query_suite_sha256'] != item['query_sha256'] or \
             {row['query_id'] for row in observations['observations']} != {

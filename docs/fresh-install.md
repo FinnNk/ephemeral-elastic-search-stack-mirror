@@ -58,11 +58,11 @@ the original lab available until the new installation passes its acceptance chec
    If repeating the failed manual setup, use the reset procedure below first.
    The installer refuses existing state that it did not create.
 
-Allocate at least 32 GiB to Docker Desktop and allow around 200 GB of free disk
+Allocate at least 40 GiB to Docker Desktop and allow around 200 GB of free disk
 space for source downloads, image builds, repositories and persistent data.
 A 64 GB Mac is a practical starting point; these are planning allowances, not
 measured Mac peaks. The application stage expands the owned agent from 4 GiB to
-16 GiB; the server remains at 6 GiB. Nexus and its database add 4.5 GiB of limits.
+16 GiB; the server starts at 10 GiB. Nexus and its database add 4.5 GiB of limits.
 See [resource guidance](mac-setup.md#allocate-resources) for the separate restored
 lab topology, which includes optional services.
 
@@ -71,8 +71,15 @@ as well as Docker Desktop. A node can reclaim cached index pages and swap even
 when Elasticsearch is below its own memory limit. The server's initial ceiling
 can be selected with `--server-memory`; resuming an existing installation does
 not resize it. The [node-memory investigation](plans/es-node-memory-headroom.md)
-records a larger-capacity trial and the full-load validation still required.
-The default remains 6 GiB.
+records the paired trial and the full Production retry that passed at 10 GiB
+with unchanged budgets. This is the new server default; native Mac load
+validation remains necessary. Resuming preserves existing node limits.
+
+The seeded source repository includes the sneakers and Redis rewrite queries,
+accepted advisory judgements, model provenance and source-pinned release notes.
+They need no additional service or model download. See the
+[additional judgements](../lab/delivery/bootstrap/evaluation/judgements/README.md)
+for coverage and the [release check plan](release-check-plans.md) workflow.
 
 ## Start or resume installation
 

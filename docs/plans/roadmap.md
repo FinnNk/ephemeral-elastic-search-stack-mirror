@@ -6,17 +6,19 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-Build 207 is verified in Integration, Staging and inactive green. Its full
-Production retry passed with the enclosing server at 10 GiB and unchanged gate
-budgets; delivery-state PR #42 proposes switching active blue/build 108 to
-green/build 207. Next: human review, approval and deployment of that proposal,
-then verify the active storefront. The previous failed attempt remains retained.
-The [node-memory investigation](es-node-memory-headroom.md) records the controlled
-short replay; fresh-install defaults remain unchanged pending a separate review.
+Build 207 is active in Production green after approved delivery-state PR #42.
+The storefront serves `1.2.3+build.207.1 · a7cb12a20522`; searches and the exact
+image were verified. The full Production gate passed at 10 GiB node memory with
+unchanged budgets. The failed 6 GiB evidence remains retained.
 
-After the walkthrough, implement the [advisory outcomes and judgement feedback](walkthrough-feedback.md#recorded-follow-ups-advisory-outcomes-and-additional-set-judgements):
-show actual advisory outcomes in approval PRs and generate frozen judgements for
-the sneakers and Redis rewrite sets using the authorised low-cost model approach.
+The [walkthrough completion batch](walkthrough-feedback-final.md) implements
+advisory outcomes, additional judgements, clearer release selection and historical
+deployments, carried plan choices and an explicit record-and-start action.
+Both additional sets reproduce 90% coverage using 306 accepted Luna judgements.
+Fresh seeds contain the same data and source declarations, with a 10 GiB server
+default. Next: accept the lab change, activate it when idle, then accept the
+source-data release and verify a new comparison. Native Mac installation and
+load acceptance remain outstanding; no destructive reinstall was run here.
 
 The [Production slot browser-route fix](production-slot-preview-routes.md)
 publishes separate blue/green hostnames through the preview reconciler. Green
