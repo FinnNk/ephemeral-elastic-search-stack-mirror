@@ -46,7 +46,7 @@ def analyse(path, server, pod):
             quantileExact(.99)(dependency_ms) AS dependency_p99_ms,
             quantileExactIf(.95)(took_ms,has_took) AS took_p95_ms,
             quantileExactIf(.99)(took_ms,has_took) AS took_p99_ms,
-            quantileExactIf(.99)(greatest(dependency_ms-took_ms,0),has_took) AS outside_elasticsearch_p99_ms,
+            quantileExactIf(.99)(greatest(dependency_ms-took_ms,0),has_took) AS outside_took_p99_ms,
             quantileExact(.99)(rewrite_ms) AS rewrite_p99_ms,
             countIf(request_ms>800) AS requests_over800,
             countIf(took_ms>800 AND has_took) AS elasticsearch_execution_over800
@@ -54,7 +54,7 @@ def analyse(path, server, pod):
         minutes = query(f"""SELECT toStartOfMinute(timestamp) AS minute,count() AS requests,
             quantileExact(.99)(request_ms) AS request_p99_ms,
             quantileExactIf(.99)(took_ms,has_took) AS took_p99_ms,
-            quantileExactIf(.99)(greatest(dependency_ms-took_ms,0),has_took) AS outside_elasticsearch_p99_ms
+            quantileExactIf(.99)(greatest(dependency_ms-took_ms,0),has_took) AS outside_took_p99_ms
             FROM ({source}) GROUP BY minute ORDER BY minute""", pod)
         examples = query(f"SELECT * FROM ({source}) ORDER BY request_ms DESC LIMIT 5", pod)
         analysis['arms'].append({'namespace': run['namespace'], 'quota': run['quota'],
