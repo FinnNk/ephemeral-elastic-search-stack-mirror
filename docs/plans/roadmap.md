@@ -6,9 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-The [peak CPU-headroom diagnostic](peak-cpu-headroom-diagnostic.md) captures
-Elasticsearch execution time and compares 250m versus one CPU in isolated copies
-of build 204. Production peak p99 remains 800 ms while the cause is investigated.
+The [peak CPU-headroom diagnostic](peak-cpu-headroom-diagnostic.md) captured
+Elasticsearch execution time and compared 250m versus one CPU in isolated copies
+of build 204. Both completed 18,000 requests without failure. Extra CPU removed
+most API throttling but did not prevent a burst dominated by Elasticsearch time.
+Keep the 800 ms peak p99 budget and current resources; review the instrumentation
+PRs so subsequent builds retain this timing. The diagnostic is not promotion evidence.
 
 The [Production slot browser-route fix](production-slot-preview-routes.md)
 publishes separate blue/green hostnames through the preview reconciler. Green
