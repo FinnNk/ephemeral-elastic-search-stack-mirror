@@ -6,6 +6,10 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [peak CPU-headroom diagnostic](peak-cpu-headroom-diagnostic.md) captures
+Elasticsearch execution time and compares 250m versus one CPU in isolated copies
+of build 204. Production peak p99 remains 800 ms while the cause is investigated.
+
 The [Production slot browser-route fix](production-slot-preview-routes.md)
 publishes separate blue/green hostnames through the preview reconciler. Green
 already serves build 204 internally; its missing Ingress rule caused a 404.

@@ -214,7 +214,11 @@ class Handler(BaseHTTPRequestHandler):
             response = self.server.elasticsearch.post('/' + os.environ['ES_INDEX'] + '/_search',
                                                        json=body, headers=headers)
             response.raise_for_status()
-            return response.json(), (time.monotonic() - started) * 1000
+            result = response.json()
+            took = result.get('took') if isinstance(result, dict) else None
+            if dependency_span is not None and type(took) is int and took >= 0:
+                dependency_span.set_attribute('elasticsearch.took_ms', took)
+            return result, (time.monotonic() - started) * 1000
 
     def send_json(self, status, value):
         self.send_body(status, json.dumps(value).encode(), 'application/json; charset=utf-8')

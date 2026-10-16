@@ -9,10 +9,32 @@ import json
 import os
 import threading
 from contextlib import redirect_stdout
-from unittest.mock import patch
+from unittest.mock import patch, Mock
+from contextlib import nullcontext
+from types import SimpleNamespace
 
 
 class SearchContract(unittest.TestCase):
+    def test_elasticsearch_execution_time_is_traced_without_changing_response(self):
+        for took in (0, 42, None, -1, True, '42'):
+            with self.subTest(took=took):
+                result = {'hits': {'hits': []}, 'took': took}
+                response = Mock(); response.json.return_value = result
+                client = Mock(); client.post.return_value = response
+                handler = object.__new__(app.Handler)
+                handler.server = SimpleNamespace(elasticsearch=client)
+                span = Mock()
+                with patch.dict(os.environ, {'ES_INDEX': 'frozen-index'}), \
+                     patch.object(app.telemetry, 'span', return_value=nullcontext(span)), \
+                     patch.object(app.telemetry, 'inject'):
+                    returned, elapsed = handler.search_index({'query': {'match_all': {}}})
+                self.assertIs(returned, result)
+                self.assertGreaterEqual(elapsed, 0)
+                timings = [call for call in span.set_attribute.call_args_list
+                           if call.args[0] == 'elasticsearch.took_ms']
+                self.assertEqual([call.args[1] for call in timings],
+                                 [took] if type(took) is int and took >= 0 else [])
+
     def test_release_metadata_matches_serving_image_and_source(self):
         metadata={'image':'image@sha256:abc','source_sha':'a'*40,'promoted_at':'2026-10-15T18:00:00Z'}
         with patch.dict(os.environ,{'SOFTWARE_VERSION':'1.2.0','SOURCE_SHA':'a'*40,'LAB_RELEASE_SHA':'image@sha256:abc'}), patch('app.Path.read_text',return_value=json.dumps(metadata)):
