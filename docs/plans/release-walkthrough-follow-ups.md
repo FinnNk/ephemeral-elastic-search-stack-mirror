@@ -28,6 +28,35 @@ previous deployment time and the current replacement release when known. A
 missing current rollout alone must not imply that a verified historical
 deployment never happened; uncertain history should be explicit.
 
+## Carry reviewed check selections forward
+
+When the immediately preceding environment still serves the same verified
+candidate, inherit its reviewed query selections, reasons and variant choices
+for the next destination. Avoid requiring the reviewer to compose the same plan
+again. Keep environment-specific amendments available and record the inherited
+plan, its origin and any amendments in source control.
+
+An unchanged preceding environment is necessary but does not prove that the
+next comparison has the same scope. Recompute accumulated changes against the
+destination's current baseline. Check candidate image/configuration/data,
+baseline variant, query and judgement snapshots, current mandatory sets,
+policy and destination-specific requirements. Show material differences and
+request a focused review when they affect intent or coverage. Never silently
+reuse an approval tied to another baseline or omit mandatory sets. Fresh
+destination checks and deployment approval still apply.
+
+The current walkthrough demonstrates the distinction: Integration compared
+build 204 against build 194 with preserve-results intent. Staging compares the
+same build against build 158, so the accumulated Redis rewrite change warrants
+ranking-change intent. Query selections can carry forward while that intent
+needs reconsideration.
+
+Acceptance: unchanged, compatible selections carry forward without repeated
+composition; a reviewer can inspect or amend them. Material destination
+differences are explicit and require the appropriate review. Decide the precise
+rules for carrying review authorisation forward during implementation; this
+feedback record does not authorise bypassing the current exact-plan checks.
+
 ## Walkthrough checkpoint
 
 Build 204 (`1.2.2+build.204.1`, source `c83307104982`) is verified in Integration
