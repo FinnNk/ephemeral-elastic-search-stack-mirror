@@ -45,10 +45,11 @@ before treating the transferred lab as ready for a demonstration.
 
 ## Allocate resources
 
-The current CPU nodes have Docker memory limits totalling 30 GiB: 6 GiB for the
-server, 4 GiB for the main agent, 12 GiB for observability and 8 GiB for the
-optional Headlamp testbed. Nexus and its database add 4.5 GiB of limits. These
-are configured limits, not measured simultaneous usage or a Mac minimum.
+For a fresh CPU lab, use the allocations and optional demo SigNoz profile in
+the [fresh-install guide](fresh-install.md). For a transfer, inventory the source
+before choosing the target allocation: node limits may have changed since its
+installation, and the optional observability/testbed workers may be absent.
+Configured limits are not measured simultaneous usage or a Mac minimum.
 
 A 64 GB Mac is the practical starting point for the complete CPU topology.
 On a smaller laptop, agree a reduced topology before restoration; omit optional
@@ -56,10 +57,11 @@ testbed and historical preview workloads first. Do not shrink database volumes
 or assume that the current 50 GB Docker VM allocation fits a 32 GB laptop.
 Leave memory for macOS and inspect actual pressure after startup.
 
-The inventory records 15 PVCs requesting 70 GiB altogether, plus three external
-Docker data volumes. Their requested capacities do not measure bytes in use.
-Allow space for the restored data, archive copies and image cache. Inspect the
-transfer archive sizes before choosing Docker Desktop's disk allocation.
+Record the PVCs and external Docker volumes using the
+[transfer inventory](lab-transfer.md#inventory-before-choosing-the-cutover).
+Requested capacities do not measure bytes in use. Allow space for restored
+data, archive copies and the image cache; inspect actual archive sizes before
+choosing Docker Desktop's disk allocation.
 
 ## Prepare the cluster
 

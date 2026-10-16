@@ -8,6 +8,7 @@ import re
 from urllib.parse import quote
 
 from common import ROOT, STATE
+from gitea import GiteaHTTPError
 from delivery_provider import SOURCE, DESIRED, api, endpoint, git, ensure_checkout, pull_request, merge_demo
 from delivery.ci.release import canonical
 
@@ -107,9 +108,8 @@ def suggest(baseline, candidate, target):
     for revision in dict.fromkeys([base, *[c['source_sha'] for c in changes], head]):
         try:
             raw = api(endpoint(SOURCE, '/contents/gate/selection.json?ref=' + revision))
-        except Exception as error:
-            from gitea import GiteaHTTPError
-            if isinstance(error, GiteaHTTPError) and error.status_code == 404:
+        except GiteaHTTPError as error:
+            if error.status_code == 404:
                 missing.append(revision)
                 continue
             raise

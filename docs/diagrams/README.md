@@ -5,7 +5,9 @@ Open the [diagram gallery](index.html) in a browser, or start with the [system c
 ## Reading order
 
 The local deployment places browser ingress in `lab-ingress`, control services
-in `lab-control`, ESO in `lab-secrets` and SigNoz on a dedicated worker. The
+in `lab-control` and ESO in `lab-secrets`. SigNoz supports a dedicated-worker
+profile and a smaller [CPU demo profile](../fresh-install.md#add-demo-observability)
+on existing nodes. The
 [optional NVIDIA worker](../gpu-worker.md) serves qualified CUDA models; omit it
 on Apple silicon. The CPU judgement API and registry remain available. The
 [current operating guides](../../lab/README.md) explain access and procedures;
@@ -148,8 +150,8 @@ The [design](../prototype-design.md) owns requirements and targets. The
 [variant guide](../variant-evaluation.md), [recovery guide](../index-recovery.md)
 and [Gatling guide](../../lab/gatling/README.md) own the executable workflows.
 The DSL owns C4 elements/relationships; Archify JSON owns process views. Edit
-both sources when their represented relationship changes. This editorial review
-changes explanations, not the model or rendered topology.
+both sources when their represented relationship changes. Generated HTML and
+SVGs are delivery artefacts; edit their specifications and rebuild them.
 
 ## Rebuild
 

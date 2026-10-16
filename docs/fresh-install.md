@@ -92,8 +92,8 @@ uv run --locked python lab/fresh_install.py \
 Use your own corporate PEM path on another workstation. Keep it outside Git.
 The installer adds it to existing public Python trust roots and mounts it into
 both k3d nodes at creation. Certificate verification stays enabled. It downloads
-the pinned Argo CD manifest through GitHub's API; this avoids the raw-content
-hostname that failed certificate verification during the walkthrough.
+the pinned Argo CD manifest through GitHub's API using the configured trust
+bundle.
 
 Gitea defaults to its official Docker Hub repository, using the same immutable
 28.0.0 image digest as `docker.gitea.com`. If that source is required locally,
