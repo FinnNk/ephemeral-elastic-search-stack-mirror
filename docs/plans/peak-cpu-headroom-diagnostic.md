@@ -10,6 +10,8 @@ Record Elasticsearch's own `took` value as `elasticsearch.took_ms` on its
 dependency span. The span's elapsed time also includes connection, network and
 client scheduling delays, so the two measurements must remain distinct. Ignore
 missing or malformed timing metadata without changing successful query results.
+Elasticsearch's reported time includes internal communication and search queue
+waits. It is not a query CPU timer; see the [Search API definition](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-search).
 
 ## Experiment
 

@@ -157,7 +157,8 @@ When telemetry is enabled, the `search.elasticsearch` span records
 Compare it with the span duration to investigate connection, network or client
 scheduling delays. The values measure different intervals; do not assume that
 the span duration is entirely Elasticsearch execution. Missing or malformed
-`took` metadata is omitted without changing query results.
+`took` metadata is omitted without changing query results. Elasticsearch's value
+includes internal queueing and coordination; it is not a query CPU timer.
 
 ## Pinned external rewrite data
 
