@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [release walkthrough follow-ups](release-walkthrough-follow-ups.md) record
+clearer release names/changelog links in proposal selection and explicit
+superseded deployment states. Implement after the walkthrough. Build 204 is
+verified in Integration; next review a fresh Staging check plan against build 158.
+
 The [normal-load latency budget batch](lab-normal-p95-budget.md) raises the lab's
 shared normal p95 limit to 300 ms for both sides. Other phase budgets, p99 and
 error limits are unchanged. Review and activate when idle before retrying
