@@ -11,6 +11,7 @@ import urllib.request
 DOMAIN = 'preview.relevance.test'
 OWNER = {'app.kubernetes.io/managed-by': 'lab-preview-routes'}
 NAME = 'lab-preview'
+SEARCH_SERVICES = ('search', 'search-blue', 'search-green')
 
 
 def url(namespace):
@@ -39,16 +40,19 @@ class Kubernetes:
             raise
 
 
-def objects(namespace):
+def objects(namespace, slot_colours=()):
     metadata = {'name': NAME, 'namespace': namespace, 'labels': OWNER}
-    host = url(namespace).split('://')[1].split(':')[0]
+    targets = [(namespace, 'search'), *[(namespace + '-' + colour, 'search-' + colour)
+               for colour in slot_colours]]
+    hosts = [url(name).split('://')[1].split(':')[0] for name, _ in targets]
+    rules = [{'host': host, 'http': {'paths': [{'path': '/', 'pathType': 'Prefix',
+              'backend': {'service': {'name': service, 'port': {'number': 8080}}}}]}}
+             for host, (_, service) in zip(hosts, targets)]
     return [
         {'apiVersion': 'networking.k8s.io/v1', 'kind': 'Ingress',
          'metadata': {**metadata, 'annotations': {
              'traefik.ingress.kubernetes.io/router.entrypoints': 'websecure'}},
-         'spec': {'ingressClassName': 'traefik', 'tls': [{'hosts': [host]}],
-                  'rules': [{'host': host, 'http': {'paths': [{'path': '/', 'pathType': 'Prefix',
-                      'backend': {'service': {'name': 'search', 'port': {'number': 8080}}}}]}}]}},
+         'spec': {'ingressClassName': 'traefik', 'tls': [{'hosts': hosts}], 'rules': rules}},
         {'apiVersion': 'networking.k8s.io/v1', 'kind': 'NetworkPolicy', 'metadata': metadata,
          'spec': {'podSelector': {'matchLabels': {'app': 'search'}}, 'policyTypes': ['Ingress'],
                   'ingress': [{'from': [{'namespaceSelector': {'matchLabels': {
@@ -68,7 +72,15 @@ def reconcile(client):
         service = client.request(f'/api/v1/namespaces/{name}/services/search')
         enabled = bool(service and service['spec'].get('selector', {}).get('app') == 'search'
                        and any(port.get('port') == 8080 for port in service['spec'].get('ports', [])))
-        for obj in objects(name):
+        slots = []
+        if enabled and name == 'lab-delivery-production':
+            for colour in ('blue', 'green'):
+                slot = client.request(f'/api/v1/namespaces/{name}/services/search-{colour}')
+                if (slot and slot['spec'].get('selector', {}).get('app') == 'search' and
+                        slot['spec']['selector'].get('release-slot') == colour and
+                        any(p.get('port') == 8080 for p in slot['spec'].get('ports', []))):
+                    slots.append(colour)
+        for obj in objects(name, slots):
             resource = 'ingresses' if obj['kind'] == 'Ingress' else 'networkpolicies'
             path = f'/apis/networking.k8s.io/v1/namespaces/{name}/{resource}'
             current = client.request(path + '/' + NAME)
@@ -83,6 +95,7 @@ def reconcile(client):
                 client.request(path + '/' + NAME, 'PATCH', obj)
         if enabled:
             routes.append(url(name))
+            routes.extend(url(name + '-' + colour) for colour in slots)
     return routes
 
 

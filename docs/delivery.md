@@ -308,6 +308,11 @@ Each slot has its release's search network policy, restricted to that slot's
 Pods. Releases can therefore declare different Redis or telemetry access without
 granting those permissions to the other slot. Other shared resources must agree;
 an incompatible resource is named in the preparation error.
+The stable storefront hostname follows active Production. The separate
+`lab-delivery-production-blue.preview.relevance.test` and
+`lab-delivery-production-green.preview.relevance.test` hostnames on port 34443
+open each deployed slot directly, including the inactive candidate. These links
+do not change which slot serves the stable Production URL.
 
 1. Open **Production release** from the control UI. Compare active production
    with the prepared candidate: build, source commit, image, catalogue and index.

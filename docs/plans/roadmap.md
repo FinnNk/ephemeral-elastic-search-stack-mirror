@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [Production slot browser-route fix](production-slot-preview-routes.md)
+publishes separate blue/green hostnames through the preview reconciler. Green
+already serves build 204 internally; its missing Ingress rule caused a 404.
+Review and activate when idle, then verify HTTPS before the Production plan.
+
 The [Production slot network policy fix](production-slot-network-policies.md)
 allows build 204's Redis/telemetry access alongside the older active release
 without sharing permissions between slots. It also prevents render failures
