@@ -66,6 +66,14 @@ measured Mac peaks. The application stage expands the owned agent from 4 GiB to
 See [resource guidance](mac-setup.md#allocate-resources) for the separate restored
 lab topology, which includes optional services.
 
+For sustained load demonstrations, check memory headroom inside the k3d server
+as well as Docker Desktop. A node can reclaim cached index pages and swap even
+when Elasticsearch is below its own memory limit. The server's initial ceiling
+can be selected with `--server-memory`; resuming an existing installation does
+not resize it. The [node-memory investigation](plans/es-node-memory-headroom.md)
+records a larger-capacity trial and the full-load validation still required.
+The default remains 6 GiB.
+
 ## Start or resume installation
 
 From the repository root in macOS Terminal, after `uv sync --locked`:

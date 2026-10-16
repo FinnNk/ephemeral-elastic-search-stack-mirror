@@ -6,12 +6,15 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-The [peak CPU-headroom diagnostic](peak-cpu-headroom-diagnostic.md) captured
-Elasticsearch execution time and compared 250m versus one CPU in isolated copies
-of build 204. Both completed 18,000 requests without failure. Extra CPU removed
-most API throttling but did not prevent a burst dominated by Elasticsearch time.
-Keep the 800 ms peak p99 budget and current resources; review the instrumentation
-PRs so subsequent builds retain this timing. The diagnostic is not promotion evidence.
+Build 207 is verified in Integration, Staging and inactive green. Its Production
+checks passed standard relevance but missed latency budgets on both sides;
+active blue remains build 108. The [node-memory investigation](es-node-memory-headroom.md)
+identified reclaim and swapping at the enclosing server's 6 GiB ceiling.
+A matched short replay at 10 GiB improved p99 from 189 to 119 ms and removed
+node memory-limit hits. The node retains 10 GiB under the approved safe-cleanup
+fallback; Elasticsearch resources and gate budgets are unchanged. Next: run the
+full Production gate at this capacity. The short diagnostic is not promotion
+evidence, and fresh-install defaults remain unchanged pending that validation.
 
 The [Production slot browser-route fix](production-slot-preview-routes.md)
 publishes separate blue/green hostnames through the preview reconciler. Green
