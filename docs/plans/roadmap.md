@@ -9,7 +9,8 @@ step” is not an instruction to repeat completed work.
 The [release walkthrough follow-ups](release-walkthrough-follow-ups.md) record
 clearer release names/changelog links in proposal selection, explicit
 superseded deployment states and inheritance of reviewed check selections with
-destination-specific validation. Implement after the walkthrough. Build 204 is
+destination-specific validation, plus an optional combined plan-recording and
+check-start action. Implement after the walkthrough. Build 204 is
 verified in Integration; next review a fresh Staging check plan against build 158.
 
 The [normal-load latency budget batch](lab-normal-p95-budget.md) raises the lab's

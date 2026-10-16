@@ -57,6 +57,29 @@ differences are explicit and require the appropriate review. Decide the precise
 rules for carrying review authorisation forward during implementation; this
 feedback record does not authorise bypassing the current exact-plan checks.
 
+## Start checks when an approved plan is recorded
+
+Consider a combined **Record plan and start checks** action, with **Record only**
+available when the operator wants to run later. State before submission that it
+will start relevance and performance checks and create a deployment proposal
+only if the required gates pass. Deployment remains a separately approved action.
+
+Start after the coordinator has verified exact-head approval and successfully
+recorded the plan. A Gitea approval by itself must not launch work. Recheck the
+candidate, target baseline and plan freshness before scheduling; if they have
+changed, explain why review is needed rather than launching stale checks.
+
+Acceptance: recording and scheduling are durable and idempotent. Duplicate
+clicks or coordinator restarts return the same attempt; an active operation is
+queued visibly. If recording succeeds but scheduling fails, retain the recorded
+plan and offer an explicit retry without requiring another approval. Show the
+new attempt and progress link immediately. Never merge or deploy a promotion
+proposal automatically as a consequence of plan approval.
+
+This is a possible workflow improvement requested during the running Staging
+checks. Decide whether the combined action should be the default after the
+walkthrough; no automatic start is enabled by this feedback record.
+
 ## Walkthrough checkpoint
 
 Build 204 (`1.2.2+build.204.1`, source `c83307104982`) is verified in Integration
