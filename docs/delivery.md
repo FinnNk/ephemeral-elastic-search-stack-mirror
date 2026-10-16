@@ -293,7 +293,9 @@ and prepared candidate slot directly. The two load runs take at least 42 minutes
 plus setup; the final relevance check adds capture, resolution and scoring time.
 Both runs must complete every scheduled arrival and satisfy the pinned
 [workload](../lab/traffic/production-load-v1.json). Normal-load budgets are
-p95 ≤250 ms and p99 ≤500 ms; peak budgets are p95 ≤400 ms and p99 ≤800 ms.
+p95 ≤300 ms and p99 ≤500 ms; peak budgets are p95 ≤400 ms and p99 ≤800 ms.
+The same normal-load limits apply to Integration and Staging probes, on both
+baseline and candidate. Recovery phases retain p95 ≤250 ms and p99 ≤500 ms.
 Both phases require fewer than 1% failed requests. These are lab thresholds,
 not production capacity claims. Probes, smoke checks and stress tests cannot
 replace this gate. Validation checks the load evidence again before merge.

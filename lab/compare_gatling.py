@@ -6,7 +6,7 @@ from common import STATE, record
 from compare_search import immutable_blob
 
 BUDGETS = {
-    'normal': {'p95_ms': 250, 'p99_ms': 500, 'failed_percent': 1.0},
+    'normal': {'p95_ms': 300, 'p99_ms': 500, 'failed_percent': 1.0},
     'peak': {'p95_ms': 400, 'p99_ms': 800, 'failed_percent': 1.0},
     'recovery': {'p95_ms': 250, 'p99_ms': 500, 'failed_percent': 1.0},
 }

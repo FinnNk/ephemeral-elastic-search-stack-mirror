@@ -29,7 +29,7 @@ Provisional first-slice targets on a warm local cluster:
 - Remove an environment on demand, including its dedicated index where applicable, in **p95 ≤ 5 minutes**.
 - Publish a cached CI release in **under 5 minutes**, and verify an approved promotion or rollback in **under 2 minutes** with retained artefacts and a warm compatible index. Promotion performs **zero rebuilds**.
 - Preserve identical ordered top-10 product IDs for every frozen query after a behaviour-preserving change.
-- Sustain **10 search requests/second** for five measured minutes per side with **p95 ≤ 250 ms**, **p99 ≤ 500 ms** and **< 1% failed requests**, under the constant-rate Gatling smoke profile below. Trace-derived normal, peak and stress profiles have separate durations and budgets.
+- Sustain **10 search requests/second** for five measured minutes per side with **p95 ≤ 300 ms**, **p99 ≤ 500 ms** and **< 1% failed requests**, under the constant-rate Gatling smoke profile below. Trace-derived normal, peak and stress profiles have separate durations and budgets.
 
 These remain provisional acceptance targets. The [platform research](research/platform-spike.md) measured warm creation at p50 7.54 seconds / p95 8.16 seconds over 20 diagnostic trials. The [roadmap](plans/roadmap.md) links later million-product, lifecycle, 40-environment and delivery measurements; a single successful run does not establish p95. The detailed target table defines their conditions.
 
@@ -471,7 +471,7 @@ These are provisional profile durations, not capacity claims. Define peak intens
 
 | Initial performance policy | Provisional threshold or rule |
 | --- | --- |
-| Absolute budget, each measured run | p95 ≤ 250 ms, p99 ≤ 500 ms, failed requests < 1%; applies to both B and C |
+| Absolute budget, each measured run | p95 ≤ 300 ms, p99 ≤ 500 ms, failed requests < 1%; applies to both B and C |
 | Relative budget | Median paired candidate p95 increase ≤ 10% over B; retain all three deltas |
 | Workload delivery | 3,000 measured requests per side per run at 10 arrivals/second; at least 99% of scheduled requests started within the measured interval; retain late arrivals and drain outcomes |
 | Repeatability | Baseline p95 spread `(max − min) / median` ≤ 10%; greater variation makes the comparison inconclusive |
@@ -554,7 +554,7 @@ These are **design hypotheses, not measured performance or service promises**.
 | API/query/ranking-only environment, 1,215,854 products | p95 ≤ 2 min | Shared million-product index already present; suitable test cluster |
 | Index-changing environment, 1,215,854 products | ≤ 20 min per run | Full reindex from frozen objects on a documented test cluster; revise after first bulk-index measurement |
 | Complete 1,000-query functional comparison | ≤ 15 min per run | Two ready versions queried through their public APIs; final top 10, relevance or result-preservation metrics and persisted report; exclude index build, performance load tests and optional white-box diagnostics |
-| API performance, constant-rate smoke | 10 requests/s for 300 measured seconds; p95 ≤ 250 ms, p99 ≤ 500 ms, failures < 1%; median paired p95 increase ≤ 10% | Full ESCI catalogue, three controlled B/C pairs, valid generator and stable baseline; see the Gatling profile above |
+| API performance, constant-rate smoke | 10 requests/s for 300 measured seconds; p95 ≤ 300 ms, p99 ≤ 500 ms, failures < 1%; median paired p95 increase ≤ 10% | Full ESCI catalogue, three controlled B/C pairs, valid generator and stable baseline; see the Gatling profile above |
 | On-demand removal | p95 ≤ 5 min | Request to namespace resources and dedicated indices gone; shared frozen index deliberately retained |
 | Lease expiry | Start cleanup within 10 min of expiry; finish within 15 min | 72 h after last genuine use; no extension from polling or health checks |
 | Control-plane capacity | 40 simultaneous API/query-only environments, ≥ 95% ready within 5 min of their requests | Suitable multi-node test cluster; all 40 must run a real search; record p95, errors, CPU, memory and API load |

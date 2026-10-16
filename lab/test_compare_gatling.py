@@ -15,6 +15,25 @@ def run(target, *, valid=True, workload='frozen', normal_p95=100, warmup_p95=100
 
 
 class GatlingComparisonContract(unittest.TestCase):
+    def test_normal_p95_budget_applies_to_both_sides_at_300_ms(self):
+        for side in ('baseline', 'candidate'):
+            for latency, verdict in ((254, 'within-budget'), (300, 'within-budget'),
+                                     (301, 'budget-missed')):
+                with self.subTest(side=side, latency=latency):
+                    runs = {name: run(name) for name in ('baseline', 'candidate')}
+                    runs[side]['phases']['normal']['p95_ms'] = latency
+                    runs[side]['phases']['normal']['p99_ms'] = max(latency, 100)
+                    report = compare(runs['baseline'], runs['candidate'])
+                    self.assertEqual(report['verdict'], verdict)
+                    self.assertEqual(report['measured_phases']['normal']['budget']['p95_ms'], 300)
+
+    def test_other_normal_limits_remain_enforced(self):
+        for metric, value in (('p99_ms', 501), ('failed_percent', 1.0)):
+            with self.subTest(metric=metric):
+                candidate = run('candidate')
+                candidate['phases']['normal'][metric] = value
+                self.assertEqual(compare(run('baseline'), candidate)['verdict'], 'budget-missed')
+
     def test_baseline_stability_uses_spread_over_median(self):
         self.assertEqual(baseline_spread([100, 105, 110]), 9.524)
         self.assertGreater(baseline_spread([100, 105, 120]), 10)

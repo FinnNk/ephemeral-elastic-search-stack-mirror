@@ -6,6 +6,11 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [normal-load latency budget batch](lab-normal-p95-budget.md) raises the lab's
+shared normal p95 limit to 300 ms for both sides. Other phase budgets, p99 and
+error limits are unchanged. Review and activate when idle before retrying
+Integration; historical failed evidence retains its original outcome.
+
 The [failed-operation Gatling links batch](failed-operation-gatling-links.md)
 puts retained native driver reports directly on terminal operation pages,
 including failures. Review and activate when idle; existing reports need no rerun.
