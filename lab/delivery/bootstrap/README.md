@@ -150,6 +150,15 @@ merging; both PR checks and main publication refuse a conflicting version.
 See the [version contract](https://gitea.localhost:34443/elastic-agent/ephemeral-elastic-search-stack/src/branch/main/docs/delivery-versioning.md)
 for ordering, retained releases and tag recovery.
 
+## Search dependency timing
+
+When telemetry is enabled, the `search.elasticsearch` span records
+`elasticsearch.took_ms`, Elasticsearch's reported execution time in milliseconds.
+Compare it with the span duration to investigate connection, network or client
+scheduling delays. The values measure different intervals; do not assume that
+the span duration is entirely Elasticsearch execution. Missing or malformed
+`took` metadata is omitted without changing query results.
+
 ## Pinned external rewrite data
 
 The lab binds each catalogue to a small immutable Redis rewrite hash.
