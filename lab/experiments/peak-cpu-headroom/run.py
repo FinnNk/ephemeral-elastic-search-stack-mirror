@@ -114,6 +114,25 @@ def counters(namespace, target='deployment/search', container=None):
     return cpu
 
 
+def redis_access(identifier):
+    """Allow only these owned previews to use the shared rewrite dependency."""
+    return {'apiVersion': 'networking.k8s.io/v1', 'kind': 'NetworkPolicy',
+            'metadata': {'name': 'redis-diagnostic-' + identifier, 'namespace': 'platform',
+                         'labels': {'app.kubernetes.io/managed-by': LABEL, 'diagnostic-id': identifier}},
+            'spec': {'podSelector': {'matchLabels': {'app': 'lab-redis'}},
+                     'policyTypes': ['Ingress'], 'ingress': [{'from': [{'namespaceSelector': {
+                         'matchLabels': {'app.kubernetes.io/managed-by': LABEL, 'diagnostic-id': identifier}}}],
+                         'ports': [{'protocol': 'TCP', 'port': 6379}]}]}}
+
+
+def check_redis(namespace):
+    script = ("import os; from rewrite_lookup import client; "
+              "c=client(os.environ['REWRITE_REDIS_HOST']); "
+              "c.hget(os.environ['REWRITE_REDIS_KEY'], 'sneakers'); "
+              "print('Redis HGET completed without fallback')")
+    k('exec', 'deployment/search', '-n', namespace, '--', 'python', '-c', script)
+
+
 def replay(config):
     script = (HERE / 'driver.py').read_text(encoding='utf-8')
     command = common.KUBE + ['exec', '-i', 'deployment/lab-control', '-n', 'lab-control',
@@ -158,8 +177,10 @@ def run(server, seconds):
     remote_dir = '/state/experiments/peak-cpu-headroom/' + identifier
     print(json.dumps({'experiment': identifier, 'directory': str(directory), 'namespaces': names}), flush=True)
     try:
+        apply(redis_access(identifier))
         for namespace, quota in names:
             preview(namespace, quota, identifier, original, node)
+            check_redis(namespace)
         for namespace, quota in names:
             idle()
             config = {'url': 'http://search.' + namespace + '.svc.cluster.local:8080',
@@ -184,6 +205,12 @@ def run(server, seconds):
     finally:
         result['ended_at'] = datetime.now(timezone.utc).isoformat()
         result['cleanup'] = []
+        policy = 'networkpolicy/redis-diagnostic-' + identifier
+        raw = k('get', policy, '-n', 'platform', '-o', 'json', '--ignore-not-found').stdout
+        if raw:
+            if json.loads(raw)['metadata'].get('labels', {}).get('diagnostic-id') != identifier:
+                raise RuntimeError('Refusing to remove a policy with different diagnostic ownership.')
+            k('delete', policy, '-n', 'platform')
         for namespace, _ in names:
             resource = k('get', 'namespace/' + namespace, '-o', 'json', '--ignore-not-found').stdout
             if resource:

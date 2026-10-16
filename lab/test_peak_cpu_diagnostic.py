@@ -59,6 +59,15 @@ class PeakCpuDiagnosticTests(unittest.TestCase):
         self.assertEqual(tree.body[0].name, 'search_index')
         self.assertIn('elasticsearch.took_ms', diagnostic.timing_method())
 
+    def test_redis_access_is_scoped_to_owned_namespaces_and_redis_port(self):
+        policy = diagnostic.redis_access('test')
+        self.assertEqual(policy['metadata']['namespace'], 'platform')
+        self.assertEqual(policy['spec']['podSelector'], {'matchLabels': {'app': 'lab-redis'}})
+        rule = policy['spec']['ingress'][0]
+        self.assertEqual(rule['from'][0]['namespaceSelector']['matchLabels'], {
+            'app.kubernetes.io/managed-by': diagnostic.LABEL, 'diagnostic-id': 'test'})
+        self.assertEqual(rule['ports'], [{'protocol': 'TCP', 'port': 6379}])
+
 
 if __name__ == '__main__':
     unittest.main()

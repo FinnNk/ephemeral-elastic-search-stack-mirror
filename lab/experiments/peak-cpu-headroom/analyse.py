@@ -11,7 +11,9 @@ import common
 def query(sql, pod):
     result = subprocess.run(common.KUBE + ['exec', '-i', pod, '-n', 'lab-observability',
         '-c', 'clickhouse', '--', 'clickhouse-client', '--multiquery'],
-        input=sql + ' FORMAT JSONEachRow', capture_output=True, text=True, encoding='utf-8', check=True)
+        input=sql + ' FORMAT JSONEachRow', capture_output=True, text=True, encoding='utf-8')
+    if result.returncode:
+        raise RuntimeError('Trace query failed: ' + result.stderr[-1800:])
     return [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
 
 
@@ -23,7 +25,7 @@ def traces(run):
     # Validate the timestamps before embedding values read from the diagnostic receipt.
     from datetime import datetime
     datetime.fromisoformat(start); datetime.fromisoformat(end)
-    return f"""SELECT trace_id,min(timestamp) AS timestamp,
+    return f"""SELECT trace_id,min(timestamp) AS trace_started_at,
         maxIf(duration_nano/1000000,name='search.request') AS request_ms,
         maxIf(duration_nano/1000000,name='search.elasticsearch') AS dependency_ms,
         maxIf(duration_nano/1000000,name='search.query_understanding') AS rewrite_ms,
@@ -51,7 +53,7 @@ def analyse(path, server, pod):
             countIf(request_ms>800) AS requests_over800,
             countIf(took_ms>800 AND has_took) AS elasticsearch_execution_over800
             FROM ({source})""", pod)[0]
-        minutes = query(f"""SELECT toStartOfMinute(timestamp) AS minute,count() AS requests,
+        minutes = query(f"""SELECT toStartOfMinute(trace_started_at) AS minute,count() AS requests,
             quantileExact(.99)(request_ms) AS request_p99_ms,
             quantileExactIf(.99)(took_ms,has_took) AS took_p99_ms,
             quantileExactIf(.99)(greatest(dependency_ms-took_ms,0),has_took) AS outside_took_p99_ms

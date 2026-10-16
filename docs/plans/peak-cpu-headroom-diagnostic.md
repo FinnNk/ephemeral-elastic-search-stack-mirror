@@ -44,6 +44,13 @@ and configuration into the labelled namespaces; grant no Kubernetes token to the
 API Pods, create no public route, and remove owned namespaces on completion or
 failure. Retain raw diagnostic files outside promotion records.
 
+The normal Redis ingress policy accepts registered search namespaces. Diagnostic
+namespaces deliberately lack that registration label, so the runner creates a
+temporary Redis-only ingress policy matching its ownership and experiment ID.
+It requires a direct Redis HGET to succeed in both previews before load begins,
+then removes that policy alongside the previews. A Redis timeout followed by
+local fallback would invalidate the comparison even if searches returned HTTP 200.
+
 From the repository root in PowerShell, with the locked uv environment and lab
 state configured, first obtain the API port with
 `docker port k3d-relevance-lab-serverlb 6443/tcp`. Then run:
