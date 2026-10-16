@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [Production slot network policy fix](production-slot-network-policies.md)
+allows build 204's Redis/telemetry access alongside the older active release
+without sharing permissions between slots. It also prevents render failures
+from leaving partially written definitions. Review and activate when idle,
+then retry Production candidate preparation. Build 204 is verified in Staging.
+
 The [normal-load latency budget batch](lab-normal-p95-budget.md) raises the lab's
 shared normal p95 limit to 300 ms for both sides. Other phase budgets, p99 and
 error limits are unchanged. Review and activate when idle before retrying

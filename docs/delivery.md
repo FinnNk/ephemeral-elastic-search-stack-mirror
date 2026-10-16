@@ -304,6 +304,10 @@ replace this gate. Validation checks the load evidence again before merge.
 
 Blue–green deployment keeps two API releases available. The production URL
 selects one slot; preparing the other slot does not change that route.
+Each slot has its release's search network policy, restricted to that slot's
+Pods. Releases can therefore declare different Redis or telemetry access without
+granting those permissions to the other slot. Other shared resources must agree;
+an incompatible resource is named in the preparation error.
 
 1. Open **Production release** from the control UI. Compare active production
    with the prepared candidate: build, source commit, image, catalogue and index.
