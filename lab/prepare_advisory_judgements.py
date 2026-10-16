@@ -64,7 +64,7 @@ def package(folder, destination):
         'rubric': 'esci-v1', 'acceptance': acceptance, 'catalogue_sha256': observations['catalogue_sha256'],
         'inputs_sha256': sha(compressed), 'sampling': 'Per query, omit the lowest SHA-256(query_id + newline + product_id) in the shared pool, or one per side when pools do not intersect. Selection precedes judging and does not use ranks or relevance scores.',
         'sets': summary}
-    (destination / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+    (destination / 'manifest.json').write_bytes((json.dumps(manifest, indent=2) + '\n').encode())
     return manifest
 
 
