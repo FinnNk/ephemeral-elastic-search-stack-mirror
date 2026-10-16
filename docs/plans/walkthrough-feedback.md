@@ -310,3 +310,47 @@ HTTPS configuration, and an old ECK pod with a failed registry pull is replaced
 only after its controller has the corrected image. Cleanup can explicitly include
 owned external stores. Native acceptance follows the
 [fresh installation plan](mac-fresh-install.md).
+
+
+## Recorded follow-ups: advisory outcomes and additional-set judgements
+
+Requested on 16 October 2026. Implement after the current Production walkthrough.
+
+### Show advisory outcomes in approval proposals
+
+For each additional query set, show its actual outcome in the approval PR and
+report, followed by **(advisory)** when it is report only. Examples include
+**Passed (advisory)**, **Failed (advisory)** and **Incomplete (advisory)**, with
+coverage and the reason alongside the result. Report-only status describes how
+an outcome affects promotion; it must not replace the outcome itself. Insufficient
+judgements must remain visible rather than being described as a pass.
+
+Acceptance: reviewers can distinguish a passed, failed or incomplete advisory
+check without opening raw JSON. Advisory failures do not close the promotion
+gate; required checks and protected standard sets retain their existing rules.
+
+### Add judgements for sneakers and Redis rewrite query sets
+
+The user authorises generating and using additional judgements as-is with a
+low-cost model such as Luna. Cover both current additional query sets, including
+the Redis rewrite aliases, case variants and controls. Target a comfortable margin
+above the configured coverage requirement while deliberately retaining some
+unjudged results; do not require 100% coverage.
+
+Select the pairs to judge independently of candidate scores or expected gate
+outcomes. Assess query/product relevance from the available product data, retain
+positive and negative judgements, and preserve uncertainty where evidence is
+insufficient. Keep model identity, provenance, the query/product inputs and the
+resulting frozen snapshot. Adequate coverage does not guarantee that relevance
+checks pass; do not adjust labels or thresholds to obtain a favourable result.
+
+Publish the new frozen judgement data in a reviewable source change and use a
+new build/check plan when resuming comparisons with those labels. Preserve the
+current build 207 evidence and approved Production plan. Additional sets remain
+report only unless a subsequent reviewed plan makes them required.
+
+Acceptance: both sets meet the unchanged coverage requirement with headroom,
+retain a documented non-zero unjudged fraction, and have reproducible source
+references and model provenance. Report the measured coverage and any remaining
+gaps. No judgement generation or historical evidence changes are part of this
+feedback-recording batch.

@@ -6,15 +6,17 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
-Build 207 is verified in Integration, Staging and inactive green. Its Production
-checks passed standard relevance but missed latency budgets on both sides;
-active blue remains build 108. The [node-memory investigation](es-node-memory-headroom.md)
-identified reclaim and swapping at the enclosing server's 6 GiB ceiling.
-A matched short replay at 10 GiB improved p99 from 189 to 119 ms and removed
-node memory-limit hits. The node retains 10 GiB under the approved safe-cleanup
-fallback; Elasticsearch resources and gate budgets are unchanged. Next: run the
-full Production gate at this capacity. The short diagnostic is not promotion
-evidence, and fresh-install defaults remain unchanged pending that validation.
+Build 207 is verified in Integration, Staging and inactive green. Its full
+Production retry passed with the enclosing server at 10 GiB and unchanged gate
+budgets; delivery-state PR #42 proposes switching active blue/build 108 to
+green/build 207. Next: human review, approval and deployment of that proposal,
+then verify the active storefront. The previous failed attempt remains retained.
+The [node-memory investigation](es-node-memory-headroom.md) records the controlled
+short replay; fresh-install defaults remain unchanged pending a separate review.
+
+After the walkthrough, implement the [advisory outcomes and judgement feedback](walkthrough-feedback.md#recorded-follow-ups-advisory-outcomes-and-additional-set-judgements):
+show actual advisory outcomes in approval PRs and generate frozen judgements for
+the sneakers and Redis rewrite sets using the authorised low-cost model approach.
 
 The [Production slot browser-route fix](production-slot-preview-routes.md)
 publishes separate blue/green hostnames through the preview reconciler. Green
