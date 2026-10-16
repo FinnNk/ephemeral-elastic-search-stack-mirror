@@ -448,3 +448,7 @@ The initial baseline needs no promotion plan. For later promotions, suggest and
 review a plan in the release dashboard, approve the exact delivery-state PR head
 and record it. No additional service or installation flag is required. Standard
 query sets remain compulsory for every selected variant.
+
+### Branch previews
+
+Fresh source repositories include the protected workflow and tooling for [building a preview from a branch or SHA](branch-previews.md). Use **Build and create preview** in the control UI after verification. It reuses the installed runner, shared data and corporate/lab CA trust; no PR is required for the preview.

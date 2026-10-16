@@ -107,6 +107,11 @@ def publish(base, path, content, username, password, check_only=False):
 
 def main():
     root = Path.cwd()
+    if os.environ['EVENT_KIND'] == 'workflow_dispatch':
+        workflow_sha = os.environ.get('WORKFLOW_SOURCE_SHA', '')
+        request_id = os.environ.get('PREVIEW_REQUEST_ID', '')
+        if not re.fullmatch('[a-f0-9]{40}', workflow_sha) or not re.fullmatch('[a-f0-9]{32}', request_id):
+            raise ValueError('Preview publication requires its protected workflow and request identities.')
     version = declared(root)
     if (root / 'VERSION').read_bytes() != (version + '\n').encode():
         raise ValueError('VERSION must contain the version followed by one LF newline.')
@@ -128,9 +133,10 @@ def main():
     put('releases/' + release_id + '.json', descriptor)
     # PRs check existing reservations without creating them. Main publication
     # atomically reserves the version in Nexus's ALLOW_ONCE repository.
-    put('versions/' + version + '.json', canonical({'version': version,
-        'source_repository': release['source_repository'], 'source_tree': release['source_tree']}),
-        check_only=os.environ['EVENT_KIND'] == 'pull_request')
+    if os.environ['EVENT_KIND'] != 'workflow_dispatch':
+        put('versions/' + version + '.json', canonical({'version': version,
+            'source_repository': release['source_repository'], 'source_tree': release['source_tree']}),
+            check_only=os.environ['EVENT_KIND'] == 'pull_request')
     # This receipt is written last. A failed job cannot leave a complete release receipt.
     receipt = {'format': 1, 'release_id': release_id, 'source_sha': release['source_sha'],
                'source_repository': release['source_repository'], 'image': image,
@@ -138,7 +144,11 @@ def main():
                'run_attempt': os.environ['RUN_ATTEMPT'], 'version': release['version']}
     if os.environ['EVENT_KIND'] == 'pull_request':
         receipt['pr_number'] = int(os.environ['PR_NUMBER'])
-    put('builds/' + release['source_sha'] + '/' + receipt['run_id'] + '-' + receipt['run_attempt'] + '.json',
+    lookup_sha = release['source_sha']
+    if os.environ['EVENT_KIND'] == 'workflow_dispatch':
+        receipt.update(workflow_source_sha=workflow_sha, preview_request_id=request_id)
+        lookup_sha = workflow_sha
+    put('builds/' + lookup_sha + '/' + receipt['run_id'] + '-' + receipt['run_attempt'] + '.json',
         canonical(receipt))
     print('RELEASE_ID=' + release_id)
     print(json.dumps(receipt, sort_keys=True))

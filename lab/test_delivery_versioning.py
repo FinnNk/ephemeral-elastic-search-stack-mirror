@@ -13,6 +13,27 @@ import test_delivery_release
 
 
 class VersionTests(unittest.TestCase):
+    def test_manual_preview_does_not_read_or_reserve_stable_version(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            test_delivery_release.ReleaseIntegrityTests().fixture(root)
+            (root / 'VERSION').write_bytes(b'1.0.0\n')
+            (root / 'image-metadata.json').write_text(json.dumps({'containerimage.digest': 'sha256:' + 'a' * 64}))
+            env = {'SOURCE_SHA': 'b' * 40, 'SOURCE_TREE': 'c' * 40,
+                   'SOURCE_REPOSITORY': 'elastic-agent/delivery-source', 'EVENT_KIND': 'workflow_dispatch',
+                   'WORKFLOW_SOURCE_SHA': 'd' * 40, 'PREVIEW_REQUEST_ID': 'e' * 32,
+                   'RUN_ID': '250', 'RUN_ATTEMPT': '1', 'REGISTRY': 'registry',
+                   'ARTIFACT_URL': 'https://artifacts.test', 'NEXUS_USER': 'fixture', 'NEXUS_PASSWORD': 'fixture'}
+            with patch.object(release.Path, 'cwd', return_value=root), patch.dict(release.os.environ, env), \
+                    patch.object(release, 'publish') as put:
+                release.main()
+            self.assertFalse(any(c.args[1].startswith('versions/') for c in put.call_args_list))
+            self.assertEqual(put.call_args.args[1], 'builds/' + 'd' * 40 + '/250-1.json')
+            receipt = json.loads(put.call_args.args[2])
+            self.assertEqual(receipt['source_sha'], 'b' * 40)
+            self.assertEqual(receipt['workflow_source_sha'], 'd' * 40)
+            self.assertEqual(receipt['version'], '1.0.0-preview.250.1')
+
     def test_official_precedence_sequence_and_numeric_order(self):
         values = ['1.0.0-alpha', '1.0.0-alpha.1', '1.0.0-alpha.beta', '1.0.0-beta',
                   '1.0.0-beta.2', '1.0.0-beta.11', '1.0.0-rc.1', '1.0.0', '1.0.1', '1.1.0', '1.10.0', '2.0.0']

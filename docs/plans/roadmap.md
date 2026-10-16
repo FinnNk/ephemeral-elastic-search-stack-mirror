@@ -6,6 +6,12 @@ step” is not an instruction to repeat completed work.
 
 ## Current work
 
+The [branch/SHA preview batch](branch-preview-builds.md) adds a protected build
+workflow and a control form for committed experiments without a source PR.
+Focused checks and a disposable provider dispatch have passed; acceptance and
+a real build/preview rehearsal remain next. Existing promotion gates are retained.
+
+
 Build 207 is verified in Integration, Staging and inactive green. Its Production
 checks passed standard relevance but missed latency budgets on both sides;
 active blue remains build 108. The [node-memory investigation](es-node-memory-headroom.md)

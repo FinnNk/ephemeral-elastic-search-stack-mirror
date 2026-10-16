@@ -9,6 +9,10 @@ def install():
     files = {
         '.github/workflows/relevance.yaml': ROOT / 'lab/delivery/workflows/relevance.yaml',
         '.github/workflows/release.yaml': ROOT / 'lab/delivery/workflows/release.yaml',
+        '.github/workflows/build-preview.yaml': ROOT / 'lab/delivery/workflows/build-preview.yaml',
+        'ci/build-preview.sh': ROOT / 'lab/delivery/ci/build-preview.sh',
+        'ci/release.py': ROOT / 'lab/delivery/ci/release.py',
+        'ci/versioning.py': ROOT / 'lab/delivery/ci/versioning.py',
         '.github/workflows/delivery.yaml': ROOT / 'lab/delivery/workflows/delivery.yaml',
         'ci/lab_delivery.py': ROOT / 'lab/delivery/ci/lab_delivery.py',
         'gate/evaluation.json': ROOT / 'lab/delivery/bootstrap/gate/evaluation.json',
