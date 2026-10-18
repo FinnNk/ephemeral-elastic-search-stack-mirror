@@ -16,7 +16,7 @@ $env:LAB_STATE_DIR = (Resolve-Path .lab).Path
 $labState = $env:LAB_STATE_DIR
 $kubeconfig = Join-Path $labState kubeconfig.yaml
 kubectl --kubeconfig $kubeconfig -n lab-control get deploy,pod,pvc,svc
-kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- uv run --locked python lab/control-runtime/smoke.py
+kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
 ```
 
 Expect ready `lab-control` and `lab-control-oidc` Deployments, four ready control containers and a Bound PVC. The smoke check prints JSON containing `cluster: matched`, the Gitea runtime identity, Elasticsearch version, record counts and `nexus: reachable`. It checks connectivity; it does not run a comparison.
@@ -68,7 +68,7 @@ Wait for active comparisons and delivery work to finish. The Deployment uses `Re
    ```powershell
    uv run --locked python lab/install_control_oidc.py --image $controlImage
    kubectl --kubeconfig $kubeconfig -n lab-control rollout status deployment/lab-control --timeout=180s
-   kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- uv run --locked python lab/control-runtime/smoke.py
+   kubectl --kubeconfig $kubeconfig -n lab-control exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
    ```
 
 If rollout fails, inspect Pod events and logs. Keep the previous digest for rollback; do not invoke `activate` on an existing Deployment.

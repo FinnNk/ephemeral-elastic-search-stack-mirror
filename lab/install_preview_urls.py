@@ -6,7 +6,7 @@ import os
 from common import K3D, ROOT, STATE, apply, guard, k, run
 from https_ingress import certificate, expose, route
 from preview_access import bind
-from preview_routes import DOMAIN
+from preview_routes import DOMAIN, SEARCH_SERVICES
 
 DNS_IMAGE = 'coredns/coredns:1.13.1@sha256:9b9128672209474da07c91439bf15ed704ae05ad918dd6454e5b6ae14e35fee6'
 PYTHON_IMAGE = 'python:3.13.7-alpine3.22@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844'
@@ -78,7 +78,7 @@ def install():
     # This reusable role is granted through RoleBindings in search namespaces only.
     apply({'apiVersion': 'rbac.authorization.k8s.io/v1', 'kind': 'ClusterRole',
         'metadata': {'name': 'lab-preview-route-writer'}, 'rules': [
-            {'apiGroups': [''], 'resources': ['services'], 'resourceNames': ['search'], 'verbs': ['get']},
+            {'apiGroups': [''], 'resources': ['services'], 'resourceNames': list(SEARCH_SERVICES), 'verbs': ['get']},
             {'apiGroups': ['networking.k8s.io'], 'resources': ['ingresses', 'networkpolicies'],
              'verbs': ['create']},
             {'apiGroups': ['networking.k8s.io'], 'resources': ['ingresses', 'networkpolicies'],

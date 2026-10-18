@@ -1,8 +1,10 @@
 # Release walkthrough follow-ups
 
-Recorded on 16 October 2026. Implement these after the current promotion
-walkthrough finishes. This batch records feedback only; it changes no controls
-or release state.
+Recorded on 16 October 2026 during the build-204 walkthrough. The text below
+retains the observations and acceptance criteria at that point; its deployment
+checkpoint is historical. The walkthrough has since completed. Implementation
+and judgement data are reviewed separately in lab PR #219; this record changes
+no controls or release state. Use the release dashboard for current deployments.
 
 ## Identify releases clearly when choosing a proposal
 
@@ -80,7 +82,7 @@ This is a possible workflow improvement requested during the running Staging
 checks. Decide whether the combined action should be the default after the
 walkthrough; no automatic start is enabled by this feedback record.
 
-## Walkthrough checkpoint
+## Historical walkthrough checkpoint
 
 Build 204 (`1.2.2+build.204.1`, source `c83307104982`) is verified in Integration
 through delivery-state proposal #31. Read-only checks found one ready replica,

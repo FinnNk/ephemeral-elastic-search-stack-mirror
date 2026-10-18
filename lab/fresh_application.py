@@ -285,13 +285,12 @@ def catalogue():
     from blob_config import service, settings
     sys.path.insert(0, str(ROOT / 'data'))
     from data.publish import upload
+    from azure.core.exceptions import ResourceExistsError
     account = service()
     try:
         account.create_container(settings()[1])
-    except Exception as error:
-        from azure.core.exceptions import ResourceExistsError
-        if not isinstance(error, ResourceExistsError):
-            raise
+    except ResourceExistsError:
+        pass
     for name, payload in snapshot_payloads(ROOT / 'data/fresh-judgements'):
         upload(account, settings()[1], name, payload, hashlib.sha256(payload).hexdigest(), len(payload))
     for release in ('esci-gb-v1', 'esci-gb-demo-v1'):

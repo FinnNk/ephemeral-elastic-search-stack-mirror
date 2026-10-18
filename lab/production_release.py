@@ -76,10 +76,14 @@ def documents(value, render=rendered):
             elif kind == 'ConfigMap' and doc['metadata']['name'] == 'frozen-definition':
                 doc['metadata']['name'] += '-' + colour
                 slots.append(doc)
+            elif kind == 'NetworkPolicy' and doc['metadata']['name'] == 'search-boundary':
+                doc['metadata']['name'] += '-' + colour
+                doc['spec']['podSelector'].setdefault('matchLabels', {})['release-slot'] = colour
+                slots.append(doc)
             else:
                 key = (kind, doc['metadata']['name'])
                 if key in shared and shared[key] != doc:
-                    raise ValueError('Release bundles disagree on shared production resources.')
+                    raise ValueError('Release bundles disagree on shared production resource: ' + kind + '/' + doc['metadata']['name'] + '.')
                 shared[key] = doc
     active = value['active']
     stable = deepcopy(next(d for d in slots if d['kind'] == 'Service' and
@@ -101,12 +105,13 @@ def render_state(value):
 def write(value):
     from delivery_json import write_json
     validate_state(value)
+    manifests = render_state(value)
     folder = LOCAL / 'targets/production'
     folder.mkdir(parents=True, exist_ok=True)
     (folder / 'rendered').mkdir(exist_ok=True)
     write_json(folder / 'slots.json', value)
     write_json(folder / 'deployment.json', value['slots'][value['active']])
-    (folder / 'rendered/search.yaml').write_text(render_state(value), encoding='utf-8', newline='\n')
+    (folder / 'rendered/search.yaml').write_text(manifests, encoding='utf-8', newline='\n')
 
 
 def frozen_catalogue(deployment):

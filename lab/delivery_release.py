@@ -2,6 +2,7 @@
 import io
 from functools import lru_cache
 import json
+import re
 from pathlib import PurePosixPath
 import tarfile
 
@@ -71,7 +72,15 @@ def from_run_bytes(run_id):
 
 def validate_receipt(run, receipt, release):
     """Bind displayed and deployed metadata to the same exact successful build."""
-    if (receipt['source_sha'] != run['head_sha'] or release['source_sha'] != run['head_sha'] or
+    source_sha = run['head_sha']
+    if run['event'] == 'workflow_dispatch':
+        match = re.fullmatch(r'Preview ([a-f0-9]{40}) ([a-f0-9]{32})', run.get('display_title', ''))
+        if (not match or run.get('path') != 'build-preview.yaml@refs/heads/main' or
+                receipt.get('workflow_source_sha') != run['head_sha'] or
+                receipt.get('preview_request_id') != match[2]):
+            raise ValueError('Preview receipt does not match the protected workflow and requested commit.')
+        source_sha = match[1]
+    if (receipt['source_sha'] != source_sha or release['source_sha'] != source_sha or
             receipt['event_kind'] != run['event'] or receipt['source_repository'] != 'elastic-agent/' + SOURCE or
             release['source_repository'] != receipt['source_repository'] or receipt['image'] != release['image'] or
             str(receipt['run_id']) != str(run['id']) or str(receipt['run_attempt']) != str(run['run_attempt'])):
@@ -88,12 +97,14 @@ def build_metadata(run):
     """Read successful-build identity without downloading its source bundle."""
     if run.get('status') != 'completed' or run.get('conclusion') != 'success':
         return {}
-    return dict(_build_metadata(run['id'], run['run_attempt'], run['head_sha'], run['event']))
+    return dict(_build_metadata(run['id'], run['run_attempt'], run['head_sha'], run['event'],
+                               run.get('path', ''), run.get('display_title', '')))
 
 
 @lru_cache(maxsize=128)
-def _build_metadata(identifier, attempt, source, event):
-    run = {'id': identifier, 'run_attempt': attempt, 'head_sha': source, 'event': event}
+def _build_metadata(identifier, attempt, source, event, path='', title=''):
+    run = {'id': identifier, 'run_attempt': attempt, 'head_sha': source, 'event': event,
+           'path': path, 'display_title': title}
     path = f'builds/{source}/{identifier}-{attempt}.json'
     receipt = json.loads(request('/repository/lab-releases/' + path, identity='reader'))
     release = load_descriptor(receipt['release_id'])

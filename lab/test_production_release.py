@@ -64,6 +64,49 @@ class ProductionReleaseTests(unittest.TestCase):
             with self.subTest(key=key),self.assertRaisesRegex(ValueError,'same concrete'):
                 release.validate_state(other)
 
+    def test_slot_policies_preserve_distinct_release_access(self):
+        def render(dep, name):
+            ports = [9200] if dep['fields']['image'] == deployment()['fields']['image'] else [9200, 6379, 4318]
+            policy = {'apiVersion': 'networking.k8s.io/v1', 'kind': 'NetworkPolicy',
+                      'metadata': {'name': 'search-boundary', 'namespace': name},
+                      'spec': {'podSelector': {'matchLabels': {'app': 'search'}},
+                               'policyTypes': ['Egress'],
+                               'egress': [{'ports': [{'port': p}]} for p in ports]}}
+            return chart(dep, name) + '\n---\n' + json.dumps(policy)
+        before = deepcopy(self.slots)
+        docs = release.documents(self.slots, render)
+        policies = {d['metadata']['name']: d for d in docs if d['kind'] == 'NetworkPolicy'}
+        for colour, ports in (('blue', [9200]), ('green', [9200, 6379, 4318])):
+            policy = policies['search-boundary-' + colour]
+            self.assertEqual(policy['spec']['podSelector'], {'matchLabels': {'app': 'search', 'release-slot': colour}})
+            self.assertEqual([r['ports'][0]['port'] for r in policy['spec']['egress']], ports)
+        self.slots['active'] = 'green'
+        switched = release.documents(self.slots, render)
+        self.assertEqual(policies, {d['metadata']['name']: d for d in switched if d['kind'] == 'NetworkPolicy'})
+        self.slots['active'] = 'blue'
+        self.assertEqual(self.slots, before)
+
+    def test_other_shared_resource_conflicts_still_fail_with_identity(self):
+        def render(dep, name):
+            resource = {'apiVersion': 'v1', 'kind': 'ResourceQuota',
+                        'metadata': {'name': 'environment', 'namespace': name},
+                        'spec': {'hard': {'pods': str(dep['fields']['image'])}}}
+            return chart(dep, name) + '\n---\n' + json.dumps(resource)
+        with self.assertRaisesRegex(ValueError, 'ResourceQuota/environment'):
+            release.documents(self.slots, render)
+
+    def test_render_failure_leaves_desired_state_files_untouched(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(release, 'LOCAL', Path(folder)), \
+                patch.object(release, 'render_state', side_effect=ValueError('render failed')):
+            target = Path(folder) / 'targets/production'
+            target.mkdir(parents=True)
+            for name in ('slots.json', 'deployment.json'):
+                (target / name).write_text('previous contents', encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'render failed'):
+                release.write(self.slots)
+            self.assertEqual({p.name: p.read_text() for p in target.iterdir()},
+                             {'slots.json': 'previous contents', 'deployment.json': 'previous contents'})
+
     def test_final_evidence_cannot_be_reused_after_switch(self):
         selected = {'selection': [], 'configuration': {'default_variant': 'ranker-a', 'variants': {}},
             'source_sha': 'a'*40, 'selection_sha256': 'b'*64, 'configuration_sha256': 'c'*64,

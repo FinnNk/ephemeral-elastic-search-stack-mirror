@@ -183,6 +183,11 @@ and configuration checks do not by themselves establish successful ingestion.
 
 ## Install and preserve the backend
 
+For a fresh CPU demo lab, use the [demo installation procedure](fresh-install.md#add-demo-observability).
+It uses existing nodes and smaller persistent volumes. The default profile
+below requires the labelled observability worker and uses the allocations in
+the table; these are separate deployment profiles, not installation stages.
+
 For a fresh CPU lab on a laptop, use the smaller optional
 [demo profile](fresh-install.md#add-demo-observability). It uses existing nodes,
 12 GiB of PVC requests, bounded collector queues and 20% trace sampling.

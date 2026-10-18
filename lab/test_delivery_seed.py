@@ -15,8 +15,12 @@ class DeliverySeedTests(unittest.TestCase):
                 patch.object(setup_delivery, 'git'):
             root = Path(directory)
             setup_delivery.seed_source(root)
-            self.assertEqual((root / 'VERSION').read_text().strip(), '1.0.0')
+            self.assertEqual((root / 'VERSION').read_bytes(),
+                             (setup_delivery.ROOT / 'lab/delivery/bootstrap/VERSION').read_bytes())
             self.assertTrue((root / 'ci/versioning.py').exists())
+            self.assertTrue((root / '.github/workflows/build-preview.yaml').exists())
+            self.assertEqual((root / 'ci/build-preview.sh').read_bytes(),
+                             (setup_delivery.ROOT / 'lab/delivery/ci/build-preview.sh').read_bytes())
             selection = json.loads((root / 'gate/selection.json').read_text())
             layout = json.loads((root / 'gate/evaluation.json').read_text())
             self.assertEqual(selection['kind'], 'variant-gate-selection')

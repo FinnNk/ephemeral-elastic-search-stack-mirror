@@ -67,6 +67,21 @@ use `python -m unittest discover -s lab -p 'test_*.py' -q` through the same uv
 environment and import paths. Live verification is separate; leave opt-in
 settings such as `LAB_VERIFY_REDIS` unset for unit runs.
 
+Run Search API tests in a separate Python process with its own module directory
+first. The Search API and judgement service both contain a module named
+`telemetry`; combining their import paths in the wrong order loads the wrong one.
+
+```powershell
+$env:PYTHONPATH = 'lab/search-app'
+uv run --locked python -m unittest discover -s lab/search-app -p 'test_*.py' -q
+```
+
+On macOS or Linux:
+
+```sh
+PYTHONPATH=lab/search-app uv run --locked python -m unittest discover -s lab/search-app -p 'test_*.py' -q
+```
+
 If imports fail, check the actual interpreter and dependency locations:
 
 ```sh

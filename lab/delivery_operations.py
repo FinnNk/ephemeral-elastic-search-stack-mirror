@@ -18,6 +18,7 @@ FIELDS = {
     'prepare-production': set(),
     'release-production': set(),
     'preview': {'run', 'dataset', 'recipe'},
+    'build-preview': {'source_ref', 'dataset', 'recipe'},
     'compare': {'baseline_run', 'candidate_run', 'dataset', 'recipe', 'pr', 'source_sha', 'baseline_sha'},
     'promotion': {'target', 'run', 'dataset', 'recipe', 'query_manifest', 'judgement_manifest'},
     'gate-check': {'pr', 'source_sha'},
@@ -43,6 +44,7 @@ def validate(payload):
         raise ValueError('Unknown delivery operation field.')
     required = {'suggest-release-plan': {'run','target'}, 'propose-release-plan': {'suggestion','edits'}, 'accept-release-plan': {'pr'}, 'set-preview-expiry': {'name', 'fingerprint', 'expires_at', 'new_expiry'}, 'expire-preview': {'name', 'fingerprint', 'expires_at'}, 'prepare-production': set(), 'preview': {'run'}, 'compare': {'pr', 'source_sha', 'baseline_sha'} if 'pr' in payload
                 else {'baseline_run', 'candidate_run'},
+                'build-preview': {'source_ref'},
                 'promotion': {'target', 'run'}, 'release-production': set(), 'gate-check': {'pr', 'source_sha'},
                 'request-exception': {'pr', 'source_sha', 'variant', 'reason'},
                 'merge-exception': {'pr'},
@@ -50,6 +52,10 @@ def validate(payload):
                 'rollback': {'target', 'fingerprint'}}[kind]
     if not required <= set(payload):
         raise ValueError('Required delivery operation fields are missing.')
+    if kind == 'build-preview':
+        from preview_build import valid_ref
+        if not valid_ref(payload['source_ref']):
+            raise ValueError('Enter a branch name or a full 40-character commit SHA.')
     if kind == 'propose-release-plan' and (not re.fullmatch('[a-f0-9]{32}',str(payload['suggestion'])) or not isinstance(payload['edits'],dict)):
         raise ValueError('Choose a saved release check suggestion and its review settings.')
     if kind in ('expire-preview', 'set-preview-expiry') and not re.fullmatch(r'lab-delivery-run-[1-9][0-9]*-[a-f0-9]{8}', str(payload['name'])):
@@ -118,6 +124,9 @@ class Operations:
     def submit(self, payload, identity, key, *, release_binding=None):
         """Retry the same submission key safely; changed payloads require a new key."""
         validate(payload)
+        if payload['kind'] == 'build-preview' and (
+                not identity.get('is_admin') or identity.get('is_reader') or identity.get('is_delivery_service')):
+            raise ValueError('A human lab administrator must request a source preview build.')
         from release_check_plans import KINDS as PLAN_KINDS
         if payload['kind'] in PLAN_KINDS and (not identity.get('is_admin') or identity.get('is_reader') or identity.get('is_delivery_service')):
             raise ValueError('A human administrator must review release check plans.')
@@ -131,6 +140,16 @@ class Operations:
             raise ValueError('Supply a stable Idempotency-Key of 1–128 characters.')
         owner = identity.get('issuer', '') + ':' + identity.get('subject', identity['username'])
         identifier = hashlib.sha256((owner + '\n' + key).encode()).hexdigest()[:32]
+        public_payload = dict(payload)
+        if payload['kind'] == 'build-preview':
+            previous = self.get(identifier)
+            if previous:
+                original = {k: v for k, v in previous['request'].items() if not k.startswith('_')}
+                if original != public_payload:
+                    raise ValueError('Submission key already names a different operation.')
+                return {**previous, 'submission_reused': True}
+            from preview_build import prepare
+            payload = {**payload, **prepare(payload['source_ref'])}
         if release_binding:
             payload = {**payload, '_release_binding': release_binding}
         if payload['kind'] == 'prepare-production':
@@ -143,7 +162,10 @@ class Operations:
             db.execute('BEGIN IMMEDIATE')
             previous = db.execute('SELECT * FROM operations WHERE id=?', (identifier,)).fetchone()
             if previous:
-                if previous['request'] != encoded:
+                original = json.loads(previous['request'])
+                if payload['kind'] == 'build-preview':
+                    original = {k: v for k, v in original.items() if not k.startswith('_')}
+                if original != (public_payload if payload['kind'] == 'build-preview' else json.loads(encoded)):
                     raise ValueError('Submission key already names a different operation.')
             else:
                 db.execute('INSERT INTO operations VALUES (?,?,?,?,?,?,?,?,?,?)',
@@ -218,7 +240,8 @@ def execute_next():
         store.update(identifier, progress=message)
     from operation_telemetry import event_sink
     token = event_sink.set(lambda event: store.log(identifier, json.dumps(event, sort_keys=True)))
-    store.log(identifier, 'Coordinator started this operation')
+    if not (row.get('result') or {}).get('waiting'):
+        store.log(identifier, 'Coordinator started this operation')
     try:
         if request.get('_release_binding'):
             from release_control import validate_binding
@@ -257,6 +280,12 @@ def execute_next():
         elif kind == 'release-production':
             from production_release import release
             result = release(progress=progress)
+        elif kind == 'build-preview':
+            from preview_build import advance
+            result = advance(request, identifier, progress)
+            if result.get('waiting'):
+                store.update(identifier, state='queued', progress=result['progress'], result=result)
+                return store.get(identifier)
         elif kind == 'preview':
             progress('Preparing the frozen preview')
             result = execute(parser().parse_args(['preview', '--run', str(request['run']), *options]))
@@ -333,7 +362,7 @@ def execute_next():
         failed_reference = getattr(error, 'reference', None)
         store.log(identifier, detail)
         store.update(identifier, state='failed', progress='Operation failed', error=detail,
-                     result={'report': failed_reference} if failed_reference else None)
+                     result={'report': failed_reference} if failed_reference else getattr(error, 'preview_result', None))
         if request.get('source_sha') and request['kind'] in ('compare', 'gate-check'):
             from delivery_source_comparison import status
             status(request['source_sha'], 'failure',

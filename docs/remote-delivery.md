@@ -121,6 +121,10 @@ in the report. The printed result links to the decision PR. Actions cannot
 request a human exception; it can complete a decision already approved by its
 named human reviewer. `gate-check` remains available to recheck signed evidence.
 
+## Preview a branch or commit without a PR
+
+Use **Build and create preview** on the [Search lab](https://control.localhost:34443/). It pins a delivery-source branch/SHA, follows its CI build and creates an isolated preview. See [branch previews](branch-previews.md) for the UI steps, identities and recovery. These builds cannot be promoted as merged releases.
+
 ## Operator setup
 
 After the reviewed source templates are on main and the accepted control image
