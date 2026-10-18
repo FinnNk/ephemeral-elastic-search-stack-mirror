@@ -68,7 +68,8 @@ acceptance were not performed.
 
 ## Acceptance and next steps
 
-1. Accept and merge the lab batch, then activate its control runtime when idle.
+1. Merge the reconciled historical feedback record (#214), then lab #219.
+   Activate the accepted control runtime when delivery/comparison work is idle.
 2. Recheck the dependent delivery-source PR for version 1.2.6 against the activated
    loader before merging it. Its API behaviour and standard budgets are unchanged.
 3. Use its new merged-source build and a new reviewed check plan for live
@@ -76,3 +77,19 @@ acceptance were not performed.
    their labelled replacements; the reviewer confirms the decision.
 4. Rehearse the documented fresh Mac install from the accepted GitHub mirror.
    No intermediate judgement import or model download should be needed.
+
+## Reconciliation, 18 October
+
+Main now includes source version 1.2.5, the branch/SHA preview workflow and the
+code/documentation cleanup. The feedback branch preserves those changes and
+includes the complete final canonical-byte correction. Its source-data dependency
+is version 1.2.6; the unpublished 1.2.4 branch is not the release to merge.
+
+All 285 combined feedback, promotion, preview, fresh-install and API tests passed.
+The source branch's committed judgement-pack bytes match the fresh-install seed
+exactly. Re-scoring confirms 54 sneakers labels and 252 Redis rewrite labels,
+with 90% coverage on both sides for both retained captures. Source application,
+chart, contract and CI/tooling files match accepted source main. The new source
+comparison still requires the accepted loader to be activated before its gate
+can be completed. Neither this reconciliation nor re-scoring changes live
+Production or earlier evidence.
