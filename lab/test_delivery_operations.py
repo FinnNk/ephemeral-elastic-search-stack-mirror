@@ -97,6 +97,9 @@ class DeliveryOperationTests(unittest.TestCase):
                 with patch.object(client, 'bearer', return_value='fixture'):
                     row = client.submit(self.payload, key='http', wait=False)
                     self.assertEqual(row['state'], 'queued')
+                    with self.assertRaises(error.HTTPError) as failure:
+                        client.submit({'kind': 'build-preview', 'source_ref': 'main'}, key='machine-build', wait=False)
+                    self.assertEqual(failure.exception.code, 403)
                     self.store.log(row['id'], 'Safe step')
                     self.assertEqual(client.call('/api/delivery/operations/' + row['id'] + '/logs')['logs'][0]['message'], 'Safe step')
                     self.assertEqual(len(client.call('/api/delivery/operations')['operations']), 1)

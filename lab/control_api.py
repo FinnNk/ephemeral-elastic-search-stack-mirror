@@ -119,7 +119,7 @@ class Handler(BaseHTTPRequestHandler):
         if parts == ['production-release']:
             return self.send_bytes(200, UI.with_name('production-release.html').read_bytes(),
                                    'text/html; charset=utf-8')
-        if parts in (['lab-design.css'], ['lab_shell.js'], ['release_control.js']):
+        if parts in (['lab-design.css'], ['lab_shell.js'], ['release_control.js'], ['preview_build.js']):
             name = parts[0]
             return self.send_bytes(200, UI.with_name(name).read_bytes(),
                                    'text/css; charset=utf-8' if name.endswith('.css') else 'text/javascript; charset=utf-8')
@@ -443,6 +443,8 @@ class Handler(BaseHTTPRequestHandler):
                 if payload.get('kind') == 'request-exception' and (
                         identity.get('is_delivery_service') or not identity['is_admin']):
                     return self.send_json(403, {'error': 'A human administrator must request a relevance decision.'})
+                if payload.get('kind') == 'build-preview' and identity.get('is_delivery_service'):
+                    return self.send_json(403, {'error': 'A human administrator must request a source preview build.'})
                 from delivery_operations import Operations
                 store = Operations()
                 row = store.submit(payload, identity, self.headers.get('Idempotency-Key'))

@@ -10,7 +10,7 @@ retains previous implementation entries and measurements.
 | Work | Next step |
 | --- | --- |
 | Code and documentation simplification | Review the [findings and cleanup batch](../reviews/codebase-simplicity-2026-10-16.md), then follow its bounded refactoring plan. |
-| Build previews from a branch or SHA | Review delivery-source #44 and lab #220. Merge the source workflow first; activate when idle and rehearse a real preview. |
+| [Build previews from a branch or SHA](branch-preview-builds.md) | Delivery-source #44 and lab #220 are merged. Activate when idle, then rehearse a real branch and exact-SHA preview. |
 | Promotion walkthrough feedback | Review the separate advisory-outcome and judgement-data work. Keep accepted labels and their provenance together; verify fresh-install seeds before activation. |
 | Realistic ranking-change example | Complete the retained judgement review and re-score the frozen title-match experiment. Preserve the original published-label result and protocol. |
 

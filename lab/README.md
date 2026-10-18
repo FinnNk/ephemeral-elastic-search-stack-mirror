@@ -57,7 +57,11 @@ The control workers already run in Kubernetes. Do not launch host control, lease
 
 ## Create an environment
 
-1. Under **Create an environment**, enter a name beginning `lab-`, such as `lab-ranking-review`, and the **Gitea build run number**.
+To build a delivery-source revision without a PR, use
+**Build and create preview** instead; follow the [branch/SHA preview guide](../docs/branch-previews.md).
+The steps below use an existing `search-spike` build.
+
+1. Under **Create from an existing search-spike build**, enter a name beginning `lab-`, such as `lab-ranking-review`, and the **Gitea build run number**.
 2. Select **Catalogue and rewrite data**, then **Index type**. Use a shared index for API/query/ranking changes; choose a dedicated mapping for index experiments. Queries and judgements are selected separately for a comparison.
 3. Leave **Historical index recipe SHA-256 (optional)** blank for the current definition. Supply a retained recipe only when recreating an earlier index.
 4. Choose **Create**, then **Refresh status**. Wait for `ready` before searching or comparing. If it fails, read the card's error before choosing **Retry**.

@@ -73,8 +73,20 @@ class PreviewBuildTests(unittest.TestCase):
         self.receipt['event_kind'] = 'pull_request_target'
         with ExitStack() as stack:
             self.dependencies(stack)
-            with self.assertRaisesRegex(ValueError, 'source push or pull-request'):
+            with self.assertRaisesRegex(ValueError, 'verified successful source build'):
                 runtime.validate_deployment(self.deployment, merged=False)
+
+    def test_manual_build_keeps_frozen_validation_and_is_never_promotable(self):
+        self.receipt['event_kind'] = 'workflow_dispatch'
+        with ExitStack() as stack:
+            self.dependencies(stack)
+            recipe, _ = runtime.validate_deployment(self.deployment, merged=False)
+            self.assertEqual(recipe, self.recipe)
+            for action in (lambda: runtime.validate_deployment(self.deployment),
+                           lambda: runtime.materialise(self.deployment),
+                           lambda: runtime.rendered(self.deployment, 'lab-integration')):
+                with self.assertRaisesRegex(ValueError, 'merged-source push'):
+                    action()
 
     def test_merged_source_build_still_validates_for_promotion(self):
         self.receipt['event_kind'] = 'push'

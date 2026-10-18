@@ -137,6 +137,10 @@ comparison evaluation, release plans, fresh application/foundation setup,
 control API access, delivery gates and input selection. Exact scoring parity
 was checked separately against the original code on four fixtures.
 
+After reconciling merged preview changes on 18 October, all 176 combined
+cleanup and preview tests passed. JavaScript syntax, local links, UTF-8 and
+conflict-marker checks also passed. No live activation was performed.
+
 Local tests establish fixture behaviour, not native Mac installation, Docker
 restart recovery, judgement accuracy or a fresh full promotion. Those acceptance
 checks remain on the roadmap. Documentation review compared instructions with
@@ -145,7 +149,7 @@ runbook commands against the live lab.
 
 ## Next detailed plan
 
-1. Review and accept this cleanup separately from the pending preview PRs.
+1. Review and accept this cleanup after the merged preview changes (#44/#220).
 2. Extract operation/comparison report serving from the HTTP dispatcher while
    preserving authentication, owner checks, content negotiation and hashes.
    Run the API/report test net before and after the split.
