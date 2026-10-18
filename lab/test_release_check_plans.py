@@ -58,6 +58,18 @@ class ReleasePlans(unittest.TestCase):
         self.assertEqual(self.suggestion['variants'][0]['intent'],'ranking-change')
         self.assertEqual(self.suggestion['binding']['primary_query_sets'],[{'name':'standard','required':True}])
 
+    def test_missing_declarations_are_recorded_but_provider_failures_propagate(self):
+        from gitea import GiteaHTTPError
+        with patch.object(plans, 'api', side_effect=GiteaHTTPError('GET', '/selection', 404)):
+            suggestion = plans.suggest(self.baseline, self.candidate, 'staging')
+        self.assertEqual(set(suggestion['ancestry']['missing_declarations']),
+                         {self.base, self.middle, self.head})
+        for failure in (GiteaHTTPError('GET', '/selection', 403), RuntimeError('provider unavailable')):
+            with self.subTest(failure=type(failure).__name__), \
+                    patch.object(plans, 'api', side_effect=failure), \
+                    self.assertRaises(type(failure)):
+                plans.suggest(self.baseline, self.candidate, 'staging')
+
     def test_freezes_original_historical_bytes_and_required_status(self):
         plan=plans.build_plan(self.suggestion,self.edits(),'reviewer')
         frozen=plans.frozen_additional(plan)

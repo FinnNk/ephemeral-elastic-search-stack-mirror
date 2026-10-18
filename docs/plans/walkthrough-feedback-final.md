@@ -69,7 +69,7 @@ acceptance were not performed.
 ## Acceptance and next steps
 
 1. Accept and merge the lab batch, then activate its control runtime when idle.
-2. Recheck the dependent delivery-source PR for version 1.2.4 against the activated
+2. Recheck the dependent delivery-source PR for version 1.2.6 against the activated
    loader before merging it. Its API behaviour and standard budgets are unchanged.
 3. Use its new merged-source build and a new reviewed check plan for live
    comparisons. Suggested retirements distinguish old unlabelled copies from

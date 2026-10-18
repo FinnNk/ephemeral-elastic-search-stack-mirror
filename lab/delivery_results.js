@@ -7,7 +7,7 @@ const evaluationPhases=[];
 const expandedEvaluationSteps=new Set();
 $("pause-logs").onclick=()=>{logsPaused=!logsPaused;$("pause-logs").textContent=logsPaused?"Resume":"Pause";if(!logsPaused&&operationPage)updateLogs({});};
 const stateNames={accepted:'Waiting for the source build',queued:'Queued',running:'In progress',complete:'Complete',failed:'Failed',interrupted:'Interrupted',pass:'Passed',approved_exception:'Accepted with a recorded exception',decision_required:'Decision required',blocked:'Blocked',invalid:'Invalid evidence',verified:'Deployment verified'};
-const operationTitles={'prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','suggest-release-plan':'Suggest release checks','propose-release-plan':'Review release check plan','accept-release-plan':'Record approved check plan','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
+const operationTitles={'build-preview':'Build and create preview','prepare-production':'Prepare production candidate','release-production':'Production release checks',preview:'Prepare a preview',compare:'Search comparison',promotion:'Release promotion',rollback:'Release rollback',verify:'Deployment verification','suggest-release-plan':'Suggest release checks','propose-release-plan':'Review release check plan','accept-release-plan':'Record approved check plan','merge-reviewed':'Deploy the reviewed release','gate-check':'Recheck the merge decision','request-exception':'Request a relevance decision','merge-exception':'Record the relevance decision'};
 const names={ndcg_at_10:'nDCG@10',ndcg_at_20:'nDCG@20',precision_at_10:'Precision@10',recall_at_10:'Recall@10',rbo_at_10_p_0_9:'RBO@10',jaccard_at_10:'Jaccard@10'};
 const intentNames={'ranking-change':'Intentional ranking change','preserve-results':'Preserve current results'};
 const label=value=>names[value]||String(value).replaceAll('_',' ');
@@ -69,13 +69,20 @@ function operation(row){
  $('updated').textContent='Last updated: '+new Date(row.updated_at).toLocaleString();
  $('explanation').textContent=row.state==='complete'?'The operation finished. Review its outcome and evidence below.':['failed','interrupted'].includes(row.state)?'The operation did not finish successfully. Review the error before starting another operation.':'This page refreshes every five seconds. You can leave it and return using the same link.';
  if(row.error)node('p','Error: '+row.error,section('What happened'));
+ if(request.kind==='build-preview'){
+  const build=section('Preview build');
+  const buildPage=document.createElement('a');buildPage.textContent=result.build_run?'Open build '+result.build_run:'Open delivery-source Actions';buildPage.href=result.build_url||'https://gitea.localhost:34443/elastic-agent/delivery-source/actions';
+  table(build,['Detail','Value'],[['Requested revision',request.source_ref],['Pinned commit',result.source_sha||request._preview_source_sha],['Version',result.version||'Not built yet'],['Build',buildPage]]);
+  if(result.waiting&&!row.queue?.blocker){$('state').textContent=result.build_run?'Building':'Build requested';$('queue-panel').hidden=true;}
+ }
+
  gate(result.gate);
  if(row.state==='complete'&&['promotion','rollback','prepare-production','release-production'].includes(request.kind)&&result.validation){$('state').textContent=result.validation.passed?'Ready for review':'Proposal validation failed';}
  if(result.state)node('p',stateNames[result.state]||label(result.state),section('Deployment outcome'));
  if(result.validation)node('p',result.validation.detail||'Review the recorded validation result.',section('Proposal validation'));
  if(result.checks_operation){const s=section('Promotion checks','Approval was recorded. The coordinator queued one check attempt for this plan.');const a=node('a','Follow promotion checks',s);a.href=result.checks_operation.url;}
  link('report',row.report_url);$('report').textContent=['promotion','rollback','prepare-production','release-production'].includes(request.kind)?'Review promotion checks':['verify','merge-reviewed'].includes(request.kind)?'Open deployment verification':'Open comparison report';link('baseline',result.baseline_url);link('candidate',result.candidate_url);link('preview',deployedEnvironmentUrl(result)||result.browser_url);$('preview').textContent=deployedEnvironmentUrl(result)?'Open deployed '+result.environment.replace('lab-delivery-',''):'Open search page';link('proposal',result.url);link('decision',row.decision_url);
- identity({operation:row.id,source_commit:request.source_sha||result.source_sha,baseline_commit:request.baseline_sha||result.baseline_source_sha,build_run:request.run,target:request.target,report_sha256:result.report?.sha256,updated_at:row.updated_at});
+ identity({operation:row.id,source_commit:request.source_sha||result.source_sha||request._preview_source_sha,baseline_commit:request.baseline_sha||result.baseline_source_sha,build_run:request.run||result.build_run,target:request.target,report_sha256:result.report?.sha256,updated_at:row.updated_at});
  return ['accepted','queued','running'].includes(row.state);
 }
 function timings(value,record){

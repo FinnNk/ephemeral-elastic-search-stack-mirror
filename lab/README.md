@@ -32,7 +32,7 @@ for readiness checks.
 
 1. Open [Control UI](https://control.localhost:34443/) and sign in with your lab identity.
 2. Administrators manage environments and comparisons; readers inspect searches and reports.
-3. For the older standalone environment-creation form, find a successful build in `elastic-agent/search-spike` → **Actions**. Copy the run ID from `/actions/runs/<id>`, not the PR number. The control UI resolves its commit and image digest.
+3. For the form that creates an environment from a `search-spike` build, find a successful run in `elastic-agent/search-spike` → **Actions**. Copy the run ID from `/actions/runs/<id>`, not the PR number. The control UI resolves its commit and image digest. For delivery-source builds, use the delivery preview procedure below.
 
 The **Environments** list initially shows active environments, newest first.
 Search by name, owner, build or index; use **Status** and **Catalogue** to narrow
@@ -57,15 +57,19 @@ The control workers already run in Kubernetes. Do not launch host control, lease
 
 ## Create an environment
 
-1. Under **Create an environment**, enter a name beginning `lab-`, such as `lab-ranking-review`, and the **Gitea build run number**.
-2. Select a **Frozen release** and **Index**. Use a shared index for API/query/ranking changes; choose a dedicated mapping for index experiments.
+To build a delivery-source revision without a PR, use
+**Build and create preview** instead; follow the [branch/SHA preview guide](../docs/branch-previews.md).
+The steps below use an existing `search-spike` build.
+
+1. Under **Create from an existing search-spike build**, enter a name beginning `lab-`, such as `lab-ranking-review`, and the **Gitea build run number**.
+2. Select **Catalogue and rewrite data**, then **Index type**. Use a shared index for API/query/ranking changes; choose a dedicated mapping for index experiments. Queries and judgements are selected separately for a comparison.
 3. Leave **Historical index recipe SHA-256 (optional)** blank for the current definition. Supply a retained recipe only when recreating an earlier index.
 4. Choose **Create**, then **Refresh status**. Wait for `ready` before searching or comparing. If it fails, read the card's error before choosing **Retry**.
 
 | Release | Intended use |
 | --- | --- |
-| `esci-gb-v1` | Default: 1,215,854 English ESCI products, GBP lab prices and 1,000 test queries |
-| `esci-gb-demo-v1` | Optional demo subset: 10,000 products and 50 test queries |
+| `esci-gb-v1` | Default: 1,215,854 English ESCI products and paired rewrite data |
+| `esci-gb-demo-v1` | Optional demo subset: 10,000 products and paired rewrite data |
 
 For small monthly and Halloween/Christmas versions, paired Redis data and date-based selection, see
 [paired data restores](../docs/paired-data-restores.md).
@@ -105,8 +109,9 @@ absent, unhealthy or expired target is unavailable for selection.
 To create a delivery preview for an experiment, open delivery-source → **Actions**
 → **Create preview**, enter its successful build run and start the workflow.
 Once it completes, choose **Refresh status** on the control page. Repeat for a
-second build if needed. Previews use the delivery lease policy; this page does
-not delete or extend them.
+second build if needed. On its environment card, a human administrator can use
+**Set expiry** or **Expire now**. Integration, Staging and Production have no
+expiry controls.
 
 Each delivery selection pins its observed release. Production slots use their
 own API endpoints, not the active route. If a release changes before the run,
@@ -151,7 +156,7 @@ The example counts changed results and summarises scores, deltas and coverage. I
 
 ## Compare a frozen index change
 
-Choose a dedicated mapping in **Index**. The lab builds a separate index from the same catalogue; shared baselines are never overwritten by a different schema. To recreate a historical version, copy its retained recipe SHA-256, release and index kind into the creation form.
+Choose a dedicated mapping in **Index type**. The lab builds a separate index from the same catalogue; shared baselines are never overwritten by a different schema. **Existing frozen index to restore (optional)** selects a retained recipe and sets the index type automatically. The recipe pins the mapping, settings and indexer; it does not select a query set.
 
 | Index path on the card | Meaning |
 | --- | --- |
@@ -164,7 +169,11 @@ Recipes retain mappings, settings, products, engine and indexer identities. A di
 
 ## Remove environments and retain evidence
 
-Choose **Delete** on the environment card. Removal deletes the serving namespace and scoped credentials; a dedicated index follows its lifecycle policy. Deletion during an active comparison is rejected by the controller; wait for it to finish. Automatic expiry uses the same lifecycle.
+Choose **Expire now** on a preview or ephemeral environment card and confirm.
+An ephemeral environment uses the deletion lifecycle. A delivery preview queues
+an expiry operation; follow its progress link and allow the cleanup loop to
+remove the deployment. An active comparison blocks early expiry. Stable
+Integration, Staging and Production environments cannot be expired this way.
 
 Comparison reports, frozen inputs, recipes and referenced release assets remain available. Removing a runtime does not mean those artefacts can be garbage-collected safely.
 

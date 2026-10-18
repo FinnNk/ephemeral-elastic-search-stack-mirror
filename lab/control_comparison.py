@@ -13,6 +13,51 @@ MODES = ('result-regression', 'relevance')
 SCOPES = ('quick', 'full')
 
 
+def relevance_summary(results, judgements, request_by_id):
+    """Score complete frozen results and annotate their judgement coverage."""
+    from operation_telemetry import evaluation_progress
+    rankings = {side: {row['query_id']: row[side]['ids'] for row in results}
+                for side in ('baseline', 'candidate')}
+    metrics = {side: score(judgements, rankings[side])
+               for side in ('baseline', 'candidate')}
+    graded = {}
+    for judgement in judgements:
+        graded.setdefault(judgement['query_id'], set()).add(judgement['product_id'])
+    per_query = {side: query_ndcg(judgements, rankings[side])
+                 for side in ('baseline', 'candidate')}
+    evaluation_progress('Calculating significance',suite='relevance / standard')
+    significance = ndcg_statistics(judgements, rankings, request_by_id, 'baseline', per_query)
+    for row in results:
+        qid = row['query_id']
+        for side in ('baseline', 'candidate'):
+            ids = row[side]['ids']
+            row[side]['unjudged_top_10_ids'] = [pid for pid in ids if pid not in graded.get(qid, set())]
+            row[side]['judged_top_10_count'] = len(ids) - len(row[side]['unjudged_top_10_ids'])
+            row[side]['ndcg_at_10'] = per_query[side].get(qid, 0.0)
+        row['ndcg_delta_at_10'] = round(row['candidate']['ndcg_at_10'] - row['baseline']['ndcg_at_10'], 6)
+    sources = {(r['query_id'], r['product_id']): r.get('provenance', {'kind': 'published'}) for r in judgements}
+    source_coverage = {}
+    for side in ('baseline', 'candidate'):
+        counts = {}
+        for row in results:
+            for pid in row[side]['ids']:
+                provenance = sources.get((row['query_id'], pid))
+                kind = provenance['kind'] if provenance else 'unjudged'
+                counts[kind] = counts.get(kind, 0) + 1
+        source_coverage[side] = counts
+    coverage = {side: {'judged': sum(row[side]['judged_top_10_count'] for row in results),
+                       'returned': sum(len(row[side]['ids']) for row in results)}
+                for side in ('baseline', 'candidate')}
+    for value in coverage.values():
+        value['fraction'] = round(value['judged'] / value['returned'], 6) if value['returned'] else None
+    coverage_status = ('insufficient' if coverage and any(
+        value['fraction'] is None or value['fraction'] < 0.8 for value in coverage.values())
+        else 'reported' if coverage else None)
+    return {'metrics': metrics, 'significance': significance,
+            'source_coverage': source_coverage, 'coverage': coverage,
+            'coverage_status': coverage_status}
+
+
 def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=None,
                   judgement_manifest_sha=None):
     if mode not in MODES:
@@ -120,50 +165,12 @@ def evaluate_pair(baseline, candidate, mode, scope='full', query_manifest_sha=No
         verdict = 'measured'
     from operation_telemetry import evaluation_progress
     evaluation_progress('Scoring frozen results' if mode == 'relevance' else 'Comparing result order',suite=mode+' / standard',unit='queries',metrics={'total':len(suite),'completed':len(results),'failed':len(errors)})
-    metrics = None
-    significance = None
-    if mode == 'relevance' and complete:
-        metrics = {side: score(judgements, {row['query_id']: row[side]['ids'] for row in results})
-                   for side in ('baseline', 'candidate')}
-        graded = {}
-        for judgement in judgements:
-            graded.setdefault(judgement['query_id'], set()).add(judgement['product_id'])
-        per_query = {side: query_ndcg(judgements, {row['query_id']: row[side]['ids'] for row in results})
-                     for side in ('baseline', 'candidate')}
-        evaluation_progress('Calculating significance',suite=mode+' / standard')
-        significance = ndcg_statistics(judgements,
-            {side: {row['query_id']: row[side]['ids'] for row in results} for side in per_query},
-            request_by_id, 'baseline', per_query)
-        for row in results:
-            qid = row['query_id']
-            for side in ('baseline', 'candidate'):
-                ids = row[side]['ids']
-                row[side]['unjudged_top_10_ids'] = [pid for pid in ids if pid not in graded.get(qid, set())]
-                row[side]['judged_top_10_count'] = len(ids) - len(row[side]['unjudged_top_10_ids'])
-                row[side]['ndcg_at_10'] = per_query[side].get(qid, 0.0)
-            row['ndcg_delta_at_10'] = round(row['candidate']['ndcg_at_10'] - row['baseline']['ndcg_at_10'], 6)
-    source_coverage = None
-    if mode == 'relevance' and complete:
-        sources = {(r['query_id'], r['product_id']): r.get('provenance', {'kind': 'published'}) for r in judgements}
-        source_coverage = {}
-        for side in ('baseline', 'candidate'):
-            counts = {}
-            for row in results:
-                for pid in row[side]['ids']:
-                    provenance = sources.get((row['query_id'], pid))
-                    kind = provenance['kind'] if provenance else 'unjudged'
-                    counts[kind] = counts.get(kind, 0) + 1
-            source_coverage[side] = counts
-    coverage = None
-    if mode == 'relevance' and complete:
-        coverage = {side: {'judged': sum(row[side]['judged_top_10_count'] for row in results),
-                           'returned': sum(len(row[side]['ids']) for row in results)}
-                    for side in ('baseline', 'candidate')}
-        for value in coverage.values():
-            value['fraction'] = round(value['judged'] / value['returned'], 6) if value['returned'] else None
-    coverage_status = ('insufficient' if coverage and any(
-        value['fraction'] is None or value['fraction'] < 0.8 for value in coverage.values())
-        else 'reported' if coverage else None)
+    relevance = relevance_summary(results, judgements, request_by_id) if mode == 'relevance' and complete else {}
+    metrics = relevance.get('metrics')
+    significance = relevance.get('significance')
+    source_coverage = relevance.get('source_coverage')
+    coverage = relevance.get('coverage')
+    coverage_status = relevance.get('coverage_status')
     # A small selected diagnostic replay explains differences without changing the
     # black-box verdict or being counted as a latency measurement.
     if complete:

@@ -120,8 +120,8 @@ def validate_deployment(deployment, *, merged=True):
     receipt, built, _ = from_run(deployment['build_run'])
     if merged and receipt['event_kind'] != 'push':
         raise ValueError('Promotion requires a successful merged-source push build.')
-    if receipt['event_kind'] not in ('push', 'pull_request'):
-        raise ValueError('Preview requires a successful source push or pull-request build.')
+    if receipt['event_kind'] not in ('push', 'pull_request', 'workflow_dispatch'):
+        raise ValueError('Preview requires a verified successful source build.')
     if (receipt['release_id'] != fields['software_release_id'] or
             release != built or release['image'] != fields['image'] or
             release['source_sha'] != fields['source_sha'] or release['bundle_sha256'] != fields['bundle_sha256']):

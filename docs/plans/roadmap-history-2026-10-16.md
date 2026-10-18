@@ -1,0 +1,482 @@
+# Archived roadmap entries, 16 October 2026
+
+These entries retain the implementation and walkthrough history from the former
+roadmap. Statements such as “current”, “next” and “awaiting review” describe their
+original batch; they are not the current lab state or instructions to repeat it.
+Use the [current roadmap](roadmap.md) and operating guides for ongoing work.
+
+# Lab delivery roadmap
+
+This page owns current status. Individual plans record their original batch;
+research and evidence retain the conditions of earlier checks. Their old “next
+step” is not an instruction to repeat completed work.
+
+## Current work
+
+Build 207 is verified in Integration, Staging and inactive green. Its Production
+checks passed standard relevance but missed latency budgets on both sides;
+active blue remains build 108. The [node-memory investigation](es-node-memory-headroom.md)
+identified reclaim and swapping at the enclosing server's 6 GiB ceiling.
+A matched short replay at 10 GiB improved p99 from 189 to 119 ms and removed
+node memory-limit hits. The node retains 10 GiB under the approved safe-cleanup
+fallback; Elasticsearch resources and gate budgets are unchanged. Next: run the
+full Production gate at this capacity. The short diagnostic is not promotion
+evidence, and fresh-install defaults remain unchanged pending that validation.
+
+The [Production slot browser-route fix](production-slot-preview-routes.md)
+publishes separate blue/green hostnames through the preview reconciler. Green
+already serves build 204 internally; its missing Ingress rule caused a 404.
+Review and activate when idle, then verify HTTPS before the Production plan.
+
+The [Production slot network policy fix](production-slot-network-policies.md)
+allows build 204's Redis/telemetry access alongside the older active release
+without sharing permissions between slots. It also prevents render failures
+from leaving partially written definitions. Review and activate when idle,
+then retry Production candidate preparation. Build 204 is verified in Staging.
+
+The [normal-load latency budget batch](lab-normal-p95-budget.md) raises the lab's
+shared normal p95 limit to 300 ms for both sides. Other phase budgets, p99 and
+error limits are unchanged. Review and activate when idle before retrying
+Integration; historical failed evidence retains its original outcome.
+
+The [failed-operation Gatling links batch](failed-operation-gatling-links.md)
+puts retained native driver reports directly on terminal operation pages,
+including failures. Review and activate when idle; existing reports need no rerun.
+
+The [Redis rewrite query coverage batch](redis-rewrite-query-coverage.md) adds
+focused requests for all six shared-catalogue aliases, their case variants and
+controls. Merge its source update and use the new merged-source build to resume
+the promotion walkthrough, reviewing a fresh plan at each destination.
+
+The [grouped evaluation progress batch](grouped-evaluation-progress.md) combines
+worker phases into capture, judgement and scoring steps. Completed captures show
+their final counts, with earlier samples in expandable details. Review and
+activate when idle; evaluation behaviour and retained evidence are unchanged.
+
+The [reviewed release check plan batch](reviewed-release-check-plans.md) gathers
+accumulated source changes and query declarations, lets a human review release
+intents and additional sets, and records exact-head approval in delivery-state.
+All promotion paths require the current plan; standard sets remain mandatory.
+This workflow is merged and active. Review a plan before the next promotion.
+
+The [dashboard navigation batch](dashboard-result-links.md) labels terminal
+operations **View result** and links directly to ready storefronts from the
+deployed environments table. Review and activate when idle.
+
+The [retained evaluation progress batch](retain-evaluation-phases.md) keeps each
+phase and its last reported counters visible across phase changes and status
+refreshes. Review now; activate after the running evaluation finishes.
+
+The [built release version fix](dashboard-built-version.md) reads retained build
+metadata before a first promotion, so versioned new builds are identified in
+the release cards and selector. Review and activate when idle.
+
+The [storefront release footer batch](storefront-release-footer.md) shows serving
+version/commit and verified promotion time. Review the lab changes before the
+source feature release; build 184 remains unchanged.
+
+The [deployed environment link batch](deployed-environment-link.md) adds a
+direct search link after successful deployment verification, on both operation
+and report pages. Review and activate when idle.
+
+The [fresh observability completion batch](fresh-observability-completion.md)
+checks current source, chart and collector inheritance and closes the remaining
+dashboard setup/link gap. Review without disturbing the running evaluation.
+Fresh setup retains its explicit organisation/retention and workstation trust steps.
+
+The [log drill-through field fix](log-drillthrough-fields.md) aligns collected
+log attributes with metric dashboard filters. The reported minute has 43 probe
+logs, but their canonical traffic and environment fields were missing.
+PR #202 is accepted and active. Fresh baseline/candidate probe logs matched
+the canonical filters through the SigNoz API; historical logs remain searchable
+using their original fields.
+
+PRs #199–#201 are accepted and active. Promotion controls reflect the latest
+attempt, each variant's relevance/query-set checks precede Gatling, and the
+probe dashboard includes successful requests. Legacy baseline preview and
+Integration telemetry are enabled; SigNoz queries confirmed successful probe
+series from both baseline and candidate. The latest Integration attempt
+`e3393364eadc2251549db710195022da` completed successfully; preserve its evidence
+and proposal while continuing human review.
+
+The [capture polling recovery](capture-polling-recovery.md) fixes the standard
+functional checks timing out after their Jobs had completed. A kubectl timeout
+override broke in-cluster configuration; bounded Python subprocesses preserve it.
+PR #198 is accepted and active. The earlier failed attempt passed performance
+(p95 101/107 ms) but collected no functional results; it remains ineligible for
+promotion. The subsequent Integration attempt completed successfully.
+
+The [release-attempt feedback batch](release-attempt-feedback.md) makes reopening
+an earlier attempt explicit and separates it from starting fresh checks. PR #197
+is accepted and active; its activation followed the evaluation's terminal state.
+
+The [short probe warm-up batch](short-probe-warmup.md) increases only the probe
+to 20 seconds of warm-up and 30 seconds of measurement at 2 requests/s. PR #196
+is accepted and active, and the user has started a fresh Integration attempt.
+Bounded adaptive warm-up
+is recorded as a possible extension; it is not implemented.
+
+PRs #193–#195 are accepted and active. The
+[native Gatling report viewer](native-gatling-reports.md) follows #193/#194.
+It adds baseline/candidate HTML and ZIP links to retained performance checks,
+including failed gates. SigNoz probe panels are applied. No workload
+rerun is required to view existing driver reports.
+
+PRs #188–#190 are accepted and active. Promotion review shows versions with
+short source commits and one aligned quality/coverage table. Proposal #25's
+presentation was refreshed without changing its measured evidence.
+
+PRs #191/#192 are accepted and active. Standard and additional query-set groups
+are available in source comparisons and promotion checks. Existing catalogue
+configurations each retain one standard set. The obsolete proposal #25 must not
+be used with its earlier omitted-set evidence.
+
+The new Integration attempt for build 184 failed its baseline performance
+probe: p95 253 ms exceeded the 250 ms limit; candidate p95 was 138 ms, with no
+failed requests on either side. Its evidence is retained under operation
+`5b47e81d97b1d4f90eb1da8df9fc7440`; additional sets were not reached.
+
+The active [observability link batch](observability-probe-window.md) follows the
+live progress batch (#193). The earlier 42-second window and normal-only SLO
+panels obscured retained candidate probe traffic. The active dashboard adds
+separate probe panels and padded, environment-filtered links. Baseline build
+158 has no OTLP endpoint; no historical telemetry is fabricated for it.
+
+The [live evaluation progress batch](live-evaluation-progress.md) adds sampled
+capture counters, scoring/resolution phases and concrete failure reasons. These
+are active for the next walkthrough operation. Do not
+relax budgets or replace the retained failed evidence.
+
+
+PR #186 is accepted and active. Retained checks were revalidated and Integration
+proposal delivery-state #25 is ready for review, without another evaluation.
+The [human review batch](readable-promotion-review.md) replaces opaque hash-led
+overviews and PR descriptions with release/behaviour context and key measurements,
+and prettifies newly written desired-state JSON. Review and activate it, update
+#25's formatting before approval, then resume the walkthrough.
+
+PR #185 is accepted and active. Before recovery, inspection found proposal
+construction also reading report fields from its storage reference. The
+[validated-report follow-up](validated-proposal-evidence.md) uses the existing
+validation result for PR details and tests the complete construction path.
+Review and activate it before creating a proposal from the retained checks.
+
+PRs #183 and #184 are accepted and active: promotion controls handle failed
+operations without a PR, and Nexus routing is automatically reconciled.
+Build 184's subsequent Integration checks passed, but the
+[evidence hand-off](variant-evidence-handover.md) wrote a report where proposal
+creation expects its storage reference. Review and activate that repair, then
+revalidate the retained passing evidence before creating the proposal. The
+failed-attempt UX feedback is recorded in that plan for the next batch.
+
+PR #182 is accepted and active. The promotion walkthrough exposed a failed
+Nexus read after Docker changed its address; the existing network repair
+restored access and verified build 184's bundle. The failed attempt then exposed
+a null-PR error in promotion controls. The [retry repair](release-controls-failed-attempt.md)
+keeps those controls usable. The [restart routing batch](nexus-restart-routing.md)
+adds automatic Nexus endpoint reconciliation on the existing k3d server.
+Review both batches, activate the dashboard and install the network hook once,
+then resume the walkthrough. Full Docker Desktop restart and native Mac
+verification remain separate acceptance checks.
+
+Lab PR #181 and delivery-source PR #38 are accepted and activated. Source version
+1.1.2 and the trusted client digest are published and mirrored. The next
+[comparison-panel batch](promotion-comparison-summary.md) puts the variants,
+intents and current target baseline directly beside each action and fixes the
+successful-build projection that disabled eligible controls. Review and activate
+that batch, then resume the promotion walkthrough.
+
+The [test-runtime recovery batch](test-runtime-recovery.md) records the locked
+uv unit-test setup and agent instructions. All 64 selected delivery and promotion
+fixtures pass on Windows. It also rejects direct production promotion requests
+before queueing and updates the baseline-deployment assertions. Next: review this
+batch, then resume the promotion walkthrough; native Mac checks remain separate.
+
+The [uv and seasonal-query batch](uv-and-seasonal-query-demos.md) follows the
+paired-data batch. It pins host Python and dependencies, preserves corporate
+certificate trust including Redis image/package paths, and adds three reusable
+report-only query sets plus immutable control-UI/notebook suites. Review and
+activation are pending; native Mac clean-install acceptance remains the next check.
+
+PRs #169 and #170 and delivery-source #34 are merged. SemVer publication is
+active in the Windows control runtime; the Mac needs its own runtime update.
+
+The [current batch](paired-data-and-lease-editor.md) adds manual fixed expiry,
+shared read-only Redis rewrites with local fallback, and small simulated
+monthly and Halloween/Christmas catalogues. Lab, source API and environment-state chart changes are prepared
+for review. Activation follows acceptance; existing frozen deployments retain
+their original bindings. See [paired data restores](../paired-data-restores.md).
+
+The Mac SigNoz installer succeeded on retry. Its ingestion and clean-install
+acceptance still need checking. The source PR comparison then failed before
+scoring: the fresh seed omitted `gate/selection.json`. The
+[current repair](fresh-source-gate-selection.md) supplies that selection for
+new repositories and exposes actionable missing-input errors. The user has
+confirmed the new comparison passed; clean installation acceptance remains.
+
+Mac diagnostics now confirm successful ClickHouse init, followed by background
+merge memory-limit errors and liveness-triggered restarts. The current demo
+batch increases bounded ClickHouse memory and health-check tolerance. Next:
+verify native readiness and ingestion, then repeat from an empty owned lab.
+
+The Mac CPU installation has completed verification. Optional SigNoz startup
+was blocked by an oversized CA bundle embedded in its init command. That repair
+is merged, but the pinned pre-upgrade migrator prevents its rollout while
+ClickHouse is unavailable. The current demo retry repair applies dependencies
+before migrations and requires Job completion. Its first Mac retry exposed an
+incorrect expected component label; the current batch aligns that ownership
+check with the pinned chart and reports actual labels on rejection. Next:
+review, rerun the demo installer on the Mac and verify readiness/ingestion before
+measuring resource use. Historical Mac setup batches below retain their context.
+
+The [fresh Mac installation](mac-fresh-install.md) batch automates the empty
+platform foundation and adds scoped cleanup after the manual Mac walkthrough
+exposed missing bootstrap dependencies and corporate certificate/registry
+constraints. Full CPU catalogue and delivery setup is implemented. Retained
+source downloads and Unix port-forward hand-off repairs are merged; the Mac has
+completed catalogue import and reached native ARM64 image builds. The current
+review batch preserves Buildx plugin discovery and the selected local Docker
+daemon when image builds use an isolated login configuration. Native image-build
+and cleanup acceptance remain outstanding.
+
+The [lab experience and Mac transfer](lab-experience-and-mac.md) batches are
+merged: shared design system, promotion controls in the release tree,
+reconciled operator guides and Mac setup/transfer instructions. Native Mac
+execution and whole-lab restore remain outstanding acceptance work.
+
+## Completed delivery capabilities
+
+- [Release dashboard](read-only-release-dashboard.md): PR #147 is merged and
+  activated. Its installed projection and runtime smoke checks passed; build
+  158 is verified in Integration and Staging and prepared in the inactive slot.
+- [Final production release](production-blue-green.md): active and candidate
+  APIs use the same frozen catalogue. Reviewed preparation, load/final relevance
+  checks, route switching and rollback are implemented.
+- [Notebook comparisons](delivery-notebook-comparisons.md) and the
+  [browser view](notebook-browser-view.md): existing delivery environments and
+  purpose-created environments can be compared; saved analysis can be viewed
+  or downloaded.
+- [Walkthrough feedback](walkthrough-feedback.md): named Actions workflows,
+  eight-worker adaptive pacing, additional query suites, inference reuse,
+  separate coverage/quality, RBO/Jaccard summaries, informational significance,
+  readable timings, request successes and durable relevance decisions.
+- [SigNoz repairs](signoz-dashboard-repairs.md),
+  [Headlamp health checks](headlamp-health-probes.md),
+  [Gitea 28.0.0](gitea-28-upgrade.md) and
+  [restart-safe OIDC](oidc-node-startup.md): accepted operational corrections.
+- [GitHub mirrors](../github-mirror.md): native Git push mirrors are configured;
+  service databases and artefacts still need separate backups.
+
+Plans below retain their original batch records. Their earlier review or next
+steps do not supersede the current guides or authorise repeating completed runs.
+
+## Current lab configuration
+
+| Area | Current scope |
+| --- | --- |
+| Catalogue | Full English ESCI: 1,215,854 products and 1,000 queries; configurable 10,000-product/50-query demo subset |
+| Judgements | Published labels plus cached model-4 predictions under the temporary authorised demo policy; live fallback abstains |
+| Coverage | Saved recall has 81.22% demo coverage and 29.71% published-only coverage; new recall can change it |
+| Identity | Keycloak sign-in for Headlamp, Argo CD, linked Gitea accounts and the control UI; the reviewed decision flow uses human OIDC requests and exact Gitea PR approvals |
+| Serving | KServe 0.21 and supplied Headlamp KServe plugin dev.54; exact local asset/serving checks retained |
+| Secrets and access | ESO reads Azure Key Vault through the local emulator; wildcard preview DNS and CA-verified browser HTTPS |
+| Delivery | Gitea Actions, Nexus releases, reviewed desired state, Argo CD, Integration/Staging and two production slots |
+
+Demo model predictions remain **unqualified**. The coverage minimum is still
+80%; only the exact authorised source/model/policy scope receives the demo
+allowance. The Decider2B execution remains held for human review. No new GPU
+survey or threshold change is authorised by the developer workflow work.
+
+## Remaining validation
+
+| Area | Evidence available | Remaining work |
+| --- | --- | --- |
+| Search and scale | Million-product synthetic scale trials, full ESCI captures and a 40-API isolation trial | Repeat timings where percentile claims need support; native and cloud capacity |
+| Lifecycle and recovery | Durable leases, deletion, interrupted-operation handling and index reuse/clone/snapshot/rebuild; remote activation checked | Disposable clean-cluster recovery and workstation sign-in rehearsal |
+| Input contracts | Independent manifests, retained observations and finite producer/evaluator Jobs | External producer/evaluator boundaries on Azure and addendum-backed promotion |
+| Judgement quality | Frozen numerical parity checks and category/CPU surveys | Independent actual-gap quality evidence, harmful-error support and qualified-only defaults before model qualification claims |
+| Observability | SigNoz search/model dashboards, trace/log correlation, SLO arithmetic and finite arrival ledger | Continuous seven-day verified coverage, bounded counter alignment, instrumented three-target/browser rehearsal and valid overhead measurement |
+| Portability | Multi-platform image manifests and local Gitea workflow execution | Native Apple silicon, AKS, GHES adapter/protection, Azure workload identity/storage and New Relic ingestion |
+| Transport | Browser and internal Gitea HTTPS | OCI and selected host bootstrap HTTP paths; local HTTP is still an explicit lab boundary |
+
+Use the [evidence index](../research/evidence/README.md) for measurements and
+their limits. A successful local run does not establish cloud capacity, valid
+model accuracy or a percentile target.
+
+## Follow-up plans
+
+- [Developer workstation and Actions rehearsal](remote-delivery-user-check.md)
+- [Qualified-only labels](esci-qualified-defaults.md)
+- [Instrumented delivery and overhead](signoz-merged-release-rehearsal.md)
+- [Native/cloud validation](native-cloud-validation.md)
+- [Azure Key Vault validation](azure-keyvault-validation.md)
+- [HTTPS OCI transport](https-oci-transport.md)
+
+Work on a branch, commit the batch and open a PR. Update this roadmap and the
+next detailed plan before review. Merge only after human acceptance. Gitea owns
+review and acceptance. Native GitHub mirroring replaces separate backup PRs.
+
+## Additional query judgement resolution
+
+Implemented for review: exact-byte query registration, pooled gap resolution and
+frozen labels for source PR additional suites. Friendly reports show inference
+reuse, abstentions, errors and explicit nDCG availability. Standard gate inputs
+and model thresholds are unchanged.
+
+Next: accept and deploy the batch, then trigger a new source commit and inspect
+the sneakers comparison. See the [batch plan](additional-query-judgements.md).
+
+## Calibrated judgement API activation
+
+Model version 4 is active through both judgement APIs using the already loaded
+KServe predictor. Real inference and repeat reuse passed; accuracy remains
+unqualified. The activation helper preserves caches and prevents bootstrap from
+resetting the API model pin. See the [activation plan](calibrated-judge-activation.md).
+Next: generate the fresh sneakers comparison and continue the developer walkthrough.
+
+## Search capture success counts
+
+Friendly reports include successful requests alongside attempts, retries and failures.
+A recovered request counts once as a success. Next: review this batch, then resume
+the sneakers walkthrough using the [report review plan](report-request-successes.md).
+
+## Informational nDCG significance
+
+Prepared for review: paired nDCG tests, 95% intervals, request grouping and Holm
+adjustment in source, combined and promotion relevance reports. Gate policies
+remain unchanged. Next: accept the batch and inspect a fresh comparison in the
+walkthrough. See the [batch and next-step plan](ndcg-significance.md).
+
+## Headlamp custom Prometheus plugin
+
+Prometheus `0.9.1-kserve.1` is installed, replacing the bundled plugin. Headlamp
+readiness, single-plugin discovery and all 21 served assets passed verification.
+OIDC and existing Pod configuration were preserved. Next: review this batch and
+test browser charts with the next supplied KServe plugin. See the
+[installation and next-step plan](headlamp-prometheus-plugin.md).
+
+## Headlamp KServe dev.54
+
+The supplied dev.54 release is installed and retained with earlier local releases.
+Headlamp readiness, exact KServe assets, unchanged Prometheus assets and repeated
+server-side application passed verification. OIDC and other Pod settings were
+preserved. Next: review the setup batch and test dev.54 in the browser. See the
+[installation and next-step plan](headlamp-kserve-dev54.md).
+
+## Runner startup recovery
+
+The offline delivery runner has been restarted and the stale Nexus route repaired.
+Startup and readiness checks are installed on both runner deployments and prepared for review.
+The focused Nexus route repair preserves stored releases and identities.
+Next: accept the recovery batch and resume the sneakers report review. See the [batch plan](runner-startup-health.md).
+
+## Deferred comparison evaluator
+
+Consolidate optional gap resolution and frozen scoring behind one comparison
+evaluator; keep the metric scorer pure and retained comparisons repeatable.
+Implementation and diagram changes are deferred at the user's request.
+See the [recorded follow-up](walkthrough-feedback.md#deferred-comparison-evaluator-boundary).
+
+## Explicit promotion gates in the SDLC diagram
+
+The timeline separates each promotion gate from review, deployment and verification.
+Integration and staging show short probes; the production gate shows normal/peak
+Gatling load alongside result and relevance evidence. Warm timings now separate
+evaluation from deployment. Next: review the diagram and continue the source
+walkthrough using the [timeline plan](relevance-sdlc-diagram.md).
+
+## Final production release
+
+Implemented for review: a blue–green route switch with a final comparison against the
+active production API. Both slots share a read-only catalogue; the control UI owns
+preparation, release checks, progress and approved deployment. Existing normal/peak
+Gatling gates remain required. See the [implementation and rehearsal plan](production-blue-green.md).
+The isolated four-query Argo rehearsal passed without changing active production.
+The release UI shows active production immediately, with build and source links.
+Candidate values stay blank until preparation is deployed.
+Deployment uses a dropdown of open production PRs approved at their current commit.
+After acceptance, use the [next walkthrough plan](production-release-walkthrough.md)
+with a different verified staging release.
+
+### Production load investigation, 6 October
+
+Build 158 reached verified integration, staging and the inactive production slot.
+The full production load run completed, but build 108's evaluation preview was
+OOM-killed at 96 MiB and missed the peak budget; build 158 passed. Release remains
+blocked before the final comparison and route-switch proposal.
+
+The user authorised a brief investigation and a 192 MiB experiment. Both
+evaluation previews now have separately committed diagnostic manifests; active
+production is unchanged. A short matched Gatling screen tests a difficult slice
+of the frozen traffic without replacing the required full gate. Preserve failed
+evidence and distinguish the resource experiment from a permanent default.
+
+Next: use the measured diagnostic to choose the next resource check, then resume
+the [production walkthrough](production-release-walkthrough.md#production-load-recovery)
+through the unchanged full gate and reviewed route switch. Queue visibility,
+idempotency, live logs, failure evidence and resource visibility are recorded in
+the [walkthrough feedback](walkthrough-feedback.md).
+
+### Walkthrough feedback completion
+
+Lab PRs #138/#139 and delivery-source PR #33 are merged and activated. The
+coordinator, focused workflows, merge restriction and dashboards are installed.
+A verification-only Actions run completed through the coordinator, and build
+163's preview exported search counters and propagated traces to SigNoz. See the
+[activation evidence](walkthrough-feedback-activation.md) for measurements and
+limits. The abstaining v1 judge remains active.
+
+Next: resume the production resource investigation, then run the unchanged full
+load gate and reviewed route switch. OpenCost installation remains a separate
+proposed batch.
+
+### SigNoz dashboard repairs
+
+The [dashboard repair batch](signoz-dashboard-repairs.md) distinguishes browser
+and probe activity from normal SLO traffic, removes interval warnings and adds
+model-version selection. It also supplies coverage and gap-pool shift from the
+current resolution path. Temporary dashboards and diagnostic metric transport
+were checked; the merged definitions and coordinator are now installed.
+
+A fresh comparison confirmed matching frozen and stored coverage: 0% for 40
+cached abstentions, with no new inference. An optional-gate display fix awaits
+review. Next: activate that fix, then resume the unchanged production load gate.
+
+
+## Complete fresh CPU installation
+
+Native Mac catalogue, image builds and CPU judgements have now completed. The
+current repair restores missing in-cluster Gitea registry DNS before baseline
+builds and allows one exact-commit build retry after repairing that route.
+47 affected fixtures passed; native baseline/control/delivery verification is
+the next acceptance step. See the [Mac plan](mac-fresh-install.md).
+
+The Mac registry repair and both source builds now pass. The current batch fixes
+the repository import path for child scripts after delivery bootstrap reported
+a missing `evaluation` package. 49 affected fixtures, including a real delivery
+CLI import check, passed; native bootstrap and the remaining stages are next.
+
+Native delivery bootstrap now reaches a ready integration workload. The next
+repair supplies the missing host-side search verification probe from the native
+control image and exposes verification wait reasons. Resume baseline before
+control/delivery activation; the original Windows deployment remains untouched.
+
+The Mac resume guide uses an explicitly illustrative corporate certificate path.
+A smaller optional SigNoz profile remains a proposal; size retention from idle
+and Gatling storage measurements, as described in the [Mac plan](mac-fresh-install.md).
+
+The user authorised the smaller SigNoz demo installation. Its review batch adds
+an explicit profile and Mac setup procedure; organisation and retention setup
+are performed through SigNoz's UI. Next, accept/install it and measure idle and
+Gatling telemetry growth before adjusting the trial resource budget.
+
+The fresh installer now continues through the catalogue, scoped CI repositories,
+OIDC, CPU judgement stack and delivery/control applications. It derives native
+image digests, model artefact hashes and source build IDs on the target. The
+small frozen judgement snapshot retains source provenance. The user authorised
+this batch's merge and automatic mirror verification.
+
+Next: [native Mac acceptance](mac-fresh-install.md#next-detailed-plan-native-acceptance),
+including corporate downloads, browser sign-in, comparison/notebook and a reviewed
+promotion. Fixture verification is recorded in the
+[fresh-install evidence](../research/evidence/mac-fresh-install.md).

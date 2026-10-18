@@ -99,8 +99,8 @@ uv run --locked python lab/fresh_install.py \
 Use your own corporate PEM path on another workstation. Keep it outside Git.
 The installer adds it to existing public Python trust roots and mounts it into
 both k3d nodes at creation. Certificate verification stays enabled. It downloads
-the pinned Argo CD manifest through GitHub's API; this avoids the raw-content
-hostname that failed certificate verification during the walkthrough.
+the pinned Argo CD manifest through GitHub's API using the configured trust
+bundle.
 
 Gitea defaults to its official Docker Hub repository, using the same immutable
 28.0.0 image digest as `docker.gitea.com`. If that source is required locally,
@@ -455,3 +455,7 @@ The initial baseline needs no promotion plan. For later promotions, suggest and
 review a plan in the release dashboard, approve the exact delivery-state PR head
 and record it. No additional service or installation flag is required. Standard
 query sets remain compulsory for every selected variant.
+
+### Branch previews
+
+Fresh source repositories include the protected workflow and tooling for [building a preview from a branch or SHA](branch-previews.md). Use **Build and create preview** in the control UI after verification. It reuses the installed runner, shared data and corporate/lab CA trust; no PR is required for the preview.

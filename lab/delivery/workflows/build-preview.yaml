@@ -1,0 +1,63 @@
+name: Build preview from commit
+run-name: Preview ${{ inputs.source_sha }} ${{ inputs.request_id }}
+'on':
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact delivery-source commit
+        required: true
+        type: string
+      request_id:
+        description: Control operation identity
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  preview:
+    if: github.ref == 'refs/heads/main'
+    runs-on: lab-delivery
+    timeout-minutes: 30
+    steps:
+      - name: Fetch protected tooling and the pinned candidate
+        env:
+          SOURCE_URL: ${{ vars.SOURCE_BASE_URL || github.server_url }}/${{ github.repository }}.git
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          WORKFLOW_SOURCE_SHA: ${{ github.sha }}
+          PREVIEW_REQUEST_ID: ${{ inputs.request_id }}
+          SOURCE_USER: ${{ secrets.SOURCE_USER }}
+          SOURCE_TOKEN: ${{ secrets.SOURCE_TOKEN }}
+        run: |
+          set -eu
+          printf '%s\n' "$SOURCE_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s\n' "$PREVIEW_REQUEST_ID" | grep -Eq '^[0-9a-f]{32}$'
+          export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader
+          export GIT_CONFIG_VALUE_0="Authorization: Basic $(printf '%s:%s' "$SOURCE_USER" "$SOURCE_TOKEN" | base64 | tr -d '\n')"
+          for folder in trusted source; do
+            git init "$folder"
+            git -C "$folder" remote add origin "$SOURCE_URL"
+          done
+          git -C trusted fetch --depth 1 origin "$WORKFLOW_SOURCE_SHA"
+          git -C trusted checkout --detach FETCH_HEAD
+          test "$(git -C trusted rev-parse HEAD)" = "$WORKFLOW_SOURCE_SHA"
+          git -C source fetch --depth 1 origin "$SOURCE_SHA"
+          git -C source checkout --detach FETCH_HEAD
+          test "$(git -C source rev-parse HEAD)" = "$SOURCE_SHA"
+      - name: Test and publish preview artefacts
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          WORKFLOW_SOURCE_SHA: ${{ github.sha }}
+          PREVIEW_REQUEST_ID: ${{ inputs.request_id }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          EVENT_KIND: workflow_dispatch
+          REGISTRY: ${{ vars.RELEASE_REGISTRY }}
+          ARTIFACT_URL: ${{ vars.RELEASE_ARTIFACT_URL }}
+          NEXUS_USER: ${{ secrets.NEXUS_USER }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          set -eu
+          export TRUSTED_ROOT="$PWD/trusted"
+          cd source
+          sh "$TRUSTED_ROOT/ci/build-preview.sh"

@@ -79,6 +79,7 @@ def seed_source(path):
                      encoding='utf-8', newline='\n')
     (path / '.github/workflows').mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / 'lab/delivery/workflows/release.yaml', path / '.github/workflows/release.yaml')
+    shutil.copyfile(ROOT / 'lab/delivery/workflows/build-preview.yaml', path / '.github/workflows/build-preview.yaml')
     shutil.copyfile(ROOT / 'lab/delivery/workflows/relevance.yaml', path / '.github/workflows/relevance.yaml')
     for workflow in (ROOT / 'lab/delivery/workflows').glob('delivery*.yaml'):
         shutil.copyfile(workflow, path / '.github/workflows' / workflow.name)

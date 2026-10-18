@@ -58,8 +58,10 @@ def build_version(version, event, run, attempt, pr=None):
         if not str(pr).isdigit() or int(pr) < 1:
             raise ValueError('A preview version requires its source PR number.')
         return f'{version}-pr.{int(pr)}.{int(run)}.{int(attempt)}'
+    if event == 'workflow_dispatch':
+        return f'{version}-preview.{int(run)}.{int(attempt)}'
     if event != 'push':
-        raise ValueError('Only source pushes and PR builds can publish versions.')
+        raise ValueError('Unknown source build event.')
     return f'{version}+build.{int(run)}.{int(attempt)}'
 
 
