@@ -15,6 +15,14 @@ KEY = 'ssh-ed25519 ' + base64.b64encode(b'\0\0\0\x0bssh-ed25519\0\0\0\x20' + b'a
 OTHER = 'ssh-ed25519 ' + base64.b64encode(b'\0\0\0\x0bssh-ed25519\0\0\0\x20' + b'b' * 32).decode()
 
 
+def headless_service():
+    return {'metadata': {'namespace': 'platform', 'name': 'gitea-ssh',
+                         'annotations': {'meta.helm.sh/release-name': 'gitea'}},
+            'spec': {'type': 'ClusterIP', 'clusterIP': 'None',
+                     'selector': {'app.kubernetes.io/instance': 'gitea'},
+                     'ports': [{'name': 'ssh', 'port': 22, 'targetPort': 2222}]}}
+
+
 class Server(unittest.TestCase):
     def test_port_must_be_exactly_loopback_and_expected_port(self):
         self.assertFalse(server.exposed({}))
@@ -67,6 +75,9 @@ class Server(unittest.TestCase):
         self.assertEqual(config['SSH_LISTEN_PORT'], 2222)
         self.assertEqual(config['SSH_PORT'], 31822)
         self.assertEqual(config['SSH_SERVER_HOST_KEYS'], server.HOST_KEY)
+        self.assertEqual(values['service']['ssh']['type'], 'ClusterIP')
+        self.assertEqual(values['service']['ssh']['clusterIP'], 'None')
+        self.assertIsNone(values['service']['ssh']['nodePort'])
 
     def test_https_refresh_does_not_reapply_bootstrap_ssh_or_image_settings(self):
         import https_ingress
@@ -85,16 +96,40 @@ class Server(unittest.TestCase):
         with patch.object(server, 'k', return_value=SimpleNamespace(stdout=json.dumps(value))), \
              patch.object(server, 'run') as run:
             with self.assertRaisesRegex(ValueError, 'another service'):
-                server.require_available_service()
+                server.require_available_service(UID)
             run.assert_not_called()
 
     def test_existing_custom_server_host_keys_are_not_replaced(self):
         values = {'gitea': {'config': {'server': {'DISABLE_SSH': False,
                                                  'SSH_SERVER_HOST_KEYS': '/custom/key'}}}}
-        with patch.object(server, 'k', return_value=SimpleNamespace(stdout='{"items":[]}')), \
+        with patch.object(server, 'k', return_value=SimpleNamespace(stdout=json.dumps({'items': [headless_service()]}))), \
              patch.object(server, 'run', return_value=SimpleNamespace(stdout=json.dumps(values))):
             with self.assertRaisesRegex(ValueError, 'other SSH host-key settings'):
-                server.require_available_service()
+                server.require_available_service(UID)
+
+    def test_workstation_service_is_separate_and_repeatable(self):
+        original = headless_service()
+        with patch.object(server, 'k', return_value=SimpleNamespace(stdout=json.dumps({'items': [original]}))), \
+             patch.object(server, 'run', return_value=SimpleNamespace(stdout='{}')):
+            service = server.require_available_service(UID)
+        self.assertEqual(service['metadata']['name'], server.SSH_SERVICE)
+        self.assertEqual(service['spec']['selector'], original['spec']['selector'])
+        self.assertEqual(service['spec']['ports'][0]['nodePort'], server.NODE_PORT)
+        self.assertEqual(original['spec']['clusterIP'], 'None')
+        with patch.object(server, 'k', return_value=SimpleNamespace(stdout=json.dumps({'items': [original, service]}))), \
+             patch.object(server, 'run', return_value=SimpleNamespace(stdout='{}')):
+            self.assertEqual(server.require_available_service(UID), service)
+        service['metadata']['labels']['lab.relevance.test/cluster-uid'] = 'other-cluster'
+        with patch.object(server, 'k', return_value=SimpleNamespace(stdout=json.dumps({'items': [original, service]}))):
+            with self.assertRaisesRegex(ValueError, 'unexpected ownership'):
+                server.require_available_service(UID)
+
+    def test_original_service_must_be_owned_and_headless(self):
+        original = headless_service()
+        original['spec']['clusterIP'] = '10.43.0.1'
+        with patch.object(server, 'k', return_value=SimpleNamespace(stdout=json.dumps({'items': [original]}))):
+            with self.assertRaisesRegex(ValueError, 'owned headless'):
+                server.require_available_service(UID)
 
     def test_modified_cached_chart_is_not_used_or_downloaded_over(self):
         with tempfile.TemporaryDirectory() as t:

@@ -16,6 +16,7 @@ NODE_PORT = 30022
 LISTEN_PORT = 2222
 LOAD_BALANCER = 'k3d-relevance-lab-serverlb'
 HOST_KEY = '/data/gitea/ssh/gitea.ed25519'
+SSH_SERVICE = 'gitea-ssh-workstation'
 CHART_SHA256 = '5881ef9c59400bee2d5547e77c4cd0efb925143c2f5d93fb4f38446db76b0167'
 
 
@@ -92,19 +93,37 @@ def exposed(value):
 
 
 def settings():
-    return {'service': {'ssh': {'type': 'NodePort', 'port': 22, 'nodePort': NODE_PORT}},
+    # The chart creates a headless SSH service even when SSH is disabled.
+    # Preserve it, and clear a NodePort value retained by a failed old upgrade.
+    return {'service': {'ssh': {'type': 'ClusterIP', 'clusterIP': 'None', 'port': 22, 'nodePort': None}},
             'gitea': {'config': {'server': {
                 'DISABLE_SSH': False, 'START_SSH_SERVER': True,
                 'SSH_DOMAIN': 'gitea.localhost', 'SSH_PORT': HOST_PORT,
                 'SSH_LISTEN_PORT': LISTEN_PORT, 'SSH_SERVER_HOST_KEYS': HOST_KEY}}}}
 
 
-def require_available_service():
+def require_available_service(uid):
     services = json.loads(k('get', 'services', '-A', '-o', 'json').stdout)['items']
+    original = None
+    existing = None
     for service in services:
+        name = (service['metadata'].get('namespace'), service['metadata']['name'])
+        if name == ('platform', 'gitea-ssh'):
+            original = service
+        if name == ('platform', SSH_SERVICE):
+            existing = service
         if any(port.get('nodePort') == NODE_PORT for port in service['spec'].get('ports', [])):
-            if (service['metadata'].get('namespace'), service['metadata']['name']) != ('platform', 'gitea-ssh'):
+            if name != ('platform', SSH_SERVICE):
                 raise ValueError('NodePort 30022 belongs to another service; nothing was replaced.')
+    if (not original or original['metadata'].get('annotations', {}).get('meta.helm.sh/release-name') != 'gitea'
+            or original['spec'].get('clusterIP') != 'None' or not original['spec'].get('selector')):
+        raise ValueError('Expected the owned headless Gitea SSH service; inspect its configuration before retrying.')
+    selector = original['spec']['selector']
+    labels = {'app.kubernetes.io/managed-by': 'relevance-lab-ssh', 'lab.relevance.test/cluster-uid': uid}
+    if existing and (any(existing['metadata'].get('labels', {}).get(key) != value for key, value in labels.items())
+                     or existing['spec'].get('type') != 'NodePort'
+                     or existing['spec'].get('selector') != selector):
+        raise ValueError('The workstation SSH service has unexpected ownership or settings; nothing was replaced.')
     # Read Helm settings in memory; never print or retain a full values dump.
     values = json.loads(run([HELM, 'get', 'values', 'gitea', '-n', 'platform', '-o', 'json',
                              '--kubeconfig', str(STATE / 'kubeconfig.yaml')]).stdout)
@@ -112,6 +131,10 @@ def require_available_service():
     enabled = str(current.get('DISABLE_SSH', True)).lower() == 'false'
     if enabled and current.get('SSH_SERVER_HOST_KEYS') != HOST_KEY:
         raise ValueError('Gitea already has other SSH host-key settings; review them before changing access.')
+    return {'apiVersion': 'v1', 'kind': 'Service',
+            'metadata': {'name': SSH_SERVICE, 'namespace': 'platform', 'labels': labels},
+            'spec': {'type': 'NodePort', 'selector': selector,
+                     'ports': [{'name': 'ssh', 'port': 22, 'targetPort': LISTEN_PORT, 'nodePort': NODE_PORT}]}}
 
 
 def install():
@@ -124,7 +147,7 @@ def install():
                 probe.bind(('127.0.0.1', HOST_PORT))
             except OSError:
                 raise ValueError('Loopback port 31822 is occupied; nothing will be replaced.') from None
-    require_available_service()
+    service = require_available_service(uid)
     folder = STATE / 'gitea-ssh'
     folder.mkdir(exist_ok=True)
     values = folder / 'values.yaml'
@@ -133,6 +156,7 @@ def install():
     print('Enabling loopback Gitea SSH; waiting for its rollout.', flush=True)
     run([HELM, 'upgrade', 'gitea', str(archive), '--reuse-values', '-n', 'platform', '-f', str(values),
          '--wait', '--timeout', '5m', '--kubeconfig', str(STATE / 'kubeconfig.yaml')])
+    k('apply', '-f', '-', body=service)
     if not published:
         run([K3D, 'cluster', 'edit', 'relevance-lab', '--port-add',
              f'127.0.0.1:{HOST_PORT}:{NODE_PORT}@server:0'])

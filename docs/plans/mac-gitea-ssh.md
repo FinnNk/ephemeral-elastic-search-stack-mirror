@@ -19,7 +19,8 @@ keeps server configuration, workstation files and CLI orchestration separate.
   refused rather than replaced.
 - The Gitea chart remains version 12.7.0, bound to its verified archive checksum.
   Downloads use the retained corporate/public CA bundle. Overrides change only
-  SSH server/service settings and reuse the existing Helm values.
+  SSH server settings and retain the chart's headless SSH service. A separate
+  owned workstation service provides the NodePort.
   HTTPS URL maintenance also retains those settings rather than reapplying
   the original bootstrap values.
 - Host trust compares the external key with the public key read through the
@@ -44,9 +45,10 @@ tests verify SSH setup runs before final
 verification, the explicit unattended skip, and removal of a stale ready marker
 if SSH setup fails.
 
-A render of the exact pinned Helm archive confirms the Gitea SSH service is a
-NodePort at 30022 targeting the rootless listener on 2222, with the advertised
-host port 31822. The image's tools were inspected read-only: it has `cat` and
+A render of the original SSH override confirmed a NodePort at 30022 targeting
+the rootless listener on 2222, with the advertised host port 31822. That check
+did not exercise upgrading the existing headless service; the follow-up below
+corrects this gap. The image's tools were inspected read-only: it has `cat` and
 `ssh-keygen`, but no `ssh-keyscan`. The verifier therefore reads only its public
 host-key file rather than requiring another package in the container.
 
@@ -93,3 +95,19 @@ messages. All 78 targeted tests passed, including cache reuse, CA selection and
 rejection of a changed download without caching it. A real Helm download on
 Windows matched the pinned checksum; the corporate Mac network still requires
 a retry. No running lab services were changed for this verification.
+
+## Headless service upgrade follow-up
+
+The Mac retry downloaded the chart, then Kubernetes rejected changing the
+existing headless `gitea-ssh` service to NodePort. Setup now retains that service
+and creates a separate `gitea-ssh-workstation` NodePort with the same pod selector.
+The next Helm upgrade explicitly restores the headless settings retained in a
+failed release. Existing workstation services must have this cluster's ownership
+label before setup reuses them. No service deletion is required.
+
+All 80 targeted tests passed. A disposable Kubernetes namespace reproduced the
+old rejection, applied the corrected pinned-chart render over an existing
+headless service without changing its UID, and created/reapplied the separate
+NodePort. Rendering also covered the failed NodePort values followed by the fix.
+The namespace was removed; retained lab services were unchanged. Mac SSH and
+Keychain acceptance remain outstanding.

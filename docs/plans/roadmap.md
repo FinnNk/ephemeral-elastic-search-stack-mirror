@@ -14,7 +14,7 @@ retains previous implementation entries and measurements.
 | [Promotion walkthrough feedback](release-walkthrough-follow-ups.md) | Lab #214/#219 are merged and activated; source #45 (1.2.6) is merged with a passing comparison. Rehearse the updated promotion UX on the Mac. |
 | [Mac handover](../mac-handover.md) | Fresh installation with new identities is selected. All five mirror main heads match Gitea after authentication recovery. Retain research separately and accept only after a new PR reaches Production without extra operator setup. |
 | [Frozen source portability](frozen-source-portability.md) | Fix #223 is merged; the user reports Mac installer completion. Complete browser trust and Gitea linking, then the new PR-to-Production acceptance. |
-| [Mac Git SSH setup](mac-gitea-ssh.md) | #225 is merged. Review the Helm chart-download fix for the Mac HTTP 403, then retry setup. Native Mac Keychain and the empty-change push remain acceptance checks. |
+| [Mac Git SSH setup](mac-gitea-ssh.md) | #225/#226 are merged. Review the separate workstation service fix for the headless-service upgrade rejection, then retry setup. Native Mac Keychain and the empty-change push remain acceptance checks. |
 | Realistic ranking-change example | Complete the retained judgement review and re-score the frozen title-match experiment. Preserve the original published-label result and protocol. |
 
 The build-207 Production walkthrough completed with the user's confirmation.
