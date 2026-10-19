@@ -260,6 +260,27 @@ promotion using the [developer walkthrough](delivery.md). An
 abstaining model can leave new judgement gaps; installation does not relax the
 relevance gate or claim those gaps have been independently labelled.
 
+### Ready to create and promote a PR
+
+A completed installation includes the source repository, CI runners, registry
+credentials, protected source merge gates, delivery authentication, control UI
+and initial Integration, Staging and Production releases. No separate operator
+activation or workflow setup should be needed before using delivery.
+
+Finish workstation DNS and browser CA trust, retrieve the new named account and
+follow [Make and evaluate a change](delivery.md#make-and-evaluate-a-change).
+After merging that PR and its successful merged-source build, use
+[the release tree](delivery.md#promote-from-the-release-tree) to review plans and
+promote through all three stages. These reviews and approvals are part of the
+release process, not missing installation work. Optional SigNoz can be added
+separately without blocking the delivery workflow.
+
+The final installer verification checks ready services and versioned targets.
+Acceptance additionally requires a real new PR and a full reviewed promotion
+on the Mac. If that requires manual runner registration, gate installation,
+Actions credential configuration or coordinator activation, treat it as an
+installer defect; retain the failure and fix the setup before repeating it.
+
 ## Reset and check leftovers
 
 For installations created by the new installer, inspect first:

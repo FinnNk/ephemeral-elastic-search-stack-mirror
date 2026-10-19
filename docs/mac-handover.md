@@ -4,6 +4,36 @@ Choose the installation route, retain unfinished work and verify the code before
 leaving Windows. Run Mac commands from the accepted repository root in Terminal.
 Keep the original Windows lab until the Mac passes acceptance.
 
+## Agreed handover: fresh installation ready for delivery
+
+Use a fresh CPU installation with new sign-ins. Preserve unfinished research
+separately; do not restore the Windows service databases, credentials or CA keys.
+The required outcome is a lab where a developer can open a source PR and promote
+its merged build through Integration, Staging and Production without another
+operator setup or activation stage.
+
+Complete host tools, corporate trust, lab DNS and browser CA trust as part of
+initial setup. Run the installer through its default `verify` stage. It seeds the
+source repository and protected workflows, CI runners and registry credentials,
+source merge gates, OIDC delivery authentication, initial versioned delivery
+targets and the control coordinator. Do not stop at the foundation-only stage.
+SigNoz remains optional and is not a prerequisite for opening or promoting a PR.
+
+After **CPU search lab installed**, use the newly generated named account and
+follow [Make and evaluate a change](delivery.md#make-and-evaluate-a-change), then
+[Promote from the release tree](delivery.md#promote-from-the-release-tree).
+Cloning the source repository, committing a change, selecting intent and query
+sets, reviewing plans/proposals and approving deployment are normal development
+steps. Registering a runner, installing a gate, adding Actions credentials or
+manually activating the coordinator after installation would be installation
+defects and must be fixed in the installer before accepting the new setup.
+
+The installer's final checks establish service readiness and versioned targets;
+they do not submit and approve a complete new PR. Accept the Mac installation
+only after one new source PR passes its merge gate and its merged build reaches
+active Production through the ordinary reviewed UI flow. Record any failure and
+repair the reproducible setup rather than relying on an unrecorded manual patch.
+
 ## Choose what to retain
 
 | Goal | Procedure | Identities and history |
