@@ -27,3 +27,16 @@ lab/delivery/bootstrap/VERSION text eol=lf
 
 # Frozen query and judgement hashes must survive Windows and Mac checkouts.
 lab/delivery/bootstrap/evaluation/** -text
+
+# These exact Windows producer bytes are already bound into frozen identities.
+# Preserve CRLF as content on every host; do not renormalise these files.
+data/import_esci.py -text diff whitespace=cr-at-eol
+lab/release_million.py -text diff whitespace=cr-at-eol
+lab/profiles/esci-informed-uk-v1.json -text diff whitespace=cr-at-eol
+judgements/noop_model.py -text diff whitespace=cr-at-eol
+lab/search_target.py -text diff whitespace=cr-at-eol
+lab/gatling/src/test/java/lab/relevance/SyntheticSearchSimulation.java -text diff whitespace=cr-at-eol
+
+# Vendored upstream values are checked against their upstream byte checksums.
+lab/headlamp-gateway/envoy-base-values.yaml -text
+lab/headlamp-gateway/envoy-inference-values.yaml -text

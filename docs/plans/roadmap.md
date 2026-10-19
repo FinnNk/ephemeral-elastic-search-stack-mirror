@@ -13,6 +13,7 @@ retains previous implementation entries and measurements.
 | [Build previews from a branch or SHA](branch-preview-builds.md) | Delivery-source #44/#45 and lab #220 are merged and activated. The user confirmed a branch preview deployed; exact-SHA and early-expiry acceptance remain. |
 | [Promotion walkthrough feedback](release-walkthrough-follow-ups.md) | Lab #214/#219 are merged and activated; source #45 (1.2.6) is merged with a passing comparison. Rehearse the updated promotion UX on the Mac. |
 | [Mac handover](../mac-handover.md) | Fresh installation with new identities is selected. All five mirror main heads match Gitea after authentication recovery. Retain research separately and accept only after a new PR reaches Production without extra operator setup. |
+| [Frozen source portability](frozen-source-portability.md) | Review the byte-preserving checkout and guarded fresh-install recovery; after acceptance, retry the interrupted Mac catalogue stage without changing pins. |
 | Realistic ranking-change example | Complete the retained judgement review and re-score the frozen title-match experiment. Preserve the original published-label result and protocol. |
 
 The build-207 Production walkthrough completed with the user's confirmation.

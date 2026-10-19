@@ -2,6 +2,12 @@
 
 ## Current next step, 19 October 2026
 
+The latest Mac attempt reached dated/seasonal catalogue publication and reported
+a pin mismatch. Review the [frozen source portability fix](frozen-source-portability.md),
+then pull it and resume the same installer command. The Windows replay confirms
+the line-ending failure and original-pin recovery; the precise supplied Mac
+error and native retry still need confirmation.
+
 Use the [Mac handover](../mac-handover.md) and [current fresh-install guide](../fresh-install.md).
 The entries below retain the earlier installation diagnosis and verification;
 their historical “next” steps are not instructions to repeat those repairs.

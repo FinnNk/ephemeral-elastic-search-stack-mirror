@@ -179,6 +179,31 @@ to install the search applications. If the process was forcibly killed and a loc
 remains, inspect the PID in `.lab/fresh-install.lock`; remove that lock only
 after confirming no installer is running.
 
+### Resume after a checkout line-ending mismatch
+
+If a Mac run reports **Generated dated catalogue differs from its committed
+input pins**, pull the accepted portability fix and rerun the same installation
+command with the same options. Do not use `--record-pins` or reset the cluster.
+The catalogue stage resumes using the retained upstream downloads.
+
+The original ESCI importer and other checksum-bound producer sources are stored
+with their exact frozen bytes. Git preserves those bytes on every host. Their
+CRLF line endings are intentional: converting them to LF changes the raw source
+hash recorded by existing releases.
+
+For a failed fresh installation made with the earlier LF checkout, the installer
+recognises the known importer hash and verifies all base catalogue files. It
+restores metadata only if the result matches the exact original frozen manifest.
+It retains old metadata and affected local dated/seasonal outputs under
+`.lab/portability-recovery`, then regenerates those derived outputs against the
+unchanged committed pins. Product, query and judgement bytes in the base releases
+are not rewritten. Existing Blob objects remain immutable.
+
+An unexpected importer, changed data file or additional metadata difference is
+rejected. Keep that error and its preceding output for diagnosis; this recovery
+does not accept arbitrary new datasets or compression differences. Native Mac
+acceptance remains required after the Windows reproduction.
+
 ## Configure workstation access
 
 After the `access` stage completes:

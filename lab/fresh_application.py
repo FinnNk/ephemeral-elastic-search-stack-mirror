@@ -286,6 +286,8 @@ def catalogue():
     sys.path.insert(0, str(ROOT / 'data'))
     from data.publish import upload
     from azure.core.exceptions import ResourceExistsError
+    from catalogue_portability import reconcile
+    reconcile(STATE, ROOT / 'data/import_esci.py')
     account = service()
     try:
         account.create_container(settings()[1])
