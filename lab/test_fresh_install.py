@@ -36,6 +36,44 @@ class FreshInstallTests(unittest.TestCase):
         setup.private_json(self.state / 'fresh-install.json', value)
         return value
 
+    def run_mac_verification(self, skip=False, fail_ssh=False):
+        self.args.through = 'verify'
+        self.args.skip_git_ssh = skip
+        self.record()
+        installer = setup.Installer(self.args)
+        def command(args, **options):
+            if fail_ssh and any('setup_gitea_ssh.py' in str(arg) for arg in args):
+                raise RuntimeError('SSH fixture failure')
+        with patch.object(installer, 'preflight'), patch.object(installer, 'cluster'), \
+             patch.object(installer, 'platform'), patch.object(installer, 'storage'), \
+             patch.object(installer, 'access'), patch.object(installer, 'diagnostics'), \
+             patch.object(installer, 'command', side_effect=command) as calls, \
+             patch.object(setup.platform, 'system', return_value='Darwin'):
+            if fail_ssh:
+                with self.assertRaisesRegex(RuntimeError, 'SSH fixture failure'):
+                    installer._install()
+            else:
+                installer._install()
+        return calls, installer
+
+    def test_mac_ssh_setup_precedes_final_verification(self):
+        calls, installer = self.run_mac_verification()
+        programs = [str(call.args[0][2]) for call in calls.call_args_list]
+        ssh = next(i for i, name in enumerate(programs) if name.endswith('setup_gitea_ssh.py'))
+        verify = next(i for i, call in enumerate(calls.call_args_list) if call.args[0][-1] == 'verify')
+        self.assertLess(ssh, verify)
+        self.assertIn('verify', installer.record['completed'])
+
+    def test_unattended_skip_does_not_attempt_key_generation(self):
+        calls, _ = self.run_mac_verification(skip=True)
+        self.assertFalse(any('setup_gitea_ssh.py' in str(call) for call in calls.call_args_list))
+
+    def test_failed_mac_ssh_setup_cannot_leave_a_ready_marker(self):
+        (self.state / 'fresh-ready.json').write_text('{"ready":true}')
+        _, installer = self.run_mac_verification(fail_ssh=True)
+        self.assertFalse((self.state / 'fresh-ready.json').exists())
+        self.assertNotIn('verify', installer.record['completed'])
+
     def test_foreign_state_is_rejected_before_changes(self):
         (self.state / 'credentials.json').write_text('{}')
         installer = setup.Installer(self.args)

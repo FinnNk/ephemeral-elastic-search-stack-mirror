@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import platform
 from pathlib import Path
 import queue
 import re
@@ -437,6 +438,10 @@ class Installer:
             print('\nStarting stage: ' + phase, flush=True)
             start = time.monotonic()
             try:
+                if phase == 'verify' and platform.system() == 'Darwin' and not getattr(self.args, 'skip_git_ssh', False):
+                    (self.state / 'fresh-ready.json').unlink(missing_ok=True)
+                    self.command([sys.executable, '-u', str(ROOT / 'lab/setup_gitea_ssh.py'),
+                                  'install'], live=True)
                 if phase in APPLICATIONS:
                     self.command([sys.executable, '-u', str(ROOT / 'lab/fresh_application.py'),
                                   phase], live=True)
@@ -455,6 +460,8 @@ class Installer:
         elif self.args.through == 'verify':
             print('CPU search lab installed. Open https://control.localhost:34443/.')
             print('Retrieve your initial sign-in: uv run --locked python lab/install_oidc.py credentials --user finnnk')
+            if platform.system() == 'Darwin' and getattr(self.args, 'skip_git_ssh', False):
+                print('Git SSH was skipped. Run uv run --locked python lab/setup_gitea_ssh.py install in Terminal before using SSH.')
         print('Next: docs/fresh-install.md. Completed stages are retained when you rerun this command.')
 
 
@@ -466,6 +473,8 @@ def main():
                         default='docker.io/gitea/gitea')
     parser.add_argument('--server-memory', help='Server memory: 10g for a new lab; retain the recorded value on resume.')
     parser.add_argument('--agent-memory', default='4g')
+    parser.add_argument('--skip-git-ssh', action='store_true',
+                        help='Skip interactive Mac SSH/Keychain setup; complete it later with setup_gitea_ssh.py')
     parser.add_argument('--through', choices=PHASES, default='verify')
     args = parser.parse_args()
     if not all(re.fullmatch(r'[1-9][0-9]*[gm]', value) for value in (args.server_memory, args.agent_memory) if value is not None):

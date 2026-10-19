@@ -2,6 +2,10 @@
 
 The lab uses its own certificate authority (CA). Trust its public certificate to verify HTTPS connections to Gitea and the other web services.
 
+For password-free Git on the Mac, use [Gitea SSH setup](gitea-ssh.md). The fresh
+installer configures the dedicated key and Keychain access; browser HTTPS trust
+and OIDC sign-in remain separate workstation steps.
+
 ## Get the certificate
 
 Ask the lab operator for **`root.pem`**, or copy it from `.lab/https-ingress/root.pem` on the machine hosting the lab. On the current Windows host that is `D:\codex\Ephemeral Elasticsearch\.lab\https-ingress\root.pem`. The CA is created by `uv run --locked python lab/https_ingress.py install`. Only the public `root.pem` is needed; the private key stays on the host.

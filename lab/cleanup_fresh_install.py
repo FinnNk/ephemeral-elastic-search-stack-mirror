@@ -27,6 +27,8 @@ def inventory(state):
           if name in ('relevance-nexus', 'relevance-nexus-db', 'relevance-snapshot-store')]))
     print('Resolver files (not removed): ' + json.dumps([str(path) for path in
           (Path('/etc/resolver/localhost'), Path('/etc/resolver/preview.relevance.test')) if path.exists()]))
+    ssh = Path.home() / '.ssh' / 'relevance-lab'
+    print('Workstation SSH directory (not removed): ' + (str(ssh) if ssh.exists() else 'absent'))
 
 
 def verify_ownership(state):
@@ -109,6 +111,7 @@ def cleanup(state, purge=False, include_stores=False):
         print('Archived secret-bearing host state at: ' + str(destination))
     inventory(state)
     print('Cached images, host certificate trust and resolver files were retained.')
+    print('Workstation SSH keys/configuration and macOS Keychain entries were retained.')
     if not include_stores:
         print('External stores were retained. Use --include-stores for a complete owned reset.')
 

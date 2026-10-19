@@ -186,15 +186,11 @@ def expose():
 
 
 def configure_gitea():
-    values = ROOT / 'research' / 'platform-spike' / 'gitea-values.yaml'
-    if (STATE / 'fresh-install.json').exists():
-        # Retain the permitted registry selected by the fresh installer.
-        values = STATE / 'fresh-gitea-values.yaml'
-        if not values.exists():
-            raise RuntimeError('Fresh Gitea values are missing; rerun the platform stage.')
+    # Change only the public URL. Reapplying bootstrap values would disable an
+    # SSH listener configured later and could replace other retained settings.
     run([HELM, 'upgrade', 'gitea', 'gitea', '--reuse-values', '--repo', 'https://dl.gitea.com/charts/',
          '--version', '12.7.0',
-         '--namespace', 'platform', '--values', str(values), '--set-string',
+         '--namespace', 'platform', '--set-string',
          f'gitea.config.server.ROOT_URL=https://gitea.localhost:{HOST_PORT}/',
          '--wait', '--timeout', '5m',
          '--kubeconfig', str(STATE / 'kubeconfig.yaml')])

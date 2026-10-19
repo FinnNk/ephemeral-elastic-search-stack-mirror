@@ -204,6 +204,29 @@ rejected. Keep that error and its preceding output for diagnosis; this recovery
 does not accept arbitrary new datasets or compression differences. Native Mac
 acceptance remains required after the Windows reproduction.
 
+### Git SSH access on macOS
+
+Immediately before final verification, the installer enables loopback Gitea SSH
+and sets up a dedicated encrypted key for the named account. Run installation
+in an interactive macOS Terminal: choose a non-empty key passphrase when asked,
+then supply it to Apple SSH for storage in Keychain. Existing SSH keys and
+configuration are retained. Subsequent Git connections use the key without a
+Gitea password; browser sign-in continues to use the lab identity.
+
+Expect **Verified password-free Git access to delivery-source over SSH**. Use
+`relevance-lab-gitea:elastic-agent/delivery-source.git` for your developer clone,
+or Gitea's displayed SSH URL. The setup verifies the SSH host key against the
+owned cluster and writes `.lab/git-ssh.json`; it does not change merge gates.
+
+For an already installed Mac lab, run `uv run --locked python
+lab/setup_gitea_ssh.py install` after pulling the accepted change and waiting for
+jobs/comparisons to finish. No cluster reset is needed. See [Git over SSH](gitea-ssh.md)
+for the upgrade, changed-password prompt, files retained and verification.
+
+Use `--skip-git-ssh` only when deliberately installing unattended, then complete
+SSH setup in Terminal later. Automatic Keychain setup is macOS-only; the same
+installer on other hosts retains its existing authentication path.
+
 ## Configure workstation access
 
 After the `access` stage completes:
@@ -337,8 +360,8 @@ Add `--purge-state` only when you also want to permanently remove generated
 credentials, CA keys, kubeconfig and installer records. Cleanup refuses changed
 node identities, extra nodes, worktree state, an active installer lock or an
 installation without its ownership record. It reports remaining resources.
-Cached images, corporate certificates, macOS trust and DNS resolver files are
-retained. External stores are retained unless `--include-stores` is selected.
+Cached images, corporate certificates, macOS trust, DNS resolver files,
+workstation SSH keys/configuration and Keychain entries are retained. External stores are retained unless `--include-stores` is selected.
 Cleanup never invokes a global Docker prune.
 
 For the **earlier manual attempt**, which has no ownership record, run these
