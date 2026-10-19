@@ -2,9 +2,9 @@
 import base64
 import hashlib
 import json
+from pathlib import Path
 import socket
-import ssl
-import urllib.request
+import tempfile
 import uuid
 
 import yaml
@@ -25,17 +25,21 @@ def chart(folder):
     if not path.exists():
         import certifi
         bundle = STATE / 'host-ca-bundle.pem'
-        context = ssl.create_default_context(cafile=str(bundle) if bundle.exists() else certifi.where())
-        with urllib.request.urlopen('https://dl.gitea.com/charts/gitea-12.7.0.tgz',
-                                    context=context, timeout=60) as response:
-            payload = response.read(25_000_001)
-        if len(payload) > 25_000_000 or hashlib.sha256(payload).hexdigest() != CHART_SHA256:
-            raise ValueError('Downloaded Gitea chart differs from its pinned checksum.')
-        temporary = path.with_suffix('.download')
-        if temporary.is_symlink():
-            raise ValueError('Unexpected symbolic link in the chart cache.')
-        temporary.write_bytes(payload)
-        temporary.replace(path)
+        print('Downloading the pinned Gitea SSH chart with Helm; no server changes yet.', flush=True)
+        # Match the working foundation installer download path. Isolate Helm's
+        # repository cache so unrelated workstation repositories cannot affect it.
+        with tempfile.TemporaryDirectory(prefix='chart-', dir=folder) as temporary:
+            staging = Path(temporary)
+            run([HELM, 'pull', 'gitea', '--repo', 'https://dl.gitea.com/charts/',
+                 '--version', '12.7.0', '--destination', str(staging),
+                 '--repository-config', str(staging / 'repositories.yaml'),
+                 '--repository-cache', str(staging / 'cache'),
+                 '--ca-file', str(bundle) if bundle.exists() else certifi.where()], timeout=120)
+            downloaded = staging / path.name
+            if (downloaded.stat().st_size > 25_000_000
+                    or hashlib.sha256(downloaded.read_bytes()).hexdigest() != CHART_SHA256):
+                raise ValueError('Downloaded Gitea chart differs from its pinned checksum.')
+            downloaded.replace(path)
     if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != CHART_SHA256:
         raise ValueError('Retained Gitea chart differs from its pinned checksum.')
     return path
@@ -125,8 +129,9 @@ def install():
     folder.mkdir(exist_ok=True)
     values = folder / 'values.yaml'
     values.write_text(yaml.safe_dump(settings()), encoding='utf-8')
+    archive = chart(folder)
     print('Enabling loopback Gitea SSH; waiting for its rollout.', flush=True)
-    run([HELM, 'upgrade', 'gitea', str(chart(folder)), '--reuse-values', '-n', 'platform', '-f', str(values),
+    run([HELM, 'upgrade', 'gitea', str(archive), '--reuse-values', '-n', 'platform', '-f', str(values),
          '--wait', '--timeout', '5m', '--kubeconfig', str(STATE / 'kubeconfig.yaml')])
     if not published:
         run([K3D, 'cluster', 'edit', 'relevance-lab', '--port-add',

@@ -99,10 +99,43 @@ class Server(unittest.TestCase):
     def test_modified_cached_chart_is_not_used_or_downloaded_over(self):
         with tempfile.TemporaryDirectory() as t:
             (Path(t) / 'gitea-12.7.0.tgz').write_bytes(b'not the pinned chart')
-            with patch.object(server.urllib.request, 'urlopen') as download:
+            with patch.object(server, 'run') as download:
                 with self.assertRaisesRegex(ValueError, 'Retained Gitea chart differs'):
                     server.chart(Path(t))
                 download.assert_not_called()
+
+    def test_chart_uses_helm_with_explicit_ca_and_isolated_cache(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as t:
+            root = Path(t)
+            bundle = root / 'host-ca-bundle.pem'
+            bundle.write_text('fixture CA')
+            payload = b'pinned fixture chart'
+            def download(args, **kwargs):
+                self.assertEqual(args[:3], [server.HELM, 'pull', 'gitea'])
+                self.assertEqual(args[args.index('--ca-file') + 1], str(bundle))
+                staging = Path(args[args.index('--destination') + 1])
+                self.assertEqual(Path(args[args.index('--repository-cache') + 1]).parent, staging)
+                self.assertEqual(kwargs['timeout'], 120)
+                (staging / 'gitea-12.7.0.tgz').write_bytes(payload)
+            with patch.object(server, 'STATE', root), \
+                 patch.object(server, 'CHART_SHA256', hashlib.sha256(payload).hexdigest()), \
+                 patch.object(server, 'run', side_effect=download) as pull:
+                archive = server.chart(root)
+                self.assertEqual(archive.read_bytes(), payload)
+                self.assertEqual(server.chart(root), archive)
+                pull.assert_called_once()
+
+    def test_chart_download_checksum_failure_does_not_cache_payload(self):
+        with tempfile.TemporaryDirectory() as t:
+            root = Path(t)
+            def download(args, **kwargs):
+                (Path(args[args.index('--destination') + 1]) / 'gitea-12.7.0.tgz').write_bytes(b'wrong')
+            with patch.object(server, 'run', side_effect=download):
+                with self.assertRaisesRegex(ValueError, 'Downloaded Gitea chart differs'):
+                    server.chart(root)
+            self.assertFalse((root / 'gitea-12.7.0.tgz').exists())
+            self.assertEqual(list(root.iterdir()), [])
 
 
 class Client(unittest.TestCase):

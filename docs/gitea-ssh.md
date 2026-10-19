@@ -22,6 +22,11 @@ current Gitea data, browser access and other Helm settings. Enabling SSH can
 restart Gitea and update the k3d load balancer; it does not rebuild the cluster.
 Its external TCP listener is bound only to `127.0.0.1:31822`.
 
+Setup downloads the pinned chart through Helm, using the retained corporate CA
+bundle when present, and verifies its checksum before changing Gitea. If this
+download fails, no server or key changes have been made. After pulling a fix or
+restoring network access, rerun the same setup command; no cleanup is needed.
+
 When prompted, choose and confirm a **non-empty key passphrase**. SSH then asks
 for that passphrase when adding the key to the agent and macOS Keychain. Approve
 any Keychain access prompt. The passphrase is not saved in the lab state or

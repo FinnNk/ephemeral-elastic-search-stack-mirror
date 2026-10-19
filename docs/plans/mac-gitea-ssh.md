@@ -78,3 +78,18 @@ format. These failures did not require changes to running lab services.
 Native Mac execution, Keychain prompts/unlock, cold-session agent loading and a
 fresh end-to-end installation remain acceptance checks. No Windows test is
 presented as evidence that those have already passed.
+
+## Mac chart-download follow-up
+
+The first Mac upgrade stopped with HTTP 403 after the misleading rollout
+message. At that point the direct Python chart download had not returned, so
+Helm had not changed Gitea and key creation had not started. The response does
+not establish whether the corporate network or upstream service rejected it.
+
+Chart retrieval now uses Helm, matching the successful foundation installation,
+with an isolated repository cache and the explicit retained CA bundle. The
+archive checksum is unchanged. Download and rollout have separate progress
+messages. All 78 targeted tests passed, including cache reuse, CA selection and
+rejection of a changed download without caching it. A real Helm download on
+Windows matched the pinned checksum; the corporate Mac network still requires
+a retry. No running lab services were changed for this verification.
