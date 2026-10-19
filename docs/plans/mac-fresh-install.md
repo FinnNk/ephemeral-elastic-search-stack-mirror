@@ -2,11 +2,11 @@
 
 ## Current next step, 19 October 2026
 
-The latest Mac attempt reached dated/seasonal catalogue publication and reported
-a pin mismatch. Review the [frozen source portability fix](frozen-source-portability.md),
-then pull it and resume the same installer command. The Windows replay confirms
-the line-ending failure and original-pin recovery; the precise supplied Mac
-error and native retry still need confirmation.
+The user reports that the Mac installer completed after #223. Workstation
+certificate trust and first Gitea sign-in are now being checked. The fresh guide
+now includes [account linking and generated password retrieval](../fresh-install.md#link-the-fresh-gitea-account).
+Next: complete named Gitea sign-in, then run a new source PR through reviewed
+promotion. Installer completion alone does not establish that end-to-end result.
 
 Use the [Mac handover](../mac-handover.md) and [current fresh-install guide](../fresh-install.md).
 The entries below retain the earlier installation diagnosis and verification;
