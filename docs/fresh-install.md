@@ -262,6 +262,37 @@ Open [Gitea](https://gitea.localhost:34443/),
 A foundation-only installation can use `uv run --locked python lab/install_headlamp.py token`
 until OIDC is installed. That command prints a short-lived token.
 
+### Link the fresh Gitea account
+
+Gitea uses the same lab identity as Control, but the first sign-in also requires
+proof that you own the Gitea account created by the installer. Its generated
+Gitea password is separate from the identity password used for Control.
+
+1. On the Mac hosting this fresh installation, run from the repository root:
+
+   ```sh
+   uv run --locked python -c 'import json, os; from pathlib import Path; u=json.loads((Path(os.environ.get("LAB_STATE_DIR", ".lab"))/"user-credentials.json").read_text(encoding="utf-8")); print("Username:", u["username"]); print("Gitea password:", u["gitea_password"])'
+   ```
+
+   Expect the generated Gitea username and password. This deliberately displays
+   credentials: keep the output private and out of shared logs. If you already
+   changed the Gitea password, use its current value; the generated file is not
+   updated when a password changes. A missing file usually means this is the
+   wrong checkout or state directory; use the installation's actual state.
+2. Open [Gitea sign-in](https://gitea.localhost:34443/user/login), choose
+   **lab-identity**, and sign in with the same lab identity/password as Control.
+   An existing identity session may skip that password prompt.
+3. On Gitea's account-linking page, enter the **Gitea username and password**
+   retrieved in step 1. Use the existing account; do not register a second one.
+4. Confirm you can open `elastic-agent/delivery-source`. On subsequent visits,
+   choose **lab-identity**; the account-linking step is not repeated.
+
+The installer already configures OIDC and creates the named Gitea account.
+Linking it is a first-login action, not another operator installation stage.
+See [Gitea account linking](oidc-access.md#link-your-gitea-account) for existing
+labs and integration recovery. The two passwords remain separate; linking does
+not synchronise or replace them.
+
 ## Continue an existing foundation installation
 
 From the repository root, pull the merged

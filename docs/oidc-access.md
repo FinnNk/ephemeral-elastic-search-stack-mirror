@@ -96,6 +96,14 @@ and group mapping.
 
 ## Link your Gitea account
 
+For an installer-created lab, follow [Link the fresh Gitea account](fresh-install.md#link-the-fresh-gitea-account).
+That procedure retrieves the generated Gitea username/password from the host's
+`user-credentials.json` and explains the first-login sequence. This Gitea
+password is separate from the Keycloak password used for Control. If it has
+already been changed, use the current Gitea password; the generated file retains
+the initial value. On another user's lab, ask its operator for your Gitea account
+credentials rather than using the operator's local state.
+
 1. Open [Gitea sign-in](https://gitea.localhost:34443/user/login). If already
    signed in, sign out first. Choose **lab-identity**.
 2. Sign in with your Keycloak username and password.
