@@ -10,9 +10,11 @@ Use this guide to prepare an Apple silicon or Intel Mac for restoring an existin
 lab using [the transfer runbook](lab-transfer.md). Installing the tools and
 cloning Git do not restore the lab's databases or stored artefacts.
 
-The host commands below use macOS Terminal and Python 3.12 or later. Native Mac
-startup and restoration have not been tested. Complete the acceptance checks
-before treating the transferred lab as ready for a demonstration.
+Start with the [Mac handover checklist](mac-handover.md) to choose a fresh
+installation or restoration and retain unfinished work. The host commands below
+use macOS Terminal and the locked Python environment. An earlier Mac CPU
+installation reached verification after repairs; a clean installation of the
+current revision and a complete state-preserving restore remain unverified.
 
 ## Install the host tools
 
@@ -30,7 +32,11 @@ before treating the transferred lab as ready for a demonstration.
    tool is not evidence that the retained lab has been tested with it.
 3. Clone the accepted lab repository from its GitHub mirror, or transfer a clean
    checkout over a trusted connection. This avoids depending on local Gitea
-   before it is restored. Change to the repository root and prepare the locked host environment:
+   before it is restored. Confirm the mirror revision using the
+   [handover checklist](mac-handover.md#check-the-code-before-cloning). On a
+   corporate network, configure [uv trust](python-environments.md#corporate-certificates)
+   before the first sync, and Docker Desktop registry trust separately.
+   Change to the repository root and prepare the locked host environment:
 
    ```sh
    uv sync --locked
@@ -54,7 +60,7 @@ Configured limits are not measured simultaneous usage or a Mac minimum.
 A 64 GB Mac is the practical starting point for the complete CPU topology.
 On a smaller laptop, agree a reduced topology before restoration; omit optional
 testbed and historical preview workloads first. Do not shrink database volumes
-or assume that the current 50 GB Docker VM allocation fits a 32 GB laptop.
+or assume that the source host's Docker VM allocation fits a 32 GB laptop.
 Leave memory for macOS and inspect actual pressure after startup.
 
 Record the PVCs and external Docker volumes using the
@@ -65,7 +71,10 @@ choosing Docker Desktop's disk allocation.
 
 ## Prepare the cluster
 
-For an **empty rehearsal cluster**, the retained base configuration can be used:
+For a fresh installation, use `lab/fresh_install.py` as described in the
+[fresh-install guide](fresh-install.md); do not create its cluster manually.
+
+For an **empty restoration rehearsal cluster only**, the retained base configuration can be used:
 
 ```sh
 k3d cluster create --config research/platform-spike/k3d.yaml \

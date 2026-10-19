@@ -15,7 +15,7 @@ Use it to compare ranking changes, check that a change preserves results, or mea
 | Build, promote or roll back a release | [Delivery](docs/delivery.md) |
 | Install or operate the control services | [Control runtime](docs/control-runtime.md) |
 | Create a fresh CPU search lab | [Fresh installation](docs/fresh-install.md) |
-| Prepare a Mac and transfer the lab | [Mac setup](docs/mac-setup.md) and [transfer runbook](docs/lab-transfer.md) |
+| Prepare a Mac and transfer the lab | [Mac handover](docs/mac-handover.md), then choose fresh installation or state restoration |
 | Build consistent lab pages | [Design system](docs/design-system.md) |
 | Contribute to this repository | [Contributors guide](CONTRIBUTING.md) |
 

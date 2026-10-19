@@ -25,16 +25,18 @@ include the same workflow and tooling as the source PR.
 - The isolated browser fixture checks request feedback, result links and
   refresh recovery. It makes no live lab deployment or build request.
 
-## Next detailed plan: acceptance and activation
+## Next detailed plan: remaining acceptance
 
-1. Delivery-source #44 and lab #220 are merged. Use the accepted checkout for activation; their live build/preview rehearsal is still pending.
-2. When delivery and comparison work is idle, publish/install the accepted
-   control runtime using the existing update procedure.
-3. Build one pushed branch without opening a PR. Verify its pinned SHA,
+Lab #220 and delivery-source #44/#45 are merged. The current control runtime is
+activated. On 19 October the user confirmed that the branch preview deployment
+completed. This establishes that walkthrough outcome, not exact-SHA, expiry or
+native Mac acceptance.
+
+1. On the Mac, build a pushed branch without opening a PR. Check its pinned SHA,
    preview version, Actions link, catalogue/Redis binding and storefront.
-4. Repeat with an exact SHA; refresh during the build and confirm one dispatch.
-5. Check early expiry on these disposable previews. Rehearse the same flow on
-   the Mac during fresh-install acceptance.
+2. Repeat with an exact SHA; refresh during the build and confirm one dispatch.
+3. Expire a disposable preview early and confirm its deletion. Integration,
+   Staging and Production must retain their separate ownership and controls.
 
-Do not treat fixture checks as live release, model-quality or Mac evidence.
-The [user guide](../branch-previews.md) owns steps and failure recovery.
+Use the [handover](../mac-handover.md) for setup and retained work. The
+[user guide](../branch-previews.md) owns steps and failure recovery.

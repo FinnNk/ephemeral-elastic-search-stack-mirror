@@ -19,9 +19,12 @@ profile below. Windows credentials and CA keys are not transferred.
 The existing frozen lab judgements are restored with their original provenance;
 model predictions remain distinguishable from published labels.
 
-Recovery and data identity checks are tested on Windows. Native Mac installation
-and corporate network access still need verification on the target laptop. Keep
-the original lab available until the new installation passes its acceptance checks.
+Recovery and data identity checks are tested on Windows. An earlier Mac CPU
+installation reached verification after repairs. A clean installation of the
+current revision without intermediate patching, and its performance on the
+target laptop, still need acceptance. Keep the original lab available until the
+new installation passes its checks. Start with the [Mac handover](mac-handover.md)
+to retain unfinished work and verify the mirror before cloning.
 
 ## Prepare the Mac
 

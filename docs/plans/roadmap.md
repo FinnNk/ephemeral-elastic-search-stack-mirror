@@ -10,8 +10,9 @@ retains previous implementation entries and measurements.
 | Work | Next step |
 | --- | --- |
 | Code and documentation simplification | Cleanup #221 is merged; follow the [bounded refactoring plan](../reviews/codebase-simplicity-2026-10-16.md#next-detailed-plan). |
-| [Build previews from a branch or SHA](branch-preview-builds.md) | Delivery-source #44 and lab #220 are merged. Activate when idle, then rehearse a real branch and exact-SHA preview. |
-| [Promotion walkthrough feedback](release-walkthrough-follow-ups.md) | Merge the reconciled record #214, then lab #219. Activate its loader when idle before the dependent source 1.2.6 merge. |
+| [Build previews from a branch or SHA](branch-preview-builds.md) | Delivery-source #44/#45 and lab #220 are merged and activated. The user confirmed a branch preview deployed; exact-SHA and early-expiry acceptance remain. |
+| [Promotion walkthrough feedback](release-walkthrough-follow-ups.md) | Lab #214/#219 are merged and activated; source #45 (1.2.6) is merged with a passing comparison. Rehearse the updated promotion UX on the Mac. |
+| [Mac handover](../mac-handover.md) | Repair GitHub mirror authentication or transfer verified Git bundles; retain unfinished research and complete clean-install acceptance. |
 | Realistic ranking-change example | Complete the retained judgement review and re-score the frozen title-match experiment. Preserve the original published-label result and protocol. |
 
 The build-207 Production walkthrough completed with the user's confirmation.

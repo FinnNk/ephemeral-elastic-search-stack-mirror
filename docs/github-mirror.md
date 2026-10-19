@@ -4,8 +4,11 @@ Gitea owns branches, reviews and merges. Its native push mirrors copy Git histor
 to private GitHub repositories after a push, with an hourly retry as a fallback.
 Developers work in Gitea; they do not create a second backup PR.
 
-All five mirrors are enabled. Initial branch and tag hashes match Gitea, and
-ordinary Git pushes reach GitHub automatically.
+All five mirrors are configured for pushes after a commit and an hourly retry.
+Configuration alone does not establish a current backup: inspect the last error
+and compare branch/tag hashes before relying on a mirror. The
+[19 October handover](mac-handover.md#check-the-code-before-cloning) records an
+authentication failure and stale destination heads.
 
 ## What is backed up
 
@@ -46,7 +49,7 @@ pointing to retained lab state. Developers do not need to perform this setup.
    $env:LAB_STATE_DIR = 'D:\codex\Ephemeral Elasticsearch\.lab'
    uv run --locked python lab/github-mirror/publish.py
    $image = (Get-Content "$env:LAB_STATE_DIR/github-mirror/image.json" | ConvertFrom-Json).image
-   uv run --locked python lab/github_mirror.py install --image $image --private-key 'D:\codex\.secrets\ephemeral-elastic-agent.2026-09-26.private-key.pem'
+   uv run --locked python lab/github_mirror.py install --image $image --private-key 'D:\private\github-app-key.pem'
    ```
 
    The image contains AMD64 and ARM64 builds. Installation preserves the existing

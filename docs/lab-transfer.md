@@ -23,7 +23,7 @@ uv run --locked python lab/mac_preflight.py --target arm64 --cluster --images --
 
 Use `--server https://127.0.0.1:<port>` if the retained kubeconfig's endpoint does
 not resolve. Obtain the current published port from `docker port
-k3d-relevance-lab-server-0 6443/tcp`; do not reuse an old example port.
+k3d-relevance-lab-serverlb 6443/tcp`; do not reuse an old example port.
 
 The command reads metadata and manifests, never Secrets or container environment
 variables. It does not stop services. `unknown` architecture support requires
@@ -32,7 +32,7 @@ intentionally broken test image must remain recognisably a test fixture.
 
 The 6 October inventory found 109 workload image references; 97 advertised
 arm64 support. The unknown references included historical search-spike images,
-older judge images and optional inference fixtures. The current lab-control,
+older judge images and optional inference fixtures. At that date, the inspected lab-control,
 search-api, abstaining relevance-judge, Gitea, Keycloak, Headlamp, Elasticsearch
 and SigNoz images advertise arm64. Separate inspection confirmed K3s, Nexus
 and the snapshot store. Image metadata is not a native execution test.
@@ -41,7 +41,7 @@ and the snapshot store. Image metadata is not a native execution test.
 
 | State | Transfer requirement |
 | --- | --- |
-| Lab Git checkout and the three delivery repositories | Accepted code plus the actual Gitea service data; Git mirrors do not contain reviews, Actions history or repository settings |
+| Lab Git checkout and all four application/state repositories listed in the [mirror guide](github-mirror.md) | Accepted code plus the actual Gitea service data; Git mirrors do not contain reviews, Actions history or repository settings |
 | Control PVC | Authoritative lifecycle database, operation queue/logs, local evidence, frozen inputs and checkouts; the host's old SQLite files are stale after activation |
 | Gitea PVC | Database, repositories, attachments, Actions records, configuration and keys |
 | Floci PVC | Frozen catalogue/query/judgement blobs, reports, MLflow artefacts where stored there, and Key Vault secret values |
@@ -108,8 +108,9 @@ keys into the Git mirror. Exclude unrelated Docker applications from this transf
    configuration. Keep the originals on Windows. A Windows Docker/WSL virtual
    disk is not a portable Mac lab archive; transfer the service data, not the VM.
 
-The initial read-only inventory has been performed. No service has been stopped
-or cold backup taken by the documentation batch.
+Also retain unfinished Git branches and ignored research inputs/labels using the
+[handover checklist](mac-handover.md#retain-unfinished-work). Inventory output
+is metadata, not a backup. Choose a new output filename for every inventory.
 
 ## Restore into a stopped target
 
@@ -133,10 +134,21 @@ or cold backup taken by the documentation batch.
    PVC, do not import a second copy. When rebuilding that PVC instead, use the
    [control import/first activation procedure](control-runtime.md#back-up-and-restore-control-state)
    with the exported archive, scoped credentials and the target kubeconfig.
-5. Regenerate the target kubeconfig with `k3d kubeconfig get relevance-lab`.
+5. Regenerate the target kubeconfig in the target repository root:
+
+   ```sh
+   export LAB_STATE_DIR="$PWD/.lab"
+   mkdir -p "$LAB_STATE_DIR"
+   k3d kubeconfig get relevance-lab > "$LAB_STATE_DIR/kubeconfig.yaml"
+   ```
+
    Reconcile ingress port mappings, native DNS and CA trust. Verify OIDC API
    server configuration and the startup hook before testing Headlamp login.
-6. Prevent GPU-only and incompatible optional workloads from starting. Use the
+6. Prevent GPU-only and incompatible optional workloads from starting. Restored
+   K3s state can schedule workloads immediately when its nodes start. Arrange
+   workload suspension and storage restoration before that first start; the
+   repository does not automate this ordering. Do not start a full restored
+   cluster and assume incompatible services will remain inactive. Use the
    retained CPU abstaining judge. Preserve their saved data rather than deleting
    model history. Inspect pinned images before changing them; rebuilding an
    image creates a new release identity and requires a reviewed state change.
@@ -158,7 +170,7 @@ export LAB_STATE_DIR="$PWD/.lab"
 uv run --locked python lab/mac_preflight.py --target arm64 --cluster --images --output "$PWD/mac-lab-check.json"
 kubectl --kubeconfig "$LAB_STATE_DIR/kubeconfig.yaml" get nodes
 kubectl --kubeconfig "$LAB_STATE_DIR/kubeconfig.yaml" -n lab-control \
-  exec deployment/lab-control -c api -- uv run --locked python lab/control-runtime/smoke.py
+  exec deployment/lab-control -c api -- python lab/control-runtime/smoke.py
 uv run --locked python lab/https_ingress.py verify
 ```
 

@@ -1,5 +1,16 @@
 # Fresh Mac installation
 
+## Current next step, 19 October 2026
+
+Use the [Mac handover](../mac-handover.md) and [current fresh-install guide](../fresh-install.md).
+The entries below retain the earlier installation diagnosis and verification;
+their historical “next” steps are not instructions to repeat those repairs.
+The remaining acceptance is a clean current installation without intermediate
+patching, including optional SigNoz, branch/SHA preview and reviewed promotion.
+GitHub mirror authentication must be repaired or verified Git bundles supplied
+before relying on a new clone. Full service-history restoration is separate
+and has not been rehearsed.
+
 ## Outcome
 
 Create a new CPU lab with fresh local identities and certificates. Support the

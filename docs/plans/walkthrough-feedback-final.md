@@ -93,3 +93,15 @@ chart, contract and CI/tooling files match accepted source main. The new source
 comparison still requires the accepted loader to be activated before its gate
 can be completed. Neither this reconciliation nor re-scoring changes live
 Production or earlier evidence.
+
+## Activation and handover, 19 October
+
+Lab #214/#219 and source #45 are merged. The accepted control runtime is
+activated and smoke-tested; its loaded additional judgement counts are 54
+sneakers and 252 Redis labels. Source 1.2.6 passed comparison operation
+`bff0300207a074a88980e4b7cd32bf38` after activation. These observations supersede
+the merge/activation actions in the historical acceptance list above. They do
+not change earlier evidence or assert a new Production deployment.
+
+Continue with the [Mac handover](../mac-handover.md), including clean installation
+and a new reviewed promotion to exercise the updated controls end to end.
