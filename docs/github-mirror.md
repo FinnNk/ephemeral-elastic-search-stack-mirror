@@ -7,8 +7,8 @@ Developers work in Gitea; they do not create a second backup PR.
 All five mirrors are configured for pushes after a commit and an hourly retry.
 Configuration alone does not establish a current backup: inspect the last error
 and compare branch/tag hashes before relying on a mirror. The
-[19 October handover](mac-handover.md#check-the-code-before-cloning) records an
-authentication failure and stale destination heads.
+[19 October handover](mac-handover.md#check-the-code-before-cloning) records
+recovery from an authentication failure and matching destination heads.
 
 ## What is backed up
 

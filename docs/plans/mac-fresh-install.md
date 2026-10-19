@@ -7,8 +7,8 @@ The entries below retain the earlier installation diagnosis and verification;
 their historical “next” steps are not instructions to repeat those repairs.
 The remaining acceptance is a clean current installation without intermediate
 patching, including optional SigNoz, branch/SHA preview and reviewed promotion.
-GitHub mirror authentication must be repaired or verified Git bundles supplied
-before relying on a new clone. Full service-history restoration is separate
+GitHub mirror authentication has recovered; all five main heads matched Gitea
+on 19 October. Recheck the accepted documentation revision before cloning. Full service-history restoration is separate
 and has not been rehearsed.
 
 ## Outcome

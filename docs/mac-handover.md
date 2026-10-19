@@ -52,18 +52,25 @@ resource, DNS, browser trust and cleanup procedures.
 
 ## Check the code before cloning
 
-On 19 October 2026 all five configured Gitea push mirrors reported GitHub App
-`401 Bad credentials` failures. Direct GitHub checks found these stale heads:
+On 19 October 2026 at approximately 08:27 UTC, all five configured mirrors
+reported successful synchronisation. Each GitHub `main` hash matched its Gitea
+source; the handover documentation branch matched too. Earlier that morning,
+GitHub App authentication had failed with `401 Bad credentials`; that blocker
+was cleared before this verification. No App credential change was needed in
+this documentation batch.
 
-| Repository | Accepted Gitea main | Observed GitHub main |
-| --- | --- | --- |
-| Lab | `1760df8a5aecb7913b410d9036f309b0361f4582` | `b63f3b52bcdac59b5f2c3867eb8cb405af2f7eb1` |
-| Delivery source | `2d6c237441449eb4c278d938657ac293476420be` (1.2.6) | `a7cb12a20522904c4d0b51a21a5dd6f4a1c4d2a2` |
+| Repository | Verified matching main commit |
+| --- | --- |
+| Lab | `1760df8a5aecb7913b410d9036f309b0361f4582` |
+| Delivery source | `2d6c237441449eb4c278d938657ac293476420be` (1.2.6) |
+| Delivery state | `3abb8b4b1b20ec42f659b1047679704cde3b0d03` |
+| Standalone Search API | `beb158cde81cc139383edb1f271ad84c25b4ef5d` |
+| Environment state | `a5ec8a54b85de710ce988eae0c341dac07df26a1` |
 
 These are dated observations, not expected permanent heads. This documentation
 change itself needs acceptance and publication before it can be cloned.
 
-1. Follow [mirror recovery](github-mirror.md#authentication-and-recovery).
+1. If a mirror reports an error, follow [mirror recovery](github-mirror.md#authentication-and-recovery).
    Verify the GitHub App key, installation access and permissions. Synchronise
    each mirror after correcting authentication. A successful GitHub login by a
    developer does not repair Gitea's App credentials.
